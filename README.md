@@ -1,10 +1,12 @@
-marlin-renderer
+Marlin-renderer
 ===============
 
-Marlin is a Java2D RenderingEngine optimized for performance (multi-threading) based on openjdk's pisces implementation
+Marlin is an open source (GPL2+CP) Java2D RenderingEngine optimized for performance (improved memory usage (less GC) and footprint, better multi-threading) based on openjdk's pisces implementation.
 
-license
+License
 =======
+
+As marlin is a fork from OpenJDK 8 pisces, its license is the OpenJDK's license = GPL2+CP:
 
 GNU General Public License, version 2,
 with the Classpath Exception
