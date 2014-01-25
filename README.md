@@ -3,6 +3,8 @@ Marlin-renderer
 
 Marlin is an open source (GPL2+CP) Java2D RenderingEngine optimized for performance (improved memory usage (less GC) and footprint, better multi-threading) based on openjdk's pisces implementation.
 
+Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
+
 License
 =======
 
