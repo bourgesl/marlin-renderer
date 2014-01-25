@@ -20,3 +20,7 @@ Version 2, June 1991
 See License.md
 
 
+Getting in touch
+================
+
+Users and developers interested in the Marlin-renderer are kindly invited to join the [marlin-renderer](https://groups.google.com/forum/#!forum/marlin-renderer) Google Group.
