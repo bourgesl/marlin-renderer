@@ -19,6 +19,10 @@ Version 2, June 1991
 
 See License.md
 
+Documentation
+=============
+Documentation on how to use and tune the renderer is available in the [wiki]( https://github.com/bourgesl/marlin-renderer/wiki)
+
 
 Getting in touch
 ================
