@@ -29,6 +29,12 @@ Getting in touch
 
 Users and developers interested in the Marlin-renderer are kindly invited to join the [marlin-renderer](https://groups.google.com/forum/#!forum/marlin-renderer) Google Group.
 
+Contributing
+============
+
+Contribuions are welcomed, get in touch with us on the [marlin-renderer](https://groups.google.com/forum/#!forum/marlin-renderer) Google Group and share your improvements via pull requests. Since we aim, one day, to contribute this renderer back to OpenJDK, we will accept contributions only from people that have signed the [Oracle Contribution Agreeement](http://www.oracle.com/technetwork/community/oca-486395.html)
+
+
 Related projects
 ===============
 
