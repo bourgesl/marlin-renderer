@@ -200,6 +200,10 @@ public class AAShapePipe
         /** dirty bbox rectangle2D.Double */
         private final Rectangle2D.Double bbox2D = new Rectangle2D.Double();
 
+        static {
+            System.out.println("INFO: AAShapePipe: overriding JDK implementation: marlin-renderer TILE patch enabled.");
+        }
+        
         byte[] getAlphaTile(int len) {
             byte[] t = theTile;
             if (t.length < len) {
