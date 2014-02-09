@@ -217,7 +217,7 @@ final class Helpers implements PiscesConst {
     }
 
     static float polyLineLength(float[] poly, final int off, final int nCoords) {
-        assert nCoords % 2 == 0 && poly.length >= off + nCoords : "";
+        // assert nCoords % 2 == 0 && poly.length >= off + nCoords : "";
         float acc = 0;
         for (int i = off + 2; i < off + nCoords; i += 2) {
             acc += linelen(poly[i], poly[i+1], poly[i-2], poly[i-1]);

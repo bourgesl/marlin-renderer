@@ -179,6 +179,10 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
             y1 = cache.bboxY1;
         }
 
+        if (doLogBounds) {
+            PiscesUtils.logInfo("getAlpha = [" + x0 + " ... " + x1 + "[ [" + y0 + " ... " + y1 + "[");
+        }
+        
         final int skipRowPixels = (rowstride - (x1 - x0));
 
         // LBO: hack to process tile line [0 - 32[

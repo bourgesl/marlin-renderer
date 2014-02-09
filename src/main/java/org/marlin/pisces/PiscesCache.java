@@ -86,14 +86,14 @@ final class PiscesCache implements PiscesConst {
     }
 
     void init(int minx, int miny, int maxx, int maxy) {
-        assert maxy >= miny && maxx >= minx;
+        // assert maxy >= miny && maxx >= minx;
         bboxX0 = minx;
         bboxY0 = miny;
         bboxX1 = maxx;
         bboxY1 = maxy;
 
         // the ceiling of (maxy - miny + 1) / TILE_SIZE;
-        int nxTiles = (maxx - minx + TILE_SIZE) >> TILE_SIZE_LG;
+        final int nxTiles = (maxx - minx + TILE_SIZE) >> TILE_SIZE_LG;
 
         if (nxTiles > INITIAL_ARRAY) {
             touchedTile = rdrCtx.getIntArray(nxTiles);
@@ -179,6 +179,13 @@ final class PiscesCache implements PiscesConst {
         if (doMonitors) {
             rdrCtx.mon_rdr_emitRow.start();
         }
+
+        /* skip useless pixels above boundary */
+        final int px_bbox1 = Math.min(px1, bboxX1);
+    
+        if (doLogBounds) {
+            PiscesUtils.logInfo("row = [" + px0 + " ... " + px_bbox1 + " ("+px1+") [ for y=" + y);
+        }
         
         final int row = y - bboxY0;
         
@@ -189,20 +196,21 @@ final class PiscesCache implements PiscesConst {
         // update row data:
         int[] _rowAAChunk = rowAAChunk;
         // ensure rowAAChunk capacity:
-        if (_rowAAChunk.length < pos + 2 + (px1 - px0)) {
-            rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyIntArray(_rowAAChunk, pos, 2 + (px1 - px0));
+        if (_rowAAChunk.length < pos + 2 + (px_bbox1 - px0)) {
+            rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyIntArray(_rowAAChunk, pos, 2 + (px_bbox1 - px0));
         }
         if (doStats) {
-            this.rdrCtx.stat_cache_rowAARLE.add(2 + px1 - px0);
+            this.rdrCtx.stat_cache_rowAARLE.add(2 + px_bbox1 - px0);
         }
         // rowAA contains (x0 x1)(alpha values for range[x0; x1[)
-        _rowAAChunk[pos    ] = px0; // first pixel inclusive
-        _rowAAChunk[pos + 1] = px1; //  last pixel exclusive
+        _rowAAChunk[pos    ] = px0;      // first pixel inclusive
+        _rowAAChunk[pos + 1] = px_bbox1; //  last pixel exclusive
 
-        final int from = px0 - bboxX0; // first pixel inclusive
-        final int to   = px1 - bboxX0; //  last pixel exclusive
+        final int from = px0      - bboxX0; // first pixel inclusive
+        final int to   = px_bbox1 - bboxX0; //  last pixel exclusive
 
         final int[] touchedLine = touchedTile;
+        final int _TILE_SIZE_LG = TILE_SIZE_LG;
 
         // fix offset in rowAAChunk:
         final int off = pos + 2 - from;
@@ -216,26 +224,30 @@ final class PiscesCache implements PiscesConst {
 
             if (val != 0) {
                 // update touchedTile
-                touchedLine[x >> TILE_SIZE_LG] += val;
+                touchedLine[x >> _TILE_SIZE_LG] += val;
             }
         }
         
         // update current position:
-        rowAAChunkPos = pos + 2 + px1 - px0;
+        rowAAChunkPos = pos + 2 + px_bbox1 - px0;
 
         // update tile used marks:
-        int tx = from >> TILE_SIZE_LG; // inclusive
+        int tx = from >> _TILE_SIZE_LG; // inclusive
         if (tx < tileMin) {
             tileMin = tx;
         }
 
-        tx = ((to - 1) >> TILE_SIZE_LG) + 1; // exclusive (+1 to be sure)
+        tx = ((to - 1) >> _TILE_SIZE_LG) + 1; // exclusive (+1 to be sure)
         if (tx > tileMax) {
             tileMax = tx;
         }
 
+        if (doLogBounds) {
+            PiscesUtils.logInfo("clear = [" + from + " ... " + to + "[");
+        }
+        
         // Clear alpha row for reuse:
-        IntArrayCache.fill(alphaRow, from, to, 0);
+        IntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
         
         if (doMonitors) {
             rdrCtx.mon_rdr_emitRow.stop();

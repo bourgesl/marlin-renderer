@@ -30,7 +30,8 @@ import sun.awt.geom.PathConsumer2D;
 final class Renderer implements PathConsumer2D, PiscesConst {
 
     /* constants */
-    // hard coded 8x8 antialiasing -> 64 subpixels
+    /* hard coded 8x8 antialiasing -> 64 subpixels */
+    /* may use System properties to define expected subpixels (4x4, 8x8, 16x16) */
     public final static int SUBPIXEL_LG_POSITIONS_X = 3;
     public final static int SUBPIXEL_LG_POSITIONS_Y = 3;
     public final static int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
@@ -41,6 +42,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     public final static int SUBPIXEL_MASK_X = SUBPIXEL_POSITIONS_X - 1;
     public final static int SUBPIXEL_MASK_Y = SUBPIXEL_POSITIONS_Y - 1;
     public final static int MAX_AA_ALPHA = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;
+    /* number of subpixels corresponding to a tile line */
+    private static final int SUBPIXEL_TILE = PiscesCache.TILE_SIZE << SUBPIXEL_LG_POSITIONS_Y;
 
     /* 2048 pixels (height) x 8 subpixels = 64K */
     static final int INITIAL_BUCKET_ARRAY = INITIAL_PIXEL_DIM * SUBPIXEL_POSITIONS_Y;
@@ -51,11 +54,11 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     // common to all types of input path segments.
     // float values:
     public static final int F_CURX = 0;
-    public static final int SLOPE = 1;
+    public static final int SLOPE  = 1;
     // integer values:
-    public static final int NEXT = 0;
-    public static final int YMAX = 1;
-    public static final int OR = 2;
+    public static final int NEXT   = 0;
+    public static final int YMAX   = 1;
+    public static final int OR     = 2;
     
     /** size of each edge in both arrays (3) */
     static final int SIZEOF_EDGE = OR + 1;
@@ -231,16 +234,21 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         // copy members:
         final int _boundsMinY = boundsMinY;
 
-        // LBO: why ceil ie upper integer ?
-        final int firstCrossing = Math.max(FastMath.ceil(y1), _boundsMinY); // upper integer
-        final int lastCrossing  = Math.min(FastMath.ceil(y2),  boundsMaxY);  // upper integer
+        /* TODO: improve accuracy using correct float rounding to int ie use ceil(x - 0.5f) */
+        
+        /* convert subpixel coordinates (float) into pixel positions (int) */
+        final int firstCrossing = Math.max(FastMath.ceil(y1), _boundsMinY); // upper integer (inclusive)
+        /* note: use boundsMaxY (last Y exclusive) to compute correct coverage */
+        final int lastCrossing  = Math.min(FastMath.ceil(y2),  boundsMaxY); // upper integer (exclusive ?)
 
+        /* skip horizontal lines in pixel space */
         if (firstCrossing >= lastCrossing) {
             if (doMonitors) {
                 rdrCtx.mon_rdr_addLine.stop();
             }
             return;
         }
+        /* edge min/max X/Y are in subpixel space (inclusive) */
         if (y1 < edgeMinY) {
             edgeMinY = y1;
         }
@@ -269,12 +277,14 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         final int ptr = edgesPos;
 
         // copy constants:
+        final int _SIZEOF_EDGE = SIZEOF_EDGE;
+        
         final float[] _edges;
         final int[]   _edgesInt;
         
-        if (edges.length < ptr + SIZEOF_EDGE) {
-            edges    = _edges    = Helpers.widenArray(rdrCtx, edges,    ptr, SIZEOF_EDGE, ptr);
-            edgesInt = _edgesInt = Helpers.widenArray(rdrCtx, edgesInt, ptr, SIZEOF_EDGE, ptr);
+        if (edges.length < ptr + _SIZEOF_EDGE) {
+            edges    = _edges    = Helpers.widenArray(rdrCtx, edges,    ptr, _SIZEOF_EDGE, ptr);
+            edgesInt = _edgesInt = Helpers.widenArray(rdrCtx, edgesInt, ptr, _SIZEOF_EDGE, ptr);
         } else {
             _edges    = edges;
             _edgesInt = edgesInt;
@@ -301,7 +311,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         _edgeBucketCounts[bucketIdx] += 2;
         _edgeBucketCounts[lastCrossing - _boundsMinY] |= 1; /* last bit means edge end */        
 
-        edgesPos += SIZEOF_EDGE;
+        edgesPos += _SIZEOF_EDGE;
 
         if (doMonitors) {
             rdrCtx.mon_rdr_addLine.stop();
@@ -327,13 +337,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     // Position of most recent 'moveTo' command
     private float pix_sx0, pix_sy0;
 
-    /**
-     * per-thread renderer context
-     */
+    /** per-thread renderer context */
     final RendererContext rdrCtx;
-    /**
-     * dirty curve
-     */
+    /** dirty curve */
     private final Curve curve;
 
     Renderer(final RendererContext rdrCtx) {
@@ -358,19 +364,23 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         activeEdgeMaxUsed = 0;
     }
 
-    Renderer init(int pix_boundsX, int pix_boundsY,
-            int pix_boundsWidth, int pix_boundsHeight,
-            int windingRule) {
+    Renderer init(final int pix_boundsX, final int pix_boundsY,
+                  final int pix_boundsWidth, final int pix_boundsHeight,
+                  final int windingRule) {
 
         this.windingRule = windingRule;
 
-        this.boundsMinX = pix_boundsX * SUBPIXEL_POSITIONS_X;
-        this.boundsMinY = pix_boundsY * SUBPIXEL_POSITIONS_Y;
-        this.boundsMaxX = (pix_boundsX + pix_boundsWidth) * SUBPIXEL_POSITIONS_X;
-        this.boundsMaxY = (pix_boundsY + pix_boundsHeight) * SUBPIXEL_POSITIONS_Y;
+        /* bounds as half-open intervals: minX <= x < maxX and minY <= y < maxY */
+        this.boundsMinX =  pix_boundsX << SUBPIXEL_LG_POSITIONS_X;
+        this.boundsMaxX = (pix_boundsX + pix_boundsWidth) << SUBPIXEL_LG_POSITIONS_X;
+        this.boundsMinY =  pix_boundsY << SUBPIXEL_LG_POSITIONS_Y;
+        this.boundsMaxY = (pix_boundsY + pix_boundsHeight) << SUBPIXEL_LG_POSITIONS_Y;
+        
+        if (doLogBounds) {
+            PiscesUtils.logInfo("boundsXY = [" + boundsMinX + " ... " + boundsMaxX + "[ [" + boundsMinY + " ... " + boundsMaxY + "[");
+        }
 
-        edgesPos = 0;        
-
+        /* see addLine: ceil(boundsMaxY) => boundsMaxY + 1 */
         final int edgeBucketsLength = (boundsMaxY - boundsMinY) + 1; // +1 for edgeBucketCounts 
 
         if (INITIAL_BUCKET_ARRAY < edgeBucketsLength) {
@@ -378,6 +388,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             edgeBucketCounts = rdrCtx.getIntArray(edgeBucketsLength);
         }
 
+        edgesPos = 0;        
         edgeMinY = Float.POSITIVE_INFINITY;
         edgeMaxY = Float.NEGATIVE_INFINITY;
         edgeMinX = Float.POSITIVE_INFINITY;
@@ -398,7 +409,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             rdrCtx.putIntArray(edgePtrs, activeEdgeMaxUsed);
             edgePtrs = edgePtrs_initial;
         }
-
         if (doCleanDirty) {
             // LBO: keep crossings and edgePtrs dirty
             IntArrayCache.fill(crossings, 0, activeEdgeMaxUsed, 0);
@@ -433,8 +443,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         if (edgeMinY != Float.POSITIVE_INFINITY) {
             // Find used part
-            final int iminY =     Math.max(FastMath.ceil(edgeMinY), boundsMinY) - boundsMinY; // upper
-            final int imaxY = 1 + Math.min(FastMath.ceil(edgeMaxY), boundsMaxY) - boundsMinY; // upper
+            final int _boundsMinY = boundsMinY;
+            final int iminY =     Math.max(FastMath.ceil(edgeMinY), _boundsMinY) - _boundsMinY;
+            final int imaxY = 1 + Math.min(FastMath.ceil(edgeMaxY),  boundsMaxY) - _boundsMinY;
 
             if (edgeBuckets == edgeBuckets_initial) {
                 IntArrayCache.fill(edgeBuckets,      iminY, imaxY - 1, 0); // fill only used part
@@ -470,6 +481,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         return f_SUBPIXEL_POSITIONS_Y * pix_y;
     }
 
+    @Override
     public void moveTo(float pix_x0, float pix_y0) {
         closePath();
         this.pix_sx0 = pix_x0;
@@ -478,6 +490,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         this.x0 = tosubpixx(pix_x0);
     }
 
+    @Override
     public void lineTo(float pix_x1, float pix_y1) {
         float x1 = tosubpixx(pix_x1);
         float y1 = tosubpixy(pix_y1);
@@ -508,11 +521,13 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         y0 = ye;
     }
 
+    @Override
     public void closePath() {
         // lineTo expects its input in pixel coordinates.
         lineTo(pix_sx0, pix_sy0);
     }
 
+    @Override
     public void pathDone() {
         closePath();
     }
@@ -527,7 +542,11 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     /* 4096 pixel large */
     private final int[] alphaLine_initial = new int[INITIAL_AA_ARRAY]; // 16K
 
-    private void _endRendering(final int bboxx0, final int bboxx1, final int ymin, final int ymax) {
+    private void _endRendering(final int ymin, final int ymax) {
+
+        // Get X bounds as true pixel boundaries to compute correct pixel coverage:
+        final int bboxx0 = bbox_spminX;
+        final int bboxx1 = bbox_spmaxX;
 
         // Mask to determine the relevant bit of the crossing sum
         // 0x1 if EVEN_ODD, all bits if NON_ZERO
@@ -538,18 +557,18 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // local vars (performance):
         final PiscesCache _cache = cache;
-        final float[] _edges = edges;
-        final int[] _edgesInt = edgesInt;
+        final float[] _edges     = edges;
+        final int[] _edgesInt    = edgesInt;
         final int[] _edgeBuckets = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
 
-        int[] _edgePtrs = this.edgePtrs;
+        int[] _edgePtrs  = this.edgePtrs;
         int[] _crossings = this.crossings;
 
         // copy constants:
         final int _SLOPE = SLOPE;
-        final int _YMAX = YMAX;
-        final int _OR = OR;
+        final int _YMAX  = YMAX;
+        final int _OR    = OR;
 
         final int _SUBPIXEL_LG_POSITIONS_X = SUBPIXEL_LG_POSITIONS_X;
         final int _SUBPIXEL_LG_POSITIONS_Y = SUBPIXEL_LG_POSITIONS_Y;
@@ -586,7 +605,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         int x0, x1, tmp, sum, prev, curx, crorientation, pix_x, pix_xmaxm1, pix_xmax;
 
         int low, high, mid, prevNumCrossings;
-        boolean use_binSearch;
+        boolean useBinarySearch;
         
         int lastY = -1; // last emited row
         
@@ -614,11 +633,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                             _edgePtrs[newCount++] = ecur;
                         }
                     }
-                    numCrossings = newCount;
+                    // update marker on sorted edges minus removed edges:
+                    prevNumCrossings = numCrossings = newCount;
                 }
-
-                // update marker on sorted edges minus removed edges:
-                prevNumCrossings = numCrossings;
 
                 ptrLen = bucketcount >> 1; // number of new edge
                 
@@ -638,12 +655,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     for (ecur = _edgeBuckets[bucket]; numCrossings < ptrEnd; numCrossings++) {
                         _edgePtrs[numCrossings] = ecur;
                         ecur = _edgesInt[ecur /* + NEXT */];
-                        // REMIND: Adjust start Y if necessary
                     }
                     
-                    //            if ((count & 0x1) != 0) {
-                    //                System.out.println("ODD NUMBER OF EDGES!!!!");
-                    //            }
                     if (crossingsLen < numCrossings) {
                         if (_crossings == crossings_initial) {
                             // LBO: keep crossings dirty
@@ -661,12 +674,12 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     if (numCrossings > _arrayMaxUsed) {
                         _arrayMaxUsed = numCrossings;
                     }
-                } // test ptrLen != 0
-            } // bucketCount
+                } // ptrLen != 0
+            } // bucketCount != 0
 
             if (numCrossings != 0) {
                 // try avoid sorting loop:
-                use_binSearch = USE_BINARY_SEARCH && (numCrossings >= _THRESHOLD_BINARY_SEARCH);
+                useBinarySearch = USE_BINARY_SEARCH && (numCrossings >= _THRESHOLD_BINARY_SEARCH);
 
                 lastCross = _MIN_VALUE;
 
@@ -674,10 +687,16 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     ecur = _edgePtrs[i];
                     f_curx = _edges[ecur /* + F_CURX */];
 
+                    /* convert subpixel coordinates (float) into pixel positions (int) for coming scanline */
+                    /* note: it is faster to always update edges even if it is removed from AEL for coming or last scanline */
                     _edges[ecur /* + F_CURX */] = f_curx + _edges[ecur + _SLOPE];
+
+                    /* TODO: try split loops: update crossings and sort them to have better cache affinity (seems slower) */
 
                     // update edge:
                     cross = (int) f_curx;
+
+                    /* TODO: revert changes concerning orientation => sort with crossings (may be important) */
 
                     // TODO: Try to avoid sorting edges at each scanline (few intersection)
                     // example: simple line: 2 parallel edges => sort once !!
@@ -693,7 +712,11 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                             rdrCtx.stat_rdr_crossings_sorts.add(i);
                         }
                         // TODO: try using more efficient quick-sort on edgePtrs but compararing crossings (matched arrays) !
-                        if (use_binSearch && (i >= prevNumCrossings)) {
+                        
+                        /* TODO: presort edge stored as linked list ? (see addLine) */
+                        
+                        /* split loops => have 2 loops (almost sorted and new edges handled apart */
+                        if (useBinarySearch && (i >= prevNumCrossings)) { 
                             if (doStats) {
                                 rdrCtx.stat_rdr_crossings_bsearch.add(i);
                             }
@@ -742,18 +765,20 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 // --- from former ScanLineIterator.next()
 
                 // note: right shift on crossing to get x crossing: NO MORE!
+                /* TODO: revert changes concerning orientation => sort with crossings (may be important) */
+                
                 lowx = _crossings[0];
                 highx = _crossings[numCrossings - 1];
-
-                x0 = (lowx > bboxx0) ? lowx : bboxx0;   // Math.max(lowx, bboxx0);
-                /* TODO: fix boundaries on x1 / pix_maxX */
-                x1 = (highx < bboxx1) ? highx : bboxx1; // Math.min(highx, bboxx1);
+                
+                /* note: bboxx0 and bboxx1 must be pixel boundaries to have correct coverage computation */
+                x0 = (lowx  > bboxx0) ?  lowx : bboxx0;
+                x1 = (highx < bboxx1) ? highx : bboxx1;
 
                 tmp = x0 >> _SUBPIXEL_LG_POSITIONS_X;
                 if (tmp < pix_minX) {
                     pix_minX = tmp;
                 }
-                tmp = x1 >> _SUBPIXEL_LG_POSITIONS_X; // +1 inclusive
+                tmp = x1 >> _SUBPIXEL_LG_POSITIONS_X;
                 if (tmp > pix_maxX) {
                     pix_maxX = tmp;
                 }
@@ -766,17 +791,15 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
                     crorientation = _edgesInt[ecur + _OR];
 
-                    // LBO: TODO: explain alpha computation: Jim, please ? ...
                     if ((sum & mask) != 0) {
-                        x0 = (prev > bboxx0) ? prev : bboxx0; // Math.max(prev, bboxx0);
-                        /* TODO: fix boundaries on x1 / pix_maxX */
-                        x1 = (curx < bboxx1) ? curx : bboxx1; // Math.min(curx, bboxx1);
+                        x0 = (prev > bboxx0) ? prev : bboxx0;
+                        x1 = (curx < bboxx1) ? curx : bboxx1;
 
                         if (x0 < x1) {
                             x0 -= bboxx0; // turn x0, x1 from coords to indices
                             x1 -= bboxx0; // in the alpha array.
 
-                            pix_x = x0 >> _SUBPIXEL_LG_POSITIONS_X;
+                            pix_x      =  x0      >> _SUBPIXEL_LG_POSITIONS_X;
                             pix_xmaxm1 = (x1 - 1) >> _SUBPIXEL_LG_POSITIONS_X;
 
                             if (pix_x == pix_xmaxm1) {
@@ -799,6 +822,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                         }
                     }
 
+                    /* TODO: revert changes concerning orientation => sort with crossings (may be important) */
                     sum += crorientation;
                     prev = curx;
                 }
@@ -810,8 +834,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             if ((y & _SUBPIXEL_MASK_Y) == _SUBPIXEL_MASK_Y) {
                 lastY = y >> _SUBPIXEL_LG_POSITIONS_Y;
                 if (pix_maxX >= pix_minX) {
-                    // note: alpha will be zeroed by copyAARow():
-                    /* TODO: fix boundaries on x1 / pix_maxX */
+                    // note: alpha array will be zeroed by copyAARow()
+                    // +2 because alpha [pix_minX; pix_maxX+1]
                     _cache.copyAARow(_alpha, lastY, pix_minX, pix_maxX + 2); // fix range [x0; x1[
                 } else {
                     _cache.clearAARow(lastY);
@@ -824,15 +848,13 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         // Emit final row
         y--;
         y >>= _SUBPIXEL_LG_POSITIONS_Y;
-        
+
         if (pix_maxX >= pix_minX) {
-            // note: alpha will be zeroed by copyAARow():
-            /* TODO: fix boundaries on x1 / pix_maxX */
+            // note: alpha array will be zeroed by copyAARow()
+            // +2 because alpha [pix_minX; pix_maxX+1]
             _cache.copyAARow(_alpha, y, pix_minX, pix_maxX + 2); // fix range [x0; x1[
-        } else {
-            if (y != lastY) {
-                _cache.clearAARow(y);
-            }
+        } else if (y != lastY) {
+            _cache.clearAARow(y);
         }
 
         // update member:
@@ -848,38 +870,51 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             return false; // undefined edges bounds
         }
 
-        // TODO: enhance ceil / roundDown () = ceil(x - 0.5f)
-        final int spminX = Math.max(FastMath.ceil(edgeMinX), boundsMinX);
-        final int spmaxX = Math.min(FastMath.ceil(edgeMaxX), boundsMaxX); // upper positive int
-        final int spminY = Math.max(FastMath.ceil(edgeMinY), boundsMinY);
-        final int spmaxY = Math.min(FastMath.ceil(edgeMaxY), boundsMaxY); // upper positive int
-
-        final int pminX =  spminX >> SUBPIXEL_LG_POSITIONS_X;
-        final int pmaxX = (spmaxX + SUBPIXEL_MASK_X) >> SUBPIXEL_LG_POSITIONS_X; // equivalent to (spmaxX >> SUBPIXEL_LG_POSITIONS_X) + 1 ?
-        final int pminY =  spminY >> SUBPIXEL_LG_POSITIONS_Y;
-        final int pmaxY = (spmaxY + SUBPIXEL_MASK_Y) >> SUBPIXEL_LG_POSITIONS_Y; // equivalent to (spmaxY >> SUBPIXEL_LG_POSITIONS_X) + 1 ?
+        /* TODO: improve accuracy using correct float rounding to int ie use ceil(x - 0.5f) */
         
-        if (pminX > pmaxX || pminY > pmaxY) {
+        /* bounds as inclusive intervals */
+        final int spminX = Math.max(FastMath.ceil(edgeMinX), boundsMinX);
+        final int spmaxX = Math.min(FastMath.ceil(edgeMaxX), boundsMaxX - 1);
+        final int spminY = Math.max(FastMath.ceil(edgeMinY), boundsMinY);
+        final int spmaxY = Math.min(FastMath.ceil(edgeMaxY), boundsMaxY - 1);
+
+        if (doLogBounds) {
+            PiscesUtils.logInfo("edgesXY = [" + edgeMinX + " ... " + edgeMaxX + "][" + edgeMinY + " ... " + edgeMaxY + "]");
+            PiscesUtils.logInfo("spXY    = [" + spminX + " ... " + spmaxX + "][" + spminY + " ... " + spmaxY + "]");
+        }
+
+        /* test clipping for shapes out of bounds */
+        if ((spminX > spmaxX) || (spminY > spmaxY)) { 
             return false;
         }
+        
+        /* half open intervals */
+        final int pminX =  spminX                    >> SUBPIXEL_LG_POSITIONS_X; // inclusive
+        final int pmaxX = (spmaxX + SUBPIXEL_MASK_X) >> SUBPIXEL_LG_POSITIONS_X; // exclusive
+        final int pminY =  spminY                    >> SUBPIXEL_LG_POSITIONS_Y; // inclusive
+        final int pmaxY = (spmaxY + SUBPIXEL_MASK_Y) >> SUBPIXEL_LG_POSITIONS_Y; // exclusive
 
         // store BBox to answer ptg.getBBox():
         this.cache.init(pminX, pminY, pmaxX, pmaxY);
 
-        /* TODO: fix boundaries on pix_maxX */             
-        
         // LBO: memorize the rendering bounding box:
-        bbox_spminX = pminX << SUBPIXEL_LG_POSITIONS_X;
-        bbox_spmaxX = pmaxX << SUBPIXEL_LG_POSITIONS_X;
-        bbox_spminY = spminY;
-        bbox_spmaxY = spmaxY;
+        /* note: bbox_spminX and bbox_spmaxX must be pixel boundaries to have correct coverage computation */
+        bbox_spminX = pminX << SUBPIXEL_LG_POSITIONS_X; // inclusive
+        bbox_spmaxX = pmaxX << SUBPIXEL_LG_POSITIONS_X; // exclusive
+        bbox_spminY = spminY; // inclusive
+        bbox_spmaxY = Math.min(spmaxY + 1, pmaxY << SUBPIXEL_LG_POSITIONS_Y); // exclusive
 
+        if (doLogBounds) {
+            PiscesUtils.logInfo("pXY       = [" + pminX + " ... " + pmaxX + "[ [" + pminY + " ... " + pmaxY + "[");
+            PiscesUtils.logInfo("bbox_spXY = [" + bbox_spminX + " ... " + bbox_spmaxX + "[ [" + bbox_spminY + " ... " + bbox_spmaxY + "[");
+        }
+        
         // Prepare alpha line:
         // add 2 to better deal with the last pixel in a pixel row.
         final int width = (pmaxX - pminX) + 2;
 
         // Useful when processing tile line by tile line
-        if (INITIAL_AA_ARRAY < width) {
+        if (width > INITIAL_AA_ARRAY) {
             alphaLine = rdrCtx.getIntArray(width);
         }
 
@@ -896,12 +931,13 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     private int bbox_spminX, bbox_spmaxX, bbox_spminY, bbox_spmaxY;
 
     void endRendering(final int pminY) {
-        int spminY = Math.max(bbox_spminY, pminY << SUBPIXEL_LG_POSITIONS_Y);
+        final int spminY       = pminY << SUBPIXEL_LG_POSITIONS_Y;
+        final int fixed_spminY = Math.max(bbox_spminY, spminY);
 
         // avoid rendering for last call to nextTile()
-        if (spminY < bbox_spmaxY) {
+        if (fixed_spminY < bbox_spmaxY) {
             // process a complete tile line ie scanlines for 32 rows
-            final int spmaxY = Math.min(bbox_spmaxY, (pminY + PiscesCache.TILE_SIZE) << SUBPIXEL_LG_POSITIONS_Y);
+            final int spmaxY = Math.min(bbox_spmaxY, spminY + SUBPIXEL_TILE);
 
             // LBO: hack to process tile line [0 - 32]
             cache.resetTileLine(pminY);
@@ -911,7 +947,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             }
             
             // Process only one tile line:
-            _endRendering(bbox_spminX, bbox_spmaxX, spminY, spmaxY);
+            _endRendering(fixed_spminY, spmaxY);
 
             if (doMonitors) {
                 rdrCtx.mon_rdr_endRendering_Y.stop();

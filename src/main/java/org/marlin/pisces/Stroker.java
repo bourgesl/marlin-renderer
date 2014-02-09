@@ -594,7 +594,7 @@ final class Stroker implements PathConsumer2D, PiscesConst {
                                   final float x2, final float y2,
                                   final float ERR)
     {
-        assert ERR > 0 : "";
+        // assert ERR > 0 : "";
         // compare taxicab distance. ERR will always be small, so using
         // true distance won't give much benefit
         return (Helpers.within(x1, x2, ERR) &&  // we want to avoid calling Math.abs

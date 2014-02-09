@@ -8,8 +8,10 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.3.1</version>
+    <version>0.4</version>
     <name>Marlin software rasterizer</name>
+
+    <url>https://github.com/bourgesl/marlin-renderer</url>
 
     <description>
         A pure Java renderer, derived from OpenJDK Pisces

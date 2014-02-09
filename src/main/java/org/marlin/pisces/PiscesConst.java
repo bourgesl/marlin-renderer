@@ -31,6 +31,12 @@ interface PiscesConst {
     /** enable JUL logger */
     static final boolean useJUL = false;
 
+    /** enable development mode */
+    static final boolean doDev = false;
+    
+    /** do checks */
+    static final boolean doChecks = false;
+
     /* disable when algorithm / code is stable */
     static final boolean DO_AA_RANGE_CHECK = false;
 
@@ -53,8 +59,6 @@ interface PiscesConst {
     static final boolean useDumpThread = false;
     /** stat dump interval (ms) */
     static final long statDump = 5000L;
-    /** do checks */
-    static final boolean doChecks = false;
     /** do clean dirty array */
     static final boolean doCleanDirty = false;
 
@@ -66,6 +70,9 @@ interface PiscesConst {
     /** enable / disable stroker.drawRoundCap() (diagnostic only) */
     static final boolean doDrawRoundCaps = true;
 
+    /** flag to enable logs related bounds checks */
+    static final boolean doLogBounds = false;
+    
     /* Initial Array sizing (initial context capacity) ~ 512K to 1 Mb */
     
     /** 2048 pixel (width x height) for initial capacity */

@@ -125,7 +125,7 @@ final class Curve {
     // perpendicular. This happens when g(t) = f'(t)*f''(t) == 0 (where
     // * is a dot product). Unfortunately, we have to solve a cubic.
     private int perpendiculardfddf(float[] pts, int off) {
-        assert pts.length >= off + 4;
+        // assert pts.length >= off + 4;
 
         // these are the coefficients of some multiple of g(t) (not g(t),
         // because the roots of a polynomial are not changed after multiplication
@@ -152,7 +152,7 @@ final class Curve {
     // problem for what we're trying to do (draw a nice looking curve).
     int rootsOfROCMinusW(float[] roots, int off, final float w, final float err) {
         // no OOB exception, because by now off<=6, and roots.length >= 10
-        assert off <= 6 && roots.length >= 10;
+        // assert off <= 6 && roots.length >= 10;
         int ret = off;
         int numPerpdfddf = perpendiculardfddf(roots, off);
         float t0 = 0, ft0 = ROCsq(t0) - w*w;
@@ -250,7 +250,7 @@ final class Curve {
     Iterator<Integer> breakPtsAtTs(final float[] pts, final int type,
                                    final float[] Ts, final int numTs)
     {
-        assert pts.length >= 2*type && numTs <= Ts.length;
+        // assert pts.length >= 2*type && numTs <= Ts.length;
         
         // initialize shared iterator:
         iterator.init(pts, type, Ts, numTs);
