@@ -200,9 +200,9 @@ public final class ArrayCache implements PiscesConst {
                         logInfo(rdrCtx.stat_cache_rowAAChunk.toString());
                         rdrCtx.stat_cache_rowAAChunk.reset();
                     }
-                    if (rdrCtx.stat_cache_rowAARLE.count != 0) {
-                        logInfo(rdrCtx.stat_cache_rowAARLE.toString());
-                        rdrCtx.stat_cache_rowAARLE.reset();
+                    if (rdrCtx.stat_cache_rowAA.count != 0) {
+                        logInfo(rdrCtx.stat_cache_rowAA.toString());
+                        rdrCtx.stat_cache_rowAA.reset();
                     }
                     if (rdrCtx.stat_rdr_poly_stack.count != 0) {
                         logInfo(rdrCtx.stat_rdr_poly_stack.toString());
@@ -211,6 +211,10 @@ public final class ArrayCache implements PiscesConst {
                     if (rdrCtx.stat_rdr_edges.count != 0) {
                         logInfo(rdrCtx.stat_rdr_edges.toString());
                         rdrCtx.stat_rdr_edges.reset();
+                    }
+                    if (rdrCtx.stat_rdr_edges_resizes.count != 0) {
+                        logInfo(rdrCtx.stat_rdr_edges_resizes.toString());
+                        rdrCtx.stat_rdr_edges_resizes.reset();
                     }
                     if (rdrCtx.stat_rdr_activeEdges.count != 0) {
                         logInfo(rdrCtx.stat_rdr_activeEdges.toString());

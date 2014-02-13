@@ -112,10 +112,11 @@ final class RendererContext implements PiscesConst {
      */
     final PiscesCache piscesCache;
     /* stats */
-    final StatInteger stat_cache_rowAARLE = new StatInteger("cache.rowAARLE");
+    final StatInteger stat_cache_rowAA = new StatInteger("cache.rowAA");
     final StatInteger stat_cache_rowAAChunk = new StatInteger("cache.rowAAChunk");
     final StatInteger stat_rdr_poly_stack = new StatInteger("renderer.poly.stack");
     final StatInteger stat_rdr_edges = new StatInteger("renderer.edges");
+    final StatInteger stat_rdr_edges_resizes = new StatInteger("renderer.edges.resize");
     final StatInteger stat_rdr_activeEdges = new StatInteger("renderer.activeEdges");
     final StatInteger stat_rdr_activeEdges_updates = new StatInteger("renderer.activeEdges.updates");
     final StatInteger stat_rdr_activeEdges_no_adds = new StatInteger("renderer.activeEdges.noadds");

@@ -37,6 +37,8 @@ final class PiscesCache implements PiscesConst {
     public static final int TILE_SIZE_LG = 5;
     public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32
 
+    static final int MASK_ALPHA_COVERAGE = (0x80 + 0x7f);
+    
     /* 2048 alpha values (width) x 32 rows (tile) = 256K */
     static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
     
@@ -200,7 +202,7 @@ final class PiscesCache implements PiscesConst {
             rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyIntArray(_rowAAChunk, pos, 2 + (px_bbox1 - px0));
         }
         if (doStats) {
-            this.rdrCtx.stat_cache_rowAARLE.add(2 + px_bbox1 - px0);
+            this.rdrCtx.stat_cache_rowAA.add(2 + px_bbox1 - px0);
         }
         // rowAA contains (x0 x1)(alpha values for range[x0; x1[)
         _rowAAChunk[pos    ] = px0;      // first pixel inclusive
@@ -211,6 +213,7 @@ final class PiscesCache implements PiscesConst {
 
         final int[] touchedLine = touchedTile;
         final int _TILE_SIZE_LG = TILE_SIZE_LG;
+//        final int _MASK_ALPHA_COVERAGE = MASK_ALPHA_COVERAGE;
 
         // fix offset in rowAAChunk:
         final int off = pos + 2 - from;
@@ -219,6 +222,9 @@ final class PiscesCache implements PiscesConst {
         for (int x = from, val = 0; x < to; x++) {
             val += alphaRow[x]; // [from; to[
 
+            /* ensure val is [0;64] */
+//            val &= _MASK_ALPHA_COVERAGE; /* use alpha mask to ensure values are in [0;64] range */
+            
             // store alpha sum:
             _rowAAChunk[x + off] = val;
 

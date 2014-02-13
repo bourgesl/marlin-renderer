@@ -30,8 +30,8 @@ import sun.misc.Unsafe;
 
 final class Renderer implements PathConsumer2D, PiscesConst {
 
-    private final static int OFFSET;
-    private final static int SIZE;
+    final static int OFFSET;
+    final static int SIZE;
     
     final static Unsafe unsafe;
 
@@ -42,21 +42,18 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             field.setAccessible(true);
             ref = (Unsafe) field.get(null);
         } catch (Exception e) {
-            System.out.println("Unable to get Unsafe.");
+            PiscesUtils.logInfo("Unable to get sun.misc.Unsafe; exit now.");
             System.exit(1);
         }
         unsafe = ref;
 
         OFFSET = unsafe.ARRAY_INT_BASE_OFFSET;
-//        FLOAT_OFFSET = unsafe.ARRAY_FLOAT_BASE_OFFSET;
         SIZE = unsafe.ARRAY_INT_INDEX_SCALE;
-//        FLOAT_SIZE = unsafe.ARRAY_FLOAT_INDEX_SCALE;
 
-        System.out.println("Using sun.misc.Unsafe: No warranty (may crash your JVM):\n" 
-                           + "USE IT AT YOUR OWN RISKS = do not use in production)");
-
-        System.out.println("INT_OFFSET = " + OFFSET);
-        System.out.println("INT_SIZE = " + SIZE);
+        PiscesUtils.logInfo("===============================================================================");
+        PiscesUtils.logInfo(" Using sun.misc.Unsafe: No warranty (may crash your JVM) !");
+        PiscesUtils.logInfo(" USE IT AT YOUR OWN RISKS = do not use in production (ALPHA Release).");
+        PiscesUtils.logInfo("===============================================================================");
     }
     
 
@@ -78,26 +75,24 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
     /* 2048 pixels (height) x 8 subpixels = 64K */
     static final int INITIAL_BUCKET_ARRAY = INITIAL_PIXEL_DIM * SUBPIXEL_POSITIONS_Y;
+    
+    /* initial edges (20 bytes) = 2 x 32K ints */
+    static final int INITIAL_EDGES_CAPACITY = INITIAL_ARRAY_32K << 3;
 
     public static final int WIND_EVEN_ODD = 0;
     public static final int WIND_NON_ZERO = 1;
 
     // common to all types of input path segments.
+    /* OFFSET as bytes */
     // float values:
-    public static final int F_CURX = 0;
-    public static final int SLOPE  = 1;
+    public static final int OFF_F_CURX = 0;
+    public static final int OFF_SLOPE  = OFF_F_CURX + SIZE;
     // integer values:
-/*    
-    public static final int NEXT   = 0;
-    public static final int YMAX   = 1;
-    public static final int OR     = 2;
-*/    
-    public static final int NEXT   = 2;
-    public static final int YMAX   = 3;
-    public static final int OR     = 4;
-    
-    /** size of each edge in both arrays (5) */
-    static final int SIZEOF_EDGE = OR + 1;
+    public static final int OFF_NEXT   = OFF_SLOPE + SIZE;
+    public static final int OFF_YMAX   = OFF_NEXT + SIZE;
+    public static final int OFF_OR     = OFF_YMAX + SIZE;
+    /* size of one edge in bytes */
+    public static final int SIZEOF_EDGE_BYTES = OFF_OR + SIZE;
 
     /* curve break into lines */
     public static final float DEC_BND = 20f;
@@ -135,20 +130,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     private float edgeMinX = Float.POSITIVE_INFINITY;
     private float edgeMaxX = Float.NEGATIVE_INFINITY;
 
-    /** current position in edge arrays (last used mark) */
-    private int edgesPos;
-    
-    /** edges (dirty) */
-// Try using a single array    
-//    private float[] edges;
-
-    /** edges (integer values) */
-    private int[] edgesInt;
-
-    /* LBO: very large initial edges array = 128K */
-    // +1 to avoid recycling in Helpers.widenArray()
-//    private final float[] edges_initial  = new float[INITIAL_ARRAY_32K + 1]; // 128K
-    private final int[] edgesInt_initial = new int  [INITIAL_ARRAY_32K + 1]; // 128K
+    /** edges [floats|ints] stored in off-heap memory */
+    private final OffHeapEdgeArray edges = new OffHeapEdgeArray(INITIAL_EDGES_CAPACITY); // x8 as 2x32K corresponds to int numbers
 
     private int[] edgeBuckets;
     private int[] edgeBucketCounts; // 2*newedges + (1 if pruning needed)
@@ -312,59 +295,60 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             }
         }
 
-        final int ptr = edgesPos;
 
         // copy constants:
-        final int _SIZEOF_EDGE = SIZEOF_EDGE;
+        final int _SIZEOF_EDGE_BYTES = SIZEOF_EDGE_BYTES;
         // copy members:
         final int[] _edgeBuckets      = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
-        
-  //      final float[] _edges;
-        final int[]   _edgesInt;
-        
-//        if (edges.length < ptr + _SIZEOF_EDGE) {
-        if (edgesInt.length < ptr + _SIZEOF_EDGE) {
-//            edges    = _edges    = Helpers.widenArray(rdrCtx, edges,    ptr, _SIZEOF_EDGE, ptr);
-            edgesInt = _edgesInt = Helpers.widenArray(rdrCtx, edgesInt, ptr, _SIZEOF_EDGE, ptr);
-        } else {
-//            _edges    = edges;
-            _edgesInt = edgesInt;
-        }
-
-        // float values:
-//        _edges[ptr /* + F_CURX */] = x1 + (firstCrossing - y1) * slope;
-//        _edges[ptr + SLOPE]        = slope;
-// 2=float as ints
-//        _edgesInt[ptr /* + F_CURX */] = Float.floatToRawIntBits(x1 + (firstCrossing - y1) * slope);
-//        _edgesInt[ptr + SLOPE]        = Float.floatToRawIntBits(slope);
-// 3=unsafe
-//        setFloat(_edgesInt, ptr,         x1 + (firstCrossing - y1) * slope);
-//        setFloat(_edgesInt, ptr + SLOPE, slope);
-// 4=direct
-        final Unsafe _unsafe = unsafe;
-        final long addr = OFFSET + (ptr << 2); // 4 = FLOAT_SIZE
-        _unsafe.putFloat(_edgesInt, addr,     x1 + (firstCrossing - y1) * slope);
-        _unsafe.putFloat(_edgesInt, addr + 4, slope); // +4 = +1 * FLOAT_SIZE
-
-        // integer values:
-        _edgesInt[ptr + YMAX] = lastCrossing;
-        _edgesInt[ptr + OR]   = or;
-
-
         // each bucket is a linked list. this method adds ptr to the
         // start of the "bucket"th linked list.
         final int bucketIdx = firstCrossing - _boundsMinY; 
         
-//        _edgesInt[ptr /* + NEXT */]   = _edgeBuckets[bucketIdx];
-        _edgesInt[ptr + NEXT ]        = _edgeBuckets[bucketIdx];
+        /* 
+        TODO: avoid testing bound checks in loops:
+        quadBreakIntoLinesAndAdd
+          188:  addLine(x0, y0, x1, y1);
+          192:  addLine(x0, y0, x2, y2);
+        curveBreakIntoLinesAndAdd
+          251:  addLine(x0, y0, x1, y1);
+        */
+
+        final OffHeapEdgeArray _edges = edges;
+        /* get free pointer (ie length in bytes) */
+        final int ptr = _edges.used;
+        
+        if (_edges.length < ptr + _SIZEOF_EDGE_BYTES) {
+            if (doStats) {
+                rdrCtx.stat_rdr_edges_resizes.add(ptr);
+            }
+            edges.resize(2 * _edges.length);
+        }
+
+        
+        final Unsafe _unsafe = unsafe;
+        final long    addr   = _edges.address + ptr;
+        
+        /* TODO: try using copyMemory from struct (fake) */
+        
+        // float values:
+        _unsafe.putFloat(addr,             x1 + (firstCrossing - y1) * slope);
+        _unsafe.putFloat(addr + OFF_SLOPE, slope);
+        
+
+        // integer values:
+        /* pointer from bucket */
+        _unsafe.putInt(addr + OFF_NEXT, _edgeBuckets[bucketIdx]);
+        _unsafe.putInt(addr + OFF_YMAX, lastCrossing);
+        _unsafe.putInt(addr + OFF_OR,   or); // use byte ?
         
         // Update buckets:
-        _edgeBuckets[bucketIdx]       = ptr;
+        _edgeBuckets[bucketIdx]       = ptr; /* directly the edge struct "pointer" */
         _edgeBucketCounts[bucketIdx] += 2;
         _edgeBucketCounts[lastCrossing - _boundsMinY] |= 1; /* last bit means edge end */        
 
-        edgesPos += _SIZEOF_EDGE;
+        /* update free pointer (ie length in bytes) */
+        _edges.used += _SIZEOF_EDGE_BYTES;
 
         if (doMonitors) {
             rdrCtx.mon_rdr_addLine.stop();
@@ -400,8 +384,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         this.curve = rdrCtx.curve;
 
-//        edges = edges_initial;
-        edgesInt = edgesInt_initial;
         edgeBuckets = edgeBuckets_initial;
         edgeBucketCounts = edgeBucketCounts_initial;
 
@@ -441,13 +423,21 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             edgeBucketCounts = rdrCtx.getIntArray(edgeBucketsLength);
         }
 
-        edgesPos = 0;        
         edgeMinY = Float.POSITIVE_INFINITY;
         edgeMaxY = Float.NEGATIVE_INFINITY;
         edgeMinX = Float.POSITIVE_INFINITY;
         edgeMaxX = Float.NEGATIVE_INFINITY;
+        
+        // reset used mark:
+        edges.used = 0;
 
         return this; // fluent API
+    }
+    
+    @Override
+    protected void finalize() {
+        /* free off-heap blocks */
+        this.edges.free();
     }
 
     /**
@@ -475,21 +465,14 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // Return arrays:
         if (doStats) {
-            rdrCtx.stat_rdr_edges.add(edgesPos);
+            rdrCtx.stat_rdr_edges.add(edges.used);
         }
-/*        
-        if (edges != edges_initial) {
-            rdrCtx.putFloatArray(edges, edgesPos);
-            edges = edges_initial;
-        }
-*/        
-        if (edgesInt != edgesInt_initial) {
-            rdrCtx.putIntArray(edgesInt, edgesPos);
-            edgesInt = edgesInt_initial;
+        /* resize back off-heap edges to initial size */
+        if (edges.length != INITIAL_EDGES_CAPACITY) {
+            edges.resize(INITIAL_EDGES_CAPACITY);
         }
         if (doCleanDirty) {
-//            FloatArrayCache.fill(edges_initial, 0, edgesPos, 0);
-            IntArrayCache.fill(edgesInt_initial, 0, edgesPos, 0);
+            edges.fill((byte)0);
         }
         if (alphaLine != alphaLine_initial) {
             rdrCtx.putIntArray(alphaLine, 0); // already zero filled
@@ -612,8 +595,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // local vars (performance):
         final PiscesCache _cache = cache;
-//        final float[] _edges     = edges;
-        final int[] _edgesInt    = edgesInt;
+        final OffHeapEdgeArray _edges = edges;
         final int[] _edgeBuckets = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
 
@@ -621,15 +603,14 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         int[] _crossings = this.crossings;
 
         // copy constants:
-        final int _SLOPE = SLOPE;
-        final int _NEXT  = NEXT;
-        final int _YMAX  = YMAX;
-        final int _OR    = OR;
+        final int _OFF_SLOPE = OFF_SLOPE;
+        final int _OFF_NEXT  = OFF_NEXT;
+        final int _OFF_YMAX  = OFF_YMAX;
+        final int _OFF_OR    = OFF_OR;
 
         // unsafe I/O:
-        final long _OFFSET = OFFSET;
-//        final long _SIZE = SIZE;
         final Unsafe _unsafe = unsafe;
+        final long    addr0  = _edges.address;
         long addr;
         final int _SUBPIXEL_LG_POSITIONS_X = SUBPIXEL_LG_POSITIONS_X;
         final int _SUBPIXEL_LG_POSITIONS_Y = SUBPIXEL_LG_POSITIONS_Y;
@@ -689,14 +670,10 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     // eviction in active edge list
                     newCount = 0;
                     for (i = 0; i < numCrossings; i++) {
+                        /* get the pointer to the edge */
                         ecur = _edgePtrs[i];
-/*                        
-                        if (_edgesInt[ecur + _YMAX] > y) {
-                            _edgePtrs[newCount++] = ecur;
-                        }
-*/                        
                         // random access so use unsafe:
-                        if (_unsafe.getInt(_edgesInt, _OFFSET + ((ecur + _YMAX) << 2)) > y) {
+                        if (_unsafe.getInt(addr0 + (ecur + _OFF_YMAX)) > y) {
                             _edgePtrs[newCount++] = ecur;
                         }
                     }
@@ -720,12 +697,11 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
                     // add new edges to active edge list:
                     for (ecur = _edgeBuckets[bucket]; numCrossings < ptrEnd; numCrossings++) {
+                        /* store the pointer to the edge */
                         _edgePtrs[numCrossings] = ecur;
-//                        ecur = _edgesInt[ecur /* + NEXT */];
-//                        ecur = _edgesInt[ecur + _NEXT ];
                         
                         // random access so use unsafe:
-                        ecur = _unsafe.getInt(_edgesInt, _OFFSET + ((ecur + _NEXT) << 2));
+                        ecur = _unsafe.getInt(addr0 + (ecur + _OFF_NEXT));
                     }
                     
                     if (crossingsLen < numCrossings) {
@@ -755,27 +731,19 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 lastCross = _MIN_VALUE;
 
                 for (i = 0; i < numCrossings; i++) {
+                    /* get the pointer to the edge */
                     ecur = _edgePtrs[i];
-//                    f_curx = _edges[ecur /* + F_CURX */];
-// 2=floats to ints                    
-//                    f_curx = Float.intBitsToFloat(_edgesInt[ecur /* + F_CURX */]);
-// 3=unsafe
+                    
                     // random access so use unsafe:
-                    addr = _OFFSET + (ecur << 2); /* ecur + F_CURX */
+                    addr = addr0 + ecur; /* ecur + OFF_F_CURX */
                     
-                    /* TODO: load 1 double=2xfloats=[F_CURX SLOPE] */
-                    
-                    f_curx = _unsafe.getFloat(_edgesInt, addr);
-                    
+                    /* TODO: load 1 double=2xfloats=[F_CURX SLOPE] and use masks? */
+                    f_curx = _unsafe.getFloat(addr);
 
                     /* convert subpixel coordinates (float) into pixel positions (int) for coming scanline */
                     /* note: it is faster to always update edges even if it is removed from AEL for coming or last scanline */
-//                    _edges[ecur /* + F_CURX */] = f_curx + _edges[ecur + _SLOPE];
-// 2=floats to ints                    
-//                    _edgesInt[ecur /* + F_CURX */] = Float.floatToRawIntBits(f_curx + Float.intBitsToFloat(_edgesInt[ecur + _SLOPE]));
-// 3=unsafe
                     // random access so use unsafe:
-                    _unsafe.putFloat(_edgesInt, addr, f_curx + _unsafe.getFloat(_edgesInt, addr + 4)); /* ecur + _SLOPE */
+                    _unsafe.putFloat(addr, f_curx + _unsafe.getFloat(addr + _OFF_SLOPE)); /* ecur + _SLOPE */
 
                     
                     /* TODO: try split loops: update crossings and sort them to have better cache affinity (seems slower) */
@@ -873,14 +841,12 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 // TODO: fix alpha last index = pix_xmax + 1
                 // ie alpha[x1 >> SUBPIXEL_LG_POSITIONS_X +1 ] = cross (inclusive)
                 for (i = 0, sum = 0, prev = bboxx0; i < numCrossings; i++) {
-                    ecur = _edgePtrs [i];
-                    curx = _crossings[i];
 
-//                    crorientation = _edgesInt[ecur + _OR];
- 
+                    /* TODO: revert changes concerning orientation => sort with crossings (may be important) */
                     // random access so use unsafe:
-                    crorientation = _unsafe.getInt(_edgesInt, _OFFSET + ((ecur + _OR) << 2));
+                    crorientation = _unsafe.getInt(addr0 + (_edgePtrs[i] + _OFF_OR));
                         
+                    curx = _crossings[i];
 
                     if ((sum & mask) != 0) {
                         x0 = (prev > bboxx0) ? prev : bboxx0;
@@ -1044,5 +1010,40 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 rdrCtx.mon_rdr_endRendering_Y.stop();
             }
         }
+    }
+    
+    static final class OffHeapEdgeArray  {
+        int  used;
+        long address;
+        long length;
+        
+        OffHeapEdgeArray(final long len) {
+            if (doDev) {
+                PiscesUtils.logInfo("allocateMemory = " + len);
+            }
+            this.address = unsafe.allocateMemory(len);
+            this.length  = len;
+            this.used    = 0;
+        }
+        
+        void resize(final long len) {
+            if (doDev) {
+                PiscesUtils.logInfo("reallocateMemory = " + len);
+            }
+            this.address = unsafe.reallocateMemory(address, len);
+            this.length  = len;
+        }
+        
+        void free() {
+            if (doDev) {
+                PiscesUtils.logInfo("free = " + this.length);
+            }
+            unsafe.freeMemory(this.address);
+        }
+        
+        void fill(final byte val) {
+            unsafe.setMemory(this.address, this.length, val);
+        }
+        
     }
 }
