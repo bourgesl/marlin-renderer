@@ -24,10 +24,41 @@
  */
 package org.marlin.pisces;
 
-import java.util.Arrays;
+import java.lang.reflect.Field;
 import sun.awt.geom.PathConsumer2D;
+import sun.misc.Unsafe;
 
 final class Renderer implements PathConsumer2D, PiscesConst {
+
+    private final static int OFFSET;
+    private final static int SIZE;
+    
+    final static Unsafe unsafe;
+
+    static {
+        Unsafe ref = null;
+        try {
+            final Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            ref = (Unsafe) field.get(null);
+        } catch (Exception e) {
+            System.out.println("Unable to get Unsafe.");
+            System.exit(1);
+        }
+        unsafe = ref;
+
+        OFFSET = unsafe.ARRAY_INT_BASE_OFFSET;
+//        FLOAT_OFFSET = unsafe.ARRAY_FLOAT_BASE_OFFSET;
+        SIZE = unsafe.ARRAY_INT_INDEX_SCALE;
+//        FLOAT_SIZE = unsafe.ARRAY_FLOAT_INDEX_SCALE;
+
+        System.out.println("Using sun.misc.Unsafe: No warranty (may crash your JVM):\n" 
+                           + "USE IT AT YOUR OWN RISKS = do not use in production)");
+
+        System.out.println("INT_OFFSET = " + OFFSET);
+        System.out.println("INT_SIZE = " + SIZE);
+    }
+    
 
     /* constants */
     /* hard coded 8x8 antialiasing -> 64 subpixels */
@@ -56,11 +87,16 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     public static final int F_CURX = 0;
     public static final int SLOPE  = 1;
     // integer values:
+/*    
     public static final int NEXT   = 0;
     public static final int YMAX   = 1;
     public static final int OR     = 2;
+*/    
+    public static final int NEXT   = 2;
+    public static final int YMAX   = 3;
+    public static final int OR     = 4;
     
-    /** size of each edge in both arrays (3) */
+    /** size of each edge in both arrays (5) */
     static final int SIZEOF_EDGE = OR + 1;
 
     /* curve break into lines */
@@ -101,15 +137,17 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
     /** current position in edge arrays (last used mark) */
     private int edgesPos;
+    
     /** edges (dirty) */
-    private float[] edges;
+// Try using a single array    
+//    private float[] edges;
 
     /** edges (integer values) */
     private int[] edgesInt;
 
     /* LBO: very large initial edges array = 128K */
     // +1 to avoid recycling in Helpers.widenArray()
-    private final float[] edges_initial  = new float[INITIAL_ARRAY_32K + 1]; // 128K
+//    private final float[] edges_initial  = new float[INITIAL_ARRAY_32K + 1]; // 128K
     private final int[] edgesInt_initial = new int  [INITIAL_ARRAY_32K + 1]; // 128K
 
     private int[] edgeBuckets;
@@ -278,35 +316,50 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // copy constants:
         final int _SIZEOF_EDGE = SIZEOF_EDGE;
+        // copy members:
+        final int[] _edgeBuckets      = edgeBuckets;
+        final int[] _edgeBucketCounts = edgeBucketCounts;
         
-        final float[] _edges;
+  //      final float[] _edges;
         final int[]   _edgesInt;
         
-        if (edges.length < ptr + _SIZEOF_EDGE) {
-            edges    = _edges    = Helpers.widenArray(rdrCtx, edges,    ptr, _SIZEOF_EDGE, ptr);
+//        if (edges.length < ptr + _SIZEOF_EDGE) {
+        if (edgesInt.length < ptr + _SIZEOF_EDGE) {
+//            edges    = _edges    = Helpers.widenArray(rdrCtx, edges,    ptr, _SIZEOF_EDGE, ptr);
             edgesInt = _edgesInt = Helpers.widenArray(rdrCtx, edgesInt, ptr, _SIZEOF_EDGE, ptr);
         } else {
-            _edges    = edges;
+//            _edges    = edges;
             _edgesInt = edgesInt;
         }
 
         // float values:
-        _edges[ptr /* + F_CURX */] = x1 + (firstCrossing - y1) * slope;
-        _edges[ptr + SLOPE]        = slope;
+//        _edges[ptr /* + F_CURX */] = x1 + (firstCrossing - y1) * slope;
+//        _edges[ptr + SLOPE]        = slope;
+// 2=float as ints
+//        _edgesInt[ptr /* + F_CURX */] = Float.floatToRawIntBits(x1 + (firstCrossing - y1) * slope);
+//        _edgesInt[ptr + SLOPE]        = Float.floatToRawIntBits(slope);
+// 3=unsafe
+//        setFloat(_edgesInt, ptr,         x1 + (firstCrossing - y1) * slope);
+//        setFloat(_edgesInt, ptr + SLOPE, slope);
+// 4=direct
+        final Unsafe _unsafe = unsafe;
+        final long addr = OFFSET + (ptr << 2); // 4 = FLOAT_SIZE
+        _unsafe.putFloat(_edgesInt, addr,     x1 + (firstCrossing - y1) * slope);
+        _unsafe.putFloat(_edgesInt, addr + 4, slope); // +4 = +1 * FLOAT_SIZE
 
         // integer values:
         _edgesInt[ptr + YMAX] = lastCrossing;
         _edgesInt[ptr + OR]   = or;
 
-        final int bucketIdx = firstCrossing - _boundsMinY; 
-
-        // copy members:
-        final int[] _edgeBuckets      = edgeBuckets;
-        final int[] _edgeBucketCounts = edgeBucketCounts;
 
         // each bucket is a linked list. this method adds ptr to the
         // start of the "bucket"th linked list.
-        _edgesInt[ptr /* + NEXT */]   = _edgeBuckets[bucketIdx];
+        final int bucketIdx = firstCrossing - _boundsMinY; 
+        
+//        _edgesInt[ptr /* + NEXT */]   = _edgeBuckets[bucketIdx];
+        _edgesInt[ptr + NEXT ]        = _edgeBuckets[bucketIdx];
+        
+        // Update buckets:
         _edgeBuckets[bucketIdx]       = ptr;
         _edgeBucketCounts[bucketIdx] += 2;
         _edgeBucketCounts[lastCrossing - _boundsMinY] |= 1; /* last bit means edge end */        
@@ -347,7 +400,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         this.curve = rdrCtx.curve;
 
-        edges = edges_initial;
+//        edges = edges_initial;
         edgesInt = edgesInt_initial;
         edgeBuckets = edgeBuckets_initial;
         edgeBucketCounts = edgeBucketCounts_initial;
@@ -424,16 +477,18 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         if (doStats) {
             rdrCtx.stat_rdr_edges.add(edgesPos);
         }
+/*        
         if (edges != edges_initial) {
             rdrCtx.putFloatArray(edges, edgesPos);
             edges = edges_initial;
         }
+*/        
         if (edgesInt != edgesInt_initial) {
             rdrCtx.putIntArray(edgesInt, edgesPos);
             edgesInt = edgesInt_initial;
         }
         if (doCleanDirty) {
-            FloatArrayCache.fill(edges_initial, 0, edgesPos, 0);
+//            FloatArrayCache.fill(edges_initial, 0, edgesPos, 0);
             IntArrayCache.fill(edgesInt_initial, 0, edgesPos, 0);
         }
         if (alphaLine != alphaLine_initial) {
@@ -557,7 +612,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // local vars (performance):
         final PiscesCache _cache = cache;
-        final float[] _edges     = edges;
+//        final float[] _edges     = edges;
         final int[] _edgesInt    = edgesInt;
         final int[] _edgeBuckets = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
@@ -567,9 +622,15 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // copy constants:
         final int _SLOPE = SLOPE;
+        final int _NEXT  = NEXT;
         final int _YMAX  = YMAX;
         final int _OR    = OR;
 
+        // unsafe I/O:
+        final long _OFFSET = OFFSET;
+//        final long _SIZE = SIZE;
+        final Unsafe _unsafe = unsafe;
+        long addr;
         final int _SUBPIXEL_LG_POSITIONS_X = SUBPIXEL_LG_POSITIONS_X;
         final int _SUBPIXEL_LG_POSITIONS_Y = SUBPIXEL_LG_POSITIONS_Y;
         final int _SUBPIXEL_MASK_X = SUBPIXEL_MASK_X;
@@ -629,7 +690,13 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     newCount = 0;
                     for (i = 0; i < numCrossings; i++) {
                         ecur = _edgePtrs[i];
+/*                        
                         if (_edgesInt[ecur + _YMAX] > y) {
+                            _edgePtrs[newCount++] = ecur;
+                        }
+*/                        
+                        // random access so use unsafe:
+                        if (_unsafe.getInt(_edgesInt, _OFFSET + ((ecur + _YMAX) << 2)) > y) {
                             _edgePtrs[newCount++] = ecur;
                         }
                     }
@@ -654,7 +721,11 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     // add new edges to active edge list:
                     for (ecur = _edgeBuckets[bucket]; numCrossings < ptrEnd; numCrossings++) {
                         _edgePtrs[numCrossings] = ecur;
-                        ecur = _edgesInt[ecur /* + NEXT */];
+//                        ecur = _edgesInt[ecur /* + NEXT */];
+//                        ecur = _edgesInt[ecur + _NEXT ];
+                        
+                        // random access so use unsafe:
+                        ecur = _unsafe.getInt(_edgesInt, _OFFSET + ((ecur + _NEXT) << 2));
                     }
                     
                     if (crossingsLen < numCrossings) {
@@ -685,12 +756,28 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
                 for (i = 0; i < numCrossings; i++) {
                     ecur = _edgePtrs[i];
-                    f_curx = _edges[ecur /* + F_CURX */];
+//                    f_curx = _edges[ecur /* + F_CURX */];
+// 2=floats to ints                    
+//                    f_curx = Float.intBitsToFloat(_edgesInt[ecur /* + F_CURX */]);
+// 3=unsafe
+                    // random access so use unsafe:
+                    addr = _OFFSET + (ecur << 2); /* ecur + F_CURX */
+                    
+                    /* TODO: load 1 double=2xfloats=[F_CURX SLOPE] */
+                    
+                    f_curx = _unsafe.getFloat(_edgesInt, addr);
+                    
 
                     /* convert subpixel coordinates (float) into pixel positions (int) for coming scanline */
                     /* note: it is faster to always update edges even if it is removed from AEL for coming or last scanline */
-                    _edges[ecur /* + F_CURX */] = f_curx + _edges[ecur + _SLOPE];
+//                    _edges[ecur /* + F_CURX */] = f_curx + _edges[ecur + _SLOPE];
+// 2=floats to ints                    
+//                    _edgesInt[ecur /* + F_CURX */] = Float.floatToRawIntBits(f_curx + Float.intBitsToFloat(_edgesInt[ecur + _SLOPE]));
+// 3=unsafe
+                    // random access so use unsafe:
+                    _unsafe.putFloat(_edgesInt, addr, f_curx + _unsafe.getFloat(_edgesInt, addr + 4)); /* ecur + _SLOPE */
 
+                    
                     /* TODO: try split loops: update crossings and sort them to have better cache affinity (seems slower) */
 
                     // update edge:
@@ -789,7 +876,11 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     ecur = _edgePtrs [i];
                     curx = _crossings[i];
 
-                    crorientation = _edgesInt[ecur + _OR];
+//                    crorientation = _edgesInt[ecur + _OR];
+ 
+                    // random access so use unsafe:
+                    crorientation = _unsafe.getInt(_edgesInt, _OFFSET + ((ecur + _OR) << 2));
+                        
 
                     if ((sum & mask) != 0) {
                         x0 = (prev > bboxx0) ? prev : bboxx0;
