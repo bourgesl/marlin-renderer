@@ -809,15 +809,22 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
     /* Static initializer to use TL or CLQ mode */
     static {
         useThreadLocal = Boolean.parseBoolean(System.getProperty("sun.java2d.renderer.useThreadLocal", "true")); // TL mode by default
-
-        final String reClass = System.getProperty("sun.java2d.renderer");
-        if (reClass != null) {
-            logInfo("sun.java2d.renderer = " + reClass);
-        }
-        logInfo("PiscesRenderingEngine: sun.java2d.renderer.useThreadLocal = " + useThreadLocal);
-
         rdrCtxThreadLocal = ( useThreadLocal) ? new ThreadLocal<SoftReference<RendererContext>>()           : null;
         rdrCtxQueue       = (!useThreadLocal) ? new ConcurrentLinkedQueue<SoftReference<RendererContext>>() : null;
+
+	/* log information at startup */
+        final String reClass = System.getProperty("sun.java2d.renderer");
+        if (reClass != null) {
+
+		if (reClass.equals(PiscesRenderingEngine.class.getName())) {
+			/* TODO: log marlin options once */
+			logInfo("Marlin enabled [" + Version.getVersion() + "]");
+		        logInfo("sun.java2d.renderer = " + reClass);
+			logInfo("sun.java2d.renderer.useThreadLocal = " + useThreadLocal);
+		} else {
+		    logInfo("sun.java2d.renderer = " + reClass);
+		}
+        }
     }
     /**
      * Return the initial pixel size used to define initial arrays (tile AA chunk, alpha line, buckets)
@@ -829,10 +836,10 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         int pixelSize = Integer.getInteger("sun.java2d.renderer.pixelsize", defaultPixelSize);
         /* check for invalid values */
         if (pixelSize <= 0 || pixelSize > 32 * 1024) {
-            logInfo("PiscesRenderingEngine: Invalid sun.java2d.renderer.pixelsize = " + pixelSize);
+            logInfo("Invalid sun.java2d.renderer.pixelsize = " + pixelSize);
             pixelSize = defaultPixelSize;
         }
-        logInfo("PiscesRenderingEngine: sun.java2d.renderer.pixelsize = " + pixelSize);
+        logInfo("sun.java2d.renderer.pixelsize = " + pixelSize);
         return pixelSize;
     }
 
