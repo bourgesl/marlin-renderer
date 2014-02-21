@@ -329,8 +329,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         final Unsafe _unsafe = unsafe;
         final long    addr   = _edges.address + ptr;
         
-        /* TODO: try using copyMemory from struct (fake) */
-        
         // float values:
         _unsafe.putFloat(addr,             x1 + (firstCrossing - y1) * slope);
         _unsafe.putFloat(addr + OFF_SLOPE, slope);
@@ -338,9 +336,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // integer values:
         /* pointer from bucket */
-        _unsafe.putInt(addr + OFF_NEXT, _edgeBuckets[bucketIdx]);
-        _unsafe.putInt(addr + OFF_YMAX, lastCrossing);
-        _unsafe.putInt(addr + OFF_OR,   or); // use byte ?
+        _unsafe.putInt(addr + OFF_NEXT,   _edgeBuckets[bucketIdx]);
+        _unsafe.putInt(addr + OFF_YMAX,    lastCrossing);
+        _unsafe.putInt(addr + OFF_OR,      or); // use byte ?
         
         // Update buckets:
         _edgeBuckets[bucketIdx]       = ptr; /* directly the edge struct "pointer" */
@@ -788,6 +786,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                                 }
                             } while (low <= high);
 
+                            /* TODO: use arrayCopy instead */
+                            
                             for (j = i - 1; j >= low; j--) {
                                 _crossings[j + 1] = _crossings[j];
                                 _edgePtrs [j + 1] = _edgePtrs[j];
@@ -809,6 +809,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                                 _crossings[j + 1] = jcross;
                                 _edgePtrs [j + 1] = _edgePtrs[j];
                             }
+                            
+                            /* TODO: use arrayCopy instead */
+                            
                             _crossings[j + 1] = cross;
                             _edgePtrs [j + 1] = ecur;
                         }

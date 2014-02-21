@@ -38,7 +38,7 @@ interface PiscesConst {
     static final boolean doChecks = false;
 
     /* disable when algorithm / code is stable */
-    static final boolean DO_AA_RANGE_CHECK = false;
+    static final boolean DO_AA_RANGE_CHECK = false; // TODO: always ensure byte[0;64]
 
     static final boolean USE_BINARY_SEARCH = true;
     static final int THRESHOLD_BINARY_SEARCH = 20;
@@ -49,26 +49,21 @@ interface PiscesConst {
     static final boolean doLogOverSize = false;
     /** enable traces */
     static final boolean doTrace = false;
-    /** do stats */
+    /** do statistics */
     static final boolean doStats = false;
     /** do monitors */
     static final boolean doMonitors = false;
     /** do flush monitors */
     static final boolean doFlushMonitors = true;
-    /** use dump stats thread */
+    /** use one polling thread to dump statistics/monitors */
     static final boolean useDumpThread = false;
-    /** stat dump interval (ms) */
+    /** thread dump interval (ms) */
     static final long statDump = 5000L;
     /** do clean dirty array */
     static final boolean doCleanDirty = false;
 
     /** flag to use custom ceil() / floor() functions */
     static final boolean useFastMath = true;
-
-    /** enable / disable stroker.drawRoundJoins() (diagnostic only) */
-    static final boolean doDrawRoundJoins = true;
-    /** enable / disable stroker.drawRoundCap() (diagnostic only) */
-    static final boolean doDrawRoundCaps = true;
 
     /** flag to enable logs related bounds checks */
     static final boolean doLogBounds = false;

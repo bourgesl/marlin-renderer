@@ -24,6 +24,7 @@
  */
 package org.marlin.pisces;
 
+import java.lang.ref.SoftReference;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.marlin.pisces.ArrayCache.*;
@@ -73,6 +74,12 @@ final class RendererContext implements PiscesConst {
      * context name (debugging purposes)
      */
     final String name;
+
+    /**
+     * Soft reference to this instance
+     */
+    final SoftReference<RendererContext> softRef;
+
     /**
      * dynamic array caches
      */
@@ -126,8 +133,6 @@ final class RendererContext implements PiscesConst {
     /* monitors */
     final Monitor mon_pre_getAATileGenerator = new Monitor("PiscesRenderingEngine.getAATileGenerator()");
     final Monitor mon_npi_currentSegment = new Monitor("NormalizingPathIterator.currentSegment()");
-    final Monitor mon_stroker_drawJoin = new Monitor("Stroker.drawJoin()");
-    final Monitor mon_stroker_drawRoundCap = new Monitor("Stroker.drawRoundCap()");
     final Monitor mon_rdr_addLine = new Monitor("Renderer.addLine()");
     final Monitor mon_rdr_endRendering = new Monitor("Renderer.endRendering()");
     final Monitor mon_rdr_endRendering_Y = new Monitor("Renderer._endRendering(Y)");
@@ -161,6 +166,9 @@ final class RendererContext implements PiscesConst {
 
         stroker = new Stroker(this);
         dasher = new Dasher(this);
+
+        // Create the soft reference to this instance:
+        this.softRef = new SoftReference<RendererContext>(this);
     }
 
     /* Array caches */
@@ -340,7 +348,7 @@ final class RendererContext implements PiscesConst {
             reset();
         }
 
-        void reset() {
+        final void reset() {
             count = 0;
             sum = 0;
             min = Integer.MAX_VALUE;
@@ -369,6 +377,7 @@ final class RendererContext implements PiscesConst {
             }
         }
 
+        @Override
         public final String toString() {
             return name + '[' + count + "] sum: " + sum + " avg: " + (((double) sum) / count) + " [" + min + " | " + max + "]";
         }

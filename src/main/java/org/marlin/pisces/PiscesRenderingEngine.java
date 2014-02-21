@@ -467,7 +467,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         }
 
         public int currentSegment(final float[] coords) {
-            int type = src.currentSegment(coords);
+            final int type = src.currentSegment(coords);
             
             if (doMonitors) {
                 rdrCtx.mon_npi_currentSegment.start();
@@ -816,8 +816,8 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         }
         logInfo("PiscesRenderingEngine: sun.java2d.renderer.useThreadLocal = " + useThreadLocal);
 
-        rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<SoftReference<RendererContext>>() : null;
-        rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<SoftReference<RendererContext>>() : null;
+        rdrCtxThreadLocal = ( useThreadLocal) ? new ThreadLocal<SoftReference<RendererContext>>()           : null;
+        rdrCtxQueue       = (!useThreadLocal) ? new ConcurrentLinkedQueue<SoftReference<RendererContext>>() : null;
     }
     /**
      * Return the initial pixel size used to define initial arrays (tile AA chunk, alpha line, buckets)
@@ -847,7 +847,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             rdrCtx = RendererContext.createContext();
             if (useThreadLocal) {
                 // update thread local reference:
-                rdrCtxThreadLocal.set(new SoftReference<RendererContext>(rdrCtx));
+                rdrCtxThreadLocal.set(rdrCtx.softRef);
             }
         }
         if (doMonitors) {
@@ -865,7 +865,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             rdrCtx.mon_pre_getAATileGenerator.stop();
         }
         if (!useThreadLocal) {
-            rdrCtxQueue.offer(new SoftReference<RendererContext>(rdrCtx));
+            rdrCtxQueue.offer(rdrCtx.softRef);
         }
     }
 

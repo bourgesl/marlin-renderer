@@ -132,12 +132,6 @@ public final class ArrayCache implements PiscesConst {
                     if (rdrCtx.mon_npi_currentSegment.count != 0) {
                         logInfo(rdrCtx.mon_npi_currentSegment.toString());
                     }
-                    if (rdrCtx.mon_stroker_drawJoin.count != 0) {
-                        logInfo(rdrCtx.mon_stroker_drawJoin.toString());
-                    }
-                    if (rdrCtx.mon_stroker_drawRoundCap.count != 0) {
-                        logInfo(rdrCtx.mon_stroker_drawRoundCap.toString());
-                    }
                     if (rdrCtx.mon_rdr_addLine.count != 0) {
                         logInfo(rdrCtx.mon_rdr_addLine.toString());
                     }
@@ -161,11 +155,6 @@ public final class ArrayCache implements PiscesConst {
                         final long npiNorm = rdrCtx.mon_npi_currentSegment.sum;
                         logInfo(rdrCtx.mon_npi_currentSegment.name + " : " + ((100d * npiNorm) / total) + " %");
 
-                        final long drawCap = rdrCtx.mon_stroker_drawRoundCap.sum;
-                        logInfo(rdrCtx.mon_stroker_drawRoundCap.name + " : " + ((100d * drawCap) / total) + " %");
-
-                        final long drawJoin = rdrCtx.mon_stroker_drawJoin.sum;
-                        logInfo(rdrCtx.mon_stroker_drawJoin.name + " : " + ((100d * drawJoin) / total) + " %");
 
                         final long addLine = rdrCtx.mon_rdr_addLine.sum;
                         logInfo(rdrCtx.mon_rdr_addLine.name + " : " + ((100d * addLine) / total) + " %");
@@ -185,8 +174,6 @@ public final class ArrayCache implements PiscesConst {
                     if (doFlushMonitors) {
                         rdrCtx.mon_pre_getAATileGenerator.reset();
                         rdrCtx.mon_npi_currentSegment.reset();
-                        rdrCtx.mon_stroker_drawJoin.reset();
-                        rdrCtx.mon_stroker_drawRoundCap.reset();
                         rdrCtx.mon_rdr_addLine.reset();
                         rdrCtx.mon_rdr_endRendering.reset();
                         rdrCtx.mon_rdr_endRendering_Y.reset();
