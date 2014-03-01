@@ -56,10 +56,6 @@ final class Stroker implements PathConsumer2D, PiscesConst {
     /** Constant value for end cap style. */
     static final int CAP_SQUARE = 2;
 
-    // TODO: use resolution ie small pixel part to consider curves / caps / round precision :
-    // 1/9 pixel: 
-    private static final float lowerPixResolution = 1f; // / (float)(SUBPIXEL_LG_POSITIONS_X * SUBPIXEL_LG_POSITIONS_Y);
-    
     // pisces used to use fixed point arithmetic with 16 decimal digits. I
     // didn't want to change the values of the constant below when I converted
     // it to floating point, so that's why the divisions by 2^16 are there.
@@ -1198,12 +1194,12 @@ final class Stroker implements PathConsumer2D, PiscesConst {
             // Return arrays:
             // curves and curveTypes are kept dirty
             if (curves != curves_initial) {
-                rdrCtx.putFloatArray(curves, curvesUseMark);
+                rdrCtx.putFloatArray(curves, 0, curvesUseMark);
                 curves = curves_initial;
             }
 
             if (curveTypes != curveTypes_initial) {
-                rdrCtx.putIntArray(curveTypes, curveTypesUseMark);
+                rdrCtx.putIntArray(curveTypes, 0, curveTypesUseMark);
                 curveTypes = curveTypes_initial;
             }
             // reset marks

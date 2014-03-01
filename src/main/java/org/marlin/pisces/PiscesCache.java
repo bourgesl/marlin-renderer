@@ -31,13 +31,14 @@ import java.util.Arrays;
  *
  * @see PiscesRenderer#render
  */
-final class PiscesCache implements PiscesConst {
+public final class PiscesCache implements PiscesConst {
     /* constants */
+    public static final int TILE_SIZE_LG = PiscesRenderingEngine.getTileSize_Log2();
+    public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
 
-    public static final int TILE_SIZE_LG = 5;
-    public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32
-
+    /*
     static final int MASK_ALPHA_COVERAGE = (0x80 + 0x7f);
+    */
     
     /* 2048 alpha values (width) x 32 rows (tile) = 256K */
     static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
@@ -76,7 +77,8 @@ final class PiscesCache implements PiscesConst {
     PiscesCache(final RendererContext rdrCtx) {
         this.rdrCtx = rdrCtx;
 
-        this.rowAAChunk_initial  = new int[INITIAL_CHUNK_ARRAY]; // 256K
+        // +1 to avoid recycling in widenDirtyIntArray()
+        this.rowAAChunk_initial  = new int[INITIAL_CHUNK_ARRAY + 1]; // 256K
         this.touchedTile_initial = new int[INITIAL_ARRAY];       // only 1 tile line
         
         rowAAChunk  = rowAAChunk_initial;
@@ -116,7 +118,7 @@ final class PiscesCache implements PiscesConst {
             rowAAChunk = rowAAChunk_initial;
         }
         if (touchedTile != touchedTile_initial) {
-            rdrCtx.putIntArray(touchedTile, 0); // already zero filled
+            rdrCtx.putIntArray(touchedTile, 0, 0); // already zero filled
             touchedTile = touchedTile_initial;
         }
     }

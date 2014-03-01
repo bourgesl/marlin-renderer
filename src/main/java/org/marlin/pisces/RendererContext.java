@@ -21,10 +21,34 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
+ *//*
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 package org.marlin.pisces;
 
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.marlin.pisces.ArrayCache.*;
@@ -34,17 +58,6 @@ import static org.marlin.pisces.PiscesUtils.logInfo;
 
 /**
  * This class is a renderer context dedicated to a single thread (using thread local)
- *
- * Memory usage: int[] sun.java2d.pisces.Stroker.<init>(RendererContext)	32792	1
- * sun.java2d.pisces.Stroker$PolyStack.<init>(RendererContext) sun.java2d.pisces.Renderer.<init>(RendererContext)	303248
- * 6	Filtered out RendererContext.<init>(String) sun.java2d.pisces.PiscesCache.<init>(RendererContext)	1048	1	Filtered
- * out RendererContext.<init>(String) float[] sun.java2d.pisces.PiscesRenderingEngine.getAATileGenerator(...) 1416	59
- * sun.java2d.pisces.Renderer.<init>(RendererContext)	131096	1
- * sun.java2d.pisces.Stroker$PolyStack.<init>(RendererContext)	32792	1 RendererContext.<init>(String)	2176	3
- * RendererContext.<init>(String)	256	5 RendererContext.createContext()	40	1
- *
- * Total: 472072 bytes from initial arrays only ~ 512K for 1 RendererContext
- *
  */
 final class RendererContext implements PiscesConst {
 
@@ -76,9 +89,10 @@ final class RendererContext implements PiscesConst {
     final String name;
 
     /**
-     * Soft reference to this instance
+     * Reference to this instance (hard, soft or weak). 
+     * @see PiscesRenderingEngine#REF_TYPE
      */
-    final SoftReference<RendererContext> softRef;
+    final Object reference;
 
     /**
      * dynamic array caches
@@ -87,7 +101,7 @@ final class RendererContext implements PiscesConst {
     final FloatArrayCache[] floatArrayCaches = new FloatArrayCache[BUCKETS];
     /* dirty instances (use them carefully) */
     /**
-     * dynamic DIRTY int array piscesCache
+     * dynamic DIRTY int array for PiscesCache
      */
     final IntArrayCache[] dirtyIntArrayCaches = new IntArrayCache[BUCKETS];
     /* shared data */
@@ -145,7 +159,9 @@ final class RendererContext implements PiscesConst {
      * @param name
      */
     RendererContext(final String name) {
-//        System.out.println("createContext = " + name);
+        if (logCreateContext) {
+            PiscesUtils.logInfo("new RendererContext = " + name);
+        }
 
         this.name = name;
 
@@ -167,8 +183,19 @@ final class RendererContext implements PiscesConst {
         stroker = new Stroker(this);
         dasher = new Dasher(this);
 
-        // Create the soft reference to this instance:
-        this.softRef = new SoftReference<RendererContext>(this);
+        // Create the reference to this instance (hard, soft or weak):
+        switch (PiscesRenderingEngine.REF_TYPE) {
+            default:
+            case PiscesRenderingEngine.REF_HARD:
+                reference = this;
+                break;
+            case PiscesRenderingEngine.REF_SOFT:
+                reference = new SoftReference<RendererContext>(this);
+                break;
+            case PiscesRenderingEngine.REF_WEAK:
+                reference = new WeakReference<RendererContext>(this);
+                break;
+        }
     }
 
     /* Array caches */
@@ -206,11 +233,12 @@ final class RendererContext implements PiscesConst {
 
     void putDirtyIntArray(final int[] array) {
         final int length = array.length;
-        if (length <= MAX_DIRTY_ARRAY_SIZE) {
+        if (((length & 0x1) == 0) && (length <= MAX_DIRTY_ARRAY_SIZE)) {
             getDirtyIntArrayCache(length).putDirtyArray(array, length);
         }
     }
 
+    /* TODO: replace with new signature */
     int[] widenDirtyIntArray(final int[] in, final int cursize, final int numToAdd) {
 
         final int length = in.length;
@@ -219,7 +247,7 @@ final class RendererContext implements PiscesConst {
             return in;
         }
 
-        final int[] res = _widenDirtyArray(in, length, cursize, newSize);
+        final int[] res = widenDirtyArray(in, length, cursize, newSize);
 
         if (doLog) {
             logInfo("widenDirtyArray int[" + res.length + "]: cursize=\t" + cursize + "\tlength=\t" + length
@@ -228,7 +256,7 @@ final class RendererContext implements PiscesConst {
         return res;
     }
 
-    private int[] _widenDirtyArray(final int[] in, final int length, final int usedSize, final int newSize) {
+    private int[] widenDirtyArray(final int[] in, final int length, final int usedSize, final int newSize) {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -264,6 +292,7 @@ final class RendererContext implements PiscesConst {
         return new int[length];
     }
 
+    /* TODO: replace with new signature */
     int[] widenArray(final int[] in, final int length, final int usedSize, final int newSize, final int clearTo) {
         if (doChecks && length >= newSize) {
             return in;
@@ -278,15 +307,34 @@ final class RendererContext implements PiscesConst {
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
         // maybe return current array:
-        putIntArray(in, clearTo); // ensure all array is cleared (grow-reduce algo)
+        putIntArray(in, 0, clearTo); // ensure all array is cleared (grow-reduce algo)
 
         return res;
     }
 
-    void putIntArray(final int[] array, final int usedSize) {
+    int[] widenArrayPartially(final int[] in, final int length, final int fromIndex, final int toIndex, final int newSize) {
+        if (doChecks && length >= newSize) {
+            return in;
+        }
+        if (doStats) {
+            resizeInt++;
+        }
+
+        // maybe change bucket:
+        final int[] res = getIntArray(getNewSize(newSize)); // Use GROW or x2
+
+        System.arraycopy(in, fromIndex, res, fromIndex, toIndex - fromIndex); // copy only used elements
+
+        // maybe return current array:
+        putIntArray(in, fromIndex, toIndex); // only partially cleared
+
+        return res;
+    }
+
+    void putIntArray(final int[] array, final int fromIndex, final int toIndex) {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
-            getIntArrayCache(length).putArray(array, length, usedSize);
+            getIntArrayCache(length).putArray(array, length, fromIndex, toIndex);
         }
     }
 
@@ -308,6 +356,7 @@ final class RendererContext implements PiscesConst {
         return new float[length];
     }
 
+    /* TODO: replace with new signature */
     float[] widenArray(final float[] in, final int length, final int usedSize, final int newSize, final int clearTo) {
         if (doChecks && length >= newSize) {
             return in;
@@ -322,15 +371,15 @@ final class RendererContext implements PiscesConst {
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
         // maybe return current array:
-        putFloatArray(in, clearTo); // ensure all array is cleared (grow-reduce algo)
+        putFloatArray(in, 0, clearTo); // ensure all array is cleared (grow-reduce algo)
 
         return res;
     }
 
-    void putFloatArray(final float[] array, final int usedSize) {
+    void putFloatArray(final float[] array, final int fromIndex, final int toIndex) {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
-            getFloatArrayCache(length).putArray(array, length, usedSize);
+            getFloatArrayCache(length).putArray(array, length, fromIndex, toIndex);
         }
     }
 

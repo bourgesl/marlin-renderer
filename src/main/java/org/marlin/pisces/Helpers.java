@@ -152,8 +152,7 @@ final class Helpers implements PiscesConst {
         return filterOutNotInAB(pts, off, num, A, B) - off;
     }
 
-    // These use a hardcoded factor of 2 for increasing sizes. Perhaps this
-    // should be provided as an argument.
+    /* TODO: replace with new signature */
     static float[] widenArray(final RendererContext rdrCtx, final float[] in, final int cursize, 
                               final int numToAdd, final int clearTo) {
         
@@ -172,6 +171,7 @@ final class Helpers implements PiscesConst {
         return res;
     }
 
+    /* TODO: replace with new signature */
     static int[] widenArray(final RendererContext rdrCtx, final int[] in, final int cursize, 
                             final int numToAdd, final int clearTo) {
         
@@ -190,6 +190,23 @@ final class Helpers implements PiscesConst {
         return res;
     }
 
+    static int[] widenArrayPartially(final RendererContext rdrCtx, final int[] in, 
+                                     final int fromIndex, final int toIndex, final int newSize) {
+        
+        final int length = in.length;
+        if (length >= newSize) {
+            return in;
+        }
+
+        final int[] res = rdrCtx.widenArrayPartially(in, length, fromIndex, toIndex, newSize);
+
+        if (doLog) {
+            logInfo("widenArray int[" + res.length + "]: fromIndex=\t" + fromIndex +"\ttoIndex=\t" + toIndex +"\tlength=\t" + length 
+                    + "\tnew length=\t" + newSize + "\tfrom=\t" + getCallerInfo(className));
+        }
+        return res;
+    }
+    
     static float evalCubic(final float a, final float b,
                            final float c, final float d,
                            final float t)

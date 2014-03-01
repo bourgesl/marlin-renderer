@@ -38,6 +38,19 @@ final class FastMath implements PiscesConst {
     private FastMath() {
         // utility class
     }
+    
+    /**
+     * Faster Math.round implementation
+     *
+     * @param x float number
+     * @return integer higher than given float number
+     */
+    public static int round(final float x) {
+        if (useFastMath) {
+            return (int) (x + 0.5f);
+        }
+        return (int)Math.rint(x);
+    }
 
     /**
      * Faster Math.ceil implementation

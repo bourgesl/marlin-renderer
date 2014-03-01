@@ -50,7 +50,8 @@ final class FloatArrayCache implements PiscesConst {
 
     FloatArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        this.floatArrays = new ArrayDeque<float[]>(64);
+        this.floatArrays = new ArrayDeque<float[]>(6); /* small but enough: almost 1 cache line */
+
     }
 
     float[] getArray() {
@@ -72,21 +73,20 @@ final class FloatArrayCache implements PiscesConst {
         return new float[arraySize];
     }
 
-    void putArray(final float[] array, final int usedSize) {
-        putArray(array, array.length, usedSize);
-    }
-
-    void putArray(final float[] array, final int length, final int usedSize) {
-        if (length == arraySize) {
-            if (doStats) {
-                returnOp++;
-            }
-
-            // TODO: pool eviction
-            fill(array, 0, usedSize, 0);
-
-            floatArrays.addLast(array);
+    void putArray(final float[] array, final int length, final int fromIndex, final int toIndex) {
+        if (doChecks && (length != arraySize)) {
+            System.out.println("bad length = " + length);
+            return;
         }
+        if (doStats) {
+            returnOp++;
+        }
+
+        // TODO: pool eviction
+        fill(array, fromIndex, toIndex, 0);
+
+        // fill cache:
+        floatArrays.addLast(array);
     }
 
     static void fill(final float[] array, final int fromIndex, final int toIndex, final float value) {
@@ -94,7 +94,9 @@ final class FloatArrayCache implements PiscesConst {
         /*
          * Arrays.fill is faster than System.arraycopy(empty array) or Unsafe.setMemory(byte 0)
          */
-        Arrays.fill(array, fromIndex, toIndex, value);
+        if (toIndex != 0) {
+            Arrays.fill(array, fromIndex, toIndex, value);
+        }
 
         if (doChecks) {
             check(array, 0, array.length, value);

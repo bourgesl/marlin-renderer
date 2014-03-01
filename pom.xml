@@ -29,7 +29,7 @@
             </resource>
         </resources>
         <plugins>
-	        <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>2.6</version>
@@ -61,18 +61,23 @@
                             <BuildTime>${maven.build.timestamp}</BuildTime>
                         </manifestEntries>
                     </archive>
-                    <includes>
-                        <include>org/**</include>
-                        <include>META-INF/services/*</include>
-                    </includes>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>org/**</include>
+                                <include>META-INF/services/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>sun-java2d</id>
                         <phase>package</phase>
                         <goals>
                             <goal>jar</goal>

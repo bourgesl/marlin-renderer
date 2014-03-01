@@ -35,12 +35,12 @@ import java.util.TimerTask;
 public final class ArrayCache implements PiscesConst {
 
     final static int BUCKETS = 4;
-    final static int BUCKET_GROW = 4;
-    final static int BUCKET_DIRTY_GROW = 2;
+    final static int BUCKET_GROW_BITS = 2;
+    final static int BUCKET_GROW = 1 << BUCKET_GROW_BITS;
+    final static int BUCKET_DIRTY_GROW_BITS = 1;
+    final static int BUCKET_DIRTY_GROW = 1 << BUCKET_DIRTY_GROW_BITS;
     final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arrayCopy)
-    /**
-     * threshold to grow arrays by x4 or x2
-     */
+    /** threshold to grow arrays by x4 or x2 */
     final static int THRESHOLD_ARRAY_SIZE = 32 * 1024;
     // array sizes:
     final static int MAX_ARRAY_SIZE;
@@ -59,7 +59,7 @@ public final class ArrayCache implements PiscesConst {
     static {
         /* initialize buckets for int/float arrays */
         int arraySize = MIN_ARRAY_SIZE;
-
+        
         for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_GROW) {
             ARRAY_SIZES[i] = arraySize;
 
@@ -70,7 +70,7 @@ public final class ArrayCache implements PiscesConst {
         MAX_ARRAY_SIZE = arraySize / BUCKET_GROW;
 
         /* initialize buckets for dirty int arrays (large AA chunk = 32 x pixels) */
-        arraySize = BUCKET_DIRTY_GROW * PiscesCache.TILE_SIZE * INITIAL_PIXEL_DIM; 
+        arraySize = BUCKET_DIRTY_GROW * PiscesCache.TILE_SIZE * 1024;  /* TODO: adjust max size */
 
         for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_DIRTY_GROW) {
             DIRTY_ARRAY_SIZES[i] = arraySize;
@@ -82,8 +82,6 @@ public final class ArrayCache implements PiscesConst {
         MAX_DIRTY_ARRAY_SIZE = arraySize / BUCKET_DIRTY_GROW;
 
         if (doStats || doMonitors) {
-            logInfo("RenderingEngine.useThreadLocal = " + PiscesRenderingEngine.useThreadLocal);
-
             logInfo("ArrayCache.BUCKETS        = " + BUCKETS);
             logInfo("ArrayCache.MIN_ARRAY_SIZE = " + MIN_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_ARRAY_SIZE = " + MAX_ARRAY_SIZE);
@@ -154,7 +152,6 @@ public final class ArrayCache implements PiscesConst {
 
                         final long npiNorm = rdrCtx.mon_npi_currentSegment.sum;
                         logInfo(rdrCtx.mon_npi_currentSegment.name + " : " + ((100d * npiNorm) / total) + " %");
-
 
                         final long addLine = rdrCtx.mon_rdr_addLine.sum;
                         logInfo(rdrCtx.mon_rdr_addLine.name + " : " + ((100d * addLine) / total) + " %");
@@ -243,6 +240,8 @@ public final class ArrayCache implements PiscesConst {
         }
     }
 
+    /* TODO: use shifts to find bucket as fast as possible (no condition) */
+    
     /* small methods used a lot (to be inlined / optimized by hotspot) */
     static int getBucket(final int length) {
         // Use size = (length / 2) * 2 => rounded to power of two

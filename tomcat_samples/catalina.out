@@ -1,0 +1,35 @@
+févr. 20, 2014 2:09:15 PM org.apache.catalina.core.AprLifecycleListener init
+INFOS: The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib
+févr. 20, 2014 2:09:15 PM org.apache.coyote.AbstractProtocol init
+INFOS: Initializing ProtocolHandler ["http-bio-8080"]
+févr. 20, 2014 2:09:15 PM org.apache.coyote.AbstractProtocol init
+INFOS: Initializing ProtocolHandler ["ajp-bio-8009"]
+févr. 20, 2014 2:09:15 PM org.apache.catalina.startup.Catalina load
+INFOS: Initialization processed in 664 ms
+févr. 20, 2014 2:09:15 PM org.apache.catalina.core.StandardService startInternal
+INFOS: Démarrage du service Catalina
+févr. 20, 2014 2:09:15 PM org.apache.catalina.core.StandardEngine startInternal
+INFOS: Starting Servlet Engine: Apache Tomcat/7.0.41
+févr. 20, 2014 2:09:15 PM org.apache.catalina.startup.HostConfig deployDirectory
+INFOS: Déploiement du répertoire /home/bourgesl/apps/apache-tomcat-7.0.41/webapps/examples de l'application web
+févr. 20, 2014 2:09:16 PM org.apache.catalina.startup.HostConfig deployDirectory
+INFOS: Déploiement du répertoire /home/bourgesl/apps/apache-tomcat-7.0.41/webapps/ROOT de l'application web
+févr. 20, 2014 2:09:16 PM org.apache.catalina.startup.HostConfig deployDirectory
+INFOS: Déploiement du répertoire /home/bourgesl/apps/apache-tomcat-7.0.41/webapps/manager de l'application web
+févr. 20, 2014 2:09:16 PM org.apache.catalina.startup.HostConfig deployDirectory
+INFOS: Déploiement du répertoire /home/bourgesl/apps/apache-tomcat-7.0.41/webapps/host-manager de l'application web
+févr. 20, 2014 2:09:16 PM org.apache.catalina.startup.HostConfig deployDirectory
+INFOS: Déploiement du répertoire /home/bourgesl/apps/apache-tomcat-7.0.41/webapps/docs de l'application web
+févr. 20, 2014 2:09:16 PM org.apache.coyote.AbstractProtocol start
+INFOS: Starting ProtocolHandler ["http-bio-8080"]
+févr. 20, 2014 2:09:16 PM org.apache.coyote.AbstractProtocol start
+INFOS: Starting ProtocolHandler ["ajp-bio-8009"]
+févr. 20, 2014 2:09:16 PM org.apache.catalina.startup.Catalina start
+INFOS: Server startup in 648 ms
+INFO: sun.java2d.renderer = org.marlin.pisces.PiscesRenderingEngine
+INFO: PiscesRenderingEngine: sun.java2d.renderer.useThreadLocal = true
+INFO: PiscesRenderingEngine: sun.java2d.renderer.pixelsize = 2048
+INFO: ===============================================================================
+INFO:  Using sun.misc.Unsafe: No warranty (may crash your JVM) !
+INFO:  USE IT AT YOUR OWN RISKS = do not use in production (ALPHA Release).
+INFO: ===============================================================================

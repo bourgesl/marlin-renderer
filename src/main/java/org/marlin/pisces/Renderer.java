@@ -60,8 +60,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     /* constants */
     /* hard coded 8x8 antialiasing -> 64 subpixels */
     /* may use System properties to define expected subpixels (4x4, 8x8, 16x16) */
-    public final static int SUBPIXEL_LG_POSITIONS_X = 3;
-    public final static int SUBPIXEL_LG_POSITIONS_Y = 3;
+    public final static int SUBPIXEL_LG_POSITIONS_X = PiscesRenderingEngine.getSubPixel_Log2_X();
+    public final static int SUBPIXEL_LG_POSITIONS_Y = PiscesRenderingEngine.getSubPixel_Log2_Y();
     public final static int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
     public final static int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
     // LBO: use float to make tosubpix methods faster (no int to float conversion)
@@ -136,8 +136,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     private int[] edgeBuckets;
     private int[] edgeBucketCounts; // 2*newedges + (1 if pruning needed)
 
-    private final int[] edgeBuckets_initial      = new int[INITIAL_BUCKET_ARRAY]; // 64K
-    private final int[] edgeBucketCounts_initial = new int[INITIAL_BUCKET_ARRAY]; // 64K
+    // +1 to avoid recycling in Helpers.widenArray()
+    private final int[] edgeBuckets_initial      = new int[INITIAL_BUCKET_ARRAY + 1]; // 64K
+    private final int[] edgeBucketCounts_initial = new int[INITIAL_BUCKET_ARRAY + 1]; // 64K
 
     // Flattens using adaptive forward differencing. This only carries out
     // one iteration of the AFD loop. All it does is update AFD variables (i.e.
@@ -301,6 +302,152 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         // copy members:
         final int[] _edgeBuckets      = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
+
+        final OffHeapEdgeArray _edges = edges;
+        /* get free pointer (ie length in bytes) */
+        final int ptr = _edges.used;
+        
+        if (_edges.length < ptr + _SIZEOF_EDGE_BYTES) {
+            if (doStats) {
+                rdrCtx.stat_rdr_edges_resizes.add(ptr);
+            }
+            edges.resize(2 * _edges.length);
+        }
+
+        
+        final Unsafe _unsafe = unsafe;
+        final long    addr   = _edges.address + ptr;
+        
+        // float values:
+        _unsafe.putFloat(addr,             x1 + (firstCrossing - y1) * slope);
+        _unsafe.putFloat(addr + OFF_SLOPE, slope);
+        
+
+        // each bucket is a linked list. this method adds ptr to the
+        // start of the "bucket"th linked list.
+        final int bucketIdx = firstCrossing - _boundsMinY; 
+        
+        // integer values:
+        /* pointer from bucket */
+        _unsafe.putInt(addr + OFF_NEXT,   _edgeBuckets[bucketIdx]);
+        _unsafe.putInt(addr + OFF_YMAX,    lastCrossing);
+        _unsafe.putInt(addr + OFF_OR,      or); // use byte ?
+        
+        // Update buckets:
+        _edgeBuckets[bucketIdx]       = ptr; /* directly the edge struct "pointer" */
+        _edgeBucketCounts[bucketIdx] += 2;
+        _edgeBucketCounts[lastCrossing - _boundsMinY] |= 1; /* last bit means edge end */        
+
+        /* update free pointer (ie length in bytes) */
+        _edges.used += _SIZEOF_EDGE_BYTES;
+
+        if (doMonitors) {
+            rdrCtx.mon_rdr_addLine.stop();
+        }
+    }
+
+    private void addLine_TEST(float x1, float y1, float x2, float y2) {
+        if (doMonitors) {
+            rdrCtx.mon_rdr_addLine.start();
+        }
+        int or = 1; // orientation of the line. 1 if y increases, -1 otherwise.
+        if (y2 < y1) {
+            or = -1;
+            float tmp = y2;
+            y2 = y1;
+            y1 = tmp;
+            tmp = x2;
+            x2 = x1;
+            x1 = tmp;
+        }
+
+        // copy members:
+        final int _boundsMinY = boundsMinY;
+        final int _boundsMaxY = boundsMaxY;
+
+        /* TODO: improve accuracy using correct float rounding to int ie use ceil(x - 0.5f) */
+        
+        /* convert subpixel coordinates (float) into pixel positions (int) */
+        final int firstCrossing = Math.max(FastMath.ceil(y1), _boundsMinY); // upper integer (inclusive)
+        /* note: use boundsMaxY (last Y exclusive) to compute correct coverage */
+        final int lastCrossing  = Math.min(FastMath.ceil(y2),  _boundsMaxY); // upper integer (exclusive ?)
+
+        /* skip horizontal lines in pixel space */
+        if (firstCrossing >= lastCrossing) {
+            if (doMonitors) {
+                rdrCtx.mon_rdr_addLine.stop();
+            }
+            return;
+        }
+
+        final int lastBucketIdx = lastCrossing - _boundsMinY; 
+        
+        // copy members:
+        final int[] _edgeBuckets;
+        final int[] _edgeBucketCounts;
+        
+        if (lastBucketIdx >= edgeBuckets.length) {
+            // enlarge to largest image height (ie only once when needed):
+            final int edgeBucketsLength = (boundsMaxY - _boundsMinY) + 1; // +1 for edgeBucketCounts 
+
+            if (edgeMinY != Float.POSITIVE_INFINITY) {
+                final int iminY =     Math.max(FastMath.ceil(edgeMinY), _boundsMinY) - _boundsMinY;
+                final int imaxY = 1 + Math.min(FastMath.ceil(edgeMaxY), _boundsMaxY) - _boundsMinY;
+
+//                                  final int fromIndex, final int toIndex, final int newSize) {
+                
+                // enlarge arrays:
+                _edgeBuckets      = Helpers.widenArrayPartially(rdrCtx, edgeBuckets,      iminY, imaxY - 1, edgeBucketsLength);
+                _edgeBucketCounts = Helpers.widenArrayPartially(rdrCtx, edgeBucketCounts, iminY, imaxY,     edgeBucketsLength);
+
+                // clear initial arrays:
+                IntArrayCache.fill(edgeBuckets,      iminY, imaxY - 1, 0); // fill only used part
+                IntArrayCache.fill(edgeBucketCounts, iminY, imaxY,     0); // fill only used part
+            } else {
+                _edgeBuckets      = Helpers.widenArrayPartially(rdrCtx, edgeBuckets,      0, 0, edgeBucketsLength);
+                _edgeBucketCounts = Helpers.widenArrayPartially(rdrCtx, edgeBucketCounts, 0, 0, edgeBucketsLength);
+            }
+
+            edgeBuckets      = _edgeBuckets;
+            edgeBucketCounts = _edgeBucketCounts;
+        } else {
+            _edgeBuckets      = edgeBuckets;
+            _edgeBucketCounts = edgeBucketCounts;
+        }
+        
+        
+        /* edge min/max X/Y are in subpixel space (inclusive) */
+        if (y1 < edgeMinY) {
+            edgeMinY = y1;
+        }
+        if (y2 > edgeMaxY) {
+            edgeMaxY = y2;
+        }
+
+        final float slope = (x2 - x1) / (y2 - y1);
+
+        if (slope > 0f) { // <==> x1 < x2
+            if (x1 < edgeMinX) {
+                edgeMinX = x1;
+            }
+            if (x2 > edgeMaxX) {
+                edgeMaxX = x2;
+            }
+        } else {
+            if (x2 < edgeMinX) {
+                edgeMinX = x2;
+            }
+            if (x1 > edgeMaxX) {
+                edgeMaxX = x1;
+            }
+        }
+
+
+        // copy constants:
+        final int _SIZEOF_EDGE_BYTES = SIZEOF_EDGE_BYTES;
+        
+        
+        
         // each bucket is a linked list. this method adds ptr to the
         // start of the "bucket"th linked list.
         final int bucketIdx = firstCrossing - _boundsMinY; 
@@ -318,7 +465,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         /* get free pointer (ie length in bytes) */
         final int ptr = _edges.used;
         
-        if (_edges.length < ptr + _SIZEOF_EDGE_BYTES) {
+        if (ptr + _SIZEOF_EDGE_BYTES > _edges.length) {
             if (doStats) {
                 rdrCtx.stat_rdr_edges_resizes.add(ptr);
             }
@@ -341,9 +488,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         _unsafe.putInt(addr + OFF_OR,      or); // use byte ?
         
         // Update buckets:
-        _edgeBuckets[bucketIdx]       = ptr; /* directly the edge struct "pointer" */
-        _edgeBucketCounts[bucketIdx] += 2;
-        _edgeBucketCounts[lastCrossing - _boundsMinY] |= 1; /* last bit means edge end */        
+        _edgeBuckets[bucketIdx]           = ptr; /* directly the edge struct "pointer" */
+        _edgeBucketCounts[bucketIdx]     += 2;
+        _edgeBucketCounts[lastBucketIdx] |= 1;   /* last bit means edge end */        
 
         /* update free pointer (ie length in bytes) */
         _edges.used += _SIZEOF_EDGE_BYTES;
@@ -352,7 +499,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             rdrCtx.mon_rdr_addLine.stop();
         }
     }
-
+    
+    
+    
 // END EDGE LIST
 //////////////////////////////////////////////////////////////////////////////
 
@@ -416,7 +565,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         /* see addLine: ceil(boundsMaxY) => boundsMaxY + 1 */
         final int edgeBucketsLength = (boundsMaxY - boundsMinY) + 1; // +1 for edgeBucketCounts 
 
-        if (INITIAL_BUCKET_ARRAY < edgeBucketsLength) {
+        /* TODO: only expand bucket when needed ie in addLine if shape exceeds initial arrays */
+        if (edgeBucketsLength > INITIAL_BUCKET_ARRAY) {
             edgeBuckets = rdrCtx.getIntArray(edgeBucketsLength);
             edgeBucketCounts = rdrCtx.getIntArray(edgeBucketsLength);
         }
@@ -443,11 +593,11 @@ final class Renderer implements PathConsumer2D, PiscesConst {
      */
     void dispose() {
         if (crossings != crossings_initial) {
-            rdrCtx.putIntArray(crossings, activeEdgeMaxUsed);
+            rdrCtx.putIntArray(crossings, 0, activeEdgeMaxUsed);
             crossings = crossings_initial;
         }
         if (edgePtrs != edgePtrs_initial) {
-            rdrCtx.putIntArray(edgePtrs, activeEdgeMaxUsed);
+            rdrCtx.putIntArray(edgePtrs, 0, activeEdgeMaxUsed);
             edgePtrs = edgePtrs_initial;
         }
         if (doCleanDirty) {
@@ -473,13 +623,13 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             edges.fill((byte)0);
         }
         if (alphaLine != alphaLine_initial) {
-            rdrCtx.putIntArray(alphaLine, 0); // already zero filled
+            rdrCtx.putIntArray(alphaLine, 0, 0); // already zero filled
             alphaLine = alphaLine_initial;
         }
 
         if (edgeMinY != Float.POSITIVE_INFINITY) {
-            // Find used part
             final int _boundsMinY = boundsMinY;
+            // Find used part
             final int iminY =     Math.max(FastMath.ceil(edgeMinY), _boundsMinY) - _boundsMinY;
             final int imaxY = 1 + Math.min(FastMath.ceil(edgeMaxY),  boundsMaxY) - _boundsMinY;
 
@@ -487,18 +637,18 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 IntArrayCache.fill(edgeBuckets,      iminY, imaxY - 1, 0); // fill only used part
                 IntArrayCache.fill(edgeBucketCounts, iminY, imaxY,     0); // fill only used part
             } else {
-                rdrCtx.putIntArray(edgeBuckets, imaxY);
+                rdrCtx.putIntArray(edgeBuckets, iminY, imaxY - 1);  // clear only used part
                 edgeBuckets = edgeBuckets_initial;
 
-                rdrCtx.putIntArray(edgeBucketCounts, imaxY);
+                rdrCtx.putIntArray(edgeBucketCounts, iminY, imaxY); // clear only used part
                 edgeBucketCounts = edgeBucketCounts_initial;
             }
         } else if (edgeBuckets != edgeBuckets_initial) {
             // unused arrays
-            rdrCtx.putIntArray(edgeBuckets, 0);      // unused array
+            rdrCtx.putIntArray(edgeBuckets, 0, 0);      // unused array
             edgeBuckets = edgeBuckets_initial;
 
-            rdrCtx.putIntArray(edgeBucketCounts, 0); // unused array
+            rdrCtx.putIntArray(edgeBucketCounts, 0, 0); // unused array
             edgeBucketCounts = edgeBucketCounts_initial;
         }
         if (doMonitors) {
@@ -709,7 +859,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                                 IntArrayCache.fill(_crossings, 0, _arrayMaxUsed, 0);
                             }
                         } else {
-                            rdrCtx.putIntArray(_crossings, _arrayMaxUsed); // last known value for arrayMaxUsed
+                            rdrCtx.putIntArray(_crossings, 0, _arrayMaxUsed); // last known value for arrayMaxUsed
                         }
                         // Get larger array:
                         this.crossings = _crossings = rdrCtx.getIntArray(numCrossings); // count or ptrs.length ?
@@ -1021,8 +1171,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         long length;
         
         OffHeapEdgeArray(final long len) {
-            if (doDev) {
-                PiscesUtils.logInfo("allocateMemory = " + len);
+            if (logUnsafeMalloc) {
+                PiscesUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.allocateMemory = " + len);
             }
             this.address = unsafe.allocateMemory(len);
             this.length  = len;
@@ -1030,16 +1180,16 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         }
         
         void resize(final long len) {
-            if (doDev) {
-                PiscesUtils.logInfo("reallocateMemory = " + len);
+            if (logUnsafeMalloc) {
+                PiscesUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.reallocateMemory = " + len);
             }
             this.address = unsafe.reallocateMemory(address, len);
             this.length  = len;
         }
         
         void free() {
-            if (doDev) {
-                PiscesUtils.logInfo("free = " + this.length);
+            if (logUnsafeMalloc) {
+                PiscesUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.free = " + this.length);
             }
             unsafe.freeMemory(this.address);
         }

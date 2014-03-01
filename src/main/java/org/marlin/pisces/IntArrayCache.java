@@ -50,7 +50,8 @@ final class IntArrayCache implements PiscesConst {
 
     IntArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        this.intArrays = new ArrayDeque<int[]>(64);
+        this.intArrays = new ArrayDeque<int[]>(6); /* small but enough: almost 1 cache line */
+
     }
 
     int[] getArray() {
@@ -71,26 +72,30 @@ final class IntArrayCache implements PiscesConst {
         return new int[arraySize];
     }
 
-    void putArray(final int[] array, final int length, final int usedSize) {
-        if (length == arraySize) {
-            if (doStats) {
-                returnOp++;
-            }
-
-            // TODO: pool eviction
-            fill(array, 0, usedSize, 0);
-
-            // fill cache:
-            intArrays.addLast(array);
+    void putArray(final int[] array, final int length, final int fromIndex, final int toIndex) {
+        if (doChecks && (length != arraySize)) {
+            System.out.println("bad length = " + length);
+            return;
         }
+        if (doStats) {
+            returnOp++;
+        }
+
+        // TODO: pool eviction
+        fill(array, fromIndex, toIndex, 0);
+
+        // fill cache:
+        intArrays.addLast(array);
     }
-    
-    static void fill(final int[] array, int fromIndex, int toIndex, final int value) {
+
+    static void fill(final int[] array, final int fromIndex, final int toIndex, final int value) {
         // clear array data:
         /*
          * Arrays.fill is faster than System.arraycopy(empty array) or Unsafe.setMemory(byte 0)
          */
-        Arrays.fill(array, fromIndex, toIndex, value);
+        if (toIndex != 0) {
+            Arrays.fill(array, fromIndex, toIndex, value);
+        }
 
         if (doChecks) {
             check(array, 0, array.length, value);
@@ -121,16 +126,17 @@ final class IntArrayCache implements PiscesConst {
     }
 
     void putDirtyArray(final int[] array, final int length) {
-        if (length == arraySize) {
-            if (doStats) {
-                returnOp++;
-            }
-
-            // TODO: pool eviction
-            // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
-            
-            // fill cache:
-            intArrays.addLast(array);
+        if (doChecks && (length != arraySize)) {
+            System.out.println("bad length = " + length);
+            return;
         }
+        if (doStats) {
+            returnOp++;
+        }
+
+        // TODO: pool eviction
+        // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
+        // fill cache:
+        intArrays.addLast(array);
     }
 }
