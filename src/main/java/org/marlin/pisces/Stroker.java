@@ -56,10 +56,6 @@ final class Stroker implements PathConsumer2D, PiscesConst {
     /** Constant value for end cap style. */
     static final int CAP_SQUARE = 2;
 
-    // TODO: use resolution ie small pixel part to consider curves / caps / round precision :
-    // 1/9 pixel: 
-    private static final float lowerPixResolution = 1f; // / (float)(SUBPIXEL_LG_POSITIONS_X * SUBPIXEL_LG_POSITIONS_Y);
-    
     // pisces used to use fixed point arithmetic with 16 decimal digits. I
     // didn't want to change the values of the constant below when I converted
     // it to floating point, so that's why the divisions by 2^16 are there.
@@ -144,12 +140,6 @@ final class Stroker implements PathConsumer2D, PiscesConst {
 
         this.lineWidth2 = 0.5f * lineWidth;
         this.capStyle = capStyle;
-        if (capStyle == CAP_ROUND) {
-            this.capStyle = (doDrawRoundCaps) ? CAP_ROUND : CAP_SQUARE;
-        } else {
-            this.capStyle = capStyle;
-        }
-        
         this.joinStyle = joinStyle;
 
         float limit = miterLimit * lineWidth2;
@@ -322,10 +312,6 @@ final class Stroker implements PathConsumer2D, PiscesConst {
      private final static float C = 0.5522847498307933f;
     
     private void drawRoundCap(float cx, float cy, float mx, float my) {
-        if (doMonitors) {
-            rdrCtx.mon_stroker_drawRoundCap.start();
-        }
-        
         // the first and second arguments of the following two calls
         // are really will be ignored by emitCurveTo (because of the false),
         // but we put them in anyway, as opposed to just giving it 4 zeroes,
@@ -341,10 +327,6 @@ final class Stroker implements PathConsumer2D, PiscesConst {
                     cx-mx-C*my, cy-my+C*mx,
                     cx-mx,      cy-my,
                     false);
-        
-        if (doMonitors) {
-            rdrCtx.mon_stroker_drawRoundCap.stop();
-        }
     }
 
     // Put the intersection point of the lines (x0, y0) -> (x1, y1)
@@ -570,22 +552,16 @@ final class Stroker implements PathConsumer2D, PiscesConst {
             this.smx = mx;
             this.smy = my;
         } else {
-            if (doMonitors) {
-                rdrCtx.mon_stroker_drawJoin.start();
-            }
             boolean cw = isCW(pdx, pdy, dx, dy);
             if (joinStyle == JOIN_MITER) {
                 drawMiter(pdx, pdy, x0, y0, dx, dy, omx, omy, mx, my, cw);
-            } else if (doDrawRoundJoins && joinStyle == JOIN_ROUND) {
+            } else if (joinStyle == JOIN_ROUND) {
                 drawRoundJoin(x0, y0,
                               omx, omy,
                               mx, my, cw,
                               ROUND_JOIN_THRESHOLD);
             }
             emitLineTo(x0, y0, !cw);
-            if (doMonitors) {
-                rdrCtx.mon_stroker_drawJoin.stop();
-            }
         }
         prev = DRAWING_OP_TO;
     }
@@ -1218,12 +1194,12 @@ final class Stroker implements PathConsumer2D, PiscesConst {
             // Return arrays:
             // curves and curveTypes are kept dirty
             if (curves != curves_initial) {
-                rdrCtx.putFloatArray(curves, curvesUseMark);
+                rdrCtx.putFloatArray(curves, 0, curvesUseMark);
                 curves = curves_initial;
             }
 
             if (curveTypes != curveTypes_initial) {
-                rdrCtx.putIntArray(curveTypes, curveTypesUseMark);
+                rdrCtx.putIntArray(curveTypes, 0, curveTypesUseMark);
                 curveTypes = curveTypes_initial;
             }
             // reset marks

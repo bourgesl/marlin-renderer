@@ -25,7 +25,6 @@
 package org.marlin.pisces;
 
 import sun.java2d.pipe.AATileGenerator;
-import static org.marlin.pisces.PiscesUtils.logInfo;
 
 final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
 
@@ -224,7 +223,8 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
                     final int off = pos + 2 - aax0;
 
                     for (final int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
-                        int aa = rowAAChunk[cx + off];
+                        final int aa = rowAAChunk[cx + off];
+/*
 
                         if (DO_AA_RANGE_CHECK) {
                             // disable once regression tests are OK
@@ -237,7 +237,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
                                 aa = 0;
                             }
                         }
-
+*/
                         // cx inside tile[x0; x1[ and aa range:
                         tile[idx] = _alphaMap[aa];
                     }

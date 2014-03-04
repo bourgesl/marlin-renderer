@@ -35,12 +35,12 @@ import java.util.TimerTask;
 public final class ArrayCache implements PiscesConst {
 
     final static int BUCKETS = 4;
-    final static int BUCKET_GROW = 4;
-    final static int BUCKET_DIRTY_GROW = 2;
+    final static int BUCKET_GROW_BITS = 2;
+    final static int BUCKET_GROW = 1 << BUCKET_GROW_BITS;
+    final static int BUCKET_DIRTY_GROW_BITS = 1;
+    final static int BUCKET_DIRTY_GROW = 1 << BUCKET_DIRTY_GROW_BITS;
     final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arrayCopy)
-    /**
-     * threshold to grow arrays by x4 or x2
-     */
+    /** threshold to grow arrays by x4 or x2 */
     final static int THRESHOLD_ARRAY_SIZE = 32 * 1024;
     // array sizes:
     final static int MAX_ARRAY_SIZE;
@@ -70,7 +70,7 @@ public final class ArrayCache implements PiscesConst {
         MAX_ARRAY_SIZE = arraySize / BUCKET_GROW;
 
         /* initialize buckets for dirty int arrays (large AA chunk = 32 x pixels) */
-        arraySize = BUCKET_DIRTY_GROW * PiscesCache.TILE_SIZE * INITIAL_PIXEL_DIM; 
+        arraySize = BUCKET_DIRTY_GROW * PiscesCache.TILE_SIZE * 1024;  /* TODO: adjust max size */
 
         for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_DIRTY_GROW) {
             DIRTY_ARRAY_SIZES[i] = arraySize;
@@ -82,8 +82,6 @@ public final class ArrayCache implements PiscesConst {
         MAX_DIRTY_ARRAY_SIZE = arraySize / BUCKET_DIRTY_GROW;
 
         if (doStats || doMonitors) {
-            logInfo("RenderingEngine.useThreadLocal = " + PiscesRenderingEngine.useThreadLocal);
-
             logInfo("ArrayCache.BUCKETS        = " + BUCKETS);
             logInfo("ArrayCache.MIN_ARRAY_SIZE = " + MIN_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_ARRAY_SIZE = " + MAX_ARRAY_SIZE);
@@ -132,12 +130,6 @@ public final class ArrayCache implements PiscesConst {
                     if (rdrCtx.mon_npi_currentSegment.count != 0) {
                         logInfo(rdrCtx.mon_npi_currentSegment.toString());
                     }
-                    if (rdrCtx.mon_stroker_drawJoin.count != 0) {
-                        logInfo(rdrCtx.mon_stroker_drawJoin.toString());
-                    }
-                    if (rdrCtx.mon_stroker_drawRoundCap.count != 0) {
-                        logInfo(rdrCtx.mon_stroker_drawRoundCap.toString());
-                    }
                     if (rdrCtx.mon_rdr_addLine.count != 0) {
                         logInfo(rdrCtx.mon_rdr_addLine.toString());
                     }
@@ -161,12 +153,6 @@ public final class ArrayCache implements PiscesConst {
                         final long npiNorm = rdrCtx.mon_npi_currentSegment.sum;
                         logInfo(rdrCtx.mon_npi_currentSegment.name + " : " + ((100d * npiNorm) / total) + " %");
 
-                        final long drawCap = rdrCtx.mon_stroker_drawRoundCap.sum;
-                        logInfo(rdrCtx.mon_stroker_drawRoundCap.name + " : " + ((100d * drawCap) / total) + " %");
-
-                        final long drawJoin = rdrCtx.mon_stroker_drawJoin.sum;
-                        logInfo(rdrCtx.mon_stroker_drawJoin.name + " : " + ((100d * drawJoin) / total) + " %");
-
                         final long addLine = rdrCtx.mon_rdr_addLine.sum;
                         logInfo(rdrCtx.mon_rdr_addLine.name + " : " + ((100d * addLine) / total) + " %");
 
@@ -185,8 +171,6 @@ public final class ArrayCache implements PiscesConst {
                     if (doFlushMonitors) {
                         rdrCtx.mon_pre_getAATileGenerator.reset();
                         rdrCtx.mon_npi_currentSegment.reset();
-                        rdrCtx.mon_stroker_drawJoin.reset();
-                        rdrCtx.mon_stroker_drawRoundCap.reset();
                         rdrCtx.mon_rdr_addLine.reset();
                         rdrCtx.mon_rdr_endRendering.reset();
                         rdrCtx.mon_rdr_endRendering_Y.reset();
@@ -200,9 +184,9 @@ public final class ArrayCache implements PiscesConst {
                         logInfo(rdrCtx.stat_cache_rowAAChunk.toString());
                         rdrCtx.stat_cache_rowAAChunk.reset();
                     }
-                    if (rdrCtx.stat_cache_rowAARLE.count != 0) {
-                        logInfo(rdrCtx.stat_cache_rowAARLE.toString());
-                        rdrCtx.stat_cache_rowAARLE.reset();
+                    if (rdrCtx.stat_cache_rowAA.count != 0) {
+                        logInfo(rdrCtx.stat_cache_rowAA.toString());
+                        rdrCtx.stat_cache_rowAA.reset();
                     }
                     if (rdrCtx.stat_rdr_poly_stack.count != 0) {
                         logInfo(rdrCtx.stat_rdr_poly_stack.toString());
@@ -211,6 +195,10 @@ public final class ArrayCache implements PiscesConst {
                     if (rdrCtx.stat_rdr_edges.count != 0) {
                         logInfo(rdrCtx.stat_rdr_edges.toString());
                         rdrCtx.stat_rdr_edges.reset();
+                    }
+                    if (rdrCtx.stat_rdr_edges_resizes.count != 0) {
+                        logInfo(rdrCtx.stat_rdr_edges_resizes.toString());
+                        rdrCtx.stat_rdr_edges_resizes.reset();
                     }
                     if (rdrCtx.stat_rdr_activeEdges.count != 0) {
                         logInfo(rdrCtx.stat_rdr_activeEdges.toString());
@@ -252,6 +240,8 @@ public final class ArrayCache implements PiscesConst {
         }
     }
 
+    /* TODO: use shifts to find bucket as fast as possible (no condition) */
+    
     /* small methods used a lot (to be inlined / optimized by hotspot) */
     static int getBucket(final int length) {
         // Use size = (length / 2) * 2 => rounded to power of two

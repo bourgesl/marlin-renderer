@@ -31,11 +31,10 @@ import java.util.Arrays;
  *
  * @see PiscesRenderer#render
  */
-final class PiscesCache implements PiscesConst {
+public final class PiscesCache implements PiscesConst {
     /* constants */
-
-    public static final int TILE_SIZE_LG = 5;
-    public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32
+    public static final int TILE_SIZE_LG = PiscesRenderingEngine.getTileSize_Log2();
+    public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
 
     /* 2048 alpha values (width) x 32 rows (tile) = 256K */
     static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
@@ -74,7 +73,8 @@ final class PiscesCache implements PiscesConst {
     PiscesCache(final RendererContext rdrCtx) {
         this.rdrCtx = rdrCtx;
 
-        this.rowAAChunk_initial  = new int[INITIAL_CHUNK_ARRAY]; // 256K
+        // +1 to avoid recycling in widenDirtyIntArray()
+        this.rowAAChunk_initial  = new int[INITIAL_CHUNK_ARRAY + 1]; // 256K
         this.touchedTile_initial = new int[INITIAL_ARRAY];       // only 1 tile line
         
         rowAAChunk  = rowAAChunk_initial;
@@ -114,7 +114,7 @@ final class PiscesCache implements PiscesConst {
             rowAAChunk = rowAAChunk_initial;
         }
         if (touchedTile != touchedTile_initial) {
-            rdrCtx.putIntArray(touchedTile, 0); // already zero filled
+            rdrCtx.putIntArray(touchedTile, 0, 0); // already zero filled
             touchedTile = touchedTile_initial;
         }
     }
@@ -200,7 +200,7 @@ final class PiscesCache implements PiscesConst {
             rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyIntArray(_rowAAChunk, pos, 2 + (px_bbox1 - px0));
         }
         if (doStats) {
-            this.rdrCtx.stat_cache_rowAARLE.add(2 + px_bbox1 - px0);
+            this.rdrCtx.stat_cache_rowAA.add(2 + px_bbox1 - px0);
         }
         // rowAA contains (x0 x1)(alpha values for range[x0; x1[)
         _rowAAChunk[pos    ] = px0;      // first pixel inclusive
@@ -218,6 +218,9 @@ final class PiscesCache implements PiscesConst {
         // compute alpha sum into rowAA:
         for (int x = from, val = 0; x < to; x++) {
             val += alphaRow[x]; // [from; to[
+
+            /* ensure val is [0;64] */
+//            val &= _MASK_ALPHA_COVERAGE; /* use alpha mask to ensure values are in [0;64] range */
 
             // store alpha sum:
             _rowAAChunk[x + off] = val;

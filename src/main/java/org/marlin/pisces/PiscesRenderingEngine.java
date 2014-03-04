@@ -24,19 +24,18 @@
  */
 package org.marlin.pisces;
 
-import java.awt.Shape;
 import java.awt.BasicStroke;
-import java.awt.geom.Path2D;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
-import java.lang.ref.SoftReference;
+import java.lang.ref.Reference;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
+import static org.marlin.pisces.PiscesUtils.logInfo;
 import sun.awt.geom.PathConsumer2D;
+import sun.java2d.pipe.AATileGenerator;
 import sun.java2d.pipe.Region;
 import sun.java2d.pipe.RenderingEngine;
-import sun.java2d.pipe.AATileGenerator;
-import static org.marlin.pisces.PiscesUtils.logInfo;
 
 /**
  * Pisces RendererEngine implementation
@@ -467,7 +466,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         }
 
         public int currentSegment(final float[] coords) {
-            int type = src.currentSegment(coords);
+            final int type = src.currentSegment(coords);
             
             if (doMonitors) {
                 rdrCtx.mon_npi_currentSegment.start();
@@ -554,7 +553,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         }
 
         public int currentSegment(final double[] coords) {
-            float[] _tmp = tmp; // dirty
+            final float[] _tmp = tmp; // dirty
             int type = this.currentSegment(_tmp);
             for (int i = 0; i < 6; i++) {
                 coords[i] = _tmp[i];
@@ -799,55 +798,99 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
 
     /* --- RendererContext handling --- */
     /** use ThreadLocal or ConcurrentLinkedQueue to get one RendererContext */
-    public static final boolean useThreadLocal;
+    private static final boolean useThreadLocal;
+
+    /* hard reference */
+    final static int REF_HARD = 0;
+    /* soft reference */
+    final static int REF_SOFT = 1;
+    /* weak reference */
+    final static int REF_WEAK = 2;
+
+    /* reference type stored in either TL or CLQ */
+    static final int REF_TYPE;
 
     /** Per-thread TileState */
-    private static final ThreadLocal<SoftReference<RendererContext>> rdrCtxThreadLocal;
+    private static final ThreadLocal<Object> rdrCtxThreadLocal;
     /** TileState queue when ThreadLocal is disabled */
-    private static final ConcurrentLinkedQueue<SoftReference<RendererContext>> rdrCtxQueue;
+    private static final ConcurrentLinkedQueue<Object> rdrCtxQueue;
 
     /* Static initializer to use TL or CLQ mode */
     static {
-        useThreadLocal = Boolean.parseBoolean(System.getProperty("sun.java2d.renderer.useThreadLocal", "true")); // TL mode by default
+        // TL mode by default:
+        useThreadLocal = isUseThreadLocal();
+        rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<Object>() : null;
+        rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>() : null;
+
+        // Hard reference by default:
+        String refType = System.getProperty("sun.java2d.renderer.useRef", "hard");
+        switch (refType) {
+            default:
+            case "hard":
+                refType = "hard";
+                REF_TYPE = REF_HARD;
+                break;
+            case "soft":
+                refType = "soft";
+                REF_TYPE = REF_SOFT;
+                break;
+            case "weak":
+                refType = "weak";
+                REF_TYPE = REF_WEAK;
+                break;
+        }
+
+        /* log information at startup */
+        logInfo("===============================================================================");
 
         final String reClass = System.getProperty("sun.java2d.renderer");
-        if (reClass != null) {
-            logInfo("sun.java2d.renderer = " + reClass);
-        }
-        logInfo("PiscesRenderingEngine: sun.java2d.renderer.useThreadLocal = " + useThreadLocal);
 
-        rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<SoftReference<RendererContext>>() : null;
-        rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<SoftReference<RendererContext>>() : null;
-    }
-    /**
-     * Return the initial pixel size used to define initial arrays (tile AA chunk, alpha line, buckets)
-     *
-     * @return 0 < initial pixel size < 32768 (2048 by default)
-     */
-    public static int getInitialImageSize() {
-        final int defaultPixelSize = 2048;
-        int pixelSize = Integer.getInteger("sun.java2d.renderer.pixelsize", defaultPixelSize);
-        /* check for invalid values */
-        if (pixelSize <= 0 || pixelSize > 32 * 1024) {
-            logInfo("PiscesRenderingEngine: Invalid sun.java2d.renderer.pixelsize = " + pixelSize);
-            pixelSize = defaultPixelSize;
+        if (PiscesRenderingEngine.class.getName().equals(reClass)) {
+            logInfo("Marlin software rasterizer           = ENABLED");
+            logInfo("Version                              = [" + Version.getVersion() + "]");
+            logInfo("sun.java2d.renderer                  = " + reClass);
+            logInfo("sun.java2d.renderer.useThreadLocal   = " + useThreadLocal);
+            logInfo("sun.java2d.renderer.useRef           = " + refType);
+
+            logInfo("sun.java2d.renderer.pixelsize        = " + getInitialImageSize());
+            logInfo("sun.java2d.renderer.subPixel_log2_X  = " + getSubPixel_Log2_X());
+            logInfo("sun.java2d.renderer.subPixel_log2_Y  = " + getSubPixel_Log2_Y());
+            logInfo("sun.java2d.renderer.tileSize_log2    = " + getTileSize_Log2());
+            logInfo("sun.java2d.renderer.useFastMath      = " + isUseFastMath());
+
+            /* debugging parameters */
+            logInfo("sun.java2d.renderer.doStats          = " + isDoStats());
+            logInfo("sun.java2d.renderer.doMonitors       = " + isDoMonitors());
+            logInfo("sun.java2d.renderer.doChecks         = " + isDoChecks());
+
+            /* logging parameters */
+            logInfo("sun.java2d.renderer.useJul           = " + isUseJul());
+            logInfo("sun.java2d.renderer.logCreateContext = " + isLogCreateContext());
+            logInfo("sun.java2d.renderer.logUnsafeMalloc  = " + isLogUnsafeMalloc());
+        } else {
+            logInfo("sun.java2d.renderer                  = " + reClass);
         }
-        logInfo("PiscesRenderingEngine: sun.java2d.renderer.pixelsize = " + pixelSize);
-        return pixelSize;
+        logInfo("===============================================================================");
     }
 
     /**
      * Get the RendererContext instance dedicated to the current thread
      * @return RendererContext instance
      */
+    @SuppressWarnings({"unchecked"})
     static RendererContext getRendererContext() {
-        final SoftReference<RendererContext> ref = (useThreadLocal) ? rdrCtxThreadLocal.get() : rdrCtxQueue.poll();
-        RendererContext rdrCtx = (ref != null) ? ref.get() : null;
+        RendererContext rdrCtx = null;
+        final Object ref = (useThreadLocal) ? rdrCtxThreadLocal.get() : rdrCtxQueue.poll();
+        if (ref != null) {
+            // resolve reference:
+            rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref) : ((Reference<RendererContext>) ref).get();
+        }
+        /* create a new RendererContext if none is available */
         if (rdrCtx == null) {
             rdrCtx = RendererContext.createContext();
             if (useThreadLocal) {
                 // update thread local reference:
-                rdrCtxThreadLocal.set(new SoftReference<RendererContext>(rdrCtx));
+                rdrCtxThreadLocal.set(rdrCtx.reference);
             }
         }
         if (doMonitors) {
@@ -865,8 +908,93 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             rdrCtx.mon_pre_getAATileGenerator.stop();
         }
         if (!useThreadLocal) {
-            rdrCtxQueue.offer(new SoftReference<RendererContext>(rdrCtx));
+            rdrCtxQueue.offer(rdrCtx.reference);
         }
     }
 
+    /* marlin system properties */
+
+    public static boolean isUseThreadLocal() {
+        return getBoolean("sun.java2d.renderer.useThreadLocal", "true");
+    }
+
+    /**
+     * Return the initial pixel size used to define initial arrays (tile AA chunk, alpha line, buckets)
+     *
+     * @return 64 < initial pixel size < 32768 (2048 by default)
+     */
+    public static int getInitialImageSize() {
+        return getInteger("sun.java2d.renderer.pixelsize", 2048, 64, 32 * 1024);
+    }
+
+    /**
+     * Return the log(2) corresponding to subpixel on x-axis (
+     *
+     * @return 1 (2 subpixels) < initial pixel size < 4 (16 subpixels) (3 by default ie 8 subpixels)
+     */
+    public static int getSubPixel_Log2_X() {
+        return getInteger("sun.java2d.renderer.subPixel_log2_X", 3, 1, 4);
+    }
+
+    /**
+     * Return the log(2) corresponding to subpixel on y-axis (
+     *
+     * @return 1 (2 subpixels) < initial pixel size < 4 (16 subpixels) (3 by default ie 8 subpixels)
+     */
+    public static int getSubPixel_Log2_Y() {
+        return getInteger("sun.java2d.renderer.subPixel_log2_Y", 3, 1, 4);
+    }
+
+    /**
+     * Return the log(2) corresponding to the square tile size in pixels
+     *
+     * @return 3 (8x8 pixels) < tile size < 8 (256x256 pixels) (5 by default ie 32x32 pixels)
+     */
+    public static int getTileSize_Log2() {
+        return getInteger("sun.java2d.renderer.tileSize_log2", 5, 3, 8);
+    }
+    
+    public static boolean isUseFastMath() {
+        return getBoolean("sun.java2d.renderer.useFastMath", "true");
+    }
+
+    /* debugging parameters */
+    public static boolean isDoStats() {
+        return getBoolean("sun.java2d.renderer.doStats", "false");
+    }
+
+    public static boolean isDoMonitors() {
+        return getBoolean("sun.java2d.renderer.doMonitors", "false");
+    }
+
+    public static boolean isDoChecks() {
+        return getBoolean("sun.java2d.renderer.doChecks", "false");
+    }
+
+    /* logging parameters */
+    public static boolean isUseJul() {
+        return getBoolean("sun.java2d.renderer.useJul", "false");
+    }
+
+    public static boolean isLogCreateContext() {
+        return getBoolean("sun.java2d.renderer.logCreateContext", "false");
+    }
+
+    public static boolean isLogUnsafeMalloc() {
+        return getBoolean("sun.java2d.renderer.logUnsafeMalloc", "false");
+    }
+
+    public static boolean getBoolean(final String key, final String def) {
+        return Boolean.valueOf(System.getProperty(key, def));
+    }
+
+    public static int getInteger(final String key, final int def, final int min, final int max) {
+        int value = Integer.getInteger(key, def);
+        /* check for invalid values */
+        if (value < min || value > max) {
+            logInfo("Invalid value for " + key + " = " + value + "; expect value in range[" + min + ", " + max + "] !");
+            value = def;
+        }
+        return value;
+    }
 }

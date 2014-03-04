@@ -136,11 +136,11 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
     void dispose() {
         // Return arrays:
         if (this.recycleDashes && dash != dashes_initial) {
-            rdrCtx.putFloatArray(dash, dashLen);
+            rdrCtx.putFloatArray(dash, 0, dashLen);
         }
         
         if (firstSegmentsBuffer != firstSegmentsBuffer_initial) {
-            rdrCtx.putFloatArray(firstSegmentsBuffer, firstSegUsed);
+            rdrCtx.putFloatArray(firstSegmentsBuffer, 0, firstSegUsed);
             firstSegmentsBuffer = firstSegmentsBuffer_initial;
         }
         

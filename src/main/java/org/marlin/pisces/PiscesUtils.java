@@ -65,6 +65,20 @@ final class PiscesUtils {
         }
     }
 
+    /**
+     * Checks if x is a power-of-two number.
+     * 
+     * @param x any integer value
+     * @return true if x is a power-of-two number
+     */
+    public static boolean isPowerOf2(int x) {
+        if (x <= 0) {
+            return false;
+        } else {
+            return (x & (x - 1)) == 0;
+        }
+    }
+
     // Returns the caller's class and method's name; best effort
     // if cannot infer, return the logger's name.
     static String getCallerInfo(String className) {

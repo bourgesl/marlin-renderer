@@ -8,13 +8,13 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.4</version>
+    <version>0.4.1</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
 
     <description>
-        A pure Java renderer, derived from OpenJDK Pisces
+        A pure Java renderer, derived from OpenJDK Pisces (GPL2+CP)
     </description>
 
     <properties>
@@ -22,16 +22,21 @@
     </properties>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-eclipse-plugin</artifactId>
-                    <version>2.5</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -56,18 +61,23 @@
                             <BuildTime>${maven.build.timestamp}</BuildTime>
                         </manifestEntries>
                     </archive>
-                    <includes>
-                        <include>org/**</include>
-                        <include>META-INF/services/*</include>
-                    </includes>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>org/**</include>
+                                <include>META-INF/services/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>sun-java2d</id>
                         <phase>package</phase>
                         <goals>
                             <goal>jar</goal>
