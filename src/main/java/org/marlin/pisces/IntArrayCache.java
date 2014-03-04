@@ -51,7 +51,6 @@ final class IntArrayCache implements PiscesConst {
     IntArrayCache(final int arraySize) {
         this.arraySize = arraySize;
         this.intArrays = new ArrayDeque<int[]>(6); /* small but enough: almost 1 cache line */
-
     }
 
     int[] getArray() {

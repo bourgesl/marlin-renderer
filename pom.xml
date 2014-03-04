@@ -14,7 +14,7 @@
     <url>https://github.com/bourgesl/marlin-renderer</url>
 
     <description>
-        A pure Java renderer, derived from OpenJDK Pisces
+        A pure Java renderer, derived from OpenJDK Pisces (GPL2+CP)
     </description>
 
     <properties>

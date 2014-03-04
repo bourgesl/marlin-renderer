@@ -152,7 +152,7 @@ final class Helpers implements PiscesConst {
         return filterOutNotInAB(pts, off, num, A, B) - off;
     }
 
-    /* TODO: replace with new signature */
+    /* TODO: replace with new signature see: widenArrayPartially() */
     static float[] widenArray(final RendererContext rdrCtx, final float[] in, final int cursize, 
                               final int numToAdd, final int clearTo) {
         
@@ -171,7 +171,7 @@ final class Helpers implements PiscesConst {
         return res;
     }
 
-    /* TODO: replace with new signature */
+    /* TODO: replace with new signature see: widenArrayPartially() */
     static int[] widenArray(final RendererContext rdrCtx, final int[] in, final int cursize, 
                             final int numToAdd, final int clearTo) {
         

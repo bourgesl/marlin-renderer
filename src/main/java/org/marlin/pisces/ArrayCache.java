@@ -59,7 +59,7 @@ public final class ArrayCache implements PiscesConst {
     static {
         /* initialize buckets for int/float arrays */
         int arraySize = MIN_ARRAY_SIZE;
-        
+
         for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_GROW) {
             ARRAY_SIZES[i] = arraySize;
 
