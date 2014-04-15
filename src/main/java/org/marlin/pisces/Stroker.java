@@ -1011,7 +1011,7 @@ final class Stroker implements PathConsumer2D, PiscesConst {
             }
         }
         if (dxs == 0f && dys == 0f) {
-            // this happens iff the "curve" is just a point
+            // this happens if the "curve" is just a point
             lineTo(middle[0], middle[1]);
             return;
         }
@@ -1084,7 +1084,7 @@ final class Stroker implements PathConsumer2D, PiscesConst {
             dys = dyf = middle[5] - middle[1];
         }
         if (dxs == 0f && dys == 0f) {
-            // this happens iff the "curve" is just a point
+            // this happens if the "curve" is just a point
             lineTo(middle[0], middle[1]);
             return;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -52,7 +52,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         PiscesUtils.logInfo("===============================================================================");
         PiscesUtils.logInfo(" Using sun.misc.Unsafe: No warranty (may crash your JVM) !");
-        PiscesUtils.logInfo(" USE IT AT YOUR OWN RISKS = do not use in production (ALPHA Release).");
+        PiscesUtils.logInfo(" USE IT AT YOUR OWN RISKS.");
         PiscesUtils.logInfo("===============================================================================");
     }
     
@@ -76,8 +76,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     /* 2048 pixels (height) x 8 subpixels = 64K */
     static final int INITIAL_BUCKET_ARRAY = INITIAL_PIXEL_DIM * SUBPIXEL_POSITIONS_Y;
     
-    /* initial edges (20 bytes) = 2 x 32K ints */
-    static final int INITIAL_EDGES_CAPACITY = INITIAL_ARRAY_32K << 3;
+    /* initial edges (16 bytes) = 2 x 16K ints */
+    static final int INITIAL_EDGES_CAPACITY = INITIAL_ARRAY_16K << 3;
 
     public static final int WIND_EVEN_ODD = 0;
     public static final int WIND_NON_ZERO = 1;
@@ -85,19 +85,45 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     // common to all types of input path segments.
     /* OFFSET as bytes */
     // float values:
-    public static final int OFF_F_CURX = 0;
-    public static final int OFF_SLOPE  = OFF_F_CURX + SIZE;
+    public static final int OFF_F_CURX  = 0;
+    public static final int OFF_SLOPE   = OFF_F_CURX + SIZE;
     // integer values:
-    public static final int OFF_NEXT   = OFF_SLOPE + SIZE;
-    public static final int OFF_YMAX   = OFF_NEXT + SIZE;
-    public static final int OFF_OR     = OFF_YMAX + SIZE;
+    public static final int OFF_NEXT    = OFF_SLOPE + SIZE;
+    public static final int OFF_YMAX_OR = OFF_NEXT + SIZE;
+
     /* size of one edge in bytes */
-    public static final int SIZEOF_EDGE_BYTES = OFF_OR + SIZE;
+    public static final int SIZEOF_EDGE_BYTES = OFF_YMAX_OR + SIZE;
 
     /* curve break into lines */
+    /** cubic bind length (dx or dy) = 20 to decrement step */
     public static final float DEC_BND = 20f;
+    /** cubic bind length (dx or dy) = 8 to increment step */
     public static final float INC_BND = 8f;
-
+    /** cubic countlg */
+    private static final int CUB_COUNT_LG = 3;
+    /** cubic count = 2^countlg */
+    private static final int CUB_COUNT = 1 << CUB_COUNT_LG;
+    /** cubic count^2 = 4^countlg */
+    private static final int CUB_COUNT_2 = 1 << (2 * CUB_COUNT_LG);
+    /** cubic count^3 = 8^countlg */
+    private static final int CUB_COUNT_3 = 1 << (3 * CUB_COUNT_LG);
+    /** cubic 1 / count */
+    private static final float CUB_INV_COUNT = 1f / CUB_COUNT;
+    /** cubic 1 / count^2 = 1 / 4^countlg */
+    private static final float CUB_INV_COUNT_2 = 1f / CUB_COUNT_2;
+    /** cubic 1 / count^3 = 1 / 8^countlg */
+    private static final float CUB_INV_COUNT_3 = 1f / CUB_COUNT_3;
+    
+    /* quad break */
+    /** quadratic bind length (dx or dy) = 32 ie 4 subpixel ? */
+    public static final float QUAD_DEC_BND = 32f;
+    /** quadratic countlg */
+    private static final int QUAD_COUNT_LG = 4;
+    /** quadratic count = 2^countlg */
+    private static final int QUAD_COUNT = 1 << QUAD_COUNT_LG;
+    /** quadratic 1 / count^2 */
+    private static final float QUAD_INV_COUNT_SQ = 1f / (QUAD_COUNT * QUAD_COUNT); 
+    
 //////////////////////////////////////////////////////////////////////////////
 //  SCAN LINE
 //////////////////////////////////////////////////////////////////////////////
@@ -146,34 +172,44 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     private void quadBreakIntoLinesAndAdd(float x0, float y0,
             final Curve c,
             final float x2, final float y2) {
-        final float QUAD_DEC_BND = 32;
-        final int countlg = 4;
-        int count = 1 << countlg;
-        int countsq = count * count;
-        float maxDD = Math.max(c.dbx / countsq, c.dby / countsq);
-        while (maxDD > QUAD_DEC_BND) {
-            maxDD /= 4;
+        
+        int count = QUAD_COUNT; /* 2^countlg where count_lg=4 */
+        float icount2 = QUAD_INV_COUNT_SQ; /* 1 / count^2 */
+        float maxDD = Math.max(c.dbx * icount2, c.dby * icount2);
+
+        final float _QUAD_DEC_BND = QUAD_DEC_BND;
+        
+        while (maxDD > _QUAD_DEC_BND) { /* 32 */
+            maxDD *= 0.25f;
             count <<= 1;
         }
 
-        countsq = count * count;
-        final float ddx = c.dbx / countsq;
-        final float ddy = c.dby / countsq;
-        float dx = c.bx / countsq + c.cx / count;
-        float dy = c.by / countsq + c.cy / count;
+        float icount = 1f / count;
+        icount2 = icount * icount; /* 1 / count^2 */
+        
+        final float ddx = c.dbx * icount2;
+        final float ddy = c.dby * icount2;
+        float dx = c.bx * icount2 + c.cx * icount;
+        float dy = c.by * icount2 + c.cy * icount;
 
         float x1, y1;
+        int nL = 0; // line count
 
         while (count-- > 1) {
             x1 = x0 + dx;
             dx += ddx;
             y1 = y0 + dy;
             dy += ddy;
-            addLine(x0, y0, x1, y1);
+            addLine(x0, y0, x1, y1); 
+            if (doStats) { nL++; }
             x0 = x1;
             y0 = y1;
         }
         addLine(x0, y0, x2, y2);
+
+        if (doStats) {
+            rdrCtx.stat_rdr_quadBreak.add(nL + 1);
+        }
     }
 
     // x0, y0 and x3,y3 are the endpoints of the curve. We could compute these
@@ -184,40 +220,49 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     private void curveBreakIntoLinesAndAdd(float x0, float y0,
             final Curve c,
             final float x3, final float y3) {
-        final int countlg = 3;
-        int count = 1 << countlg;
+        
+        final float icount = CUB_INV_COUNT;    /* 1 / count */
+        final float icount2 = CUB_INV_COUNT_2; /* 1 / count^2 */
+        final float icount3 = CUB_INV_COUNT_3; /* 1 / count^3 */
+        
+        int count = CUB_COUNT;
 
         // the dx and dy refer to forward differencing variables, not the last
         // coefficients of the "points" polynomial
         float dddx, dddy, ddx, ddy, dx, dy;
-        dddx = 2f * c.dax / (1 << (3 * countlg));
-        dddy = 2f * c.day / (1 << (3 * countlg));
-
-        ddx = dddx + c.dbx / (1 << (2 * countlg));
-        ddy = dddy + c.dby / (1 << (2 * countlg));
-        dx = c.ax / (1 << (3 * countlg)) + c.bx / (1 << (2 * countlg)) + c.cx / (1 << countlg);
-        dy = c.ay / (1 << (3 * countlg)) + c.by / (1 << (2 * countlg)) + c.cy / (1 << countlg);
+        dddx = 2f * c.dax * icount3;
+        dddy = 2f * c.day * icount3;
+        ddx = dddx + c.dbx * icount2;
+        ddy = dddy + c.dby * icount2;
+        dx = c.ax * icount3 + c.bx * icount2 + c.cx * icount;
+        dy = c.ay * icount3 + c.by * icount2 + c.cy * icount;
 
         // we use x0, y0 to walk the line
         float x1 = x0, y1 = y0;
+        int nL = 0; // line count
+
+        final float _DEC_BND = DEC_BND;
+        final float _INC_BND = INC_BND;
+        
         while (count > 0) {
-            while (Math.abs(ddx) > DEC_BND || Math.abs(ddy) > DEC_BND) {
-                dddx /= 8;
-                dddy /= 8;
-                ddx = ddx / 4 - dddx;
-                ddy = ddy / 4 - dddy;
-                dx = (dx - ddx) / 2;
-                dy = (dy - ddy) / 2;
+            while (Math.abs(ddx) > _DEC_BND || Math.abs(ddy) > _DEC_BND) { /* 20 */
+                /* 1/8 = 0.125, 1/4 = 0.25, 1/2 = 0.5 */
+                dddx *= 0.125f;
+                dddy *= 0.125f;
+                ddx = 0.25f * ddx - dddx;
+                ddy = 0.25f * ddy - dddy;
+                dx = 0.5f * (dx - ddx);
+                dy = 0.5f * (dy - ddy);
                 count <<= 1;
             }
             // can only do this on even "count" values, because we must divide count by 2
-            while (count % 2 == 0 && Math.abs(dx) <= INC_BND && Math.abs(dy) <= INC_BND) {
-                dx = 2 * dx + ddx;
-                dy = 2 * dy + ddy;
-                ddx = 4 * (ddx + dddx);
-                ddy = 4 * (ddy + dddy);
-                dddx = 8 * dddx;
-                dddy = 8 * dddy;
+            while (count % 2 == 0 && Math.abs(dx) <= _INC_BND && Math.abs(dy) <= _INC_BND) { /* 8 */
+                dx = 2f * dx + ddx;
+                dy = 2f * dy + ddy;
+                ddx = 4f * (ddx + dddx);
+                ddy = 4f * (ddy + dddy);
+                dddx *= 8f;
+                dddy *= 8f;
                 count >>= 1;
             }
             count--;
@@ -233,8 +278,12 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 y1 = y3;
             }
             addLine(x0, y0, x1, y1);
+            if (doStats) { nL++; }
             x0 = x1;
             y0 = y1;
+        }
+        if (doStats) {
+            rdrCtx.stat_rdr_curveBreak.add(nL);
         }
     }
 
@@ -242,9 +291,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         if (doMonitors) {
             rdrCtx.mon_rdr_addLine.start();
         }
-        int or = 1; // orientation of the line. 1 if y increases, -1 otherwise.
+        int or = 1; // orientation of the line. 1 if y increases, 0 otherwise.
         if (y2 < y1) {
-            or = -1;
+            or = 0;
             float tmp = y2;
             y2 = y1;
             y1 = tmp;
@@ -329,13 +378,13 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         
         // integer values:
         /* pointer from bucket */
-        _unsafe.putInt(addr + OFF_NEXT,   _edgeBuckets[bucketIdx]);
-        _unsafe.putInt(addr + OFF_YMAX,    lastCrossing);
-        _unsafe.putInt(addr + OFF_OR,      or); // use byte ?
-        
+        _unsafe.putInt(addr + OFF_NEXT,    _edgeBuckets[bucketIdx]);
+        _unsafe.putInt(addr + OFF_YMAX_OR,  (lastCrossing << 1) | or); /* last bit corresponds to the orientation */
+//        _unsafe.putInt(addr + OFF_OR,      or); // use byte ?
+
         // Update buckets:
         _edgeBuckets[bucketIdx]       = ptr; /* directly the edge struct "pointer" */
-        _edgeBucketCounts[bucketIdx] += 2;
+        _edgeBucketCounts[bucketIdx] += 2;   /* 1 << 1 */
         _edgeBucketCounts[lastCrossing - _boundsMinY] |= 1; /* last bit means edge end */        
 
         /* update free pointer (ie length in bytes) */
@@ -463,7 +512,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             edges.resize(INITIAL_EDGES_CAPACITY);
         }
         if (doCleanDirty) {
-            edges.fill((byte)0);
+            edges.fill(BYTE_0);
         }
         if (alphaLine != alphaLine_initial) {
             rdrCtx.putIntArray(alphaLine, 0, 0); // already zero filled
@@ -579,7 +628,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // Mask to determine the relevant bit of the crossing sum
         // 0x1 if EVEN_ODD, all bits if NON_ZERO
-        final int mask = (windingRule == WIND_EVEN_ODD) ? 0x1 : ~0x0;
+        final boolean windingRuleEvenOdd = (windingRule == WIND_EVEN_ODD);
 
         // Useful when processing tile line by tile line
         final int[] _alpha = alphaLine;
@@ -594,10 +643,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         int[] _crossings = this.crossings;
 
         // copy constants:
-        final int _OFF_SLOPE = OFF_SLOPE;
-        final int _OFF_NEXT  = OFF_NEXT;
-        final int _OFF_YMAX  = OFF_YMAX;
-        final int _OFF_OR    = OFF_OR;
+        final int _OFF_SLOPE   = OFF_SLOPE;
+        final int _OFF_NEXT    = OFF_NEXT;
+        final int _OFF_YMAX_OR = OFF_YMAX_OR;
 
         // unsafe I/O:
         final Unsafe _unsafe = unsafe;
@@ -635,7 +683,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         int bucketcount, i, j, ecur, lowx, highx;
         int cross, jcross, lastCross;
         float f_curx;
-        int x0, x1, tmp, sum, prev, curx, crorientation, pix_x, pix_xmaxm1, pix_xmax;
+        int x0, x1, tmp, sum, prev, curx, curxo, crorientation, pix_x, pix_xmaxm1, pix_xmax;
 
         int low, high, mid, prevNumCrossings;
         boolean useBinarySearch;
@@ -658,13 +706,16 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
                 // last bit set to 1 means that edges ends
                 if ((bucketcount & 0x1) != 0) {
+                    /* note: edge[YMAX] is multiplied by 2 so compare it with 2*y + 1 (any orientation) */
+                    final int yLim = (y << 1) | 0x1;
                     // eviction in active edge list
                     newCount = 0;
                     for (i = 0; i < numCrossings; i++) {
                         /* get the pointer to the edge */
                         ecur = _edgePtrs[i];
                         // random access so use unsafe:
-                        if (_unsafe.getInt(addr0 + (ecur + _OFF_YMAX)) > y) {
+                        /* note: ymax is multiplied by 2 (1 bit shift to store orientation) */
+                        if (_unsafe.getInt(addr0 + (ecur + _OFF_YMAX_OR)) > yLim) {
                             _edgePtrs[newCount++] = ecur;
                         }
                     }
@@ -690,7 +741,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     for (ecur = _edgeBuckets[bucket]; numCrossings < ptrEnd; numCrossings++) {
                         /* store the pointer to the edge */
                         _edgePtrs[numCrossings] = ecur;
-                        
                         // random access so use unsafe:
                         ecur = _unsafe.getInt(addr0 + (ecur + _OFF_NEXT));
                     }
@@ -715,6 +765,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 } // ptrLen != 0
             } // bucketCount != 0
 
+
+            /* TODO: copy active edge data into AEL to avoid random access into edge arrays[ecur] (best cache locality) */
+
             if (numCrossings != 0) {
                 // try avoid sorting loop:
                 useBinarySearch = USE_BINARY_SEARCH && (numCrossings >= _THRESHOLD_BINARY_SEARCH);
@@ -727,8 +780,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     
                     // random access so use unsafe:
                     addr = addr0 + ecur; /* ecur + OFF_F_CURX */
-                    
-                    /* TODO: load 1 double=2xfloats=[F_CURX SLOPE] and use masks? */
                     f_curx = _unsafe.getFloat(addr);
 
                     /* convert subpixel coordinates (float) into pixel positions (int) for coming scanline */
@@ -738,10 +789,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
                     /* TODO: try split loops: update crossings and sort them to have better cache affinity (seems slower) */
 
-                    // update edge:
-                    cross = (int) f_curx;
-
-                    /* TODO: revert changes concerning orientation => sort with crossings (may be important) */
+                    // update crossing ( x-coordinate + last bit = orientation):
+                    cross = (((int) f_curx) << 1) | _unsafe.getInt(addr + _OFF_YMAX_OR) & 0x1; /* last bit contains orientation (0 or 1) */
 
                     // TODO: Try to avoid sorting edges at each scanline (few intersection)
                     // example: simple line: 2 parallel edges => sort once !!
@@ -809,12 +858,10 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 }
                 // --- from former ScanLineIterator.next()
 
-                // note: right shift on crossing to get x crossing: NO MORE!
-                /* TODO: revert changes concerning orientation => sort with crossings (may be important) */
-                
-                lowx = _crossings[0];
-                highx = _crossings[numCrossings - 1];
-                
+                // right shift on crossings to get the x-coordinate:
+                lowx = _crossings[0] >> 1;
+                highx = _crossings[numCrossings - 1] >> 1;
+
                 /* note: bboxx0 and bboxx1 must be pixel boundaries to have correct coverage computation */
                 x0 = (lowx  > bboxx0) ?  lowx : bboxx0;
                 x1 = (highx < bboxx1) ? highx : bboxx1;
@@ -827,53 +874,110 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 if (tmp > pix_maxX) {
                     pix_maxX = tmp;
                 }
+                
+                /* compute pixel coverages */
+                curxo = _crossings[0];
+                prev = curx = curxo >> 1;
+                // to turn {0, 1} into {-1, 1}, multiply by 2 and subtract 1.
+                crorientation = ((curxo & 0x1) << 1) - 1; /* last bit contains orientation (0 or 1) */
 
-                // TODO: fix alpha last index = pix_xmax + 1
-                // ie alpha[x1 >> SUBPIXEL_LG_POSITIONS_X +1 ] = cross (inclusive)
-                for (i = 0, sum = 0, prev = bboxx0; i < numCrossings; i++) {
-
-                    /* TODO: revert changes concerning orientation => sort with crossings (may be important) */
-                    // random access so use unsafe:
-                    crorientation = _unsafe.getInt(addr0 + (_edgePtrs[i] + _OFF_OR));
+                if (windingRuleEvenOdd) {
+                    sum = crorientation;
                         
-                    curx = _crossings[i];
+                    // Even Odd winding rule: take care of mask ie sum(orientations)
+                    for (i = 1; i < numCrossings; i++) {
+                        curxo = _crossings[i];
+                        curx  =  curxo >> 1;
+                        // to turn {0, 1} into {-1, 1}, multiply by 2 and subtract 1.
+                        crorientation = ((curxo & 0x1) << 1) - 1; /* last bit contains orientation (0 or 1) */
+                        
+                        if ((sum & 0x1) != 0) {
+                            x0 = (prev > bboxx0) ? prev : bboxx0;
+                            x1 = (curx < bboxx1) ? curx : bboxx1;
 
-                    if ((sum & mask) != 0) {
-                        x0 = (prev > bboxx0) ? prev : bboxx0;
-                        x1 = (curx < bboxx1) ? curx : bboxx1;
+                            if (x0 < x1) {
+                                x0 -= bboxx0; // turn x0, x1 from coords to indices
+                                x1 -= bboxx0; // in the alpha array.
 
-                        if (x0 < x1) {
-                            x0 -= bboxx0; // turn x0, x1 from coords to indices
-                            x1 -= bboxx0; // in the alpha array.
+                                pix_x      =  x0      >> _SUBPIXEL_LG_POSITIONS_X;
+                                pix_xmaxm1 = (x1 - 1) >> _SUBPIXEL_LG_POSITIONS_X;
 
-                            pix_x      =  x0      >> _SUBPIXEL_LG_POSITIONS_X;
-                            pix_xmaxm1 = (x1 - 1) >> _SUBPIXEL_LG_POSITIONS_X;
+                                if (pix_x == pix_xmaxm1) {
+                                    // Start and end in same pixel
+                                    tmp = (x1 - x0); // number of subpixels
+                                    _alpha[pix_x    ] += tmp;
+                                    _alpha[pix_x + 1] -= tmp;
+                                } else {
 
-                            if (pix_x == pix_xmaxm1) {
-                                // Start and end in same pixel
-                                tmp = (x1 - x0); // number of subpixels
-                                _alpha[pix_x    ] += tmp;
-                                _alpha[pix_x + 1] -= tmp;
-                            } else {
+                                    tmp = (x0 & _SUBPIXEL_MASK_X);
+                                    _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
+                                    _alpha[pix_x + 1] += tmp;
 
-                                tmp = (x0 & _SUBPIXEL_MASK_X);
-                                _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
-                                _alpha[pix_x + 1] += tmp;
+                                    pix_xmax = x1 >> _SUBPIXEL_LG_POSITIONS_X;
 
-                                pix_xmax = x1 >> _SUBPIXEL_LG_POSITIONS_X;
-
-                                tmp = (x1 & _SUBPIXEL_MASK_X);
-                                _alpha[pix_xmax    ] -= (_SUBPIXEL_POSITIONS_X - tmp);
-                                _alpha[pix_xmax + 1] -= tmp;
+                                    tmp = (x1 & _SUBPIXEL_MASK_X);
+                                    _alpha[pix_xmax    ] -= (_SUBPIXEL_POSITIONS_X - tmp);
+                                    _alpha[pix_xmax + 1] -= tmp;
+                                }
                             }
                         }
-                    }
 
-                    /* TODO: revert changes concerning orientation => sort with crossings (may be important) */
-                    sum += crorientation;
-                    prev = curx;
+                        sum += crorientation;
+                        prev = curx;
+                    }
+                } else {
+                    // Non-zero winding rule: optimize that case (default) and avoid processing intermediate crossings
+                    for (i = 1, sum = 0;; i++) {
+                        sum += crorientation;
+                        
+                        if (sum != 0) {
+                            /* prev = min(curx) */
+                            if (prev > curx) {
+                                prev = curx;
+                            }
+                        } else {
+                            x0 = (prev > bboxx0) ? prev : bboxx0;
+                            x1 = (curx < bboxx1) ? curx : bboxx1;
+
+                            if (x0 < x1) {
+                                x0 -= bboxx0; // turn x0, x1 from coords to indices
+                                x1 -= bboxx0; // in the alpha array.
+
+                                pix_x      =  x0      >> _SUBPIXEL_LG_POSITIONS_X;
+                                pix_xmaxm1 = (x1 - 1) >> _SUBPIXEL_LG_POSITIONS_X;
+
+                                if (pix_x == pix_xmaxm1) {
+                                    // Start and end in same pixel
+                                    tmp = (x1 - x0); // number of subpixels
+                                    _alpha[pix_x    ] += tmp;
+                                    _alpha[pix_x + 1] -= tmp;
+                                } else {
+
+                                    tmp = (x0 & _SUBPIXEL_MASK_X);
+                                    _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
+                                    _alpha[pix_x + 1] += tmp;
+
+                                    pix_xmax = x1 >> _SUBPIXEL_LG_POSITIONS_X;
+
+                                    tmp = (x1 & _SUBPIXEL_MASK_X);
+                                    _alpha[pix_xmax    ] -= (_SUBPIXEL_POSITIONS_X - tmp);
+                                    _alpha[pix_xmax + 1] -= tmp;
+                                }
+                            }
+                            prev = _MAX_VALUE;
+                        }
+                        
+                        if (i == numCrossings) {
+                            break;
+                        }
+
+                        curxo = _crossings[i];
+                        curx  =  curxo >> 1;
+                        // to turn {0, 1} into {-1, 1}, multiply by 2 and subtract 1.
+                        crorientation = ((curxo & 0x1) << 1) - 1; /* last bit contains orientation (0 or 1) */
+                    }
                 }
-            }
+            } // numCrossings > 0
 
             // even if this last row had no crossings, alpha will be zeroed
             // from the last emitRow call. But this doesn't matter because
