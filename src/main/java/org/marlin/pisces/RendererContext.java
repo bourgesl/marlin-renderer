@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -39,9 +39,7 @@ import static org.marlin.pisces.PiscesUtils.logInfo;
 final class RendererContext implements PiscesConst {
 
     private static final String className = RendererContext.class.getName();
-    /**
-     * context created counter
-     */
+    /** context created counter */
     private static final AtomicInteger contextCount = new AtomicInteger(1);
     // TODO: use weak references instead of hard references (only used for debugging purposes)
     static final ConcurrentLinkedQueue<RendererContext> allContexts = (doStats || doMonitors) ? new ConcurrentLinkedQueue<RendererContext>() : null;
@@ -60,9 +58,7 @@ final class RendererContext implements PiscesConst {
     }
 
     /* members */
-    /**
-     * context name (debugging purposes)
-     */
+    /** context name (debugging purposes) */
     final String name;
 
     /**
@@ -71,56 +67,62 @@ final class RendererContext implements PiscesConst {
      */
     final Object reference;
 
-    /**
-     * dynamic array caches
-     */
+    /** dynamic array caches */
     final IntArrayCache[] intArrayCaches = new IntArrayCache[BUCKETS];
     final FloatArrayCache[] floatArrayCaches = new FloatArrayCache[BUCKETS];
     /* dirty instances (use them carefully) */
-    /**
-     * dynamic DIRTY int array for PiscesCache
-     */
-    final IntArrayCache[] dirtyIntArrayCaches = new IntArrayCache[BUCKETS];
+    /** dynamic DIRTY byte array for PiscesCache */
+    final ByteArrayCache[] dirtyArrayCaches = new ByteArrayCache[BUCKETS];
     /* shared data */
     /* fixed arrays (dirty) */
     final float[] float6 = new float[6];
-    /**
-     * shared curve (dirty) (Renderer / Stroker)
-     */
+    /** shared curve (dirty) (Renderer / Stroker) */
     final Curve curve = new Curve();
     /* pisces class instances */
-    /**
-     * PiscesRenderingEngine.NormalizingPathIterator
-     */
+    /** PiscesRenderingEngine.NormalizingPathIterator */
     final NormalizingPathIterator npIterator;
     /* Renderer */
     final Renderer renderer;
-    /* Stroker */
+    /** Stroker */
     final Stroker stroker;
-    /**
-     * Dasher
-     */
+    /* Simplifies out collinear lines */
+    final CollinearSimplifier simplifier = new CollinearSimplifier();
+    /** Dasher */
     final Dasher dasher;
-    /**
-     * PiscesTileGenerator
-     */
+    /**PiscesTileGenerator */
     final PiscesTileGenerator ptg;
-    /**
-     * PiscesCache
-     */
+    /** PiscesCache */
     final PiscesCache piscesCache;
     /* stats */
-    final StatInteger stat_cache_rowAA = new StatInteger("cache.rowAA");
-    final StatInteger stat_cache_rowAAChunk = new StatInteger("cache.rowAAChunk");
-    final StatInteger stat_rdr_poly_stack = new StatInteger("renderer.poly.stack");
-    final StatInteger stat_rdr_edges = new StatInteger("renderer.edges");
-    final StatInteger stat_rdr_edges_resizes = new StatInteger("renderer.edges.resize");
-    final StatInteger stat_rdr_activeEdges = new StatInteger("renderer.activeEdges");
-    final StatInteger stat_rdr_activeEdges_updates = new StatInteger("renderer.activeEdges.updates");
-    final StatInteger stat_rdr_activeEdges_no_adds = new StatInteger("renderer.activeEdges.noadds");
-    final StatInteger stat_rdr_crossings_updates = new StatInteger("renderer.crossings.updates");
-    final StatInteger stat_rdr_crossings_sorts = new StatInteger("renderer.crossings.sorts");
-    final StatInteger stat_rdr_crossings_bsearch = new StatInteger("renderer.crossings.bsearch");
+    final StatLong stat_cache_rowAA = new StatLong("cache.rowAA");
+    final StatLong stat_cache_rowAAChunk = new StatLong("cache.rowAAChunk");
+    final StatLong stat_rdr_poly_stack = new StatLong("renderer.poly.stack");
+    final StatLong stat_rdr_curveBreak = new StatLong("renderer.curveBreakIntoLinesAndAdd");
+    final StatLong stat_rdr_quadBreak = new StatLong("renderer.quadBreakIntoLinesAndAdd");
+    final StatLong stat_rdr_edges = new StatLong("renderer.edges");
+    final StatLong stat_rdr_edges_resizes = new StatLong("renderer.edges.resize");
+    final StatLong stat_rdr_activeEdges = new StatLong("renderer.activeEdges");
+    final StatLong stat_rdr_activeEdges_updates = new StatLong("renderer.activeEdges.updates");
+    final StatLong stat_rdr_activeEdges_no_adds = new StatLong("renderer.activeEdges.noadds");
+    final StatLong stat_rdr_crossings_updates = new StatLong("renderer.crossings.updates");
+    final StatLong stat_rdr_crossings_sorts = new StatLong("renderer.crossings.sorts");
+    final StatLong stat_rdr_crossings_bsearch = new StatLong("renderer.crossings.bsearch");
+    /* all stats */
+    final StatLong[] statistics = new StatLong[]{
+        stat_cache_rowAA,
+        stat_cache_rowAAChunk,
+        stat_rdr_poly_stack,
+        stat_rdr_curveBreak,
+        stat_rdr_quadBreak,
+        stat_rdr_edges,
+        stat_rdr_edges_resizes,
+        stat_rdr_activeEdges,
+        stat_rdr_activeEdges_updates,
+        stat_rdr_activeEdges_no_adds,
+        stat_rdr_crossings_updates,
+        stat_rdr_crossings_sorts,
+        stat_rdr_crossings_bsearch
+    };
     /* monitors */
     final Monitor mon_pre_getAATileGenerator = new Monitor("PiscesRenderingEngine.getAATileGenerator()");
     final Monitor mon_npi_currentSegment = new Monitor("NormalizingPathIterator.currentSegment()");
@@ -129,6 +131,16 @@ final class RendererContext implements PiscesConst {
     final Monitor mon_rdr_endRendering_Y = new Monitor("Renderer._endRendering(Y)");
     final Monitor mon_rdr_emitRow = new Monitor("Renderer.emitRow()");
     final Monitor mon_ptg_getAlpha = new Monitor("PiscesTileGenerator.getAlpha()");
+    /* all monitors */
+    final Monitor[] monitors = new Monitor[]{
+        mon_pre_getAATileGenerator,
+        mon_npi_currentSegment,
+        mon_rdr_addLine,
+        mon_rdr_endRendering,
+        mon_rdr_endRendering_Y,
+        mon_rdr_emitRow,
+        mon_ptg_getAlpha
+    };
 
     /**
      * Constructor
@@ -146,7 +158,7 @@ final class RendererContext implements PiscesConst {
             intArrayCaches[i] = new IntArrayCache(ARRAY_SIZES[i]);
             floatArrayCaches[i] = new FloatArrayCache(ARRAY_SIZES[i]);
             // dirty:
-            dirtyIntArrayCaches[i] = new IntArrayCache(DIRTY_ARRAY_SIZES[i]);
+            dirtyArrayCaches[i] = new ByteArrayCache(DIRTY_ARRAY_SIZES[i]);
         }
 
         // PiscesRenderingEngine.NormalizingPathIterator:
@@ -186,15 +198,15 @@ final class RendererContext implements PiscesConst {
         return floatArrayCaches[bucket];
     }
 
-    IntArrayCache getDirtyIntArrayCache(final int length) {
+    ByteArrayCache getDirtyArrayCache(final int length) {
         final int bucket = ArrayCache.getBucketDirty(length);
-        return dirtyIntArrayCaches[bucket];
+        return dirtyArrayCaches[bucket];
     }
 
     /* dirty piscesCache */
-    int[] getDirtyIntArray(final int length) {
+    byte[] getDirtyArray(final int length) {
         if (length <= MAX_DIRTY_ARRAY_SIZE) {
-            return getDirtyIntArrayCache(length).getArray();
+            return getDirtyArrayCache(length).getArray();
         }
 
         if (doStats) {
@@ -202,29 +214,28 @@ final class RendererContext implements PiscesConst {
         }
 
         if (doLogOverSize) {
-            logInfo("getDirtyIntArrayCache[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("getDirtyIntArray[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
         }
 
-        return new int[length];
+        return new byte[length];
     }
 
-    void putDirtyIntArray(final int[] array) {
+    void putDirtyArray(final byte[] array) {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_DIRTY_ARRAY_SIZE)) {
-            getDirtyIntArrayCache(length).putDirtyArray(array, length);
+            getDirtyArrayCache(length).putDirtyArray(array, length);
         }
     }
 
     /* TODO: replace with new signature */
-    int[] widenDirtyIntArray(final int[] in, final int cursize, final int numToAdd) {
-
+    byte[] widenDirtyArray(final byte[] in, final int cursize, final int numToAdd) {
         final int length = in.length;
         final int newSize = cursize + numToAdd;
         if (length >= newSize) {
             return in;
         }
 
-        final int[] res = widenDirtyArray(in, length, cursize, newSize);
+        final byte[] res = RendererContext.this.widenDirtyArray(in, length, cursize, newSize);
 
         if (doLog) {
             logInfo("widenDirtyArray int[" + res.length + "]: cursize=\t" + cursize + "\tlength=\t" + length
@@ -233,21 +244,21 @@ final class RendererContext implements PiscesConst {
         return res;
     }
 
-    private int[] widenDirtyArray(final int[] in, final int length, final int usedSize, final int newSize) {
+    private byte[] widenDirtyArray(final byte[] in, final int length, final int usedSize, final int newSize) {
         if (doChecks && length >= newSize) {
             return in;
         }
         if (doStats) {
-            resizeDirtyInt++;
+            resizeDirty++;
         }
 
         // maybe change bucket:
-        final int[] res = getDirtyIntArray(2 * newSize); // Use x2
+        final byte[] res = getDirtyArray(2 * newSize); // Use x2
 
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
         // maybe return current array:
-        putDirtyIntArray(in); // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
+        putDirtyArray(in); // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
 
         return res;
     }
@@ -361,7 +372,7 @@ final class RendererContext implements PiscesConst {
     }
 
     /* stats */
-    static class StatInteger {
+    static class StatLong {
 
         public final String name;
         public long count;
@@ -369,7 +380,7 @@ final class RendererContext implements PiscesConst {
         public long min;
         public long max;
 
-        StatInteger(String name) {
+        StatLong(String name) {
             this.name = name;
             reset();
         }
@@ -410,7 +421,7 @@ final class RendererContext implements PiscesConst {
     }
 
     /* monitors */
-    static final class Monitor extends StatInteger {
+    static final class Monitor extends StatLong {
 
         private final static long INVALID = -1L;
         private long start = INVALID;

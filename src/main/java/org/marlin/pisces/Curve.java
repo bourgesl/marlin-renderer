@@ -59,16 +59,16 @@ final class Curve {
              float x3, float y3,
              float x4, float y4)
     {
-        ax = 3 * (x2 - x3) + x4 - x1;
-        ay = 3 * (y2 - y3) + y4 - y1;
-        bx = 3 * (x1 - 2 * x2 + x3);
-        by = 3 * (y1 - 2 * y2 + y3);
-        cx = 3 * (x2 - x1);
-        cy = 3 * (y2 - y1);
+        ax = 3f * (x2 - x3) + x4 - x1;
+        ay = 3f * (y2 - y3) + y4 - y1;
+        bx = 3f * (x1 - 2f * x2 + x3);
+        by = 3f * (y1 - 2f * y2 + y3);
+        cx = 3f * (x2 - x1);
+        cy = 3f * (y2 - y1);
         dx = x1;
         dy = y1;
-        dax = 3 * ax; day = 3 * ay;
-        dbx = 2 * bx; dby = 2 * by;
+        dax = 3f * ax; day = 3f * ay;
+        dbx = 2f * bx; dby = 2f * by;
     }
 
     void set(float x1, float y1,
@@ -76,15 +76,14 @@ final class Curve {
              float x3, float y3)
     {
         ax = ay = 0f;
-
-        bx = x1 - 2 * x2 + x3;
-        by = y1 - 2 * y2 + y3;
-        cx = 2 * (x2 - x1);
-        cy = 2 * (y2 - y1);
+        bx = x1 - 2f * x2 + x3;
+        by = y1 - 2f * y2 + y3;
+        cx = 2f * (x2 - x1);
+        cy = 2f * (y2 - y1);
         dx = x1;
         dy = y1;
         dax = 0; day = 0;
-        dbx = 2 * bx; dby = 2 * by;
+        dbx = 2f * bx; dby = 2f * by;
     }
 
     float xat(float t) {
