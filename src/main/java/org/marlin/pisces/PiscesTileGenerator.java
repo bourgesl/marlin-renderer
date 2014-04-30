@@ -27,10 +27,10 @@ package org.marlin.pisces;
 import sun.java2d.pipe.AATileGenerator;
 
 final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
-
+    
     private static final int TILE_SIZE = PiscesCache.TILE_SIZE;
 
-    private final static int maxTileAlphaSum = TILE_SIZE * TILE_SIZE * Renderer.MAX_AA_ALPHA;
+    private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE * Renderer.MAX_AA_ALPHA;
 
     /* PiscesTileGenerator members */
     private final Renderer rdr;
@@ -115,7 +115,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
         // would be needed here, since our caller needs to compute these 2
         // values anyway.
         return (al == 0x00 ? 0x00
-                : (al == maxTileAlphaSum ? 0xff : 0x80));
+                : (al == MAX_TILE_ALPHA_SUM ? 0xff : 0x80));
     }
 
     /**
@@ -210,7 +210,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
                     // Copy AA data (sum alpha data):
                     final int off = pos - aax0;
 
-/* TODO: use System.arrayCopy ? */
+                    /* note: System.arrayCopy is slower than copy loop */
                     for (final int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
                         // cx inside tile[x0; x1[ :
                         tile[idx] = rowAAChunk[cx + off];

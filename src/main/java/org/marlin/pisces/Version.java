@@ -41,7 +41,7 @@ public final class Version {
 				prop.load(in);
 
 				version = prop.getProperty("version", version);
-				in.close(); /* TODO: use final */
+				in.close(); /* TODO: use finally */
 			} catch (Exception e) {}
 		}
 		return version;

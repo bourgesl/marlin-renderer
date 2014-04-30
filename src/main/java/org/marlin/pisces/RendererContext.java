@@ -24,6 +24,7 @@
  */
 package org.marlin.pisces;
 
+import java.awt.geom.FastPath2D;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -41,7 +42,7 @@ final class RendererContext implements PiscesConst {
     private static final String className = RendererContext.class.getName();
     /** context created counter */
     private static final AtomicInteger contextCount = new AtomicInteger(1);
-    // TODO: use weak references instead of hard references (only used for debugging purposes)
+    // hard references (only used for debugging purposes)
     static final ConcurrentLinkedQueue<RendererContext> allContexts = (doStats || doMonitors) ? new ConcurrentLinkedQueue<RendererContext>() : null;
 
     /**
@@ -81,6 +82,10 @@ final class RendererContext implements PiscesConst {
     /* pisces class instances */
     /** PiscesRenderingEngine.NormalizingPathIterator */
     final NormalizingPathIterator npIterator;
+    /** PiscesRenderingEngine.TransformingPathConsumer2D */
+    final TransformingPathConsumer2D transformerPC2D;
+    /** recycled Path2D instance */
+    FastPath2D p2d = null;
     /* Renderer */
     final Renderer renderer;
     /** Stroker */
@@ -163,6 +168,9 @@ final class RendererContext implements PiscesConst {
 
         // PiscesRenderingEngine.NormalizingPathIterator:
         npIterator = new NormalizingPathIterator(this);
+        
+        // PiscesRenderingEngine.TransformingPathConsumer2D
+        transformerPC2D = new TransformingPathConsumer2D();
 
         // Renderer:
         piscesCache = new PiscesCache(this);
@@ -336,7 +344,6 @@ final class RendererContext implements PiscesConst {
             oversize++;
         }
 
-        // TODO: use very big one at last !
         if (doLogOverSize) {
             logInfo("getFloatArray[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
         }

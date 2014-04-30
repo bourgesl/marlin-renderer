@@ -75,7 +75,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
     /* 2048 pixels (height) x 8 subpixels = 64K */
     static final int INITIAL_BUCKET_ARRAY = INITIAL_PIXEL_DIM * SUBPIXEL_POSITIONS_Y;
-    
+
     /* initial edges (16 bytes) = 2 x 16K ints */
     static final int INITIAL_EDGES_CAPACITY = INITIAL_ARRAY_16K << 3;
 
@@ -137,7 +137,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     // all the segments that cross the next scan line).
     private int edgeCount;
     private int[] edgePtrs;
-
+    
     // LBO: max used for both edgePtrs and crossings
     private int activeEdgeMaxUsed;
 
@@ -312,7 +312,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         /* note: use boundsMaxY (last Y exclusive) to compute correct coverage */
         final int lastCrossing  = Math.min(FastMath.ceil(y2),  boundsMaxY); // upper integer (exclusive ?)
 
-        /* skip horizontal lines in pixel space */
+        /* skip horizontal lines in pixel space and clip edges out of y range [boundsMinY; boundsMaxY] */
         if (firstCrossing >= lastCrossing) {
             if (doMonitors) {
                 rdrCtx.mon_rdr_addLine.stop();
@@ -354,18 +354,18 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         final OffHeapEdgeArray _edges = edges;
         /* get free pointer (ie length in bytes) */
-        final int ptr = _edges.used;
+        final int edgePtr = _edges.used;
         
-        if (_edges.length < ptr + _SIZEOF_EDGE_BYTES) {
+        if (_edges.length < edgePtr + _SIZEOF_EDGE_BYTES) {
             if (doStats) {
-                rdrCtx.stat_rdr_edges_resizes.add(ptr);
+                rdrCtx.stat_rdr_edges_resizes.add(edgePtr);
             }
-            edges.resize(2 * _edges.length);
+            _edges.resize(_edges.length << 1);
         }
 
         
         final Unsafe _unsafe = unsafe;
-        final long    addr   = _edges.address + ptr;
+        final long    addr   = _edges.address + edgePtr;
         
         // float values:
         _unsafe.putFloat(addr,             x1 + (firstCrossing - y1) * slope);
@@ -374,22 +374,21 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         // each bucket is a linked list. this method adds ptr to the
         // start of the "bucket"th linked list.
-        final int bucketIdx = firstCrossing - _boundsMinY; 
-        
+        final int bucketIdx = firstCrossing - _boundsMinY;
+
         // integer values:
         /* pointer from bucket */
-        _unsafe.putInt(addr + OFF_NEXT,    _edgeBuckets[bucketIdx]);
-        _unsafe.putInt(addr + OFF_YMAX_OR,  (lastCrossing << 1) | or); /* last bit corresponds to the orientation */
-//        _unsafe.putInt(addr + OFF_OR,      or); // use byte ?
+        _unsafe.putInt(addr + OFF_NEXT,    _edgeBuckets[bucketIdx]); 
+        _unsafe.putInt(addr + OFF_YMAX_OR, (lastCrossing << 1) | or); /* last bit corresponds to the orientation */
 
         // Update buckets:
-        _edgeBuckets[bucketIdx]       = ptr; /* directly the edge struct "pointer" */
+        _edgeBuckets[bucketIdx]       = edgePtr; /* directly the edge struct "pointer" */
         _edgeBucketCounts[bucketIdx] += 2;   /* 1 << 1 */
-        _edgeBucketCounts[lastCrossing - _boundsMinY] |= 1; /* last bit means edge end */        
-
+        _edgeBucketCounts[lastCrossing - _boundsMinY] |= 0x1; /* last bit means edge end */
+        
         /* update free pointer (ie length in bytes) */
         _edges.used += _SIZEOF_EDGE_BYTES;
-
+        
         if (doMonitors) {
             rdrCtx.mon_rdr_addLine.stop();
         }
@@ -666,7 +665,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         // of the first non-transparent pixel, so we must keep accumulators for
         // the first and last pixels of the section of the current pixel row
         // that we will emit.
-        // We also need to accumulate pix_bbox*, but the iterator does it
+        // We also need to accumulate pix_bbox, but the iterator does it
         // for us. We will just get the values from it once this loop is done
         int pix_minX = _MAX_VALUE;
         int pix_maxX = _MIN_VALUE;
@@ -689,8 +688,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         boolean useBinarySearch;
         
         int lastY = -1; // last emited row
-        
 
+
+        /* Iteration on scanlines */
         for (; y < ymax; y++, bucket++) {
             // --- from former ScanLineIterator.next()
             bucketcount = _edgeBucketCounts[bucket];
@@ -703,21 +703,23 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 if (doStats) {
                     rdrCtx.stat_rdr_activeEdges_updates.add(numCrossings);
                 }
-
+                
                 // last bit set to 1 means that edges ends
                 if ((bucketcount & 0x1) != 0) {
                     /* note: edge[YMAX] is multiplied by 2 so compare it with 2*y + 1 (any orientation) */
                     final int yLim = (y << 1) | 0x1;
                     // eviction in active edge list
-                    newCount = 0;
-                    for (i = 0; i < numCrossings; i++) {
+                    /* cache edges[] address + offset */
+                    addr = addr0 + _OFF_YMAX_OR;
+
+                    for (i = 0, newCount = 0; i < numCrossings; i++) {
                         /* get the pointer to the edge */
                         ecur = _edgePtrs[i];
                         // random access so use unsafe:
                         /* note: ymax is multiplied by 2 (1 bit shift to store orientation) */
-                        if (_unsafe.getInt(addr0 + (ecur + _OFF_YMAX_OR)) > yLim) {
+                        if (_unsafe.getInt(addr + ecur) > yLim) {
                             _edgePtrs[newCount++] = ecur;
-                        }
+                        } 
                     }
                     // update marker on sorted edges minus removed edges:
                     prevNumCrossings = numCrossings = newCount;
@@ -737,12 +739,15 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                         edgePtrsLen = _edgePtrs.length;
                     }
 
+                    /* cache edges[] address + offset */
+                    addr = addr0 + _OFF_NEXT;
+
                     // add new edges to active edge list:
                     for (ecur = _edgeBuckets[bucket]; numCrossings < ptrEnd; numCrossings++) {
                         /* store the pointer to the edge */
                         _edgePtrs[numCrossings] = ecur;
                         // random access so use unsafe:
-                        ecur = _unsafe.getInt(addr0 + (ecur + _OFF_NEXT));
+                        ecur = _unsafe.getInt(addr + ecur);
                     }
                     
                     if (crossingsLen < numCrossings) {
@@ -765,8 +770,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 } // ptrLen != 0
             } // bucketCount != 0
 
-
-            /* TODO: copy active edge data into AEL to avoid random access into edge arrays[ecur] (best cache locality) */
 
             if (numCrossings != 0) {
                 // try avoid sorting loop:
@@ -908,7 +911,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                                     _alpha[pix_x    ] += tmp;
                                     _alpha[pix_x + 1] -= tmp;
                                 } else {
-
                                     tmp = (x0 & _SUBPIXEL_MASK_X);
                                     _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
                                     _alpha[pix_x + 1] += tmp;
@@ -952,7 +954,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                                     _alpha[pix_x    ] += tmp;
                                     _alpha[pix_x + 1] -= tmp;
                                 } else {
-
                                     tmp = (x0 & _SUBPIXEL_MASK_X);
                                     _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
                                     _alpha[pix_x + 1] += tmp;
@@ -1107,9 +1108,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     }
     
     static final class OffHeapEdgeArray  {
-        int  used;
         long address;
         long length;
+        int  used;
         
         OffHeapEdgeArray(final long len) {
             if (logUnsafeMalloc) {
@@ -1120,6 +1121,10 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             this.used    = 0;
         }
         
+        /**
+         * As address may change due to realloc => reading address again is MANDATORY
+         * @param len new array length
+        */
         void resize(final long len) {
             if (logUnsafeMalloc) {
                 PiscesUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.reallocateMemory = " + len);

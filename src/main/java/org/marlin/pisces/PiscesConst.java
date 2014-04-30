@@ -51,7 +51,7 @@ interface PiscesConst {
 
 
     static final boolean USE_BINARY_SEARCH = true;
-    static final int THRESHOLD_BINARY_SEARCH = 20;
+    static final int THRESHOLD_BINARY_SEARCH = PiscesRenderingEngine.getBinarySearchThreshold();
 
     /** enable logs */
     static final boolean doLog = false;

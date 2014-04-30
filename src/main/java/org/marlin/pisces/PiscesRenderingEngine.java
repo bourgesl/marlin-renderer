@@ -27,9 +27,12 @@ package org.marlin.pisces;
 import java.awt.BasicStroke;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.FastPath2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.lang.ref.Reference;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import static org.marlin.pisces.PiscesUtils.logInfo;
 import sun.awt.geom.PathConsumer2D;
@@ -69,55 +72,32 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
                                     float dashes[],
                                     float dashphase)
     {
-        /* TODO: initialize size correctly to avoid too many array resizing */
-        final Path2D p2d = new Path2D.Float();
-
         final RendererContext rdrCtx = getRendererContext();
 
+        // initialize a large copyable FastPath2D to avoid a lot of array growing:
+        final FastPath2D p2d = (rdrCtx.p2d == null) ? (rdrCtx.p2d = new FastPath2D(INITIAL_MEDIUM_ARRAY)) : rdrCtx.p2d;
+        // reset
+        p2d.reset();
+        
         strokeTo(rdrCtx,
                  src,
                  null,
                  width,
-                 NormMode.OFF,
+                 NormMode.OFF, /* LBO: should use ON_WITH_AA to be more precise ? */
                  caps,
                  join,
                  miterlimit,
                  dashes,
                  dashphase,
-                 /* TODO: create inner class (shared instance) */
-                 new PathConsumer2D() {
-                     @Override
-                     public void moveTo(float x0, float y0) {
-                         p2d.moveTo(x0, y0);
-                     }
-                     @Override
-                     public void lineTo(float x1, float y1) {
-                         p2d.lineTo(x1, y1);
-                     }
-                     @Override
-                     public void closePath() {
-                         p2d.closePath();
-                     }
-                     @Override
-                     public void pathDone() {}
-                     @Override
-                     public void curveTo(float x1, float y1,
-                                         float x2, float y2,
-                                         float x3, float y3) {
-                         p2d.curveTo(x1, y1, x2, y2, x3, y3);
-                     }
-                     @Override
-                     public void quadTo(float x1, float y1, float x2, float y2) {
-                         p2d.quadTo(x1, y1, x2, y2);
-                     }
-                     @Override
-                     public long getNativeConsumer() {
-                         throw new InternalError("Not using a native peer");
-                     }
-                });
-
+                 rdrCtx.transformerPC2D.wrapPath2d(p2d)
+                );
+        
+        /* Perform Path2D copy efficiently and trim */
+        final Path2D path = p2d.copy();
+        
         returnRendererContext(rdrCtx);
-        return p2d;
+        
+        return path;
     }
 
     /**
@@ -401,8 +381,9 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         // a constant multiple of an orthogonal transformation, they will both be
         // null. In other cases, outat == at if normalization is off, and if
         // normalization is on, strokerat == at.
-        pc2d = TransformingPathConsumer2D.transformConsumer(pc2d, outat);
-        pc2d = TransformingPathConsumer2D.deltaTransformConsumer(pc2d, strokerat);
+        final TransformingPathConsumer2D transformerPC2D = rdrCtx.transformerPC2D;
+        pc2d = transformerPC2D.transformConsumer(pc2d, outat);
+        pc2d = transformerPC2D.deltaTransformConsumer(pc2d, strokerat);
         
         pc2d = rdrCtx.stroker.init(pc2d, width, caps, join, miterlimit);
         
@@ -412,7 +393,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             }
             pc2d = rdrCtx.dasher.init(pc2d, dashes, dashLen, dashphase, recycleDashes);
         }
-        pc2d = TransformingPathConsumer2D.inverseDeltaTransformConsumer(pc2d, strokerat);
+        pc2d = transformerPC2D.inverseDeltaTransformConsumer(pc2d, strokerat);
         pathTo(rdrCtx.float6, pi, pc2d);
         
         /*
@@ -895,6 +876,10 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             logInfo("sun.java2d.renderer.useJul           = " + isUseJul());
             logInfo("sun.java2d.renderer.logCreateContext = " + isLogCreateContext());
             logInfo("sun.java2d.renderer.logUnsafeMalloc  = " + isLogUnsafeMalloc());
+            
+            /* low-level tuning */
+            logInfo("sun.java2d.renderer.binarysearch.threshold = " + getBinarySearchThreshold());
+            
         } else {
             logInfo("sun.java2d.renderer                  = " + reClass);
         }
@@ -1030,5 +1015,9 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             value = def;
         }
         return value;
+    }
+    
+    public static int getBinarySearchThreshold() {
+        return getInteger("sun.java2d.renderer.binarysearch.threshold", 20, 5, 1000);
     }
 }
