@@ -216,38 +216,48 @@ public final class PiscesCache implements PiscesConst {
 
         final int[] touchedLine = touchedTile;
         final int _TILE_SIZE_LG = TILE_SIZE_LG;
-        final int _MAX_AA_ALPHA = Renderer.MAX_AA_ALPHA;
+//        final int _MAX_AA_ALPHA = Renderer.MAX_AA_ALPHA;
         final byte[] _ALPHA_MAP = ALPHA_MAP;
+        final byte   _BYTE_0    = BYTE_0;
 
+        final int scaleFilter     = KernelFilter.totalFilter;
+        final int thresholdFilter = KernelFilter.thresholdFilter;
+        final int scaleShift      = KernelFilter.minScaleFilter_LG;
+        
         // fix offset in rowAAChunk:
         final int off = pos - from;
         
         // compute alpha sum into rowAA:
-        for (int x = from, val = 0; x < to; x++) {
+        for (int x = from, val = 0, scaled; x < to; x++) {
             /* alphaRow is in [0; MAX_COVERAGE] */
             val += alphaRow[x]; // [from; to[
 
-            /* ensure values are in [0; MAX_AA_ALPHA] range */
+            /* ensure values are in [0; scaleFilter] range */
             if (DO_AA_RANGE_CHECK) {
                 /* TODO: fix a faster way */            
                 if (val < 0) {
                     System.out.println("Invalid coverage = " + val);
                     val = 0;
                 }
-                if (val > _MAX_AA_ALPHA) {
+                if (val > scaleFilter) {
                     System.out.println("Invalid coverage = " + val);
-                    val = _MAX_AA_ALPHA;
+                    val = scaleFilter;
                 }
             }
             
             /* TODO: better handle int to byte conversion (filter normalization) */
-            
-            // store alpha sum (as byte):
-            _rowAAChunk[x + off] = _ALPHA_MAP[val];
-            
-            if (val != 0) {
+
+            if (val >= thresholdFilter) {
+                scaled = val >> scaleShift;
+
+                // store alpha sum (as byte):
+                _rowAAChunk[x + off] = _ALPHA_MAP[scaled];
+
                 // update touchedTile
-                touchedLine[x >> _TILE_SIZE_LG] += val;
+                touchedLine[x >> _TILE_SIZE_LG] += scaled;
+            } else {
+                /* reset dirty array value */
+                _rowAAChunk[x + off] = _BYTE_0;
             }
         }
         

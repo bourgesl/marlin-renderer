@@ -93,7 +93,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
                 );
         
         /* Perform Path2D copy efficiently and trim */
-        final Path2D path = p2d.copy();
+        final Path2D path = p2d.trimmedCopy();
         
         returnRendererContext(rdrCtx);
         

@@ -29,7 +29,7 @@ import sun.awt.geom.PathConsumer2D;
 import sun.misc.Unsafe;
 
 final class Renderer implements PathConsumer2D, PiscesConst {
-
+    
     final static int OFFSET;
     final static int SIZE;
     
@@ -69,7 +69,10 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     public final static float f_SUBPIXEL_POSITIONS_Y = (float) SUBPIXEL_POSITIONS_Y;
     public final static int SUBPIXEL_MASK_X = SUBPIXEL_POSITIONS_X - 1;
     public final static int SUBPIXEL_MASK_Y = SUBPIXEL_POSITIONS_Y - 1;
-    public final static int MAX_AA_ALPHA = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;
+    
+    // hack to have a byte scale up to filter scale
+    public final static int MAX_AA_ALPHA = KernelFilter.maxScaleFilter; 
+//    public final static int MAX_AA_ALPHA = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;
     /* number of subpixels corresponding to a tile line */
     private static final int SUBPIXEL_TILE = PiscesCache.TILE_SIZE << SUBPIXEL_LG_POSITIONS_Y;
 
@@ -613,7 +616,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     public long getNativeConsumer() {
         throw new InternalError("Renderer does not use a native consumer.");
     }
-
+    
     /* clean alpha array (0 fill) */
     private int[] alphaLine;
     /* 4096 pixel large */
@@ -682,13 +685,17 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         int bucketcount, i, j, ecur, lowx, highx;
         int cross, jcross, lastCross;
         float f_curx;
-        int x0, x1, tmp, sum, prev, curx, curxo, crorientation, pix_x, pix_xmaxm1, pix_xmax;
+        int x0, x1, tmp, sum, prev, curx, curxo, crorientation, pix_x, pix_xmax; 
+// pix_xmaxm1
 
         int low, high, mid, prevNumCrossings;
         boolean useBinarySearch;
         
         int lastY = -1; // last emited row
 
+        final int[][] sumFilterWeights = KernelFilter.sumFilterWeights;
+        int[]         sumFilterWeightsY;
+        int           sumFilterWeightsMaxX;
 
         /* Iteration on scanlines */
         for (; y < ymax; y++, bucket++) {
@@ -884,6 +891,9 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 // to turn {0, 1} into {-1, 1}, multiply by 2 and subtract 1.
                 crorientation = ((curxo & 0x1) << 1) - 1; /* last bit contains orientation (0 or 1) */
 
+                sumFilterWeightsY    = sumFilterWeights [y & _SUBPIXEL_MASK_Y]; // filter weights[X] at Y [0..7]
+                sumFilterWeightsMaxX = sumFilterWeightsY[_SUBPIXEL_POSITIONS_X]; // total weights on row at Y
+                
                 if (windingRuleEvenOdd) {
                     sum = crorientation;
                         
@@ -902,23 +912,31 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                                 x0 -= bboxx0; // turn x0, x1 from coords to indices
                                 x1 -= bboxx0; // in the alpha array.
 
-                                pix_x      =  x0      >> _SUBPIXEL_LG_POSITIONS_X;
-                                pix_xmaxm1 = (x1 - 1) >> _SUBPIXEL_LG_POSITIONS_X;
+                                pix_x      = x0 >> _SUBPIXEL_LG_POSITIONS_X;
+//                                pix_xmaxm1 = (x1 - 1) >> _SUBPIXEL_LG_POSITIONS_X;
+                                pix_xmax   = x1 >> _SUBPIXEL_LG_POSITIONS_X;
 
-                                if (pix_x == pix_xmaxm1) {
+                                if (pix_x == pix_xmax) {
+//                                if (pix_x == pix_xmaxm1) {
                                     // Start and end in same pixel
-                                    tmp = (x1 - x0); // number of subpixels
+                                    // filter contribution ie summed weights:
+                                    tmp = sumFilterWeightsY[x1 & _SUBPIXEL_MASK_X] - sumFilterWeightsY[x0 & _SUBPIXEL_MASK_X];
+//                                    tmp = (x1 - x0); // number of subpixels
                                     _alpha[pix_x    ] += tmp;
                                     _alpha[pix_x + 1] -= tmp;
                                 } else {
-                                    tmp = (x0 & _SUBPIXEL_MASK_X);
-                                    _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
+                                    tmp = sumFilterWeightsY[x0 & _SUBPIXEL_MASK_X];
+//                                    tmp = (x0 & _SUBPIXEL_MASK_X);
+                                    _alpha[pix_x    ] += (sumFilterWeightsMaxX - tmp);
+//                                    _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
                                     _alpha[pix_x + 1] += tmp;
 
-                                    pix_xmax = x1 >> _SUBPIXEL_LG_POSITIONS_X;
+//                                    pix_xmax = x1 >> _SUBPIXEL_LG_POSITIONS_X;
 
-                                    tmp = (x1 & _SUBPIXEL_MASK_X);
-                                    _alpha[pix_xmax    ] -= (_SUBPIXEL_POSITIONS_X - tmp);
+                                    tmp = sumFilterWeightsY[x1 & _SUBPIXEL_MASK_X];
+//                                    tmp = (x1 & _SUBPIXEL_MASK_X);
+                                    _alpha[pix_xmax    ] -= (sumFilterWeightsMaxX - tmp);
+//                                    _alpha[pix_xmax    ] -= (_SUBPIXEL_POSITIONS_X - tmp);
                                     _alpha[pix_xmax + 1] -= tmp;
                                 }
                             }
@@ -945,23 +963,31 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                                 x0 -= bboxx0; // turn x0, x1 from coords to indices
                                 x1 -= bboxx0; // in the alpha array.
 
-                                pix_x      =  x0      >> _SUBPIXEL_LG_POSITIONS_X;
-                                pix_xmaxm1 = (x1 - 1) >> _SUBPIXEL_LG_POSITIONS_X;
+                                pix_x      = x0 >> _SUBPIXEL_LG_POSITIONS_X;
+//                                pix_xmaxm1 = (x1 - 1) >> _SUBPIXEL_LG_POSITIONS_X;
+                                pix_xmax   = x1 >> _SUBPIXEL_LG_POSITIONS_X;
 
-                                if (pix_x == pix_xmaxm1) {
+                                if (pix_x == pix_xmax) {
+//                                if (pix_x == pix_xmaxm1) {
                                     // Start and end in same pixel
-                                    tmp = (x1 - x0); // number of subpixels
+                                    // filter contribution ie summed weights:
+                                    tmp = sumFilterWeightsY[x1 & _SUBPIXEL_MASK_X] - sumFilterWeightsY[x0 & _SUBPIXEL_MASK_X];
+//                                    tmp = (x1 - x0); // number of subpixels
                                     _alpha[pix_x    ] += tmp;
                                     _alpha[pix_x + 1] -= tmp;
                                 } else {
-                                    tmp = (x0 & _SUBPIXEL_MASK_X);
-                                    _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
+                                    tmp = sumFilterWeightsY[x0 & _SUBPIXEL_MASK_X];
+//                                    tmp = (x0 & _SUBPIXEL_MASK_X);
+                                    _alpha[pix_x    ] += (sumFilterWeightsMaxX - tmp);
+//                                    _alpha[pix_x    ] += (_SUBPIXEL_POSITIONS_X - tmp);
                                     _alpha[pix_x + 1] += tmp;
 
-                                    pix_xmax = x1 >> _SUBPIXEL_LG_POSITIONS_X;
+//                                    pix_xmax = x1 >> _SUBPIXEL_LG_POSITIONS_X;
 
-                                    tmp = (x1 & _SUBPIXEL_MASK_X);
-                                    _alpha[pix_xmax    ] -= (_SUBPIXEL_POSITIONS_X - tmp);
+                                    tmp = sumFilterWeightsY[x1 & _SUBPIXEL_MASK_X];
+//                                    tmp = (x1 & _SUBPIXEL_MASK_X);
+                                    _alpha[pix_xmax    ] -= (sumFilterWeightsMaxX - tmp);
+//                                    _alpha[pix_xmax    ] -= (_SUBPIXEL_POSITIONS_X - tmp);
                                     _alpha[pix_xmax + 1] -= tmp;
                                 }
                             }

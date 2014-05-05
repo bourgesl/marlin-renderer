@@ -19,18 +19,10 @@ public class BoundsTest {
 
     public static float off = 0.3f;
 
-    /**
-     * @test @bug 6887494
-     *
-     * @summary Verifies that no NullPointerException is thrown in Pisces Renderer under certain circumstances.
-     *
-     * @run main TestNPE
-     */
     public static void main(String[] args) {
         final int size = 10;
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 
-        // Trigger exception in main thread.
         final Graphics2D g2d = (Graphics2D) image.getGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setClip(0, 0, size, size);

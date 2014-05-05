@@ -74,9 +74,8 @@ final class PiscesUtils {
     public static boolean isPowerOf2(int x) {
         if (x <= 0) {
             return false;
-        } else {
-            return (x & (x - 1)) == 0;
         }
+        return (x & (x - 1)) == 0;
     }
 
     // Returns the caller's class and method's name; best effort
