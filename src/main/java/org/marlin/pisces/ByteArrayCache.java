@@ -32,11 +32,11 @@ import static org.marlin.pisces.PiscesUtils.logInfo;
 /**
  *
  */
-final class IntArrayCache implements PiscesConst {
+final class ByteArrayCache implements PiscesConst {
 
     /* members */
     private final int arraySize;
-    private final ArrayDeque<int[]> intArrays;
+    private final ArrayDeque<byte[]> byteArrays;
     /* stats */
     private int getOp = 0;
     private int createOp = 0;
@@ -44,22 +44,23 @@ final class IntArrayCache implements PiscesConst {
 
     void dumpStats() {
         if (getOp > 0) {
-            logInfo("IntArrayCache[" + arraySize + "]: get: " + getOp + " created: " + createOp + " - returned: " + returnOp + " :: cache size: " + intArrays.size());
+            logInfo("ByteArrayCache[" + arraySize + "]: get: " + getOp + " created: " + createOp + " - returned: " + returnOp + " :: cache size: " + byteArrays.size());
         }
     }
 
-    IntArrayCache(final int arraySize) {
+    ByteArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        this.intArrays = new ArrayDeque<int[]>(6); /* small but enough: almost 1 cache line */
+        this.byteArrays = new ArrayDeque<byte[]>(6); /* small but enough: almost 1 cache line */
+
     }
 
-    int[] getArray() {
+    byte[] getArray() {
         if (doStats) {
             getOp++;
         }
 
         // use cache:
-        final int[] array = intArrays.pollLast();
+        final byte[] array = byteArrays.pollLast();
         if (array != null) {
             return array;
         }
@@ -68,10 +69,10 @@ final class IntArrayCache implements PiscesConst {
             createOp++;
         }
 
-        return new int[arraySize];
+        return new byte[arraySize];
     }
 
-    void putArray(final int[] array, final int length, final int fromIndex, final int toIndex) {
+    void putArray(final byte[] array, final int length, final int fromIndex, final int toIndex) {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -81,13 +82,13 @@ final class IntArrayCache implements PiscesConst {
         }
 
         // TODO: pool eviction
-        fill(array, fromIndex, toIndex, 0);
+        fill(array, fromIndex, toIndex, BYTE_0);
 
         // fill cache:
-        intArrays.addLast(array);
+        byteArrays.addLast(array);
     }
 
-    static void fill(final int[] array, final int fromIndex, final int toIndex, final int value) {
+    static void fill(final byte[] array, final int fromIndex, final int toIndex, final byte value) {
         // clear array data:
         /*
          * Arrays.fill is faster than System.arraycopy(empty array) or Unsafe.setMemory(byte 0)
@@ -101,7 +102,7 @@ final class IntArrayCache implements PiscesConst {
         }
     }
 
-    static boolean check(final int[] array, final int fromIndex, final int toIndex, final int value) {
+    static boolean check(final byte[] array, final int fromIndex, final int toIndex, final byte value) {
         if (doChecks) {
             boolean empty = true;
             int i;
@@ -124,7 +125,7 @@ final class IntArrayCache implements PiscesConst {
         return false;
     }
 
-    void putDirtyArray(final int[] array, final int length) {
+    void putDirtyArray(final byte[] array, final int length) {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -136,6 +137,6 @@ final class IntArrayCache implements PiscesConst {
         // TODO: pool eviction
         // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
         // fill cache:
-        intArrays.addLast(array);
+        byteArrays.addLast(array);
     }
 }

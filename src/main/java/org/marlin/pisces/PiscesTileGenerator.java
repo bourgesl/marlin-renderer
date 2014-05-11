@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -27,15 +27,10 @@ package org.marlin.pisces;
 import sun.java2d.pipe.AATileGenerator;
 
 final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
-
+    
     private static final int TILE_SIZE = PiscesCache.TILE_SIZE;
 
-    private final static int maxTileAlphaSum = TILE_SIZE * TILE_SIZE * Renderer.MAX_AA_ALPHA;
-
-    // The alpha map used by this object (taken out of our map cache) to convert
-    // pixel coverage counts gotten from PiscesCache (which are in the range
-    // [0, maxalpha]) into alpha values, which are in [0,256).
-    private final static byte[] alphaMap = buildAlphaMap(Renderer.MAX_AA_ALPHA);
+    private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE * Renderer.MAX_AA_ALPHA;
 
     /* PiscesTileGenerator members */
     private final Renderer rdr;
@@ -64,15 +59,6 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
         this.cache.dispose();
         // dispose renderer and calls returnRendererContext(rdrCtx)
         this.rdr.dispose();
-    }
-
-    private static byte[] buildAlphaMap(int maxalpha) {
-        byte[] alMap = new byte[maxalpha + 1];
-        int halfmaxalpha = maxalpha >> 2;
-        for (int i = 0; i <= maxalpha; i++) {
-            alMap[i] = (byte) ((i * 255 + halfmaxalpha) / maxalpha);
-        }
-        return alMap;
     }
 
     void getBbox(int bbox[]) {
@@ -129,7 +115,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
         // would be needed here, since our caller needs to compute these 2
         // values anyway.
         return (al == 0x00 ? 0x00
-                : (al == maxTileAlphaSum ? 0xff : 0x80));
+                : (al == MAX_TILE_ALPHA_SUM ? 0xff : 0x80));
     }
 
     /**
@@ -159,13 +145,14 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
     @Override
     public void getAlpha(final byte tile[], final int offset, final int rowstride) {
         if (doMonitors) {
-            rdr.rdrCtx.mon_ptg_getAlpha.start();
+            RendererContext.stats.mon_ptg_getAlpha.start();
         }
 
         // local vars for performance:
         final int[] rowAAChunkIndex = cache.rowAAChunkIndex;
-        final int[] rowAAChunk = cache.rowAAChunk;
-        final byte[] _alphaMap = alphaMap;
+        final int[] rowAAx0 = cache.rowAAx0;
+        final int[] rowAAx1 = cache.rowAAx1;
+        final byte[] rowAAChunk = cache.rowAAChunk;
 
         int x0 = this.x;
         int x1 = x0 + TILE_SIZE;
@@ -191,18 +178,15 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
         int idx = offset;
         
         for (int cy = y0; cy < y1; cy++) {
-            // get row index:
-            final int pos = rowAAChunkIndex[cy];
-
             // empty line (default)
             int cx = x0;
 
-            final int aax1 = rowAAChunk[pos + 1]; // exclusive            
+            final int aax1 = rowAAx1[cy]; // exclusive
 
             // quick check if there is AA data
             // corresponding to this tile [x0; x1[
             if (aax1 > x0) {
-                final int aax0 = rowAAChunk[pos]; // inclusive
+                final int aax0 = rowAAx0[cy]; // inclusive
 
                 if (aax0 < x1) {
                     // note: cx is the cursor pointer in the tile array (left to right)
@@ -219,27 +203,17 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
                     }
 
                     // now: cx >= x0 but cx < aax0 (x1 < aax0)
+                    
+                    // get row index:
+                    final int pos = rowAAChunkIndex[cy];
+                    
                     // Copy AA data (sum alpha data):
-                    final int off = pos + 2 - aax0;
+                    final int off = pos - aax0;
 
+                    /* note: System.arrayCopy is slower than copy loop */
                     for (final int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
-                        final int aa = rowAAChunk[cx + off];
-/*
-
-                        if (DO_AA_RANGE_CHECK) {
-                            // disable once regression tests are OK
-                            if (aa > Renderer.MAX_AA_ALPHA) {
-                                logInfo("Invalid AA = " + aa + " for cx = " + cx + ", cy = " + cy);
-                                aa = Renderer.MAX_AA_ALPHA;
-                            }
-                            if (aa < 0) {
-                                logInfo("Invalid AA = " + aa + " for cx = " + cx + ", cy = " + cy);
-                                aa = 0;
-                            }
-                        }
-*/
-                        // cx inside tile[x0; x1[ and aa range:
-                        tile[idx] = _alphaMap[aa];
+                        // cx inside tile[x0; x1[ :
+                        tile[idx] = rowAAChunk[cx + off];
                     }
                 }
             }
@@ -262,7 +236,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
         nextTile();
 
         if (doMonitors) {
-            rdr.rdrCtx.mon_ptg_getAlpha.stop();
+            RendererContext.stats.mon_ptg_getAlpha.stop();
         }
     }
 

@@ -22,31 +22,30 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package org.marlin.pisces.stats;
 
-import java.io.InputStream;
-import java.util.Properties;
+/**
+ * Generic monitor ie gathers time statistics as nanos.
+ */
+public final class Monitor extends StatLong {
 
-public final class Version {
+    private final static long INVALID = -1L;
+    /* members */
+    private long start = INVALID;
 
-	private static String version = null;
+    public Monitor(final String name) {
+        super(name);
+    }
 
-	public static String getVersion() {
-		if (version == null) {
-			version="undefined";
-			/* load Version.properties */
-			try {
-				InputStream in = Version.class.getResourceAsStream("Version.properties");
-				Properties prop = new Properties();
-				prop.load(in);
+    public void start() {
+        start = System.nanoTime();
+    }
 
-				version = prop.getProperty("version", version);
-				in.close(); /* TODO: use finally */
-			} catch (Exception e) {}
-		}
-		return version;
-	}
-
-	private Version() {}
-
+    public void stop() {
+        final long elapsed = System.nanoTime() - start;
+        if (start != INVALID && elapsed > 0l) {
+            add(elapsed);
+        }
+        start = INVALID;
+    }
 }

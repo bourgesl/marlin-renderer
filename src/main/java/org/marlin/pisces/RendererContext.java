@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -24,9 +24,9 @@
  */
 package org.marlin.pisces;
 
+import java.awt.geom.FastPath2D;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.marlin.pisces.ArrayCache.*;
 import org.marlin.pisces.PiscesRenderingEngine.NormalizingPathIterator;
@@ -39,12 +39,10 @@ import static org.marlin.pisces.PiscesUtils.logInfo;
 final class RendererContext implements PiscesConst {
 
     private static final String className = RendererContext.class.getName();
-    /**
-     * context created counter
-     */
+    /** RendererContext created counter */
     private static final AtomicInteger contextCount = new AtomicInteger(1);
-    // TODO: use weak references instead of hard references (only used for debugging purposes)
-    static final ConcurrentLinkedQueue<RendererContext> allContexts = (doStats || doMonitors) ? new ConcurrentLinkedQueue<RendererContext>() : null;
+    /** RendererContext statistics */
+    static final RendererStats stats = (doStats || doMonitors) ? new RendererStats() : null;
 
     /**
      * Create a new renderer context
@@ -53,82 +51,50 @@ final class RendererContext implements PiscesConst {
      */
     static RendererContext createContext() {
         final RendererContext newCtx = new RendererContext("ctx" + Integer.toString(contextCount.getAndIncrement()));
-        if (doStats || doMonitors) {
-            allContexts.add(newCtx);
+        if (RendererContext.stats != null) {
+            RendererContext.stats.allContexts.add(newCtx);
         }
         return newCtx;
     }
 
     /* members */
-    /**
-     * context name (debugging purposes)
-     */
+    /** context name (debugging purposes) */
     final String name;
-
     /**
      * Reference to this instance (hard, soft or weak). 
      * @see PiscesRenderingEngine#REF_TYPE
      */
     final Object reference;
-
-    /**
-     * dynamic array caches
-     */
+    /** dynamic array caches */
     final IntArrayCache[] intArrayCaches = new IntArrayCache[BUCKETS];
     final FloatArrayCache[] floatArrayCaches = new FloatArrayCache[BUCKETS];
     /* dirty instances (use them carefully) */
-    /**
-     * dynamic DIRTY int array for PiscesCache
-     */
-    final IntArrayCache[] dirtyIntArrayCaches = new IntArrayCache[BUCKETS];
+    /** dynamic DIRTY byte array for PiscesCache */
+    final ByteArrayCache[] dirtyArrayCaches = new ByteArrayCache[BUCKETS];
     /* shared data */
     /* fixed arrays (dirty) */
     final float[] float6 = new float[6];
-    /**
-     * shared curve (dirty) (Renderer / Stroker)
-     */
+    /** shared curve (dirty) (Renderer / Stroker) */
     final Curve curve = new Curve();
     /* pisces class instances */
-    /**
-     * PiscesRenderingEngine.NormalizingPathIterator
-     */
+    /** PiscesRenderingEngine.NormalizingPathIterator */
     final NormalizingPathIterator npIterator;
-    /* Renderer */
+    /** PiscesRenderingEngine.TransformingPathConsumer2D */
+    final TransformingPathConsumer2D transformerPC2D;
+    /** recycled Path2D instance */
+    FastPath2D p2d = null;
+    /** Renderer */
     final Renderer renderer;
-    /* Stroker */
+    /** Stroker */
     final Stroker stroker;
-    /**
-     * Dasher
-     */
+    /** Simplifies out collinear lines */
+    final CollinearSimplifier simplifier = new CollinearSimplifier();
+    /** Dasher */
     final Dasher dasher;
-    /**
-     * PiscesTileGenerator
-     */
+    /** PiscesTileGenerator */
     final PiscesTileGenerator ptg;
-    /**
-     * PiscesCache
-     */
+    /** PiscesCache */
     final PiscesCache piscesCache;
-    /* stats */
-    final StatInteger stat_cache_rowAA = new StatInteger("cache.rowAA");
-    final StatInteger stat_cache_rowAAChunk = new StatInteger("cache.rowAAChunk");
-    final StatInteger stat_rdr_poly_stack = new StatInteger("renderer.poly.stack");
-    final StatInteger stat_rdr_edges = new StatInteger("renderer.edges");
-    final StatInteger stat_rdr_edges_resizes = new StatInteger("renderer.edges.resize");
-    final StatInteger stat_rdr_activeEdges = new StatInteger("renderer.activeEdges");
-    final StatInteger stat_rdr_activeEdges_updates = new StatInteger("renderer.activeEdges.updates");
-    final StatInteger stat_rdr_activeEdges_no_adds = new StatInteger("renderer.activeEdges.noadds");
-    final StatInteger stat_rdr_crossings_updates = new StatInteger("renderer.crossings.updates");
-    final StatInteger stat_rdr_crossings_sorts = new StatInteger("renderer.crossings.sorts");
-    final StatInteger stat_rdr_crossings_bsearch = new StatInteger("renderer.crossings.bsearch");
-    /* monitors */
-    final Monitor mon_pre_getAATileGenerator = new Monitor("PiscesRenderingEngine.getAATileGenerator()");
-    final Monitor mon_npi_currentSegment = new Monitor("NormalizingPathIterator.currentSegment()");
-    final Monitor mon_rdr_addLine = new Monitor("Renderer.addLine()");
-    final Monitor mon_rdr_endRendering = new Monitor("Renderer.endRendering()");
-    final Monitor mon_rdr_endRendering_Y = new Monitor("Renderer._endRendering(Y)");
-    final Monitor mon_rdr_emitRow = new Monitor("Renderer.emitRow()");
-    final Monitor mon_ptg_getAlpha = new Monitor("PiscesTileGenerator.getAlpha()");
 
     /**
      * Constructor
@@ -146,11 +112,14 @@ final class RendererContext implements PiscesConst {
             intArrayCaches[i] = new IntArrayCache(ARRAY_SIZES[i]);
             floatArrayCaches[i] = new FloatArrayCache(ARRAY_SIZES[i]);
             // dirty:
-            dirtyIntArrayCaches[i] = new IntArrayCache(DIRTY_ARRAY_SIZES[i]);
+            dirtyArrayCaches[i] = new ByteArrayCache(DIRTY_ARRAY_SIZES[i]);
         }
 
         // PiscesRenderingEngine.NormalizingPathIterator:
         npIterator = new NormalizingPathIterator(this);
+
+        // PiscesRenderingEngine.TransformingPathConsumer2D
+        transformerPC2D = new TransformingPathConsumer2D();
 
         // Renderer:
         piscesCache = new PiscesCache(this);
@@ -186,15 +155,15 @@ final class RendererContext implements PiscesConst {
         return floatArrayCaches[bucket];
     }
 
-    IntArrayCache getDirtyIntArrayCache(final int length) {
+    ByteArrayCache getDirtyArrayCache(final int length) {
         final int bucket = ArrayCache.getBucketDirty(length);
-        return dirtyIntArrayCaches[bucket];
+        return dirtyArrayCaches[bucket];
     }
 
     /* dirty piscesCache */
-    int[] getDirtyIntArray(final int length) {
+    byte[] getDirtyArray(final int length) {
         if (length <= MAX_DIRTY_ARRAY_SIZE) {
-            return getDirtyIntArrayCache(length).getArray();
+            return getDirtyArrayCache(length).getArray();
         }
 
         if (doStats) {
@@ -202,29 +171,28 @@ final class RendererContext implements PiscesConst {
         }
 
         if (doLogOverSize) {
-            logInfo("getDirtyIntArrayCache[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("getDirtyIntArray[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
         }
 
-        return new int[length];
+        return new byte[length];
     }
 
-    void putDirtyIntArray(final int[] array) {
+    void putDirtyArray(final byte[] array) {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_DIRTY_ARRAY_SIZE)) {
-            getDirtyIntArrayCache(length).putDirtyArray(array, length);
+            getDirtyArrayCache(length).putDirtyArray(array, length);
         }
     }
 
     /* TODO: replace with new signature */
-    int[] widenDirtyIntArray(final int[] in, final int cursize, final int numToAdd) {
-
+    byte[] widenDirtyArray(final byte[] in, final int cursize, final int numToAdd) {
         final int length = in.length;
         final int newSize = cursize + numToAdd;
         if (length >= newSize) {
             return in;
         }
 
-        final int[] res = widenDirtyArray(in, length, cursize, newSize);
+        final byte[] res = RendererContext.this.widenDirtyArray(in, length, cursize, newSize);
 
         if (doLog) {
             logInfo("widenDirtyArray int[" + res.length + "]: cursize=\t" + cursize + "\tlength=\t" + length
@@ -233,21 +201,21 @@ final class RendererContext implements PiscesConst {
         return res;
     }
 
-    private int[] widenDirtyArray(final int[] in, final int length, final int usedSize, final int newSize) {
+    private byte[] widenDirtyArray(final byte[] in, final int length, final int usedSize, final int newSize) {
         if (doChecks && length >= newSize) {
             return in;
         }
         if (doStats) {
-            resizeDirtyInt++;
+            resizeDirty++;
         }
 
         // maybe change bucket:
-        final int[] res = getDirtyIntArray(2 * newSize); // Use x2
+        final byte[] res = getDirtyArray(2 * newSize); // Use x2
 
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
         // maybe return current array:
-        putDirtyIntArray(in); // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
+        putDirtyArray(in); // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
 
         return res;
     }
@@ -325,7 +293,6 @@ final class RendererContext implements PiscesConst {
             oversize++;
         }
 
-        // TODO: use very big one at last !
         if (doLogOverSize) {
             logInfo("getFloatArray[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
         }
@@ -357,78 +324,6 @@ final class RendererContext implements PiscesConst {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getFloatArrayCache(length).putArray(array, length, fromIndex, toIndex);
-        }
-    }
-
-    /* stats */
-    static class StatInteger {
-
-        public final String name;
-        public long count;
-        public long sum;
-        public long min;
-        public long max;
-
-        StatInteger(String name) {
-            this.name = name;
-            reset();
-        }
-
-        final void reset() {
-            count = 0;
-            sum = 0;
-            min = Integer.MAX_VALUE;
-            max = Integer.MIN_VALUE;
-        }
-
-        final void add(int val) {
-            count++;
-            sum += val;
-            if (val < min) {
-                min = val;
-            }
-            if (val > max) {
-                max = val;
-            }
-        }
-
-        final void add(long val) {
-            count++;
-            sum += val;
-            if (val < min) {
-                min = val;
-            }
-            if (val > max) {
-                max = val;
-            }
-        }
-
-        @Override
-        public final String toString() {
-            return name + '[' + count + "] sum: " + sum + " avg: " + (((double) sum) / count) + " [" + min + " | " + max + "]";
-        }
-    }
-
-    /* monitors */
-    static final class Monitor extends StatInteger {
-
-        private final static long INVALID = -1L;
-        private long start = INVALID;
-
-        Monitor(String name) {
-            super(name);
-        }
-
-        void start() {
-            start = System.nanoTime();
-        }
-
-        void stop() {
-            final long elapsed = System.nanoTime() - start;
-            if (start != INVALID && elapsed > 0l) {
-                add(elapsed);
-            }
-            start = INVALID;
         }
     }
 }

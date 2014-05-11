@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -36,15 +36,25 @@ public final class PiscesCache implements PiscesConst {
     public static final int TILE_SIZE_LG = PiscesRenderingEngine.getTileSize_Log2();
     public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
 
-    /* 2048 alpha values (width) x 32 rows (tile) = 256K */
+    /* 2048 alpha values (width) x 32 rows (tile) = 64K */
     static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
+
+    // The alpha map used by this object (taken out of our map cache) to convert
+    // pixel coverage counts gotten from PiscesCache (which are in the range
+    // [0, maxalpha]) into alpha values, which are in [0,256).
+    final static byte[] ALPHA_MAP = buildAlphaMap(Renderer.MAX_AA_ALPHA);
     
     /* members */
     int bboxX0, bboxY0, bboxX1, bboxY1;
 
-    /* row index in rowAAChunk[] (dirty 1D array) */
+    /* 1D dirty arrays */
+    /* row index in rowAAChunk[] */
     final int[] rowAAChunkIndex = new int[TILE_SIZE];
-
+    /* first pixel (inclusive) for each row */
+    final int[] rowAAx0 = new int[TILE_SIZE];
+    /* last pixel (exclusive) for each row */
+    final int[] rowAAx1 = new int[TILE_SIZE];
+    
     /* 1D dirty array containing 32 rows (packed) */
     // rowAAStride[i] holds the encoding of the pixel row with y = bboxY0+i.
     // The format of each of the inner arrays is: rowAAStride[i][0,1] = (x0, n)
@@ -52,7 +62,7 @@ public final class PiscesCache implements PiscesConst {
     // number of RLE entries in this row. rowAAStride[i][j,j+1] for j>1 is
     // (val,runlen)
     /* LBO: TODO: fix doc (no RLE anymore) */
-    int[] rowAAChunk;
+    byte[] rowAAChunk;
     /* current position in rowAAChunk array */
     int rowAAChunkPos;
 
@@ -64,7 +74,7 @@ public final class PiscesCache implements PiscesConst {
     final RendererContext rdrCtx;
 
     /** large cached rowAAChunk (dirty) */
-    final int[] rowAAChunk_initial;
+    final byte[] rowAAChunk_initial;
     /** large cached touchedTile (dirty) */
     final int[] touchedTile_initial;
 
@@ -74,8 +84,8 @@ public final class PiscesCache implements PiscesConst {
         this.rdrCtx = rdrCtx;
 
         // +1 to avoid recycling in widenDirtyIntArray()
-        this.rowAAChunk_initial  = new int[INITIAL_CHUNK_ARRAY + 1]; // 256K
-        this.touchedTile_initial = new int[INITIAL_ARRAY];       // only 1 tile line
+        this.rowAAChunk_initial  = new byte[INITIAL_CHUNK_ARRAY + 1]; // 64K
+        this.touchedTile_initial = new int[INITIAL_ARRAY];            // only 1 tile line
         
         rowAAChunk  = rowAAChunk_initial;
         touchedTile = touchedTile_initial;
@@ -110,7 +120,7 @@ public final class PiscesCache implements PiscesConst {
 
         // Return arrays:
         if (rowAAChunk != rowAAChunk_initial) {
-            rdrCtx.putDirtyIntArray(rowAAChunk);
+            rdrCtx.putDirtyArray(rowAAChunk);
             rowAAChunk = rowAAChunk_initial;
         }
         if (touchedTile != touchedTile_initial) {
@@ -125,7 +135,7 @@ public final class PiscesCache implements PiscesConst {
 
         /* reset current pos */
         if (doStats) {
-            this.rdrCtx.stat_cache_rowAAChunk.add(rowAAChunkPos);
+            RendererContext.stats.stat_cache_rowAAChunk.add(rowAAChunkPos);
         }
         rowAAChunkPos = 0;
 
@@ -143,7 +153,7 @@ public final class PiscesCache implements PiscesConst {
         }
 
         if (doCleanDirty) {
-            Arrays.fill(rowAAChunk, 0);
+            Arrays.fill(rowAAChunk, BYTE_0);
         }
     }
 
@@ -151,21 +161,11 @@ public final class PiscesCache implements PiscesConst {
         // LBO: hack to process tile line [0 - 32]
         final int row = y - bboxY0;
         
-        // get current position:
-        final int pos = rowAAChunkPos;
-        // update row index to current position:
-        rowAAChunkIndex[row] = pos;
-        // update row data:
-        int[] _rowAAChunk = rowAAChunk;
-        // ensure rowAAChunk capacity:
-        if (_rowAAChunk.length < pos + 2) {
-            rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyIntArray(_rowAAChunk, pos, 2);
-        }
-        // update row data:
-        _rowAAChunk[pos    ] = 0; // first pixel inclusive
-        _rowAAChunk[pos + 1] = 0; //  last pixel exclusive
-        // update pos:
-        rowAAChunkPos = pos + 2;
+        // update pixel range:
+        rowAAx0[row] = 0; // first pixel inclusive
+        rowAAx1[row] = 0; //  last pixel exclusive
+
+        // note: leave rowAAChunkIndex[row] undefined
     }
 
     /**
@@ -177,54 +177,74 @@ public final class PiscesCache implements PiscesConst {
      */
     void copyAARow(final int[] alphaRow, final int y, final int px0, final int px1) {
         if (doMonitors) {
-            rdrCtx.mon_rdr_emitRow.start();
+            RendererContext.stats.mon_rdr_emitRow.start();
         }
 
         /* skip useless pixels above boundary */
         final int px_bbox1 = Math.min(px1, bboxX1);
     
         if (doLogBounds) {
-            PiscesUtils.logInfo("row = [" + px0 + " ... " + px_bbox1 + " ("+px1+") [ for y=" + y);
+            PiscesUtils.logInfo("row = [" + px0 + " ... " + px_bbox1 + " (" + px1 + ") [ for y=" + y);
         }
         
         final int row = y - bboxY0;
+        
+        // update pixel range:
+        rowAAx0[row] = px0;      // first pixel inclusive
+        rowAAx1[row] = px_bbox1; //  last pixel exclusive
+        
+        final int len = px_bbox1 - px0;
         
         // get current position:
         final int pos = rowAAChunkPos;
         // update row index to current position:
         rowAAChunkIndex[row] = pos;
         // update row data:
-        int[] _rowAAChunk = rowAAChunk;
+        byte[] _rowAAChunk = rowAAChunk;
         // ensure rowAAChunk capacity:
-        if (_rowAAChunk.length < pos + 2 + (px_bbox1 - px0)) {
-            rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyIntArray(_rowAAChunk, pos, 2 + (px_bbox1 - px0));
+        if (_rowAAChunk.length < pos + len) {
+            rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyArray(_rowAAChunk, pos, len);
         }
         if (doStats) {
-            this.rdrCtx.stat_cache_rowAA.add(2 + px_bbox1 - px0);
+            RendererContext.stats.stat_cache_rowAA.add(len);
         }
-        // rowAA contains (x0 x1)(alpha values for range[x0; x1[)
-        _rowAAChunk[pos    ] = px0;      // first pixel inclusive
-        _rowAAChunk[pos + 1] = px_bbox1; //  last pixel exclusive
+
+        // rowAA contains only alpha values for range[x0; x1[
 
         final int from = px0      - bboxX0; // first pixel inclusive
         final int to   = px_bbox1 - bboxX0; //  last pixel exclusive
 
         final int[] touchedLine = touchedTile;
         final int _TILE_SIZE_LG = TILE_SIZE_LG;
+        final int _MAX_AA_ALPHA = Renderer.MAX_AA_ALPHA;
+        final byte[] _ALPHA_MAP = ALPHA_MAP;
 
         // fix offset in rowAAChunk:
-        final int off = pos + 2 - from;
+        final int off = pos - from;
         
         // compute alpha sum into rowAA:
         for (int x = from, val = 0; x < to; x++) {
+            /* alphaRow is in [0; MAX_COVERAGE] */
             val += alphaRow[x]; // [from; to[
 
-            /* ensure val is [0;64] */
-//            val &= _MASK_ALPHA_COVERAGE; /* use alpha mask to ensure values are in [0;64] range */
-
-            // store alpha sum:
-            _rowAAChunk[x + off] = val;
-
+            /* ensure values are in [0; MAX_AA_ALPHA] range */
+            if (DO_AA_RANGE_CHECK) {
+                /* TODO: fix a faster way */            
+                if (val < 0) {
+                    System.out.println("Invalid coverage = " + val);
+                    val = 0;
+                }
+                if (val > _MAX_AA_ALPHA) {
+                    System.out.println("Invalid coverage = " + val);
+                    val = _MAX_AA_ALPHA;
+                }
+            }
+            
+            /* TODO: better handle int to byte conversion (filter normalization) */
+            
+            // store alpha sum (as byte):
+            _rowAAChunk[x + off] = _ALPHA_MAP[val];
+            
             if (val != 0) {
                 // update touchedTile
                 touchedLine[x >> _TILE_SIZE_LG] += val;
@@ -232,7 +252,7 @@ public final class PiscesCache implements PiscesConst {
         }
         
         // update current position:
-        rowAAChunkPos = pos + 2 + px_bbox1 - px0;
+        rowAAChunkPos = pos + len;
 
         // update tile used marks:
         int tx = from >> _TILE_SIZE_LG; // inclusive
@@ -253,7 +273,7 @@ public final class PiscesCache implements PiscesConst {
         IntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
         
         if (doMonitors) {
-            rdrCtx.mon_rdr_emitRow.stop();
+            RendererContext.stats.mon_rdr_emitRow.stop();
         }
     }
 
@@ -274,5 +294,18 @@ public final class PiscesCache implements PiscesConst {
                             Arrays.copyOfRange(rowAAChunk, pos + 2, pos + rowAAChunk[pos + 1])) + "\n");
         }
         return ret;
+    }
+
+    private static byte[] buildAlphaMap(final int maxalpha) {
+        // ensure large enough (x2) to avoid ArrayIndexOutOfBounds in case of failure of the coverage computation
+        final byte[] alMap = new byte[maxalpha + 1];
+//        System.out.println("buildAlphaMap[" + maxalpha + "]: length: " + alMap.length);
+        final int halfmaxalpha = maxalpha >> 2;
+        
+        for (int i = 0; i <= maxalpha; i++) {
+            alMap[i] = (byte) ((i * 255 + halfmaxalpha) / maxalpha);
+//            System.out.println("alphaMap[" + i + "] = " + Byte.toUnsignedInt(alMap[i]));
+        }
+        return alMap;
     }
 }

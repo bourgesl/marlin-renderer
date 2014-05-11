@@ -26,9 +26,6 @@ package org.marlin.pisces;
 
 import static org.marlin.pisces.PiscesUtils.logInfo;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 /**
  *
  */
@@ -42,18 +39,16 @@ public final class ArrayCache implements PiscesConst {
     final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arrayCopy)
     /** threshold to grow arrays by x4 or x2 */
     final static int THRESHOLD_ARRAY_SIZE = 32 * 1024;
-    // array sizes:
+    /* array sizes */
     final static int MAX_ARRAY_SIZE;
     final static int[] ARRAY_SIZES = new int[BUCKETS];
-    // dirty array sizes:
+    /* dirty array sizes */
     final static int MAX_DIRTY_ARRAY_SIZE;
     final static int[] DIRTY_ARRAY_SIZES = new int[BUCKETS];
     /* stats */
-    private static Timer statTimer = null;
-    /* stats */
     static int resizeInt = 0;
     static int resizeFloat = 0;
-    static int resizeDirtyInt = 0;
+    static int resizeDirty = 0;
     static int oversize = 0;
 
     static {
@@ -86,24 +81,6 @@ public final class ArrayCache implements PiscesConst {
             logInfo("ArrayCache.MIN_ARRAY_SIZE = " + MIN_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_ARRAY_SIZE = " + MAX_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_DIRTY_ARRAY_SIZE = " + MAX_DIRTY_ARRAY_SIZE);
-
-            // stats:
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    dumpStats();
-                }
-            });
-
-            if (useDumpThread) {
-                statTimer = new Timer("ArrayCache");
-                statTimer.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        dumpStats();
-                    }
-                }, statDump, statDump);
-            }
         }
     }
 
@@ -111,137 +88,16 @@ public final class ArrayCache implements PiscesConst {
         // Utility class
     }
 
-    public static void dumpStats() {
-        if (doStats || doMonitors) {
-            if (doStats) {
-                if (resizeInt != 0 || resizeFloat != 0 || resizeDirtyInt != 0) {
-                    logInfo("ArrayCache: int resize: " + resizeInt + " - float resize: " + resizeFloat
-                            + " - dirty int resize: " + resizeDirtyInt + " - oversize: " + oversize);
-                }
-            }
-            final RendererContext[] all = RendererContext.allContexts.toArray(new RendererContext[0]);
-            for (RendererContext rdrCtx : all) {
-                logInfo("RendererContext: " + rdrCtx.name);
-
-                if (doMonitors) {
-                    if (rdrCtx.mon_pre_getAATileGenerator.count != 0) {
-                        logInfo(rdrCtx.mon_pre_getAATileGenerator.toString());
-                    }
-                    if (rdrCtx.mon_npi_currentSegment.count != 0) {
-                        logInfo(rdrCtx.mon_npi_currentSegment.toString());
-                    }
-                    if (rdrCtx.mon_rdr_addLine.count != 0) {
-                        logInfo(rdrCtx.mon_rdr_addLine.toString());
-                    }
-                    if (rdrCtx.mon_rdr_endRendering.count != 0) {
-                        logInfo(rdrCtx.mon_rdr_endRendering.toString());
-                    }
-                    if (rdrCtx.mon_rdr_endRendering_Y.count != 0) {
-                        logInfo(rdrCtx.mon_rdr_endRendering_Y.toString());
-                    }
-                    if (rdrCtx.mon_rdr_emitRow.count != 0) {
-                        logInfo(rdrCtx.mon_rdr_emitRow.toString());
-                    }
-                    if (rdrCtx.mon_ptg_getAlpha.count != 0) {
-                        logInfo(rdrCtx.mon_ptg_getAlpha.toString());
-                    }
-                    //
-                    final long total = rdrCtx.mon_pre_getAATileGenerator.sum;
-                    if (total != 0L) {
-                        logInfo(rdrCtx.mon_pre_getAATileGenerator.name + " : " + ((100d * total) / total) + " %");
-
-                        final long npiNorm = rdrCtx.mon_npi_currentSegment.sum;
-                        logInfo(rdrCtx.mon_npi_currentSegment.name + " : " + ((100d * npiNorm) / total) + " %");
-
-                        final long addLine = rdrCtx.mon_rdr_addLine.sum;
-                        logInfo(rdrCtx.mon_rdr_addLine.name + " : " + ((100d * addLine) / total) + " %");
-
-                        final long endRendering = rdrCtx.mon_rdr_endRendering.sum;
-                        logInfo(rdrCtx.mon_rdr_endRendering.name + " : " + ((100d * endRendering) / total) + " %");
-
-                        final long endRenderingY = rdrCtx.mon_rdr_endRendering_Y.sum;
-                        logInfo(rdrCtx.mon_rdr_endRendering_Y.name + " : " + ((100d * endRenderingY) / total) + " %");
-
-                        final long emitRow = rdrCtx.mon_rdr_emitRow.sum;
-                        logInfo(rdrCtx.mon_rdr_emitRow.name + " : " + ((100d * emitRow) / total) + " %");
-
-                        final long getAlpha = rdrCtx.mon_ptg_getAlpha.sum;
-                        logInfo(rdrCtx.mon_ptg_getAlpha.name + " : " + ((100d * getAlpha) / total) + " %");
-                    }
-                    if (doFlushMonitors) {
-                        rdrCtx.mon_pre_getAATileGenerator.reset();
-                        rdrCtx.mon_npi_currentSegment.reset();
-                        rdrCtx.mon_rdr_addLine.reset();
-                        rdrCtx.mon_rdr_endRendering.reset();
-                        rdrCtx.mon_rdr_endRendering_Y.reset();
-                        rdrCtx.mon_rdr_emitRow.reset();
-                        rdrCtx.mon_ptg_getAlpha.reset();
-                    }
-                }
-
-                if (doStats) {
-                    if (rdrCtx.stat_cache_rowAAChunk.count != 0) {
-                        logInfo(rdrCtx.stat_cache_rowAAChunk.toString());
-                        rdrCtx.stat_cache_rowAAChunk.reset();
-                    }
-                    if (rdrCtx.stat_cache_rowAA.count != 0) {
-                        logInfo(rdrCtx.stat_cache_rowAA.toString());
-                        rdrCtx.stat_cache_rowAA.reset();
-                    }
-                    if (rdrCtx.stat_rdr_poly_stack.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_poly_stack.toString());
-                        rdrCtx.stat_rdr_poly_stack.reset();
-                    }
-                    if (rdrCtx.stat_rdr_edges.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_edges.toString());
-                        rdrCtx.stat_rdr_edges.reset();
-                    }
-                    if (rdrCtx.stat_rdr_edges_resizes.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_edges_resizes.toString());
-                        rdrCtx.stat_rdr_edges_resizes.reset();
-                    }
-                    if (rdrCtx.stat_rdr_activeEdges.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_activeEdges.toString());
-                        rdrCtx.stat_rdr_activeEdges.reset();
-                    }
-                    if (rdrCtx.stat_rdr_activeEdges_updates.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_activeEdges_updates.toString());
-                        rdrCtx.stat_rdr_activeEdges_updates.reset();
-                    }
-                    if (rdrCtx.stat_rdr_activeEdges_no_adds.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_activeEdges_no_adds.toString());
-                        rdrCtx.stat_rdr_activeEdges_no_adds.reset();
-                    }
-                    if (rdrCtx.stat_rdr_crossings_updates.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_crossings_updates.toString());
-                        rdrCtx.stat_rdr_crossings_updates.reset();
-                    }
-                    if (rdrCtx.stat_rdr_crossings_sorts.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_crossings_sorts.toString());
-                        rdrCtx.stat_rdr_crossings_sorts.reset();
-                    }
-                    if (rdrCtx.stat_rdr_crossings_bsearch.count != 0) {
-                        logInfo(rdrCtx.stat_rdr_crossings_bsearch.toString());
-                        rdrCtx.stat_rdr_crossings_bsearch.reset();
-                    }
-
-                    for (IntArrayCache cache : rdrCtx.intArrayCaches) {
-                        cache.dumpStats();
-                    }
-                    for (FloatArrayCache cache : rdrCtx.floatArrayCaches) {
-                        cache.dumpStats();
-                    }
-                    logInfo("Dirty ArrayCache for thread: " + rdrCtx.name);
-                    for (IntArrayCache cache : rdrCtx.dirtyIntArrayCaches) {
-                        cache.dumpStats();
-                    }
-                }
-            }
+    static void dumpStats() {
+        if (resizeInt != 0 || resizeFloat != 0 || resizeDirty != 0) {
+            logInfo("ArrayCache: int resize: " + resizeInt
+                    + " - float resize: " + resizeFloat
+                    + " - dirty resize: " + resizeDirty
+                    + " - oversize: " + oversize);
         }
     }
 
     /* TODO: use shifts to find bucket as fast as possible (no condition) */
-    
     /* small methods used a lot (to be inlined / optimized by hotspot) */
     static int getBucket(final int length) {
         // Use size = (length / 2) * 2 => rounded to power of two

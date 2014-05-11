@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -27,6 +27,7 @@ package org.marlin.pisces;
 import java.awt.BasicStroke;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.FastPath2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.lang.ref.Reference;
@@ -60,6 +61,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
      * @return the widened path stored in a new {@code Shape} object
      * @since 1.7
      */
+    @Override
     public Shape createStrokedShape(Shape src,
                                     float width,
                                     int caps,
@@ -68,47 +70,32 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
                                     float dashes[],
                                     float dashphase)
     {
-        final Path2D p2d = new Path2D.Float();
-
         final RendererContext rdrCtx = getRendererContext();
 
+        // initialize a large copyable FastPath2D to avoid a lot of array growing:
+        final FastPath2D p2d = (rdrCtx.p2d == null) ? (rdrCtx.p2d = new FastPath2D(INITIAL_MEDIUM_ARRAY)) : rdrCtx.p2d;
+        // reset
+        p2d.reset();
+        
         strokeTo(rdrCtx,
                  src,
                  null,
                  width,
-                 NormMode.OFF,
+                 NormMode.OFF, /* LBO: should use ON_WITH_AA to be more precise ? */
                  caps,
                  join,
                  miterlimit,
                  dashes,
                  dashphase,
-                 /* TODO: create inner class (shared instance) */
-                 new PathConsumer2D() {
-                     public void moveTo(float x0, float y0) {
-                         p2d.moveTo(x0, y0);
-                     }
-                     public void lineTo(float x1, float y1) {
-                         p2d.lineTo(x1, y1);
-                     }
-                     public void closePath() {
-                         p2d.closePath();
-                     }
-                     public void pathDone() {}
-                     public void curveTo(float x1, float y1,
-                                         float x2, float y2,
-                                         float x3, float y3) {
-                         p2d.curveTo(x1, y1, x2, y2, x3, y3);
-                     }
-                     public void quadTo(float x1, float y1, float x2, float y2) {
-                         p2d.quadTo(x1, y1, x2, y2);
-                     }
-                     public long getNativeConsumer() {
-                         throw new InternalError("Not using a native peer");
-                     }
-                });
-
+                 rdrCtx.transformerPC2D.wrapPath2d(p2d)
+                );
+        
+        /* Perform Path2D copy efficiently and trim */
+        final Path2D path = p2d.trimmedCopy();
+        
         returnRendererContext(rdrCtx);
-        return p2d;
+        
+        return path;
     }
 
     /**
@@ -138,6 +125,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
      *                 the widened geometry to
      * @since 1.7
      */
+    @Override
     public void strokeTo(Shape src,
                          AffineTransform at,
                          BasicStroke bs,
@@ -382,12 +370,18 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             }
         }
 
+        if (useSimplifier) {
+            // Use simplifier after stroker before Dasher to remove collinear segments:
+            pc2d = rdrCtx.simplifier.init(pc2d);
+        }
+
         // by now, at least one of outat and strokerat will be null. Unless at is not
         // a constant multiple of an orthogonal transformation, they will both be
         // null. In other cases, outat == at if normalization is off, and if
         // normalization is on, strokerat == at.
-        pc2d = TransformingPathConsumer2D.transformConsumer(pc2d, outat);
-        pc2d = TransformingPathConsumer2D.deltaTransformConsumer(pc2d, strokerat);
+        final TransformingPathConsumer2D transformerPC2D = rdrCtx.transformerPC2D;
+        pc2d = transformerPC2D.transformConsumer(pc2d, outat);
+        pc2d = transformerPC2D.deltaTransformConsumer(pc2d, strokerat);
         
         pc2d = rdrCtx.stroker.init(pc2d, width, caps, join, miterlimit);
         
@@ -397,7 +391,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             }
             pc2d = rdrCtx.dasher.init(pc2d, dashes, dashLen, dashphase, recycleDashes);
         }
-        pc2d = TransformingPathConsumer2D.inverseDeltaTransformConsumer(pc2d, strokerat);
+        pc2d = transformerPC2D.inverseDeltaTransformConsumer(pc2d, strokerat);
         pathTo(rdrCtx.float6, pi, pc2d);
         
         /*
@@ -407,6 +401,9 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
          * -> Dasher 
          * -> Stroker 
          * -> deltaTransformConsumer OR transformConsumer
+         * 
+         * -> CollinearSimplifier to remove redundant segments
+         *
          * -> pc2d = Renderer (bounding box)
          */
     }
@@ -465,11 +462,12 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             return this; // fluent API
         }
 
+        @Override
         public int currentSegment(final float[] coords) {
             final int type = src.currentSegment(coords);
             
             if (doMonitors) {
-                rdrCtx.mon_npi_currentSegment.start();
+                RendererContext.stats.mon_npi_currentSegment.start();
             }            
 
             int lastCoord;
@@ -547,11 +545,12 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             cury_adjust = y_adjust;
             
             if (doMonitors) {
-                rdrCtx.mon_npi_currentSegment.stop();
+                RendererContext.stats.mon_npi_currentSegment.stop();
             }            
             return type;
         }
 
+        @Override
         public int currentSegment(final double[] coords) {
             final float[] _tmp = tmp; // dirty
             int type = this.currentSegment(_tmp);
@@ -561,10 +560,12 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             return type;
         }
 
+        @Override
         public int getWindingRule() {
             return src.getWindingRule();
         }
 
+        @Override
         public boolean isDone() {
             if (src.isDone()) {
                 this.src = null; // free source PathIterator
@@ -573,6 +574,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             return false;
         }
 
+        @Override
         public void next() {
             src.next();
         }
@@ -656,6 +658,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
      *         for tile coverages, or null if there is no output to render
      * @since 1.7
      */
+    @Override
     public AATileGenerator getAATileGenerator(Shape s,
                                               AffineTransform at,
                                               Region clip,
@@ -736,7 +739,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         
         Renderer r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                           clip.getWidth(), clip.getHeight(),
-                                          PathIterator.WIND_EVEN_ODD);
+                                          Renderer.WIND_EVEN_ODD);
 
         r.moveTo((float) x, (float) y);
         r.lineTo((float) (x+dx1), (float) (y+dy1));
@@ -778,6 +781,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
      * can represent without dropouts occuring.
      * @since 1.7
      */
+    @Override
     public float getMinimumAAPenSize() {
         return 0.5f;
     }
@@ -823,7 +827,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>() : null;
 
         // Hard reference by default:
-        String refType = System.getProperty("sun.java2d.renderer.useRef", "hard");
+        String refType = System.getProperty("sun.java2d.renderer.useRef", "soft");
         switch (refType) {
             default:
             case "hard":
@@ -858,6 +862,9 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             logInfo("sun.java2d.renderer.tileSize_log2    = " + getTileSize_Log2());
             logInfo("sun.java2d.renderer.useFastMath      = " + isUseFastMath());
 
+            /* optimisation parameters */
+            logInfo("sun.java2d.renderer.useSimplifier    = " + isUseSimplifier());
+
             /* debugging parameters */
             logInfo("sun.java2d.renderer.doStats          = " + isDoStats());
             logInfo("sun.java2d.renderer.doMonitors       = " + isDoMonitors());
@@ -867,6 +874,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             logInfo("sun.java2d.renderer.useJul           = " + isUseJul());
             logInfo("sun.java2d.renderer.logCreateContext = " + isLogCreateContext());
             logInfo("sun.java2d.renderer.logUnsafeMalloc  = " + isLogUnsafeMalloc());
+
         } else {
             logInfo("sun.java2d.renderer                  = " + reClass);
         }
@@ -894,7 +902,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             }
         }
         if (doMonitors) {
-            rdrCtx.mon_pre_getAATileGenerator.start();
+            RendererContext.stats.mon_pre_getAATileGenerator.start();
         }
         return rdrCtx;
     }
@@ -905,7 +913,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
      */
     static void returnRendererContext(final RendererContext rdrCtx) {
         if (doMonitors) {
-            rdrCtx.mon_pre_getAATileGenerator.stop();
+            RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
         if (!useThreadLocal) {
             rdrCtxQueue.offer(rdrCtx.reference);
@@ -930,19 +938,19 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
     /**
      * Return the log(2) corresponding to subpixel on x-axis (
      *
-     * @return 1 (2 subpixels) < initial pixel size < 4 (16 subpixels) (3 by default ie 8 subpixels)
+     * @return 1 (2 subpixels) < initial pixel size < 4 (256 subpixels) (3 by default ie 8 subpixels)
      */
     public static int getSubPixel_Log2_X() {
-        return getInteger("sun.java2d.renderer.subPixel_log2_X", 3, 1, 4);
+        return getInteger("sun.java2d.renderer.subPixel_log2_X", 3, 1, 8);
     }
 
     /**
      * Return the log(2) corresponding to subpixel on y-axis (
      *
-     * @return 1 (2 subpixels) < initial pixel size < 4 (16 subpixels) (3 by default ie 8 subpixels)
+     * @return 1 (2 subpixels) < initial pixel size < 8 (256 subpixels) (3 by default ie 8 subpixels)
      */
     public static int getSubPixel_Log2_Y() {
-        return getInteger("sun.java2d.renderer.subPixel_log2_Y", 3, 1, 4);
+        return getInteger("sun.java2d.renderer.subPixel_log2_Y", 3, 1, 8);
     }
 
     /**
@@ -958,6 +966,12 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         return getBoolean("sun.java2d.renderer.useFastMath", "true");
     }
 
+    /* optimisation parameters */
+    
+    public static boolean isUseSimplifier() {
+        return getBoolean("sun.java2d.renderer.useSimplifier", "false");
+    }
+    
     /* debugging parameters */
     public static boolean isDoStats() {
         return getBoolean("sun.java2d.renderer.doStats", "false");
@@ -983,6 +997,8 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
     public static boolean isLogUnsafeMalloc() {
         return getBoolean("sun.java2d.renderer.logUnsafeMalloc", "false");
     }
+    
+    /* system property utilities */
 
     public static boolean getBoolean(final String key, final String def) {
         return Boolean.valueOf(System.getProperty(key, def));
@@ -997,4 +1013,5 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         }
         return value;
     }
+    
 }

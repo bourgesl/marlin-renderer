@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -46,11 +46,8 @@ interface PiscesConst {
     /** do checks */
     static final boolean doChecks = PiscesRenderingEngine.isDoChecks();
 
-    /* disable when algorithm / code is stable */
-    static final boolean DO_AA_RANGE_CHECK = false; // TODO: always ensure byte[0;64]
-
-    static final boolean USE_BINARY_SEARCH = true;
-    static final int THRESHOLD_BINARY_SEARCH = 20;
+    /** do AA range checks: disable when algorithm / code is stable */
+    static final boolean DO_AA_RANGE_CHECK = false;
 
     /** enable logs */
     static final boolean doLog = false;
@@ -70,6 +67,9 @@ interface PiscesConst {
     /** flag to use custom ceil() / floor() functions */
     static final boolean useFastMath = PiscesRenderingEngine.isUseFastMath();
 
+    /** flag to use line simplifier */
+    static final boolean useSimplifier = PiscesRenderingEngine.isUseSimplifier();
+
     /** flag to enable logs related bounds checks */
     static final boolean doLogBounds = false;
 
@@ -80,8 +80,12 @@ interface PiscesConst {
 
     /* only odd numbers allowed below */
     static final int INITIAL_ARRAY        = 256;
-    static final int INITIAL_MEDIUM_ARRAY = 4096; // large enough to avoid 99% array resizing
-    static final int INITIAL_LARGE_ARRAY  = 8192; // large enough to avoid 99% array resizing
-    static final int INITIAL_ARRAY_32K    = 32768;   // very large to avoid 99.99% array resizing
+    static final int INITIAL_SMALL_ARRAY  = 1024;  // large enough to avoid 99% array resizing for active edge lists
+    static final int INITIAL_MEDIUM_ARRAY = 4096;  // large enough to avoid 99% array resizing
+    static final int INITIAL_LARGE_ARRAY  = 8192;  // large enough to avoid 99% array resizing
+    static final int INITIAL_ARRAY_16K    = 16384; // very large to avoid 99.99% array resizing
     static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_DIM; /* alpha row dimension */
+    
+    /* zero value as byte */
+    static final byte BYTE_0 = (byte) 0;
 }
