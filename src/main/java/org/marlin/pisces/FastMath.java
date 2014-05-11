@@ -24,8 +24,6 @@
  */
 package org.marlin.pisces;
 
-import static org.marlin.pisces.PiscesUtils.logInfo;
-
 /**
  * Fast Math routines
  */
