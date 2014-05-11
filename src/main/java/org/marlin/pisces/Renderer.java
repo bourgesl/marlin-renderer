@@ -130,21 +130,28 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     /**
      * crossings ie subpixel edge x coordinates
      */
-    int[] crossings;
+    private int[] crossings;
+    /* auxiliary storage for crossings (merge sort) */
+    private int[] aux_crossings;
 
     // indices into the segment pointer lists. They indicate the "active"
     // sublist in the segment lists (the portion of the list that contains
     // all the segments that cross the next scan line).
     private int edgeCount;
     private int[] edgePtrs;
+    /* auxiliary storage for edge pointers (merge sort) */
+    private int[] aux_edgePtrs;
     
     // LBO: max used for both edgePtrs and crossings
     private int activeEdgeMaxUsed;
 
-    /* per-thread initial arrays (large enough to satisfy most usages (4096) */
-    private final int[] crossings_initial = new int[INITIAL_MEDIUM_ARRAY]; // 16K
+    /* per-thread initial arrays (large enough to satisfy most usages) (1024) */
+    private final int[] crossings_initial = new int[INITIAL_SMALL_ARRAY];      // 4K
     // +1 to avoid recycling in Helpers.widenArray()
-    private final int[] edgePtrs_initial  = new int[INITIAL_MEDIUM_ARRAY + 1];  // 16K
+    private final int[] edgePtrs_initial  = new int[INITIAL_SMALL_ARRAY + 1];  // 4K
+    /* merge sort initial arrays (large enough to satisfy most usages) (1024) */
+    private final int[] aux_crossings_initial = new int[INITIAL_SMALL_ARRAY];  // 4K
+    private final int[] aux_edgePtrs_initial  = new int[INITIAL_SMALL_ARRAY];  // 4K
 
 //////////////////////////////////////////////////////////////////////////////
 //  EDGE LIST
@@ -208,7 +215,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         addLine(x0, y0, x2, y2);
 
         if (doStats) {
-            rdrCtx.stat_rdr_quadBreak.add(nL + 1);
+            RendererContext.stats.stat_rdr_quadBreak.add(nL + 1);
         }
     }
 
@@ -283,13 +290,13 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             y0 = y1;
         }
         if (doStats) {
-            rdrCtx.stat_rdr_curveBreak.add(nL);
+            RendererContext.stats.stat_rdr_curveBreak.add(nL);
         }
     }
 
     private void addLine(float x1, float y1, float x2, float y2) {
         if (doMonitors) {
-            rdrCtx.mon_rdr_addLine.start();
+            RendererContext.stats.mon_rdr_addLine.start();
         }
         int or = 1; // orientation of the line. 1 if y increases, 0 otherwise.
         if (y2 < y1) {
@@ -315,7 +322,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         /* skip horizontal lines in pixel space and clip edges out of y range [boundsMinY; boundsMaxY] */
         if (firstCrossing >= lastCrossing) {
             if (doMonitors) {
-                rdrCtx.mon_rdr_addLine.stop();
+                RendererContext.stats.mon_rdr_addLine.stop();
             }
             return;
         }
@@ -358,7 +365,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         
         if (_edges.length < edgePtr + _SIZEOF_EDGE_BYTES) {
             if (doStats) {
-                rdrCtx.stat_rdr_edges_resizes.add(edgePtr);
+                RendererContext.stats.stat_rdr_edges_resizes.add(edgePtr);
             }
             _edges.resize(_edges.length << 1);
         }
@@ -390,7 +397,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         _edges.used += _SIZEOF_EDGE_BYTES;
         
         if (doMonitors) {
-            rdrCtx.mon_rdr_addLine.stop();
+            RendererContext.stats.mon_rdr_addLine.stop();
         }
     }
 
@@ -426,13 +433,15 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         edgeBuckets = edgeBuckets_initial;
         edgeBucketCounts = edgeBucketCounts_initial;
 
-        alphaLine = alphaLine_initial;
+        alphaLine  = alphaLine_initial;
 
         this.cache = rdrCtx.piscesCache;
 
         // ScanLine:
-        crossings = crossings_initial;
-        edgePtrs = edgePtrs_initial;
+        crossings     = crossings_initial;
+        aux_crossings = aux_crossings_initial;
+        edgePtrs      = edgePtrs_initial;
+        aux_edgePtrs  = aux_edgePtrs_initial;
 
         edgeCount = 0;
         activeEdgeMaxUsed = 0;
@@ -486,25 +495,35 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         if (crossings != crossings_initial) {
             rdrCtx.putIntArray(crossings, 0, activeEdgeMaxUsed);
             crossings = crossings_initial;
+            if (aux_crossings != aux_crossings_initial) {
+                rdrCtx.putIntArray(aux_crossings, 0, activeEdgeMaxUsed);
+                aux_crossings = aux_crossings_initial;
+            }
         }
         if (edgePtrs != edgePtrs_initial) {
             rdrCtx.putIntArray(edgePtrs, 0, activeEdgeMaxUsed);
             edgePtrs = edgePtrs_initial;
+            if (aux_edgePtrs != aux_edgePtrs_initial) {
+                rdrCtx.putIntArray(aux_edgePtrs, 0, activeEdgeMaxUsed);
+                aux_edgePtrs = aux_edgePtrs_initial;
+            }
         }
         if (doCleanDirty) {
             // LBO: keep crossings and edgePtrs dirty
-            IntArrayCache.fill(crossings, 0, activeEdgeMaxUsed, 0);
-            IntArrayCache.fill(edgePtrs,  0, activeEdgeMaxUsed, 0);
+            IntArrayCache.fill(crossings,     0, activeEdgeMaxUsed, 0);
+            IntArrayCache.fill(aux_crossings, 0, activeEdgeMaxUsed, 0);
+            IntArrayCache.fill(edgePtrs,      0, activeEdgeMaxUsed, 0);
+            IntArrayCache.fill(aux_edgePtrs,  0, activeEdgeMaxUsed, 0);
         }
         if (doStats) {
-            rdrCtx.stat_rdr_activeEdges.add(activeEdgeMaxUsed);
+            RendererContext.stats.stat_rdr_activeEdges.add(activeEdgeMaxUsed);
         }
         edgeCount = 0;
         activeEdgeMaxUsed = 0;
 
         // Return arrays:
         if (doStats) {
-            rdrCtx.stat_rdr_edges.add(edges.used);
+            RendererContext.stats.stat_rdr_edges.add(edges.used);
         }
         /* resize back off-heap edges to initial size */
         if (edges.length != INITIAL_EDGES_CAPACITY) {
@@ -543,8 +562,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             edgeBucketCounts = edgeBucketCounts_initial;
         }
         if (doMonitors) {
-            rdrCtx.mon_rdr_endRendering.stop();
-            rdrCtx.mon_pre_getAATileGenerator.stop();
+            RendererContext.stats.mon_rdr_endRendering.stop();
+            RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
         /* recycle the RendererContext instance */
         PiscesRenderingEngine.returnRendererContext(rdrCtx);
@@ -638,9 +657,13 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         final int[] _edgeBuckets = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
 
-        int[] _edgePtrs  = this.edgePtrs;
         int[] _crossings = this.crossings;
+        int[] _edgePtrs  = this.edgePtrs;
 
+        // merge sort auxiliary storage:
+        int[] _aux_crossings = this.aux_crossings;
+        int[] _aux_edgePtrs  = this.aux_edgePtrs;
+        
         // copy constants:
         final int _OFF_SLOPE   = OFF_SLOPE;
         final int _OFF_NEXT    = OFF_NEXT;
@@ -659,8 +682,6 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         final int _MIN_VALUE = Integer.MIN_VALUE;
         final int _MAX_VALUE = Integer.MAX_VALUE;
 
-        final int _THRESHOLD_BINARY_SEARCH = THRESHOLD_BINARY_SEARCH;
-
         // Now we iterate through the scanlines. We must tell emitRow the coord
         // of the first non-transparent pixel, so we must keep accumulators for
         // the first and last pixels of the section of the current pixel row
@@ -677,7 +698,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         int edgePtrsLen = _edgePtrs.length;
         int crossingsLen = _crossings.length;
         int _arrayMaxUsed = activeEdgeMaxUsed;
-        int ptrLen, newCount, ptrEnd;
+        int ptrLen = 0, newCount, ptrEnd;
 
         int bucketcount, i, j, ecur, lowx, highx;
         int cross, jcross, lastCross;
@@ -701,7 +722,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             // bucketCount indicates new edge / edge end:
             if (bucketcount != 0) {
                 if (doStats) {
-                    rdrCtx.stat_rdr_activeEdges_updates.add(numCrossings);
+                    RendererContext.stats.stat_rdr_activeEdges_updates.add(numCrossings);
                 }
                 
                 // last bit set to 1 means that edges ends
@@ -728,15 +749,22 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                 ptrLen = bucketcount >> 1; // number of new edge
                 
                 if (ptrLen != 0) {
+                    if (doStats) {
+                        RendererContext.stats.stat_rdr_activeEdges_adds.add(ptrLen);
+                        if (ptrLen > 10) {
+                            RendererContext.stats.stat_rdr_activeEdges_adds_high.add(ptrLen);
+                        }
+                    }
                     ptrEnd = numCrossings + ptrLen;
 
                     if (edgePtrsLen < ptrEnd) {
-                        final boolean ptrInitial = (_edgePtrs == edgePtrs_initial);
                         this.edgePtrs = _edgePtrs = Helpers.widenArray(rdrCtx, _edgePtrs, numCrossings, ptrLen, _arrayMaxUsed);
-                        if (ptrInitial && doCleanDirty) {
-                            IntArrayCache.fill(edgePtrs_initial, 0, _arrayMaxUsed, 0);
-                        }
                         edgePtrsLen = _edgePtrs.length;
+                        // Get larger auxiliary storage:
+                        if (_aux_edgePtrs != aux_edgePtrs_initial) {
+                            rdrCtx.putIntArray(_aux_edgePtrs, 0, _arrayMaxUsed); // last known value for arrayMaxUsed
+                        }
+                        this.aux_edgePtrs = _aux_edgePtrs = rdrCtx.getIntArray(ptrEnd);
                     }
 
                     /* cache edges[] address + offset */
@@ -751,17 +779,17 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                     }
                     
                     if (crossingsLen < numCrossings) {
-                        if (_crossings == crossings_initial) {
-                            // LBO: keep crossings dirty
-                            if (doCleanDirty) {
-                                IntArrayCache.fill(_crossings, 0, _arrayMaxUsed, 0);
-                            }
-                        } else {
+                        // Get larger array:
+                        if (_crossings != crossings_initial) {
                             rdrCtx.putIntArray(_crossings, 0, _arrayMaxUsed); // last known value for arrayMaxUsed
                         }
-                        // Get larger array:
-                        this.crossings = _crossings = rdrCtx.getIntArray(numCrossings); // count or ptrs.length ?
-                        crossingsLen = _crossings.length;
+                        this.crossings = _crossings = rdrCtx.getIntArray(numCrossings);
+                        // Get larger auxiliary storage:
+                        if (_aux_crossings != aux_crossings_initial) {
+                            rdrCtx.putIntArray(_aux_crossings, 0, _arrayMaxUsed); // last known value for arrayMaxUsed
+                        }
+                        this.aux_crossings = _aux_crossings = rdrCtx.getIntArray(numCrossings);
+                        crossingsLen   = _crossings.length;
                     }
                     // LBO: max used mark
                     if (numCrossings > _arrayMaxUsed) {
@@ -772,93 +800,174 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
 
             if (numCrossings != 0) {
-                // try avoid sorting loop:
-                useBinarySearch = USE_BINARY_SEARCH && (numCrossings >= _THRESHOLD_BINARY_SEARCH);
-
-                lastCross = _MIN_VALUE;
-
-                for (i = 0; i < numCrossings; i++) {
-                    /* get the pointer to the edge */
-                    ecur = _edgePtrs[i];
-                    
-                    // random access so use unsafe:
-                    addr = addr0 + ecur; /* ecur + OFF_F_CURX */
-                    f_curx = _unsafe.getFloat(addr);
-
-                    /* convert subpixel coordinates (float) into pixel positions (int) for coming scanline */
-                    /* note: it is faster to always update edges even if it is removed from AEL for coming or last scanline */
-                    // random access so use unsafe:
-                    _unsafe.putFloat(addr, f_curx + _unsafe.getFloat(addr + _OFF_SLOPE)); /* ecur + _SLOPE */
-
-                    /* TODO: try split loops: update crossings and sort them to have better cache affinity (seems slower) */
-
-                    // update crossing ( x-coordinate + last bit = orientation):
-                    cross = (((int) f_curx) << 1) | _unsafe.getInt(addr + _OFF_YMAX_OR) & 0x1; /* last bit contains orientation (0 or 1) */
-
-                    // TODO: Try to avoid sorting edges at each scanline (few intersection)
-                    // example: simple line: 2 parallel edges => sort once !!
-                    // => work with active edges Ptr only (not crossing)
-                    // => sort edges (DDA also)
-                    // insertion sort of crossings:
+                /*
+                 * Tuning parameter: thresholds to switch to optimized merge sort for newly added edges + final merge pass.
+                 * Benchmarks indicates [adds=10|size=75] as the best thresholds among [5,10,15|50,75,100]
+                 */
+                if (ptrLen < 10 || numCrossings < 75) {
                     if (doStats) {
-                        rdrCtx.stat_rdr_crossings_updates.add(numCrossings);
+                        RendererContext.stats.hist_rdr_crossings.add(numCrossings);
+                        RendererContext.stats.hist_rdr_crossings_adds.add(ptrLen);
                     }
+                    
+                    /*
+                     * Tuning parameter: list size at or higher which binary insertion sort will be used 
+                     * in preference to straight insertion sort (to reduce minimize comparisons).
+                     * Benchmarks indicates 20 as the best threshold among [10,15,20,25]
+                     */
+                    useBinarySearch = (numCrossings >= 20);
+                    
+                    // if small enough:
+                    lastCross = _MIN_VALUE;
 
-                    if (cross < lastCross) {
+                    for (i = 0; i < numCrossings; i++) {
+                        /* get the pointer to the edge */
+                        ecur = _edgePtrs[i];
+                        
+                        // random access so use unsafe:
+                        addr = addr0 + ecur; /* ecur + OFF_F_CURX */
+                        f_curx = _unsafe.getFloat(addr);
+
+                        /* convert subpixel coordinates (float) into pixel positions (int) for coming scanline */
+                        /* note: it is faster to always update edges even if it is removed from AEL for coming or last scanline */
+                        // random access so use unsafe:
+                        _unsafe.putFloat(addr, f_curx + _unsafe.getFloat(addr + _OFF_SLOPE)); /* ecur + _SLOPE */
+
+                        // update crossing ( x-coordinate + last bit = orientation):
+                        cross = (((int) f_curx) << 1) | _unsafe.getInt(addr + _OFF_YMAX_OR) & 0x1; /* last bit contains orientation (0 or 1) */
+
                         if (doStats) {
-                            rdrCtx.stat_rdr_crossings_sorts.add(i);
+                            RendererContext.stats.stat_rdr_crossings_updates.add(numCrossings);
                         }
-                        // TODO: try using more efficient quick-sort on edgePtrs but compararing crossings (matched arrays) !
-                        
-                        /* TODO: presort edge stored as linked list ? (see addLine) */
-                        
-                        /* split loops => have 2 loops (almost sorted and new edges handled apart */
-                        if (useBinarySearch && (i >= prevNumCrossings)) { 
+
+                        // insertion sort of crossings:
+                        if (cross < lastCross) {
                             if (doStats) {
-                                rdrCtx.stat_rdr_crossings_bsearch.add(i);
+                                RendererContext.stats.stat_rdr_crossings_sorts.add(i);
                             }
-                            low = 0;
-                            high = i - 1;
-
-                            do {
-                                mid = (low + high) >> 1;
-
-                                if (_crossings[mid] < cross) {
-                                    low = mid + 1;
-                                } else {
-                                    high = mid - 1;
+                            
+                            /* use binary search for newly added edges / crossings if arrays are large enough */
+                            if (useBinarySearch && (i >= prevNumCrossings)) { 
+                                if (doStats) {
+                                    RendererContext.stats.stat_rdr_crossings_bsearch.add(i);
                                 }
-                            } while (low <= high);
+                                low = 0;
+                                high = i - 1;
 
-                            for (j = i - 1; j >= low; j--) {
-                                _crossings[j + 1] = _crossings[j];
-                                _edgePtrs [j + 1] = _edgePtrs[j];
+                                do {
+                                    mid = (low + high) >> 1;
+
+                                    if (_crossings[mid] < cross) {
+                                        low = mid + 1;
+                                    } else {
+                                        high = mid - 1;
+                                    }
+                                } while (low <= high);
+
+                                for (j = i - 1; j >= low; j--) {
+                                    _crossings[j + 1] = _crossings[j];
+                                    _edgePtrs [j + 1] = _edgePtrs[j];
+                                }
+                                _crossings[j + 1] = cross;
+                                _edgePtrs [j + 1] = ecur;
+
+                            } else {
+                                j = i - 1;
+                                _crossings[i] = _crossings[j];
+                                _edgePtrs[i] = _edgePtrs[j];
+
+                                while (--j >= 0) {
+                                    jcross = _crossings[j];
+                                    if (jcross <= cross) {
+                                        break;
+                                    }
+                                    /* cross < jcross; swap element */
+                                    _crossings[j + 1] = jcross;
+                                    _edgePtrs [j + 1] = _edgePtrs[j];
+                                }
+                                _crossings[j + 1] = cross;
+                                _edgePtrs [j + 1] = ecur;
                             }
-                            _crossings[j + 1] = cross;
-                            _edgePtrs [j + 1] = ecur;
 
                         } else {
+                            _crossings[i] = lastCross = cross;
+                        }
+                    }
+                } else {
+                    if (doStats) {
+                        RendererContext.stats.stat_rdr_crossings_msorts.add(numCrossings);
+                        RendererContext.stats.hist_rdr_crossings_ratio.add((1000 * ptrLen) / numCrossings);
+                        RendererContext.stats.hist_rdr_crossings_msorts.add(numCrossings);
+                        RendererContext.stats.hist_rdr_crossings_msorts_adds.add(ptrLen);
+                    }
+
+                    // Copy sorted data in auxiliary arrays 
+                    // and perform insertion sort on almost sorted data (ie i < prevNumCrossings):
+
+                    lastCross = _MIN_VALUE;
+
+                    for (i = 0; i < numCrossings; i++) {
+                        /* get the pointer to the edge */
+                        ecur = _edgePtrs[i];
+
+                        // random access so use unsafe:
+                        addr = addr0 + ecur; /* ecur + OFF_F_CURX */
+                        f_curx = _unsafe.getFloat(addr);
+
+                        /* convert subpixel coordinates (float) into pixel positions (int) for coming scanline */
+                        /* note: it is faster to always update edges even if it is removed from AEL for coming or last scanline */
+                        // random access so use unsafe:
+                        _unsafe.putFloat(addr, f_curx + _unsafe.getFloat(addr + _OFF_SLOPE)); /* ecur + _SLOPE */
+
+                        // update crossing ( x-coordinate + last bit = orientation):
+                        cross = (((int) f_curx) << 1) | _unsafe.getInt(addr + _OFF_YMAX_OR) & 0x1; /* last bit contains orientation (0 or 1) */
+
+                        if (doStats) {
+                            RendererContext.stats.stat_rdr_crossings_updates.add(numCrossings);
+                        }
+
+                        if (i >= prevNumCrossings) {
+                            // simply store crossing as edgePtrs is already in the correct place:
+                            // will be copied and sorted efficiently by mergesort later:
+                            _crossings[i]     = cross;
+
+                        } else if (cross < lastCross) {
+                            if (doStats) {
+                                RendererContext.stats.stat_rdr_crossings_sorts.add(i);
+                            }
+
+                            // (straight) insertion sort of crossings:
                             j = i - 1;
-                            _crossings[i] = _crossings[j];
-                            _edgePtrs[i] = _edgePtrs[j];
+                            _aux_crossings[i] = _aux_crossings[j];
+                            _aux_edgePtrs[i] = _aux_edgePtrs[j];
 
                             while (--j >= 0) {
-                                jcross = _crossings[j];
+                                jcross = _aux_crossings[j];
                                 if (jcross <= cross) {
                                     break;
                                 }
                                 /* cross < jcross; swap element */
-                                _crossings[j + 1] = jcross;
-                                _edgePtrs [j + 1] = _edgePtrs[j];
+                                _aux_crossings[j + 1] = jcross;
+                                _aux_edgePtrs [j + 1] = _aux_edgePtrs[j];
                             }
-                            _crossings[j + 1] = cross;
-                            _edgePtrs [j + 1] = ecur;
-                        }
+                            _aux_crossings[j + 1] = cross;
+                            _aux_edgePtrs [j + 1] = ecur;
 
-                    } else {
-                        _crossings[i] = lastCross = cross;
+                        } else {
+                            // auxiliary storage: 
+                            _aux_crossings[i] = lastCross = cross;
+                            _aux_edgePtrs [i] = ecur;
+                        }
                     }
+
+                    // use Mergesort using auxiliary arrays (sort only right part)
+                    MergeSort.legacyMergeSortCustomNoCopy(_crossings,     _edgePtrs, 
+                                                          _aux_crossings, _aux_edgePtrs, 
+                                                          0, numCrossings, prevNumCrossings);
                 }
+                
+                // reset ptrLen
+                ptrLen = 0;
                 // --- from former ScanLineIterator.next()
 
                 // right shift on crossings to get the x-coordinate:
@@ -1071,7 +1180,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         }
 
         if (doMonitors) {
-            rdrCtx.mon_rdr_endRendering.start();
+            RendererContext.stats.mon_rdr_endRendering.start();
         }
 
         // process first tile line:
@@ -1095,14 +1204,14 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             cache.resetTileLine(pminY);
 
             if (doMonitors) {
-                rdrCtx.mon_rdr_endRendering_Y.start();
+                RendererContext.stats.mon_rdr_endRendering_Y.start();
             }
             
             // Process only one tile line:
             _endRendering(fixed_spminY, spmaxY);
 
             if (doMonitors) {
-                rdrCtx.mon_rdr_endRendering_Y.stop();
+                RendererContext.stats.mon_rdr_endRendering_Y.stop();
             }
         }
     }
