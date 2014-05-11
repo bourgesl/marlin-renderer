@@ -135,7 +135,7 @@ public final class PiscesCache implements PiscesConst {
 
         /* reset current pos */
         if (doStats) {
-            this.rdrCtx.stat_cache_rowAAChunk.add(rowAAChunkPos);
+            RendererContext.stats.stat_cache_rowAAChunk.add(rowAAChunkPos);
         }
         rowAAChunkPos = 0;
 
@@ -177,7 +177,7 @@ public final class PiscesCache implements PiscesConst {
      */
     void copyAARow(final int[] alphaRow, final int y, final int px0, final int px1) {
         if (doMonitors) {
-            rdrCtx.mon_rdr_emitRow.start();
+            RendererContext.stats.mon_rdr_emitRow.start();
         }
 
         /* skip useless pixels above boundary */
@@ -206,7 +206,7 @@ public final class PiscesCache implements PiscesConst {
             rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyArray(_rowAAChunk, pos, len);
         }
         if (doStats) {
-            this.rdrCtx.stat_cache_rowAA.add(len);
+            RendererContext.stats.stat_cache_rowAA.add(len);
         }
 
         // rowAA contains only alpha values for range[x0; x1[
@@ -273,7 +273,7 @@ public final class PiscesCache implements PiscesConst {
         IntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
         
         if (doMonitors) {
-            rdrCtx.mon_rdr_emitRow.stop();
+            RendererContext.stats.mon_rdr_emitRow.stop();
         }
     }
 

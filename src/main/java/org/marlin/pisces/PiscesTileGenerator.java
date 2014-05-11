@@ -145,7 +145,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
     @Override
     public void getAlpha(final byte tile[], final int offset, final int rowstride) {
         if (doMonitors) {
-            rdr.rdrCtx.mon_ptg_getAlpha.start();
+            RendererContext.stats.mon_ptg_getAlpha.start();
         }
 
         // local vars for performance:
@@ -236,7 +236,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
         nextTile();
 
         if (doMonitors) {
-            rdr.rdrCtx.mon_ptg_getAlpha.stop();
+            RendererContext.stats.mon_ptg_getAlpha.stop();
         }
     }
 

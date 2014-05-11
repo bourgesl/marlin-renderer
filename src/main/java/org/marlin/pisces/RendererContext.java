@@ -27,7 +27,6 @@ package org.marlin.pisces;
 import java.awt.geom.FastPath2D;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.marlin.pisces.ArrayCache.*;
 import org.marlin.pisces.PiscesRenderingEngine.NormalizingPathIterator;
@@ -40,10 +39,10 @@ import static org.marlin.pisces.PiscesUtils.logInfo;
 final class RendererContext implements PiscesConst {
 
     private static final String className = RendererContext.class.getName();
-    /** context created counter */
+    /** RendererContext created counter */
     private static final AtomicInteger contextCount = new AtomicInteger(1);
-    // hard references (only used for debugging purposes)
-    static final ConcurrentLinkedQueue<RendererContext> allContexts = (doStats || doMonitors) ? new ConcurrentLinkedQueue<RendererContext>() : null;
+    /** RendererContext statistics */
+    static final RendererStats stats = (doStats || doMonitors) ? new RendererStats() : null;
 
     /**
      * Create a new renderer context
@@ -52,8 +51,8 @@ final class RendererContext implements PiscesConst {
      */
     static RendererContext createContext() {
         final RendererContext newCtx = new RendererContext("ctx" + Integer.toString(contextCount.getAndIncrement()));
-        if (doStats || doMonitors) {
-            allContexts.add(newCtx);
+        if (RendererContext.stats != null) {
+            RendererContext.stats.allContexts.add(newCtx);
         }
         return newCtx;
     }
@@ -61,13 +60,11 @@ final class RendererContext implements PiscesConst {
     /* members */
     /** context name (debugging purposes) */
     final String name;
-
     /**
      * Reference to this instance (hard, soft or weak). 
      * @see PiscesRenderingEngine#REF_TYPE
      */
     final Object reference;
-
     /** dynamic array caches */
     final IntArrayCache[] intArrayCaches = new IntArrayCache[BUCKETS];
     final FloatArrayCache[] floatArrayCaches = new FloatArrayCache[BUCKETS];
@@ -86,66 +83,18 @@ final class RendererContext implements PiscesConst {
     final TransformingPathConsumer2D transformerPC2D;
     /** recycled Path2D instance */
     FastPath2D p2d = null;
-    /* Renderer */
+    /** Renderer */
     final Renderer renderer;
     /** Stroker */
     final Stroker stroker;
-    /* Simplifies out collinear lines */
+    /** Simplifies out collinear lines */
     final CollinearSimplifier simplifier = new CollinearSimplifier();
     /** Dasher */
     final Dasher dasher;
-    /**PiscesTileGenerator */
+    /** PiscesTileGenerator */
     final PiscesTileGenerator ptg;
     /** PiscesCache */
     final PiscesCache piscesCache;
-    /* stats */
-    final StatLong stat_cache_rowAA = new StatLong("cache.rowAA");
-    final StatLong stat_cache_rowAAChunk = new StatLong("cache.rowAAChunk");
-    final StatLong stat_rdr_poly_stack = new StatLong("renderer.poly.stack");
-    final StatLong stat_rdr_curveBreak = new StatLong("renderer.curveBreakIntoLinesAndAdd");
-    final StatLong stat_rdr_quadBreak = new StatLong("renderer.quadBreakIntoLinesAndAdd");
-    final StatLong stat_rdr_edges = new StatLong("renderer.edges");
-    final StatLong stat_rdr_edges_resizes = new StatLong("renderer.edges.resize");
-    final StatLong stat_rdr_activeEdges = new StatLong("renderer.activeEdges");
-    final StatLong stat_rdr_activeEdges_updates = new StatLong("renderer.activeEdges.updates");
-    final StatLong stat_rdr_activeEdges_no_adds = new StatLong("renderer.activeEdges.noadds");
-    final StatLong stat_rdr_crossings_updates = new StatLong("renderer.crossings.updates");
-    final StatLong stat_rdr_crossings_sorts = new StatLong("renderer.crossings.sorts");
-    final StatLong stat_rdr_crossings_bsearch = new StatLong("renderer.crossings.bsearch");
-    /* all stats */
-    final StatLong[] statistics = new StatLong[]{
-        stat_cache_rowAA,
-        stat_cache_rowAAChunk,
-        stat_rdr_poly_stack,
-        stat_rdr_curveBreak,
-        stat_rdr_quadBreak,
-        stat_rdr_edges,
-        stat_rdr_edges_resizes,
-        stat_rdr_activeEdges,
-        stat_rdr_activeEdges_updates,
-        stat_rdr_activeEdges_no_adds,
-        stat_rdr_crossings_updates,
-        stat_rdr_crossings_sorts,
-        stat_rdr_crossings_bsearch
-    };
-    /* monitors */
-    final Monitor mon_pre_getAATileGenerator = new Monitor("PiscesRenderingEngine.getAATileGenerator()");
-    final Monitor mon_npi_currentSegment = new Monitor("NormalizingPathIterator.currentSegment()");
-    final Monitor mon_rdr_addLine = new Monitor("Renderer.addLine()");
-    final Monitor mon_rdr_endRendering = new Monitor("Renderer.endRendering()");
-    final Monitor mon_rdr_endRendering_Y = new Monitor("Renderer._endRendering(Y)");
-    final Monitor mon_rdr_emitRow = new Monitor("Renderer.emitRow()");
-    final Monitor mon_ptg_getAlpha = new Monitor("PiscesTileGenerator.getAlpha()");
-    /* all monitors */
-    final Monitor[] monitors = new Monitor[]{
-        mon_pre_getAATileGenerator,
-        mon_npi_currentSegment,
-        mon_rdr_addLine,
-        mon_rdr_endRendering,
-        mon_rdr_endRendering_Y,
-        mon_rdr_emitRow,
-        mon_ptg_getAlpha
-    };
 
     /**
      * Constructor
@@ -168,7 +117,7 @@ final class RendererContext implements PiscesConst {
 
         // PiscesRenderingEngine.NormalizingPathIterator:
         npIterator = new NormalizingPathIterator(this);
-        
+
         // PiscesRenderingEngine.TransformingPathConsumer2D
         transformerPC2D = new TransformingPathConsumer2D();
 
@@ -375,78 +324,6 @@ final class RendererContext implements PiscesConst {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getFloatArrayCache(length).putArray(array, length, fromIndex, toIndex);
-        }
-    }
-
-    /* stats */
-    static class StatLong {
-
-        public final String name;
-        public long count;
-        public long sum;
-        public long min;
-        public long max;
-
-        StatLong(String name) {
-            this.name = name;
-            reset();
-        }
-
-        final void reset() {
-            count = 0;
-            sum = 0;
-            min = Integer.MAX_VALUE;
-            max = Integer.MIN_VALUE;
-        }
-
-        final void add(int val) {
-            count++;
-            sum += val;
-            if (val < min) {
-                min = val;
-            }
-            if (val > max) {
-                max = val;
-            }
-        }
-
-        final void add(long val) {
-            count++;
-            sum += val;
-            if (val < min) {
-                min = val;
-            }
-            if (val > max) {
-                max = val;
-            }
-        }
-
-        @Override
-        public final String toString() {
-            return name + '[' + count + "] sum: " + sum + " avg: " + (((double) sum) / count) + " [" + min + " | " + max + "]";
-        }
-    }
-
-    /* monitors */
-    static final class Monitor extends StatLong {
-
-        private final static long INVALID = -1L;
-        private long start = INVALID;
-
-        Monitor(String name) {
-            super(name);
-        }
-
-        void start() {
-            start = System.nanoTime();
-        }
-
-        void stop() {
-            final long elapsed = System.nanoTime() - start;
-            if (start != INVALID && elapsed > 0l) {
-                add(elapsed);
-            }
-            start = INVALID;
         }
     }
 }

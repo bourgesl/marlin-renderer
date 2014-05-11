@@ -49,10 +49,6 @@ interface PiscesConst {
     /** do AA range checks: disable when algorithm / code is stable */
     static final boolean DO_AA_RANGE_CHECK = false;
 
-
-    static final boolean USE_BINARY_SEARCH = true;
-    static final int THRESHOLD_BINARY_SEARCH = PiscesRenderingEngine.getBinarySearchThreshold();
-
     /** enable logs */
     static final boolean doLog = false;
     /** enable oversize logs */
@@ -84,6 +80,7 @@ interface PiscesConst {
 
     /* only odd numbers allowed below */
     static final int INITIAL_ARRAY        = 256;
+    static final int INITIAL_SMALL_ARRAY  = 1024;  // large enough to avoid 99% array resizing for active edge lists
     static final int INITIAL_MEDIUM_ARRAY = 4096;  // large enough to avoid 99% array resizing
     static final int INITIAL_LARGE_ARRAY  = 8192;  // large enough to avoid 99% array resizing
     static final int INITIAL_ARRAY_16K    = 16384; // very large to avoid 99.99% array resizing

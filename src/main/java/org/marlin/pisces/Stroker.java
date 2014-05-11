@@ -1188,7 +1188,7 @@ final class Stroker implements PathConsumer2D, PiscesConst {
             numCurves = 0;
 
             if (doStats) {
-                rdrCtx.stat_rdr_poly_stack.add(curvesUseMark);
+                RendererContext.stats.stat_rdr_poly_stack.add(curvesUseMark);
             }
 
             // Return arrays:

@@ -26,11 +26,6 @@ package org.marlin.pisces;
 
 import static org.marlin.pisces.PiscesUtils.logInfo;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import org.marlin.pisces.RendererContext.Monitor;
-import org.marlin.pisces.RendererContext.StatLong;
-
 /**
  *
  */
@@ -50,8 +45,6 @@ public final class ArrayCache implements PiscesConst {
     /* dirty array sizes */
     final static int MAX_DIRTY_ARRAY_SIZE;
     final static int[] DIRTY_ARRAY_SIZES = new int[BUCKETS];
-    /* stats */
-    private final static Timer statTimer;
     /* stats */
     static int resizeInt = 0;
     static int resizeFloat = 0;
@@ -88,28 +81,6 @@ public final class ArrayCache implements PiscesConst {
             logInfo("ArrayCache.MIN_ARRAY_SIZE = " + MIN_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_ARRAY_SIZE = " + MAX_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_DIRTY_ARRAY_SIZE = " + MAX_DIRTY_ARRAY_SIZE);
-
-            /* stats */
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    dumpStats();
-                }
-            });
-
-            if (useDumpThread) {
-                statTimer = new Timer("ArrayCache");
-                statTimer.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        dumpStats();
-                    }
-                }, statDump, statDump);
-            } else {
-                statTimer = null;
-            }
-        } else {
-            statTimer = null;
         }
     }
 
@@ -117,67 +88,16 @@ public final class ArrayCache implements PiscesConst {
         // Utility class
     }
 
-    public static void dumpStats() {
-        if (doStats || doMonitors) {
-            if (doStats) {
-                if (resizeInt != 0 || resizeFloat != 0 || resizeDirty != 0) {
-                    logInfo("ArrayCache: int resize: " + resizeInt
-                            + " - float resize: " + resizeFloat
-                            + " - dirty resize: " + resizeDirty
-                            + " - oversize: " + oversize);
-                }
-            }
-            final RendererContext[] all = RendererContext.allContexts.toArray(new RendererContext[0]);
-            for (RendererContext rdrCtx : all) {
-                logInfo("RendererContext: " + rdrCtx.name);
-
-                if (doMonitors) {
-                    for (Monitor monitor : rdrCtx.monitors) {
-                        if (monitor.count != 0) {
-                            logInfo(monitor.toString());
-                        }
-                    }
-                    // As getAATileGenerator percents:
-                    final long total = rdrCtx.mon_pre_getAATileGenerator.sum;
-                    if (total != 0L) {
-                        for (Monitor monitor : rdrCtx.monitors) {
-                            logInfo(monitor.name + " : " + ((100d * monitor.sum) / total) + " %");
-                        }
-                    }
-                    if (doFlushMonitors) {
-                        for (Monitor m : rdrCtx.monitors) {
-                            m.reset();
-                        }
-                    }
-                }
-
-                if (doStats) {
-                    for (StatLong stat : rdrCtx.statistics) {
-                        if (stat.count != 0) {
-                            logInfo(stat.toString());
-                            stat.reset();
-                        }
-                    }
-                    // IntArrayCaches stats:
-                    for (IntArrayCache cache : rdrCtx.intArrayCaches) {
-                        cache.dumpStats();
-                    }
-                    // FloatArrayCaches stats:
-                    for (FloatArrayCache cache : rdrCtx.floatArrayCaches) {
-                        cache.dumpStats();
-                    }
-                    // DirtyArrayCaches stats:
-                    logInfo("Dirty ArrayCache for thread: " + rdrCtx.name);
-                    for (ByteArrayCache cache : rdrCtx.dirtyArrayCaches) {
-                        cache.dumpStats();
-                    }
-                }
-            }
+    static void dumpStats() {
+        if (resizeInt != 0 || resizeFloat != 0 || resizeDirty != 0) {
+            logInfo("ArrayCache: int resize: " + resizeInt
+                    + " - float resize: " + resizeFloat
+                    + " - dirty resize: " + resizeDirty
+                    + " - oversize: " + oversize);
         }
     }
 
     /* TODO: use shifts to find bucket as fast as possible (no condition) */
-    
     /* small methods used a lot (to be inlined / optimized by hotspot) */
     static int getBucket(final int length) {
         // Use size = (length / 2) * 2 => rounded to power of two

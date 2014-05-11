@@ -31,7 +31,7 @@ import sun.misc.SharedSecrets;
 /**
  * Utility class
  */
-final class PiscesUtils {
+public final class PiscesUtils {
 
     /**
      * logger (use JUL but should use PlatformLogger.getLogger("sun.java2d.pisces") in JDK8 to avoid initializing JUL
@@ -46,7 +46,7 @@ final class PiscesUtils {
         // no-op
     }
 
-    static void logInfo(final String msg) {
+    public static void logInfo(final String msg) {
         if (useJUL) {
             log.info(msg);
         } else {
@@ -55,7 +55,7 @@ final class PiscesUtils {
         }
     }
 
-    static void logException(final String msg, final Throwable th) {
+    public static void logException(final String msg, final Throwable th) {
         if (useJUL) {
             log.log(java.util.logging.Level.WARNING, msg, th);
         } else {
@@ -74,9 +74,8 @@ final class PiscesUtils {
     public static boolean isPowerOf2(int x) {
         if (x <= 0) {
             return false;
-        } else {
-            return (x & (x - 1)) == 0;
         }
+        return (x & (x - 1)) == 0;
     }
 
     // Returns the caller's class and method's name; best effort

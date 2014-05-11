@@ -28,11 +28,9 @@ import java.awt.BasicStroke;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.FastPath2D;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.lang.ref.Reference;
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import static org.marlin.pisces.PiscesUtils.logInfo;
 import sun.awt.geom.PathConsumer2D;
@@ -93,7 +91,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
                 );
         
         /* Perform Path2D copy efficiently and trim */
-        final Path2D path = p2d.copy();
+        final Path2D path = p2d.trimmedCopy();
         
         returnRendererContext(rdrCtx);
         
@@ -469,7 +467,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             final int type = src.currentSegment(coords);
             
             if (doMonitors) {
-                rdrCtx.mon_npi_currentSegment.start();
+                RendererContext.stats.mon_npi_currentSegment.start();
             }            
 
             int lastCoord;
@@ -547,7 +545,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             cury_adjust = y_adjust;
             
             if (doMonitors) {
-                rdrCtx.mon_npi_currentSegment.stop();
+                RendererContext.stats.mon_npi_currentSegment.stop();
             }            
             return type;
         }
@@ -829,7 +827,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>() : null;
 
         // Hard reference by default:
-        String refType = System.getProperty("sun.java2d.renderer.useRef", "hard");
+        String refType = System.getProperty("sun.java2d.renderer.useRef", "soft");
         switch (refType) {
             default:
             case "hard":
@@ -876,10 +874,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             logInfo("sun.java2d.renderer.useJul           = " + isUseJul());
             logInfo("sun.java2d.renderer.logCreateContext = " + isLogCreateContext());
             logInfo("sun.java2d.renderer.logUnsafeMalloc  = " + isLogUnsafeMalloc());
-            
-            /* low-level tuning */
-            logInfo("sun.java2d.renderer.binarysearch.threshold = " + getBinarySearchThreshold());
-            
+
         } else {
             logInfo("sun.java2d.renderer                  = " + reClass);
         }
@@ -907,7 +902,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             }
         }
         if (doMonitors) {
-            rdrCtx.mon_pre_getAATileGenerator.start();
+            RendererContext.stats.mon_pre_getAATileGenerator.start();
         }
         return rdrCtx;
     }
@@ -918,7 +913,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
      */
     static void returnRendererContext(final RendererContext rdrCtx) {
         if (doMonitors) {
-            rdrCtx.mon_pre_getAATileGenerator.stop();
+            RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
         if (!useThreadLocal) {
             rdrCtxQueue.offer(rdrCtx.reference);
@@ -1002,6 +997,8 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
     public static boolean isLogUnsafeMalloc() {
         return getBoolean("sun.java2d.renderer.logUnsafeMalloc", "false");
     }
+    
+    /* system property utilities */
 
     public static boolean getBoolean(final String key, final String def) {
         return Boolean.valueOf(System.getProperty(key, def));
@@ -1017,7 +1014,4 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         return value;
     }
     
-    public static int getBinarySearchThreshold() {
-        return getInteger("sun.java2d.renderer.binarysearch.threshold", 20, 5, 1000);
-    }
 }
