@@ -28,22 +28,26 @@ import java.util.Arrays;
 
 /**
  * Custom Path2D.Float class to perform efficient clone (copy only used array parts)
- * and avoid allocating larger arrays 
- * or path iteration with array growing: 
+ * and avoid allocating larger arrays
+ * or path iteration with array growing:
  * @see java.awt.geom.Path2D.Float(java.awt.Shape,java.awt.geom.AffineTransform)
  */
 public final class FastPath2D extends Path2D.Float {
+
+    // only applicable if sun-java2d patch is used: 
+    // TODO: use introspection to detect patch in classpath ?
+    private final static boolean USE_PATH2D_PATCH = false; 
 
     public FastPath2D(int initialCapacity) {
         super(WIND_NON_ZERO, initialCapacity);
     }
 
     FastPath2D(int windingRule,
-               byte[] pointTypes,
-               int numTypes,
-               float[] pointCoords,
-               int numCoords) {
-        // TODO: provide a Path2D constructor which leaves pointTypes & floatCoords arrays null
+            byte[] pointTypes,
+            int numTypes,
+            float[] pointCoords,
+            int numCoords) {
+        // TODO: provide a Path2D constructor which leaves pointTypes & floatCoords arrays null when given
 
         // Use initialCapacity=0 to create new byte[0] and new float[0] 
         // as these arrays will be overwritten:
@@ -55,9 +59,12 @@ public final class FastPath2D extends Path2D.Float {
         this.numCoords = numCoords;
     }
 
-    public Path2D copy() {
+    public Path2D trimmedCopy() {
 //        System.out.println("copy: numTypes = " + numTypes + ", numCoords = " + numCoords);
-        
+        if (USE_PATH2D_PATCH) {
+            return new Path2D.Float(this, null);
+        }
+
         // Only copy used array parts:
         return new FastPath2D(this.windingRule,
                 Arrays.copyOf(this.pointTypes, this.numTypes),
