@@ -352,6 +352,10 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         // copy members:
         final int[] _edgeBuckets      = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
+        
+        // integer values:
+        _edgesInt[ptr /* + NEXT */]   = _edgeBuckets[bucketIdx];
+        _edgesInt[ptr + YMAX_OR]      = (lastCrossing << 1) | or; /* last bit corresponds to the orientation */
 
         // each bucket is a linked list. this method adds ptr to the
         // start of the "bucket"th linked list.
