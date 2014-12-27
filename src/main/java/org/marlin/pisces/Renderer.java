@@ -151,7 +151,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     private final int[] edgePtrs_initial  = new int[INITIAL_SMALL_ARRAY + 1];  // 4K
     /* merge sort initial arrays (large enough to satisfy most usages) (1024) */
     private final int[] aux_crossings_initial = new int[INITIAL_SMALL_ARRAY];  // 4K
-    private final int[] aux_edgePtrs_initial  = new int[INITIAL_SMALL_ARRAY];  // 4K
+    private final int[] aux_edgePtrs_initial  = new int[INITIAL_SMALL_ARRAY + 1];  // 4K
 
 //////////////////////////////////////////////////////////////////////////////
 //  EDGE LIST
@@ -764,7 +764,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
                         if (_aux_edgePtrs != aux_edgePtrs_initial) {
                             rdrCtx.putIntArray(_aux_edgePtrs, 0, _arrayMaxUsed); // last known value for arrayMaxUsed
                         }
-                        this.aux_edgePtrs = _aux_edgePtrs = rdrCtx.getIntArray(ptrEnd);
+                        // use ArrayCache.getNewSize() to use the same growing factor than Helpers.widenArray():
+                        this.aux_edgePtrs = _aux_edgePtrs = rdrCtx.getIntArray(ArrayCache.getNewSize(ptrEnd));
                     }
 
                     /* cache edges[] address + offset */

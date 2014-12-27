@@ -124,7 +124,12 @@ public final class ArrayCache implements PiscesConst {
         return -1;
     }
 
-    static int getNewSize(final int newSize) {
+    /**
+     * Return the corrected  size by the growing factor
+     * @param newSize needed size
+     * @return corrected size
+     */
+    public static int getNewSize(final int newSize) {
         if (newSize < THRESHOLD_ARRAY_SIZE) {
             return BUCKET_GROW * newSize;
         }
