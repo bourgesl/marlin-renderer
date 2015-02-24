@@ -34,6 +34,8 @@ import java.util.Arrays;
  */
 public final class FastPath2D extends Path2D.Float {
 
+    private static final long serialVersionUID = 1L;
+
     // only applicable if sun-java2d patch is used: 
     // TODO: use introspection to detect patch in classpath ?
     private final static boolean USE_PATH2D_PATCH = false; 

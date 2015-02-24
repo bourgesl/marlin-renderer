@@ -33,18 +33,7 @@ public final class Version {
 
     public static String getVersion() {
         if (version == null) {
-            version = "undefined";
-            /* load Version.properties */
-            try {
-                InputStream in = Version.class.getResourceAsStream("Version.properties");
-                Properties prop = new Properties();
-                prop.load(in);
-
-                version = prop.getProperty("version", version);
-                in.close(); /* TODO: use finally */
-
-            } catch (Exception e) {
-            }
+            version = "marlin-0.5.5-Unsafe-OpenJDK";
         }
         return version;
     }

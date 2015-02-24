@@ -47,13 +47,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         }
         unsafe = ref;
 
-        OFFSET = unsafe.ARRAY_INT_BASE_OFFSET;
-        SIZE = unsafe.ARRAY_INT_INDEX_SCALE;
-
-        MarlinUtils.logInfo("===============================================================================");
-        MarlinUtils.logInfo(" Using sun.misc.Unsafe: No warranty (may crash your JVM) !");
-        MarlinUtils.logInfo(" USE IT AT YOUR OWN RISKS.");
-        MarlinUtils.logInfo("===============================================================================");
+        OFFSET = Unsafe.ARRAY_INT_BASE_OFFSET;
+        SIZE = Unsafe.ARRAY_INT_INDEX_SCALE;
     }
     
 
