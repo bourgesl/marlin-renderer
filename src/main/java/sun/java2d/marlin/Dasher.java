@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
 import sun.awt.geom.PathConsumer2D;
@@ -37,7 +37,7 @@ import sun.awt.geom.PathConsumer2D;
  * semantics are unclear.
  *
  */
-final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
+final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     final static int recLimit = 4;
     final static float ERR = 0.01f;
     final static float minTincrement = 1f / (1 << recLimit);

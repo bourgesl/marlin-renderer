@@ -22,17 +22,17 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.acos;
-import static org.marlin.pisces.PiscesUtils.getCallerInfo;
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import static sun.java2d.marlin.MarlinUtils.getCallerInfo;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
 
-final class Helpers implements PiscesConst {
+final class Helpers implements MarlinConst {
     private static final String className = Helpers.class.getName();
 
     private Helpers() { 

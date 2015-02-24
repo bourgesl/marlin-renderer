@@ -22,20 +22,20 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import static org.marlin.pisces.PiscesUtils.logInfo;
-import org.marlin.pisces.stats.Histogram;
-import org.marlin.pisces.stats.Monitor;
-import org.marlin.pisces.stats.StatLong;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
+import sun.java2d.marlin.stats.Histogram;
+import sun.java2d.marlin.stats.Monitor;
+import sun.java2d.marlin.stats.StatLong;
 
 /**
  * This class gathers global rendering statistics for debugging purposes only
  */
-public final class RendererStats implements PiscesConst {
+public final class RendererStats implements MarlinConst {
 
     /* members */
     /** RendererContext collection as hard references (only used for debugging purposes) */
@@ -88,13 +88,13 @@ public final class RendererStats implements PiscesConst {
         hist_rdr_crossings_msorts_adds
     };
     /* monitors */
-    final Monitor mon_pre_getAATileGenerator = new Monitor("PiscesRenderingEngine.getAATileGenerator()");
+    final Monitor mon_pre_getAATileGenerator = new Monitor("MarlinRenderingEngine.getAATileGenerator()");
     final Monitor mon_npi_currentSegment = new Monitor("NormalizingPathIterator.currentSegment()");
     final Monitor mon_rdr_addLine = new Monitor("Renderer.addLine()");
     final Monitor mon_rdr_endRendering = new Monitor("Renderer.endRendering()");
     final Monitor mon_rdr_endRendering_Y = new Monitor("Renderer._endRendering(Y)");
     final Monitor mon_rdr_emitRow = new Monitor("Renderer.emitRow()");
-    final Monitor mon_ptg_getAlpha = new Monitor("PiscesTileGenerator.getAlpha()");
+    final Monitor mon_ptg_getAlpha = new Monitor("MarlinTileGenerator.getAlpha()");
     /* all monitors */
     final Monitor[] monitors = new Monitor[]{
         mon_pre_getAATileGenerator,

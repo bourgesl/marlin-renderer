@@ -33,7 +33,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import org.marlin.pisces.PiscesRenderingEngine;
+import sun.java2d.marlin.MarlinRenderingEngine;
 
 /**
  * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers
@@ -70,8 +70,8 @@ public class LineTests {
         System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
 
         try {
-            final File file = new File("LinesTest-norm-subpix_lg_" + PiscesRenderingEngine.getSubPixel_Log2_X()
-                    + "x" + PiscesRenderingEngine.getSubPixel_Log2_Y() + ".png");
+            final File file = new File("LinesTest-norm-subpix_lg_" + MarlinRenderingEngine.getSubPixel_Log2_X()
+                    + "x" + MarlinRenderingEngine.getSubPixel_Log2_Y() + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());;
             ImageIO.write(image, "PNG", file);

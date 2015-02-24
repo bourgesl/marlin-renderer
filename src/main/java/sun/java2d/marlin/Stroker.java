@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -35,7 +35,7 @@ import sun.awt.geom.PathConsumer2D;
 // TODO: some of the arithmetic here is too verbose and prone to hard to
 // debug typos. We should consider making a small Point/Vector class that
 // has methods like plus(Point), minus(Point), dot(Point), cross(Point)and such
-final class Stroker implements PathConsumer2D, PiscesConst {
+final class Stroker implements PathConsumer2D, MarlinConst {
 
     /* constants */
     private static final int MOVE_TO = 0;

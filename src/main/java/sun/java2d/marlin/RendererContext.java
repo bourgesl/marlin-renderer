@@ -22,21 +22,21 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.awt.geom.FastPath2D;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
-import static org.marlin.pisces.ArrayCache.*;
-import org.marlin.pisces.PiscesRenderingEngine.NormalizingPathIterator;
-import static org.marlin.pisces.PiscesUtils.getCallerInfo;
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import static sun.java2d.marlin.ArrayCache.*;
+import sun.java2d.marlin.MarlinRenderingEngine.NormalizingPathIterator;
+import static sun.java2d.marlin.MarlinUtils.getCallerInfo;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 /**
  * This class is a renderer context dedicated to a single thread (using thread local)
  */
-final class RendererContext implements PiscesConst {
+final class RendererContext implements MarlinConst {
 
     private static final String className = RendererContext.class.getName();
     /** RendererContext created counter */
@@ -62,24 +62,24 @@ final class RendererContext implements PiscesConst {
     final String name;
     /**
      * Reference to this instance (hard, soft or weak). 
-     * @see PiscesRenderingEngine#REF_TYPE
+     * @see MarlinRenderingEngine#REF_TYPE
      */
     final Object reference;
     /** dynamic array caches */
     final IntArrayCache[] intArrayCaches = new IntArrayCache[BUCKETS];
     final FloatArrayCache[] floatArrayCaches = new FloatArrayCache[BUCKETS];
     /* dirty instances (use them carefully) */
-    /** dynamic DIRTY byte array for PiscesCache */
+    /** dynamic DIRTY byte array for MarlinCache */
     final ByteArrayCache[] dirtyArrayCaches = new ByteArrayCache[BUCKETS];
     /* shared data */
     /* fixed arrays (dirty) */
     final float[] float6 = new float[6];
     /** shared curve (dirty) (Renderer / Stroker) */
     final Curve curve = new Curve();
-    /* pisces class instances */
-    /** PiscesRenderingEngine.NormalizingPathIterator */
+    /* Marlin class instances */
+    /** MarlinRenderingEngine.NormalizingPathIterator */
     final NormalizingPathIterator npIterator;
-    /** PiscesRenderingEngine.TransformingPathConsumer2D */
+    /** MarlinRenderingEngine.TransformingPathConsumer2D */
     final TransformingPathConsumer2D transformerPC2D;
     /** recycled Path2D instance */
     FastPath2D p2d = null;
@@ -91,10 +91,10 @@ final class RendererContext implements PiscesConst {
     final CollinearSimplifier simplifier = new CollinearSimplifier();
     /** Dasher */
     final Dasher dasher;
-    /** PiscesTileGenerator */
-    final PiscesTileGenerator ptg;
-    /** PiscesCache */
-    final PiscesCache piscesCache;
+    /** MarlinTileGenerator */
+    final MarlinTileGenerator ptg;
+    /** MarlinCache */
+    final MarlinCache cache;
 
     /**
      * Constructor
@@ -103,7 +103,7 @@ final class RendererContext implements PiscesConst {
      */
     RendererContext(final String name) {
         if (logCreateContext) {
-            PiscesUtils.logInfo("new RendererContext = " + name);
+            MarlinUtils.logInfo("new RendererContext = " + name);
         }
 
         this.name = name;
@@ -115,30 +115,30 @@ final class RendererContext implements PiscesConst {
             dirtyArrayCaches[i] = new ByteArrayCache(DIRTY_ARRAY_SIZES[i]);
         }
 
-        // PiscesRenderingEngine.NormalizingPathIterator:
+        // MarlinRenderingEngine.NormalizingPathIterator:
         npIterator = new NormalizingPathIterator(this);
 
-        // PiscesRenderingEngine.TransformingPathConsumer2D
+        // MarlinRenderingEngine.TransformingPathConsumer2D
         transformerPC2D = new TransformingPathConsumer2D();
 
         // Renderer:
-        piscesCache = new PiscesCache(this);
-        renderer = new Renderer(this); // needs piscesCache
-        ptg = new PiscesTileGenerator(renderer);
+        cache = new MarlinCache(this);
+        renderer = new Renderer(this); // needs rdrCtx.cache
+        ptg = new MarlinTileGenerator(renderer);
 
         stroker = new Stroker(this);
         dasher = new Dasher(this);
 
         // Create the reference to this instance (hard, soft or weak):
-        switch (PiscesRenderingEngine.REF_TYPE) {
+        switch (MarlinRenderingEngine.REF_TYPE) {
             default:
-            case PiscesRenderingEngine.REF_HARD:
+            case MarlinRenderingEngine.REF_HARD:
                 reference = this;
                 break;
-            case PiscesRenderingEngine.REF_SOFT:
+            case MarlinRenderingEngine.REF_SOFT:
                 reference = new SoftReference<RendererContext>(this);
                 break;
-            case PiscesRenderingEngine.REF_WEAK:
+            case MarlinRenderingEngine.REF_WEAK:
                 reference = new WeakReference<RendererContext>(this);
                 break;
         }
@@ -160,7 +160,7 @@ final class RendererContext implements PiscesConst {
         return dirtyArrayCaches[bucket];
     }
 
-    /* dirty piscesCache */
+    /* dirty byte array cache */
     byte[] getDirtyArray(final int length) {
         if (length <= MAX_DIRTY_ARRAY_SIZE) {
             return getDirtyArrayCache(length).getArray();
@@ -220,7 +220,7 @@ final class RendererContext implements PiscesConst {
         return res;
     }
 
-    /* int array piscesCache */
+    /* int array cache */
     int[] getIntArray(final int length) {
         if (length <= MAX_ARRAY_SIZE) {
             return getIntArrayCache(length).getArray();
@@ -283,7 +283,7 @@ final class RendererContext implements PiscesConst {
         }
     }
 
-    /* float array piscesCache */
+    /* float array cache */
     float[] getFloatArray(final int length) {
         if (length <= MAX_ARRAY_SIZE) {
             return getFloatArrayCache(length).getArray();

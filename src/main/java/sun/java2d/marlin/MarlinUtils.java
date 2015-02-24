@@ -22,27 +22,27 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
-import static org.marlin.pisces.PiscesConst.useJUL;
+import static sun.java2d.marlin.MarlinConst.useJUL;
 import sun.misc.JavaLangAccess;
 import sun.misc.SharedSecrets;
 
 /**
  * Utility class
  */
-public final class PiscesUtils {
+public final class MarlinUtils {
 
     /**
-     * logger (use JUL but should use PlatformLogger.getLogger("sun.java2d.pisces") in JDK8 to avoid initializing JUL
+     * logger (use JUL but should use PlatformLogger.getLogger("sun.java2d.marlin") in JDK8 to avoid initializing JUL
      */
     static final java.util.logging.Logger log;
 
     static {
-        log = (useJUL) ? java.util.logging.Logger.getLogger(PiscesConst.class.getPackage().getName()) : null;
+        log = (useJUL) ? java.util.logging.Logger.getLogger(MarlinConst.class.getPackage().getName()) : null;
     }
 
-    private PiscesUtils() {
+    private MarlinUtils() {
         // no-op
     }
 

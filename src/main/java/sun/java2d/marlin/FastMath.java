@@ -22,12 +22,12 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 /**
  * Fast Math routines
  */
-final class FastMath implements PiscesConst {
+final class FastMath implements MarlinConst {
     /* http://www.java-gaming.org/index.php?topic=24194.0 */
 
     private static final int BIG_ENOUGH_INT = 1024 * 1024 * 1024;    // 1e9 max

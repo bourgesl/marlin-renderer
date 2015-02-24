@@ -22,14 +22,14 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 /**
  *
  */
-public final class ArrayCache implements PiscesConst {
+public final class ArrayCache implements MarlinConst {
 
     final static int BUCKETS = 4;
     final static int BUCKET_GROW_BITS = 2;
@@ -65,7 +65,7 @@ public final class ArrayCache implements PiscesConst {
         MAX_ARRAY_SIZE = arraySize / BUCKET_GROW;
 
         /* initialize buckets for dirty int arrays (large AA chunk = 32 x pixels) */
-        arraySize = BUCKET_DIRTY_GROW * PiscesCache.TILE_SIZE * 1024;  /* TODO: adjust max size */
+        arraySize = BUCKET_DIRTY_GROW * MarlinCache.TILE_SIZE * 1024;  /* TODO: adjust max size */
 
         for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_DIRTY_GROW) {
             DIRTY_ARRAY_SIZES[i] = arraySize;

@@ -22,25 +22,25 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
 
 /**
  * An object used to cache pre-rendered complex paths.
  *
- * @see PiscesRenderer#render
+ * @see Renderer
  */
-public final class PiscesCache implements PiscesConst {
+public final class MarlinCache implements MarlinConst {
     /* constants */
-    public static final int TILE_SIZE_LG = PiscesRenderingEngine.getTileSize_Log2();
+    public static final int TILE_SIZE_LG = MarlinRenderingEngine.getTileSize_Log2();
     public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
 
     /* 2048 alpha values (width) x 32 rows (tile) = 64K */
     static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
 
     // The alpha map used by this object (taken out of our map cache) to convert
-    // pixel coverage counts gotten from PiscesCache (which are in the range
+    // pixel coverage counts gotten from MarlinCache (which are in the range
     // [0, maxalpha]) into alpha values, which are in [0,256).
     final static byte[] ALPHA_MAP = buildAlphaMap(Renderer.MAX_AA_ALPHA);
     
@@ -80,7 +80,7 @@ public final class PiscesCache implements PiscesConst {
 
     int tileMin, tileMax;
 
-    PiscesCache(final RendererContext rdrCtx) {
+    MarlinCache(final RendererContext rdrCtx) {
         this.rdrCtx = rdrCtx;
 
         // +1 to avoid recycling in widenDirtyIntArray()
@@ -184,7 +184,7 @@ public final class PiscesCache implements PiscesConst {
         final int px_bbox1 = Math.min(px1, bboxX1);
     
         if (doLogBounds) {
-            PiscesUtils.logInfo("row = [" + px0 + " ... " + px_bbox1 + " (" + px1 + ") [ for y=" + y);
+            MarlinUtils.logInfo("row = [" + px0 + " ... " + px_bbox1 + " (" + px1 + ") [ for y=" + y);
         }
         
         final int row = y - bboxY0;
@@ -266,7 +266,7 @@ public final class PiscesCache implements PiscesConst {
         }
 
         if (doLogBounds) {
-            PiscesUtils.logInfo("clear = [" + from + " ... " + to + "[");
+            MarlinUtils.logInfo("clear = [" + from + " ... " + to + "[");
         }
         
         // Clear alpha row for reuse:

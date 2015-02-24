@@ -22,13 +22,13 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.lang.reflect.Field;
 import sun.awt.geom.PathConsumer2D;
 import sun.misc.Unsafe;
 
-final class Renderer implements PathConsumer2D, PiscesConst {
+final class Renderer implements PathConsumer2D, MarlinConst {
 
     final static int OFFSET;
     final static int SIZE;
@@ -42,7 +42,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             field.setAccessible(true);
             ref = (Unsafe) field.get(null);
         } catch (Exception e) {
-            PiscesUtils.logInfo("Unable to get sun.misc.Unsafe; exit now.");
+            MarlinUtils.logInfo("Unable to get sun.misc.Unsafe; exit now.");
             System.exit(1);
         }
         unsafe = ref;
@@ -50,18 +50,18 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         OFFSET = unsafe.ARRAY_INT_BASE_OFFSET;
         SIZE = unsafe.ARRAY_INT_INDEX_SCALE;
 
-        PiscesUtils.logInfo("===============================================================================");
-        PiscesUtils.logInfo(" Using sun.misc.Unsafe: No warranty (may crash your JVM) !");
-        PiscesUtils.logInfo(" USE IT AT YOUR OWN RISKS.");
-        PiscesUtils.logInfo("===============================================================================");
+        MarlinUtils.logInfo("===============================================================================");
+        MarlinUtils.logInfo(" Using sun.misc.Unsafe: No warranty (may crash your JVM) !");
+        MarlinUtils.logInfo(" USE IT AT YOUR OWN RISKS.");
+        MarlinUtils.logInfo("===============================================================================");
     }
     
 
     /* constants */
     /* hard coded 8x8 antialiasing -> 64 subpixels */
     /* may use System properties to define expected subpixels (4x4, 8x8, 16x16) */
-    public final static int SUBPIXEL_LG_POSITIONS_X = PiscesRenderingEngine.getSubPixel_Log2_X();
-    public final static int SUBPIXEL_LG_POSITIONS_Y = PiscesRenderingEngine.getSubPixel_Log2_Y();
+    public final static int SUBPIXEL_LG_POSITIONS_X = MarlinRenderingEngine.getSubPixel_Log2_X();
+    public final static int SUBPIXEL_LG_POSITIONS_Y = MarlinRenderingEngine.getSubPixel_Log2_Y();
     public final static int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
     public final static int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
     // LBO: use float to make tosubpix methods faster (no int to float conversion)
@@ -71,7 +71,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
     public final static int SUBPIXEL_MASK_Y = SUBPIXEL_POSITIONS_Y - 1;
     public final static int MAX_AA_ALPHA = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;
     /* number of subpixels corresponding to a tile line */
-    private static final int SUBPIXEL_TILE = PiscesCache.TILE_SIZE << SUBPIXEL_LG_POSITIONS_Y;
+    private static final int SUBPIXEL_TILE = MarlinCache.TILE_SIZE << SUBPIXEL_LG_POSITIONS_Y;
 
     /* 2048 pixels (height) x 8 subpixels = 64K */
     static final int INITIAL_BUCKET_ARRAY = INITIAL_PIXEL_DIM * SUBPIXEL_POSITIONS_Y;
@@ -406,7 +406,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
     /* Renderer members */
     // Cache to store RLE-encoded coverage mask of the current primitive
-    final PiscesCache cache;
+    final MarlinCache cache;
 
     // Bounds of the drawing region, at subpixel precision.
     private int boundsMinX, boundsMinY, boundsMaxX, boundsMaxY;
@@ -435,7 +435,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
         alphaLine  = alphaLine_initial;
 
-        this.cache = rdrCtx.piscesCache;
+        this.cache = rdrCtx.cache;
 
         // ScanLine:
         crossings     = crossings_initial;
@@ -460,7 +460,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         this.boundsMaxY = (pix_boundsY + pix_boundsHeight) << SUBPIXEL_LG_POSITIONS_Y;
         
         if (doLogBounds) {
-            PiscesUtils.logInfo("boundsXY = [" + boundsMinX + " ... " + boundsMaxX + "[ [" + boundsMinY + " ... " + boundsMaxY + "[");
+            MarlinUtils.logInfo("boundsXY = [" + boundsMinX + " ... " + boundsMaxX + "[ [" + boundsMinY + " ... " + boundsMaxY + "[");
         }
 
         /* see addLine: ceil(boundsMaxY) => boundsMaxY + 1 */
@@ -566,7 +566,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
             RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
         /* recycle the RendererContext instance */
-        PiscesRenderingEngine.returnRendererContext(rdrCtx);
+        MarlinRenderingEngine.returnRendererContext(rdrCtx);
     }
 
     private static float tosubpixx(final float pix_x) {
@@ -652,7 +652,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         final int[] _alpha = alphaLine;
 
         // local vars (performance):
-        final PiscesCache _cache = cache;
+        final MarlinCache _cache = cache;
         final OffHeapEdgeArray _edges = edges;
         final int[] _edgeBuckets = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
@@ -1092,7 +1092,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
 
             // even if this last row had no crossings, alpha will be zeroed
             // from the last emitRow call. But this doesn't matter because
-            // maxX < minX, so no row will be emitted to the piscesCache.
+            // maxX < minX, so no row will be emitted to the MarlinCache.
             if ((y & _SUBPIXEL_MASK_Y) == _SUBPIXEL_MASK_Y) {
                 lastY = y >> _SUBPIXEL_LG_POSITIONS_Y;
                 if (pix_maxX >= pix_minX) {
@@ -1141,8 +1141,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         final int spmaxY = Math.min(FastMath.ceil(edgeMaxY), boundsMaxY - 1);
 
         if (doLogBounds) {
-            PiscesUtils.logInfo("edgesXY = [" + edgeMinX + " ... " + edgeMaxX + "][" + edgeMinY + " ... " + edgeMaxY + "]");
-            PiscesUtils.logInfo("spXY    = [" + spminX + " ... " + spmaxX + "][" + spminY + " ... " + spmaxY + "]");
+            MarlinUtils.logInfo("edgesXY = [" + edgeMinX + " ... " + edgeMaxX + "][" + edgeMinY + " ... " + edgeMaxY + "]");
+            MarlinUtils.logInfo("spXY    = [" + spminX + " ... " + spmaxX + "][" + spminY + " ... " + spmaxY + "]");
         }
 
         /* test clipping for shapes out of bounds */
@@ -1167,8 +1167,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         bbox_spmaxY = Math.min(spmaxY + 1, pmaxY << SUBPIXEL_LG_POSITIONS_Y); // exclusive
 
         if (doLogBounds) {
-            PiscesUtils.logInfo("pXY       = [" + pminX + " ... " + pmaxX + "[ [" + pminY + " ... " + pmaxY + "[");
-            PiscesUtils.logInfo("bbox_spXY = [" + bbox_spminX + " ... " + bbox_spmaxX + "[ [" + bbox_spminY + " ... " + bbox_spmaxY + "[");
+            MarlinUtils.logInfo("pXY       = [" + pminX + " ... " + pmaxX + "[ [" + pminY + " ... " + pmaxY + "[");
+            MarlinUtils.logInfo("bbox_spXY = [" + bbox_spminX + " ... " + bbox_spmaxX + "[ [" + bbox_spminY + " ... " + bbox_spmaxY + "[");
         }
         
         // Prepare alpha line:
@@ -1224,7 +1224,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         
         OffHeapEdgeArray(final long len) {
             if (logUnsafeMalloc) {
-                PiscesUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.allocateMemory = " + len);
+                MarlinUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.allocateMemory = " + len);
             }
             this.address = unsafe.allocateMemory(len);
             this.length  = len;
@@ -1237,7 +1237,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         */
         void resize(final long len) {
             if (logUnsafeMalloc) {
-                PiscesUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.reallocateMemory = " + len);
+                MarlinUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.reallocateMemory = " + len);
             }
             this.address = unsafe.reallocateMemory(address, len);
             this.length  = len;
@@ -1245,7 +1245,7 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         
         void free() {
             if (logUnsafeMalloc) {
-                PiscesUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.free = " + this.length);
+                MarlinUtils.logInfo(System.currentTimeMillis() + ": OffHeapEdgeArray.free = " + this.length);
             }
             unsafe.freeMemory(this.address);
         }

@@ -22,17 +22,17 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import static org.marlin.pisces.PiscesUtils.logException;
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import static sun.java2d.marlin.MarlinUtils.logException;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 /**
  *
  */
-final class FloatArrayCache implements PiscesConst {
+final class FloatArrayCache implements MarlinConst {
 
     /* members */
     private final int arraySize;

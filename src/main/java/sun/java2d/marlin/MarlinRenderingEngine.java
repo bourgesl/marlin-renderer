@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.awt.BasicStroke;
 import java.awt.Shape;
@@ -32,16 +32,16 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.lang.ref.Reference;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
 import sun.awt.geom.PathConsumer2D;
 import sun.java2d.pipe.AATileGenerator;
 import sun.java2d.pipe.Region;
 import sun.java2d.pipe.RenderingEngine;
 
 /**
- * Pisces RendererEngine implementation
+ * Marlin RendererEngine implementation (derived from Pisces)
  */
-public class PiscesRenderingEngine extends RenderingEngine implements PiscesConst {
+public class MarlinRenderingEngine extends RenderingEngine implements MarlinConst {
     private static enum NormMode {OFF, ON_NO_AA, ON_WITH_AA}
 
     /**
@@ -692,7 +692,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
             strokeTo(rdrCtx, s, _at, bs, thin, norm, true, r);
         }
         if (r.endRendering()) {
-            PiscesTileGenerator ptg = rdrCtx.ptg.init();
+            MarlinTileGenerator ptg = rdrCtx.ptg.init();
             ptg.getBbox(bbox);
             // note: do not returnRendererContext(rdrCtx) as it will be called later by renderer dispose()
             return ptg;
@@ -764,7 +764,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
         r.pathDone();
 
         if (r.endRendering()) {
-            PiscesTileGenerator ptg = rdrCtx.ptg.init();
+            MarlinTileGenerator ptg = rdrCtx.ptg.init();
             ptg.getBbox(bbox);
             // note: do not returnRendererContext(rdrCtx) as it will be called later by renderer dispose()
             return ptg;
@@ -849,11 +849,11 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
 
         final String reClass = System.getProperty("sun.java2d.renderer");
 
-        if (PiscesRenderingEngine.class.getName().equals(reClass)) {
+        if (MarlinRenderingEngine.class.getName().equals(reClass)) {
             logInfo("Marlin software rasterizer           = ENABLED");
             logInfo("Version                              = [" + Version.getVersion() + "]");
             logInfo("sun.java2d.renderer                  = " + reClass);
-            logInfo("sun.java2d.renderer.useThreadLocal   = " + useThreadLocal);
+            logInfo("sun.java2d.renderer.useThreadLocal   = " + isUseThreadLocal());
             logInfo("sun.java2d.renderer.useRef           = " + refType);
 
             logInfo("sun.java2d.renderer.pixelsize        = " + getInitialImageSize());
@@ -923,7 +923,7 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
     /* marlin system properties */
 
     public static boolean isUseThreadLocal() {
-        return getBoolean("sun.java2d.renderer.useThreadLocal", "true");
+        return getBoolean("sun.java2d.renderer.useThreadLocal", "false");
     }
 
     /**

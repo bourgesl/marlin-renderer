@@ -22,21 +22,21 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import static org.marlin.pisces.PiscesUtils.logException;
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import static sun.java2d.marlin.MarlinUtils.logException;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 /**
  *
  */
-final class ByteArrayCache implements PiscesConst {
+final class IntArrayCache implements MarlinConst {
 
     /* members */
     private final int arraySize;
-    private final ArrayDeque<byte[]> byteArrays;
+    private final ArrayDeque<int[]> intArrays;
     /* stats */
     private int getOp = 0;
     private int createOp = 0;
@@ -44,23 +44,22 @@ final class ByteArrayCache implements PiscesConst {
 
     void dumpStats() {
         if (getOp > 0) {
-            logInfo("ByteArrayCache[" + arraySize + "]: get: " + getOp + " created: " + createOp + " - returned: " + returnOp + " :: cache size: " + byteArrays.size());
+            logInfo("IntArrayCache[" + arraySize + "]: get: " + getOp + " created: " + createOp + " - returned: " + returnOp + " :: cache size: " + intArrays.size());
         }
     }
 
-    ByteArrayCache(final int arraySize) {
+    IntArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        this.byteArrays = new ArrayDeque<byte[]>(6); /* small but enough: almost 1 cache line */
-
+        this.intArrays = new ArrayDeque<int[]>(6); /* small but enough: almost 1 cache line */
     }
 
-    byte[] getArray() {
+    int[] getArray() {
         if (doStats) {
             getOp++;
         }
 
         // use cache:
-        final byte[] array = byteArrays.pollLast();
+        final int[] array = intArrays.pollLast();
         if (array != null) {
             return array;
         }
@@ -69,10 +68,10 @@ final class ByteArrayCache implements PiscesConst {
             createOp++;
         }
 
-        return new byte[arraySize];
+        return new int[arraySize];
     }
 
-    void putArray(final byte[] array, final int length, final int fromIndex, final int toIndex) {
+    void putArray(final int[] array, final int length, final int fromIndex, final int toIndex) {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -82,13 +81,13 @@ final class ByteArrayCache implements PiscesConst {
         }
 
         // TODO: pool eviction
-        fill(array, fromIndex, toIndex, BYTE_0);
+        fill(array, fromIndex, toIndex, 0);
 
         // fill cache:
-        byteArrays.addLast(array);
+        intArrays.addLast(array);
     }
 
-    static void fill(final byte[] array, final int fromIndex, final int toIndex, final byte value) {
+    static void fill(final int[] array, final int fromIndex, final int toIndex, final int value) {
         // clear array data:
         /*
          * Arrays.fill is faster than System.arraycopy(empty array) or Unsafe.setMemory(byte 0)
@@ -102,7 +101,7 @@ final class ByteArrayCache implements PiscesConst {
         }
     }
 
-    static boolean check(final byte[] array, final int fromIndex, final int toIndex, final byte value) {
+    static boolean check(final int[] array, final int fromIndex, final int toIndex, final int value) {
         if (doChecks) {
             boolean empty = true;
             int i;
@@ -125,7 +124,7 @@ final class ByteArrayCache implements PiscesConst {
         return false;
     }
 
-    void putDirtyArray(final byte[] array, final int length) {
+    void putDirtyArray(final int[] array, final int length) {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -137,6 +136,6 @@ final class ByteArrayCache implements PiscesConst {
         // TODO: pool eviction
         // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
         // fill cache:
-        byteArrays.addLast(array);
+        intArrays.addLast(array);
     }
 }

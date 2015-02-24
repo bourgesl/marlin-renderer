@@ -22,27 +22,27 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import sun.java2d.pipe.AATileGenerator;
 
-final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
+final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
     
-    private static final int TILE_SIZE = PiscesCache.TILE_SIZE;
+    private static final int TILE_SIZE = MarlinCache.TILE_SIZE;
 
     private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE * Renderer.MAX_AA_ALPHA;
 
-    /* PiscesTileGenerator members */
+    /* members */
     private final Renderer rdr;
-    private final PiscesCache cache;
+    private final MarlinCache cache;
     private int x, y;
 
-    PiscesTileGenerator(Renderer r) {
+    MarlinTileGenerator(Renderer r) {
         this.rdr = r;
         this.cache = r.cache;
     }
 
-    PiscesTileGenerator init() {
+    MarlinTileGenerator init() {
         this.x = cache.bboxX0;
         this.y = cache.bboxY0;
 
@@ -166,7 +166,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
         }
 
         if (doLogBounds) {
-            PiscesUtils.logInfo("getAlpha = [" + x0 + " ... " + x1 + "[ [" + y0 + " ... " + y1 + "[");
+            MarlinUtils.logInfo("getAlpha = [" + x0 + " ... " + x1 + "[ [" + y0 + " ... " + y1 + "[");
         }
         
         final int skipRowPixels = (rowstride - (x1 - x0));

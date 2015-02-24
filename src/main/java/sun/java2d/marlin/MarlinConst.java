@@ -22,29 +22,29 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 /**
- *
+ * Marlin constant holder using System properties
  */
-interface PiscesConst {
+interface MarlinConst {
     /** enable JUL logger */
-    static final boolean useJUL = PiscesRenderingEngine.isUseJul();
+    static final boolean useJUL = MarlinRenderingEngine.isUseJul();
 
     /** enable development mode */
     static final boolean doDev = false;
 
     /* log new RendererContext */
-    static final boolean logCreateContext = PiscesRenderingEngine.isLogCreateContext();
+    static final boolean logCreateContext = MarlinRenderingEngine.isLogCreateContext();
     /* log misc.Unsafe alloc/realloc/free */
-    static final boolean logUnsafeMalloc = PiscesRenderingEngine.isLogUnsafeMalloc();
+    static final boolean logUnsafeMalloc = MarlinRenderingEngine.isLogUnsafeMalloc();
 
     /** do statistics */
-    static final boolean doStats = PiscesRenderingEngine.isDoStats();
+    static final boolean doStats = MarlinRenderingEngine.isDoStats();
     /** do monitors */
-    static final boolean doMonitors = PiscesRenderingEngine.isDoMonitors();
+    static final boolean doMonitors = MarlinRenderingEngine.isDoMonitors();
     /** do checks */
-    static final boolean doChecks = PiscesRenderingEngine.isDoChecks();
+    static final boolean doChecks = MarlinRenderingEngine.isDoChecks();
 
     /** do AA range checks: disable when algorithm / code is stable */
     static final boolean DO_AA_RANGE_CHECK = false;
@@ -65,10 +65,10 @@ interface PiscesConst {
     static final boolean doCleanDirty = false;
 
     /** flag to use custom ceil() / floor() functions */
-    static final boolean useFastMath = PiscesRenderingEngine.isUseFastMath();
+    static final boolean useFastMath = MarlinRenderingEngine.isUseFastMath();
 
     /** flag to use line simplifier */
-    static final boolean useSimplifier = PiscesRenderingEngine.isUseSimplifier();
+    static final boolean useSimplifier = MarlinRenderingEngine.isUseSimplifier();
 
     /** flag to enable logs related bounds checks */
     static final boolean doLogBounds = false;
@@ -76,7 +76,7 @@ interface PiscesConst {
     /* Initial Array sizing (initial context capacity) ~ 512K to 1 Mb */
 
     /** 2048 pixel (width x height) for initial capacity */
-    static final int INITIAL_PIXEL_DIM    = PiscesRenderingEngine.getInitialImageSize();
+    static final int INITIAL_PIXEL_DIM    = MarlinRenderingEngine.getInitialImageSize();
 
     /* only odd numbers allowed below */
     static final int INITIAL_ARRAY        = 256;
