@@ -44,14 +44,16 @@ final class ByteArrayCache implements MarlinConst {
 
     void dumpStats() {
         if (getOp > 0) {
-            logInfo("ByteArrayCache[" + arraySize + "]: get: " + getOp + " created: " + createOp + " - returned: " + returnOp + " :: cache size: " + byteArrays.size());
+            logInfo("ByteArrayCache[" + arraySize + "]: get: " + getOp
+                    + " created: " + createOp + " - returned: " + returnOp
+                    + " :: cache size: " + byteArrays.size());
         }
     }
 
     ByteArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        this.byteArrays = new ArrayDeque<byte[]>(6); /* small but enough: almost 1 cache line */
-
+        /* small but enough: almost 1 cache line */
+        this.byteArrays = new ArrayDeque<byte[]>(6);
     }
 
     byte[] getArray() {
@@ -72,7 +74,8 @@ final class ByteArrayCache implements MarlinConst {
         return new byte[arraySize];
     }
 
-    void putArray(final byte[] array, final int length, final int fromIndex, final int toIndex) {
+    void putArray(final byte[] array, final int length,
+            final int fromIndex, final int toIndex) {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -88,10 +91,12 @@ final class ByteArrayCache implements MarlinConst {
         byteArrays.addLast(array);
     }
 
-    static void fill(final byte[] array, final int fromIndex, final int toIndex, final byte value) {
+    static void fill(final byte[] array, final int fromIndex, final int toIndex,
+            final byte value) {
         // clear array data:
         /*
-         * Arrays.fill is faster than System.arraycopy(empty array) or Unsafe.setMemory(byte 0)
+         * Arrays.fill is faster than System.arraycopy(empty array) 
+         * or Unsafe.setMemory(byte 0)
          */
         if (toIndex != 0) {
             Arrays.fill(array, fromIndex, toIndex, value);
@@ -102,7 +107,8 @@ final class ByteArrayCache implements MarlinConst {
         }
     }
 
-    static boolean check(final byte[] array, final int fromIndex, final int toIndex, final byte value) {
+    static boolean check(final byte[] array, final int fromIndex,
+            final int toIndex, final byte value) {
         if (doChecks) {
             boolean empty = true;
             int i;
@@ -114,7 +120,8 @@ final class ByteArrayCache implements MarlinConst {
                 }
             }
             if (!empty) {
-                logException("Invalid array value at " + i + "\n" + Arrays.toString(array), new Throwable());
+                logException("Invalid array value at " + i + "\n" 
+                        + Arrays.toString(array), new Throwable());
 
                 // ensure array is correctly filled:
                 Arrays.fill(array, value);

@@ -36,8 +36,10 @@ public final class ArrayCache implements MarlinConst {
     final static int BUCKET_GROW = 1 << BUCKET_GROW_BITS;
     final static int BUCKET_DIRTY_GROW_BITS = 1;
     final static int BUCKET_DIRTY_GROW = 1 << BUCKET_DIRTY_GROW_BITS;
-    final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arrayCopy)
-    /** threshold to grow arrays by x4 or x2 */
+    final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arraycopy)
+    /**
+     * threshold to grow arrays by x4 or x2
+     */
     final static int THRESHOLD_ARRAY_SIZE = 32 * 1024;
     /* array sizes */
     final static int MAX_ARRAY_SIZE;
@@ -64,8 +66,10 @@ public final class ArrayCache implements MarlinConst {
         }
         MAX_ARRAY_SIZE = arraySize / BUCKET_GROW;
 
-        /* initialize buckets for dirty int arrays (large AA chunk = 32 x pixels) */
-        arraySize = BUCKET_DIRTY_GROW * MarlinCache.TILE_SIZE * 1024;  /* TODO: adjust max size */
+        /* initialize buckets for dirty int arrays 
+         (large AA chunk = 32 x pixels) */
+        /* TODO: adjust max size */
+        arraySize = BUCKET_DIRTY_GROW * MarlinCache.TILE_SIZE * 1024;
 
         for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_DIRTY_GROW) {
             DIRTY_ARRAY_SIZES[i] = arraySize;
@@ -125,7 +129,7 @@ public final class ArrayCache implements MarlinConst {
     }
 
     /**
-     * Return the corrected  size by the growing factor
+     * Return the corrected size by the growing factor
      * @param newSize needed size
      * @return corrected size
      */
