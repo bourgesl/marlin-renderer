@@ -207,13 +207,21 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         float y = pts[off + type - 3];
         if (dashOn) {
             if (starting) {
-                firstSegmentsBuffer = Helpers.widenArray(rdrCtx, firstSegmentsBuffer,
-                                      firstSegidx, type - 2, firstSegUsed);
-                firstSegmentsBuffer[firstSegidx++] = type;
-                System.arraycopy(pts, off, firstSegmentsBuffer, firstSegidx, type - 2);
-                firstSegidx += type - 2;
+                int len = type - 2 + 1;
+                int segIdx = firstSegidx;
+                float[] buf = firstSegmentsBuffer;
+                if (segIdx + len  > buf.length) {
+                    firstSegmentsBuffer = buf = Helpers.widenArray(rdrCtx, 
+                            firstSegmentsBuffer, segIdx, len, firstSegUsed);
+                }
+                buf[segIdx++] = type;
+                len--;
+                // small arraycopy (2, 4 or 6) but with offset:
+                System.arraycopy(pts, off, buf, segIdx, len);
+                segIdx += len;
                 // update used mark
-                if (firstSegidx > firstSegUsed) { firstSegUsed = firstSegidx; }
+                if (segIdx > firstSegUsed) { firstSegUsed = segIdx; }
+                firstSegidx = segIdx;
             } else {
                 if (needsMoveTo) {
                     out.moveTo(x0, y0);
@@ -418,7 +426,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         }
 
         void initializeIterationOnCurve(float[] pts, int type) {
-            System.arraycopy(pts, 0, recCurveStack[0], 0, type);
+            // optimize arraycopy (8 values faster than 6 = type):
+            System.arraycopy(pts, 0, recCurveStack[0], 0, 8);
             this.curveType = type;
             this.recLevel = 0;
             this.lastT = 0;
@@ -573,7 +582,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
             }
 
             _sides[_recLevel] = Side.RIGHT;
-            System.arraycopy(recCurveStack[_recLevel], 0, recCurveStack[_recLevel+1], 0, curveType);
+            // optimize arraycopy (8 values faster than 6 = type):
+            System.arraycopy(recCurveStack[_recLevel], 0, recCurveStack[_recLevel+1], 0, 8);
             _recLevel++;
             
             recLevel = _recLevel;

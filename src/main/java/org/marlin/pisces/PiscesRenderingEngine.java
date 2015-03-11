@@ -321,11 +321,10 @@ public class PiscesRenderingEngine extends RenderingEngine implements PiscesCons
                     final float[] newDashes = (dashLen <= INITIAL_ARRAY) ? 
                             rdrCtx.dasher.dashes_initial : rdrCtx.getFloatArray(dashLen);
                     
-                    System.arraycopy(dashes, 0, newDashes, 0, dashLen);
-                    dashes = newDashes;
                     for (int i = 0; i < dashLen; i++) {
-                        dashes[i] = scale * dashes[i];
+                        newDashes[i] = scale * dashes[i];
                     }
+                    dashes = newDashes;
                     dashphase = scale * dashphase;
                 }
                 width = scale * width;
