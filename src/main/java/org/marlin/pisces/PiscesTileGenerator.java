@@ -210,7 +210,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
                     // Copy AA data (sum alpha data):
                     final int off = pos - aax0;
 
-                    /* note: System.arrayCopy is slower than copy loop */
+                    /* note: System.arraycopy is slower than copy loop */
                     for (final int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
                         // cx inside tile[x0; x1[ :
                         tile[idx] = rowAAChunk[cx + off];

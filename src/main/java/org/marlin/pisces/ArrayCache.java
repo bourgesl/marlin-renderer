@@ -36,7 +36,7 @@ public final class ArrayCache implements PiscesConst {
     final static int BUCKET_GROW = 1 << BUCKET_GROW_BITS;
     final static int BUCKET_DIRTY_GROW_BITS = 1;
     final static int BUCKET_DIRTY_GROW = 1 << BUCKET_DIRTY_GROW_BITS;
-    final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arrayCopy)
+    final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arraycopy)
     /** threshold to grow arrays by x4 or x2 */
     final static int THRESHOLD_ARRAY_SIZE = 32 * 1024;
     /* array sizes */
