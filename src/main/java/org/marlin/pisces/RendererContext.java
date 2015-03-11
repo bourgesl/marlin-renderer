@@ -123,7 +123,7 @@ final class RendererContext implements PiscesConst {
 
         // Renderer:
         piscesCache = new PiscesCache(this);
-        renderer = new Renderer(this); // needs piscesCache
+        renderer = new Renderer(this); // needs PiscesCache from rdrCtx.piscesCache
         ptg = new PiscesTileGenerator(renderer);
 
         stroker = new Stroker(this);
@@ -160,7 +160,7 @@ final class RendererContext implements PiscesConst {
         return dirtyArrayCaches[bucket];
     }
 
-    /* dirty piscesCache */
+    /* dirty byte array cache */
     byte[] getDirtyArray(final int length) {
         if (length <= MAX_DIRTY_ARRAY_SIZE) {
             return getDirtyArrayCache(length).getArray();
@@ -220,7 +220,7 @@ final class RendererContext implements PiscesConst {
         return res;
     }
 
-    /* int array piscesCache */
+    /* int array cache */
     int[] getIntArray(final int length) {
         if (length <= MAX_ARRAY_SIZE) {
             return getIntArrayCache(length).getArray();
@@ -283,7 +283,7 @@ final class RendererContext implements PiscesConst {
         }
     }
 
-    /* float array piscesCache */
+    /* float array cache */
     float[] getFloatArray(final int length) {
         if (length <= MAX_ARRAY_SIZE) {
             return getFloatArrayCache(length).getArray();

@@ -47,13 +47,8 @@ final class Renderer implements PathConsumer2D, PiscesConst {
         }
         unsafe = ref;
 
-        OFFSET = unsafe.ARRAY_INT_BASE_OFFSET;
-        SIZE = unsafe.ARRAY_INT_INDEX_SCALE;
-
-        PiscesUtils.logInfo("===============================================================================");
-        PiscesUtils.logInfo(" Using sun.misc.Unsafe: No warranty (may crash your JVM) !");
-        PiscesUtils.logInfo(" USE IT AT YOUR OWN RISKS.");
-        PiscesUtils.logInfo("===============================================================================");
+        OFFSET = Unsafe.ARRAY_INT_BASE_OFFSET;
+        SIZE = Unsafe.ARRAY_INT_INDEX_SCALE;
     }
     
 

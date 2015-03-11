@@ -37,6 +37,7 @@ final class MergeSort {
 
     // 14 MapBench better results
     // 20 MapSortTest better average results on 9000 arrays !
+    /** insertion sort threshold */
     public final static int INSERTION_SORT_THRESHOLD = 14;
     /*    
      public final static int INSERTION_SORT_THRESHOLD = Integer.getInteger("MergeSort.threshold", 14); // 14 | 16 | 18 ?
@@ -117,7 +118,6 @@ final class MergeSort {
          */
         if (length <= INSERTION_SORT_THRESHOLD) {
             // Insertion sort on smallest arrays
-            // inside dest as both x == auxX initially
             dstX[low] = refX[low];
             dstY[low] = refY[low];
 
