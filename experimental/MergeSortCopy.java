@@ -28,23 +28,11 @@ package org.marlin.pisces;
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[]) to swap two arrays at the same time (x &
  * y) and use external auxiliary storage for temporary arrays
  */
-final class MergeSort {
+final class MergeSortCopy {
 
-    /** collect array data at each mergeSortNoCopy() invocation */
-    private final static boolean ENABLE_COLLECT_ARRAY_DATA = Boolean.getBoolean("MergeSort.collect.data");
-    /** true to enable array data collection and serialization */
-    public final static boolean DO_COLLECT_ARRAY_DATA = PiscesConst.doStats && ENABLE_COLLECT_ARRAY_DATA;
+    private final static boolean DUMP_ARRAY_DATA = (false) && PiscesConst.doStats;
 
-    // 14 MapBench better results
-    // 20 MapSortTest better average results on 9000 arrays !
-    public final static int INSERTION_SORT_THRESHOLD = 14;
-    /*    
-     public final static int INSERTION_SORT_THRESHOLD = Integer.getInteger("MergeSort.threshold", 14); // 14 | 16 | 18 ?
-
-     static {
-     System.out.println("INSERTION_SORT_THRESHOLD: " + INSERTION_SORT_THRESHOLD);
-     }
-     */
+    public final static int INSERTION_SORT_THRESHOLD = 32;
 
     /**
      * Modified merge sort:
@@ -58,26 +46,25 @@ final class MergeSort {
                                 final int insertionSortIndex) {
 
         // Gather array data:
-        if (DO_COLLECT_ARRAY_DATA) {
+        if (DUMP_ARRAY_DATA) {
             // Copy presorted data from auxX/auxY to x/y:
             System.arraycopy(auxX, 0, x, 0, insertionSortIndex);
             RendererContext.stats.adc.addData(x, 0, toIndex, insertionSortIndex);
         }
 
-        if ((toIndex > x.length) || (toIndex > y.length)
-                || (toIndex > auxX.length) || (toIndex > auxY.length)) {
-            // explicit check to avoid bound checks within hot loops (below):
-            throw new ArrayIndexOutOfBoundsException("bad arguments: toIndex=" + toIndex);
-        }
+        // first part is already sorted in auxiliary storage (auxX/auxY)
+        final int rightLen = toIndex - insertionSortIndex;
+
+        // copy only second part to be sorted into auxX/auxY:
+        System.arraycopy(x, insertionSortIndex, auxX, insertionSortIndex, rightLen);
+        System.arraycopy(y, insertionSortIndex, auxY, insertionSortIndex, rightLen);
 
         // sort second part only using merge / insertion sort in auxiliary storage (auxX/auxY)
-        mergeSort(x, y, x, auxX, y, auxY, insertionSortIndex, toIndex);
+        mergeSort(x, auxX, y, auxY, insertionSortIndex, toIndex);
 
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
         if ((insertionSortIndex == 0) || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
-//            System.out.println("mergeSortNoCopy: ordered");
-            // 34 occurences
             // no initial left part or both sublists (auxX, auxY) are already sorted:
             // copy back data into (x, y):
             System.arraycopy(auxX, 0, x, 0, toIndex);
@@ -104,8 +91,7 @@ final class MergeSort {
      * low is the index in dest to start sorting 
      * high is the end index in dest to end sorting 
      */
-    private static void mergeSort(final int[] refX, final int[] refY,
-                                  final int[] srcX, final int[] dstX,
+    private static void mergeSort(final int[] srcX, final int[] dstX,
                                   final int[] srcY, final int[] dstY,
                                   final int low, final int high) {
 
@@ -118,12 +104,10 @@ final class MergeSort {
         if (length <= INSERTION_SORT_THRESHOLD) {
             // Insertion sort on smallest arrays
             // inside dest as both x == auxX initially
-            dstX[low] = refX[low];
-            dstY[low] = refY[low];
 
             for (int i = low + 1, j = low, x, y; i < high; j = i++) {
-                x = refX[i];
-                y = refY[i];
+                x = dstX[i];
+                y = dstY[i];
 
                 while (dstX[j] > x) {
                     // swap element
@@ -136,19 +120,26 @@ final class MergeSort {
                 dstX[j + 1] = x;
                 dstY[j + 1] = y;
             }
+
             return;
         }
 
         // Recursively sort halves of dest into src
         final int mid = (low + high) >> 1; // not >>> as small arrays
 
-        mergeSort(refX, refY, dstX, srcX, dstY, srcY, low, mid);
-        mergeSort(refX, refY, dstX, srcX, dstY, srcY, mid, high);
+        mergeSort(dstX, srcX, dstY, srcY, low, mid);
+        mergeSort(dstX, srcX, dstY, srcY, mid, high);
 
-        // If arrays are inverted ie all(A) > all(B) do swap A and B to dst
+        // If arrays are already sorted, just copy from src to dest.  This is an
+        // optimization that results in faster sorts for nearly ordered lists.
+        if (srcX[mid - 1] <= srcX[mid]) {
+            System.arraycopy(srcX, low, dstX, low, length);
+            System.arraycopy(srcY, low, dstY, low, length);
+            return;
+        }
+
+        // If sublist are inverted ie all(A) > all(B) do swap A and B to dst
         if (srcX[high - 1] <= srcX[low]) {
-//            System.out.println("mergeSort: inverse ordered");
-            // 1561 occurences
             final int left = mid - low;
             final int right = high - mid;
             final int off = (left != right) ? 1 : 0;
@@ -157,16 +148,6 @@ final class MergeSort {
             System.arraycopy(srcX, mid, dstX, low, right);
             System.arraycopy(srcY, low, dstY, mid + off, left);
             System.arraycopy(srcY, mid, dstY, low, right);
-            return;
-        }
-
-        // If arrays are already sorted, just copy from src to dest.  This is an
-        // optimization that results in faster sorts for nearly ordered lists.
-        if (srcX[mid - 1] <= srcX[mid]) {
-//            System.out.println("mergeSort: ordered");
-            // 14 occurences
-            System.arraycopy(srcX, low, dstX, low, length);
-            System.arraycopy(srcY, low, dstY, low, length);
             return;
         }
 
@@ -184,6 +165,6 @@ final class MergeSort {
         }
     }
 
-    private MergeSort() {
+    private MergeSortCopy() {
     }
 }

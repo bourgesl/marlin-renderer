@@ -28,6 +28,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import static org.marlin.pisces.PiscesUtils.logInfo;
+import org.marlin.pisces.stats.ArraySortDataCollection;
 import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.Monitor;
 import org.marlin.pisces.stats.StatLong;
@@ -36,6 +37,22 @@ import org.marlin.pisces.stats.StatLong;
  * This class gathers global rendering statistics for debugging purposes only
  */
 public final class RendererStats implements PiscesConst {
+
+    /** singleton */
+    private static RendererStats singleton = null;
+
+    final static RendererStats createInstance() {
+        if (singleton == null) {
+            singleton = new RendererStats();
+        }
+        return singleton;
+    }
+
+    public static void dumpStats() {
+        if (singleton != null) {
+            singleton.dump();
+        }
+    }
 
     /* members */
     /** RendererContext collection as hard references (only used for debugging purposes) */
@@ -105,15 +122,19 @@ public final class RendererStats implements PiscesConst {
         mon_rdr_emitRow,
         mon_ptg_getAlpha
     };
+    /* array data */
+    final ArraySortDataCollection adc = new ArraySortDataCollection();
 
-    RendererStats() {
+    private RendererStats() {
         super();
 
         /* stats */
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                dumpStats();
+                dump();
+                // dump array data:
+                ArraySortDataCollection.save("/tmp/ArraySortDataCollection.ser", adc);
             }
         });
 
@@ -122,7 +143,7 @@ public final class RendererStats implements PiscesConst {
             statTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    dumpStats();
+                    dump();
                 }
             }, statDump, statDump);
         } else {
@@ -130,7 +151,7 @@ public final class RendererStats implements PiscesConst {
         }
     }
 
-    public void dumpStats() {
+    void dump() {
         if (doStats) {
             ArrayCache.dumpStats();
         }

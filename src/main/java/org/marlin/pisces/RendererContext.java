@@ -42,8 +42,8 @@ final class RendererContext implements PiscesConst {
     /** RendererContext created counter */
     private static final AtomicInteger contextCount = new AtomicInteger(1);
     /** RendererContext statistics */
-    static final RendererStats stats = (doStats || doMonitors) ? new RendererStats() : null;
-
+    static final RendererStats stats = (doStats || doMonitors) ? RendererStats.createInstance(): null;
+    
     /**
      * Create a new renderer context
      *

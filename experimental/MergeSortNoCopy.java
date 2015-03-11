@@ -28,23 +28,11 @@ package org.marlin.pisces;
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[]) to swap two arrays at the same time (x &
  * y) and use external auxiliary storage for temporary arrays
  */
-final class MergeSort {
+final class MergeSortNoCopy {
 
-    /** collect array data at each mergeSortNoCopy() invocation */
-    private final static boolean ENABLE_COLLECT_ARRAY_DATA = Boolean.getBoolean("MergeSort.collect.data");
-    /** true to enable array data collection and serialization */
-    public final static boolean DO_COLLECT_ARRAY_DATA = PiscesConst.doStats && ENABLE_COLLECT_ARRAY_DATA;
+    private final static boolean DUMP_ARRAY_DATA = (false) && PiscesConst.doStats;
 
-    // 14 MapBench better results
-    // 20 MapSortTest better average results on 9000 arrays !
-    public final static int INSERTION_SORT_THRESHOLD = 14;
-    /*    
-     public final static int INSERTION_SORT_THRESHOLD = Integer.getInteger("MergeSort.threshold", 14); // 14 | 16 | 18 ?
-
-     static {
-     System.out.println("INSERTION_SORT_THRESHOLD: " + INSERTION_SORT_THRESHOLD);
-     }
-     */
+    public final static int INSERTION_SORT_THRESHOLD = 24;
 
     /**
      * Modified merge sort:
@@ -58,7 +46,7 @@ final class MergeSort {
                                 final int insertionSortIndex) {
 
         // Gather array data:
-        if (DO_COLLECT_ARRAY_DATA) {
+        if (DUMP_ARRAY_DATA) {
             // Copy presorted data from auxX/auxY to x/y:
             System.arraycopy(auxX, 0, x, 0, insertionSortIndex);
             RendererContext.stats.adc.addData(x, 0, toIndex, insertionSortIndex);
@@ -76,8 +64,6 @@ final class MergeSort {
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
         if ((insertionSortIndex == 0) || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
-//            System.out.println("mergeSortNoCopy: ordered");
-            // 34 occurences
             // no initial left part or both sublists (auxX, auxY) are already sorted:
             // copy back data into (x, y):
             System.arraycopy(auxX, 0, x, 0, toIndex);
@@ -136,6 +122,7 @@ final class MergeSort {
                 dstX[j + 1] = x;
                 dstY[j + 1] = y;
             }
+
             return;
         }
 
@@ -145,10 +132,16 @@ final class MergeSort {
         mergeSort(refX, refY, dstX, srcX, dstY, srcY, low, mid);
         mergeSort(refX, refY, dstX, srcX, dstY, srcY, mid, high);
 
-        // If arrays are inverted ie all(A) > all(B) do swap A and B to dst
+        // If arrays are already sorted, just copy from src to dest.  This is an
+        // optimization that results in faster sorts for nearly ordered lists.
+        if (srcX[mid - 1] <= srcX[mid]) {
+            System.arraycopy(srcX, low, dstX, low, length);
+            System.arraycopy(srcY, low, dstY, low, length);
+            return;
+        }
+
+        // If sublist are inverted ie all(A) > all(B) do swap A and B to dst
         if (srcX[high - 1] <= srcX[low]) {
-//            System.out.println("mergeSort: inverse ordered");
-            // 1561 occurences
             final int left = mid - low;
             final int right = high - mid;
             final int off = (left != right) ? 1 : 0;
@@ -157,16 +150,6 @@ final class MergeSort {
             System.arraycopy(srcX, mid, dstX, low, right);
             System.arraycopy(srcY, low, dstY, mid + off, left);
             System.arraycopy(srcY, mid, dstY, low, right);
-            return;
-        }
-
-        // If arrays are already sorted, just copy from src to dest.  This is an
-        // optimization that results in faster sorts for nearly ordered lists.
-        if (srcX[mid - 1] <= srcX[mid]) {
-//            System.out.println("mergeSort: ordered");
-            // 14 occurences
-            System.arraycopy(srcX, low, dstX, low, length);
-            System.arraycopy(srcY, low, dstY, low, length);
             return;
         }
 
@@ -184,6 +167,6 @@ final class MergeSort {
         }
     }
 
-    private MergeSort() {
+    private MergeSortNoCopy() {
     }
 }
