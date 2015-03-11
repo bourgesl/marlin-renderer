@@ -24,7 +24,7 @@
  */
 package sun.java2d.marlin;
 
-import java.awt.geom.FastPath2D;
+import java.awt.geom.Path2D;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -82,7 +82,7 @@ final class RendererContext implements MarlinConst {
     /** MarlinRenderingEngine.TransformingPathConsumer2D */
     final TransformingPathConsumer2D transformerPC2D;
     /** recycled Path2D instance */
-    FastPath2D p2d = null;
+    Path2D.Float p2d = null;
     /** Renderer */
     final Renderer renderer;
     /** Stroker */

@@ -27,7 +27,6 @@ package sun.java2d.marlin;
 import java.awt.BasicStroke;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.FastPath2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.lang.ref.Reference;
@@ -73,7 +72,7 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         final RendererContext rdrCtx = getRendererContext();
 
         // initialize a large copyable FastPath2D to avoid a lot of array growing:
-        final FastPath2D p2d = (rdrCtx.p2d == null) ? (rdrCtx.p2d = new FastPath2D(INITIAL_MEDIUM_ARRAY)) : rdrCtx.p2d;
+        final Path2D.Float p2d = (rdrCtx.p2d == null) ? (rdrCtx.p2d = new Path2D.Float(INITIAL_MEDIUM_ARRAY)) : rdrCtx.p2d;
         // reset
         p2d.reset();
         
@@ -90,8 +89,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
                  rdrCtx.transformerPC2D.wrapPath2d(p2d)
                 );
         
-        /* Perform Path2D copy efficiently and trim */
-        final Path2D path = p2d.trimmedCopy();
+        /* Use Path2D copy constructor (trim) */
+        final Path2D path = new Path2D.Float(p2d);
         
         returnRendererContext(rdrCtx);
         
