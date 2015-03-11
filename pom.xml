@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.5.5-Unsafe-OpenJDK</version>
+    <version>0.5.6-Unsafe-OpenJDK</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -86,7 +86,7 @@
                         <configuration>
                             <classifier>sun-java2d</classifier>
                             <includes>
-                                <!-- <include>java/awt/geom/Path2D*</include> -->
+                                <include>java/awt/geom/Path2D*</include>
                                 <include>sun/java2d/pipe/**</include>
                             </includes>
                         </configuration>

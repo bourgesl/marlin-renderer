@@ -30,34 +30,43 @@ package sun.java2d.marlin;
  */
 final class MergeSort {
 
+    /** insertion sort threshold */
+    public final static int INSERTION_SORT_THRESHOLD = 14;
+
     /**
-     * Modified megacy merge sort:
-     * Inputs and outputs are respectively in auxX/auxY and x/y arrays (no arraycopy)
+     * Modified merge sort:
+     * Input arrays are in both auxX/auxY (sorted: 0 to insertionSortIndex) 
+     *                     and x/y (unsorted: insertionSortIndex to toIndex)
+     * Outputs are stored in x/y arrays
      */
-    static void legacyMergeSortCustomNoCopy(final int[] x, final int[] y,
-                                            final int[] auxX, final int[] auxY,
-                                            final int fromIndex, final int toIndex,
-                                            final int insertionSortIndex) {
+    static void mergeSortNoCopy(final int[] x, final int[] y,
+                                final int[] auxX, final int[] auxY,
+                                final int toIndex,
+                                final int insertionSortIndex) {
 
-        // first part is already sorted in auxiliary storage (auxX/auxY)
+        if ((toIndex > x.length) || (toIndex > y.length)
+                || (toIndex > auxX.length) || (toIndex > auxY.length)) {
+            // explicit check to avoid bound checks within hot loops (below):
+            throw new ArrayIndexOutOfBoundsException("bad arguments: toIndex=" + toIndex);
+        }
 
-        final int rightLen = toIndex - insertionSortIndex;
-
-        // copy only second part to be sorted into auxX/auxY:
-        System.arraycopy(x, insertionSortIndex, auxX, insertionSortIndex, rightLen);
-        System.arraycopy(y, insertionSortIndex, auxY, insertionSortIndex, rightLen);
-
-        // sort second part only using insertion sort in auxiliary storage (auxX/auxY)
-        mergeSort(x, auxX, y, auxY, insertionSortIndex, toIndex);
+        // sort second part only using merge / insertion sort in auxiliary storage (auxX/auxY)
+        mergeSort(x, y, x, auxX, y, auxY, insertionSortIndex, toIndex);
 
         // final pass to merge both
-
-        // TODO: use binarysearch when merging asymetric parts ie right part << left part 
-        // to have less comparisons !
-
         // Merge sorted parts (auxX/auxY) into x/y arrays
-        for (int i = fromIndex, p = fromIndex, q = insertionSortIndex; i < toIndex; i++) {
-            if (q >= toIndex || p < insertionSortIndex && auxX[p] <= auxX[q]) {
+        if ((insertionSortIndex == 0) || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
+//            System.out.println("mergeSortNoCopy: ordered");
+            // 34 occurences
+            // no initial left part or both sublists (auxX, auxY) are already sorted:
+            // copy back data into (x, y):
+            System.arraycopy(auxX, 0, x, 0, toIndex);
+            System.arraycopy(auxY, 0, y, 0, toIndex);
+            return;
+        }
+
+        for (int i = 0, p = 0, q = insertionSortIndex; i < toIndex; i++) {
+            if ((q >= toIndex) || ((p < insertionSortIndex) && (auxX[p] <= auxX[q]))) {
                 x[i] = auxX[p];
                 y[i] = auxY[p];
                 p++;
@@ -75,41 +84,66 @@ final class MergeSort {
      * low is the index in dest to start sorting 
      * high is the end index in dest to end sorting 
      */
-    private static void mergeSort(final int[] srcX, int[] dstX,
+    private static void mergeSort(final int[] refX, final int[] refY,
+                                  final int[] srcX, final int[] dstX,
                                   final int[] srcY, final int[] dstY,
-                                  int low, int high) {
+                                  final int low, final int high) {
 
         final int length = high - low;
-        int t;
 
         /*
          * Tuning parameter: list size at or below which insertion sort will be used in preference to mergesort.
          * Benchmarks indicates 10 as the best threshold among [5,10,20]
          */
-        if (length <= 10) {
+        if (length <= INSERTION_SORT_THRESHOLD) {
             // Insertion sort on smallest arrays
-            for (int i = low; i < high; i++) {
-                for (int j = i; j > low && dstX[j - 1] > dstX[j]; j--) {
-                    /* swap(dstX, j, j - 1); */
-                    t = dstX[j];
-                    dstX[j] = dstX[j - 1];
-                    dstX[j - 1] = t;
-                    t = dstY[j];
-                    dstY[j] = dstY[j - 1];
-                    dstY[j - 1] = t;
+            dstX[low] = refX[low];
+            dstY[low] = refY[low];
+
+            for (int i = low + 1, j = low, x, y; i < high; j = i++) {
+                x = refX[i];
+                y = refY[i];
+
+                while (dstX[j] > x) {
+                    // swap element
+                    dstX[j + 1] = dstX[j];
+                    dstY[j + 1] = dstY[j];
+                    if (j-- == low) {
+                        break;
                 }
+            }
+                dstX[j + 1] = x;
+                dstY[j + 1] = y;
             }
             return;
         }
 
         // Recursively sort halves of dest into src
-        final int mid = (low + high) >>> 1;
-        mergeSort(dstX, srcX, dstY, srcY, low, mid);
-        mergeSort(dstX, srcX, dstY, srcY, mid, high);
+        final int mid = (low + high) >> 1; // not >>> as small arrays
 
-        // If list is already sorted, just copy from src to dest.  This is an
+        mergeSort(refX, refY, dstX, srcX, dstY, srcY, low, mid);
+        mergeSort(refX, refY, dstX, srcX, dstY, srcY, mid, high);
+
+        // If arrays are inverted ie all(A) > all(B) do swap A and B to dst
+        if (srcX[high - 1] <= srcX[low]) {
+//            System.out.println("mergeSort: inverse ordered");
+            // 1561 occurences
+            final int left = mid - low;
+            final int right = high - mid;
+            final int off = (left != right) ? 1 : 0;
+            // swap parts:
+            System.arraycopy(srcX, low, dstX, mid + off, left);
+            System.arraycopy(srcX, mid, dstX, low, right);
+            System.arraycopy(srcY, low, dstY, mid + off, left);
+            System.arraycopy(srcY, mid, dstY, low, right);
+            return;
+        }
+
+        // If arrays are already sorted, just copy from src to dest.  This is an
         // optimization that results in faster sorts for nearly ordered lists.
         if (srcX[mid - 1] <= srcX[mid]) {
+//            System.out.println("mergeSort: ordered");
+            // 14 occurences
             System.arraycopy(srcX, low, dstX, low, length);
             System.arraycopy(srcY, low, dstY, low, length);
             return;
@@ -117,7 +151,7 @@ final class MergeSort {
 
         // Merge sorted halves (now in src) into dest
         for (int i = low, p = low, q = mid; i < high; i++) {
-            if (q >= high || p < mid && srcX[p] <= srcX[q]) {
+            if ((q >= high) || ((p < mid) && (srcX[p] <= srcX[q]))) {
                 dstX[i] = srcX[p];
                 dstY[i] = srcY[p];
                 p++;
@@ -127,5 +161,8 @@ final class MergeSort {
                 q++;
             }
         }
+    }
+
+    private MergeSort() {
     }
 }

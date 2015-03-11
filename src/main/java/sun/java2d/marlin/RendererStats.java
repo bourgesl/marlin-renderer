@@ -37,6 +37,22 @@ import sun.java2d.marlin.stats.StatLong;
  */
 public final class RendererStats implements MarlinConst {
 
+    /** singleton */
+    private static RendererStats singleton = null;
+
+    final static RendererStats createInstance() {
+        if (singleton == null) {
+            singleton = new RendererStats();
+        }
+        return singleton;
+    }
+
+    public static void dumpStats() {
+        if (singleton != null) {
+            singleton.dump();
+        }
+    }
+
     /* members */
     /** RendererContext collection as hard references (only used for debugging purposes) */
     final ConcurrentLinkedQueue<RendererContext> allContexts = new ConcurrentLinkedQueue<RendererContext>();
@@ -106,14 +122,14 @@ public final class RendererStats implements MarlinConst {
         mon_ptg_getAlpha
     };
 
-    RendererStats() {
+    private RendererStats() {
         super();
 
         /* stats */
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                dumpStats();
+                dump();
             }
         });
 
@@ -122,7 +138,7 @@ public final class RendererStats implements MarlinConst {
             statTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    dumpStats();
+                    dump();
                 }
             }, statDump, statDump);
         } else {
@@ -130,7 +146,7 @@ public final class RendererStats implements MarlinConst {
         }
     }
 
-    public void dumpStats() {
+    void dump() {
         if (doStats) {
             ArrayCache.dumpStats();
         }

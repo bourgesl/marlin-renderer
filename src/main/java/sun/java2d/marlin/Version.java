@@ -29,12 +29,9 @@ import java.util.Properties;
 
 public final class Version {
 
-    private static String version = null;
+    private static final String version = "marlin-0.5.6-Unsafe-OpenJDK";
 
     public static String getVersion() {
-        if (version == null) {
-            version = "marlin-0.5.5-Unsafe-OpenJDK";
-        }
         return version;
     }
 

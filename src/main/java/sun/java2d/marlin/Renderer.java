@@ -696,7 +696,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         int ptrLen = 0, newCount, ptrEnd;
 
         int bucketcount, i, j, ecur, lowx, highx;
-        int cross, jcross, lastCross;
+        int cross, lastCross;
         float f_curx;
         int x0, x1, tmp, sum, prev, curx, curxo, crorientation, pix_x, pix_xmaxm1, pix_xmax;
 
@@ -800,7 +800,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                  * Tuning parameter: thresholds to switch to optimized merge sort for newly added edges + final merge pass.
                  * Benchmarks indicates [adds=10|size=75] as the best thresholds among [5,10,15|50,75,100]
                  */
-                if (ptrLen < 10 || numCrossings < 75) {
+                if ((ptrLen < 10) || (numCrossings < 40)) {
                     if (doStats) {
                         RendererContext.stats.hist_rdr_crossings.add(numCrossings);
                         RendererContext.stats.hist_rdr_crossings_adds.add(ptrLen);
@@ -864,21 +864,16 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                                     _crossings[j + 1] = _crossings[j];
                                     _edgePtrs [j + 1] = _edgePtrs[j];
                                 }
-                                _crossings[j + 1] = cross;
-                                _edgePtrs [j + 1] = ecur;
+                                _crossings[low] = cross;
+                                _edgePtrs [low] = ecur;
 
                             } else {
                                 j = i - 1;
                                 _crossings[i] = _crossings[j];
                                 _edgePtrs[i] = _edgePtrs[j];
 
-                                while (--j >= 0) {
-                                    jcross = _crossings[j];
-                                    if (jcross <= cross) {
-                                        break;
-                                    }
-                                    /* cross < jcross; swap element */
-                                    _crossings[j + 1] = jcross;
+                                while ((--j >= 0) && (_crossings[j] > cross)) {
+                                    _crossings[j + 1] = _crossings[j];
                                     _edgePtrs [j + 1] = _edgePtrs[j];
                                 }
                                 _crossings[j + 1] = cross;
@@ -937,13 +932,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                             _aux_crossings[i] = _aux_crossings[j];
                             _aux_edgePtrs[i] = _aux_edgePtrs[j];
 
-                            while (--j >= 0) {
-                                jcross = _aux_crossings[j];
-                                if (jcross <= cross) {
-                                    break;
-                                }
-                                /* cross < jcross; swap element */
-                                _aux_crossings[j + 1] = jcross;
+                            while ((--j >= 0) && (_aux_crossings[j] > cross)) {
+                                _aux_crossings[j + 1] = _aux_crossings[j];
                                 _aux_edgePtrs [j + 1] = _aux_edgePtrs[j];
                             }
                             _aux_crossings[j + 1] = cross;
@@ -957,9 +947,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                     }
 
                     // use Mergesort using auxiliary arrays (sort only right part)
-                    MergeSort.legacyMergeSortCustomNoCopy(_crossings,     _edgePtrs, 
-                                                          _aux_crossings, _aux_edgePtrs, 
-                                                          0, numCrossings, prevNumCrossings);
+                    MergeSort.mergeSortNoCopy(_crossings,     _edgePtrs, 
+                                              _aux_crossings, _aux_edgePtrs, 
+                                              numCrossings,   prevNumCrossings);
                 }
                 
                 // reset ptrLen

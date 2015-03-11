@@ -42,7 +42,7 @@ final class RendererContext implements MarlinConst {
     /** RendererContext created counter */
     private static final AtomicInteger contextCount = new AtomicInteger(1);
     /** RendererContext statistics */
-    static final RendererStats stats = (doStats || doMonitors) ? new RendererStats() : null;
+    static final RendererStats stats = (doStats || doMonitors) ? RendererStats.createInstance(): null;
 
     /**
      * Create a new renderer context
@@ -123,7 +123,7 @@ final class RendererContext implements MarlinConst {
 
         // Renderer:
         cache = new MarlinCache(this);
-        renderer = new Renderer(this); // needs rdrCtx.cache
+        renderer = new Renderer(this); // needs MarlinCache from rdrCtx.cache
         ptg = new MarlinTileGenerator(renderer);
 
         stroker = new Stroker(this);
