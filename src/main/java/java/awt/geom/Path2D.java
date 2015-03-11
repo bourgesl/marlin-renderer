@@ -1,26 +1,26 @@
 /*
- * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package java.awt.geom;
@@ -220,15 +220,12 @@ public abstract class Path2D implements Shape, Cloneable {
          * @since 1.6
          */
         public Float(Shape s, AffineTransform at) {
-            super(); // LBO: invoke empty constructor explicitely !
             if (s instanceof Path2D) {
                 Path2D p2d = (Path2D) s;
                 setWindingRule(p2d.windingRule);
                 this.numTypes = p2d.numTypes;
-                // LBO: trim arrays:
-                this.pointTypes = Arrays.copyOf(p2d.pointTypes, this.numTypes);
-//                this.pointTypes = Arrays.copyOf(p2d.pointTypes,
-//                                                p2d.pointTypes.length);
+                // trim arrays:
+                this.pointTypes = Arrays.copyOf(p2d.pointTypes, p2d.numTypes);
                 this.numCoords = p2d.numCoords;
                 this.floatCoords = p2d.cloneCoordsFloat(at);
             } else {
@@ -242,24 +239,21 @@ public abstract class Path2D implements Shape, Cloneable {
 
         @Override
         float[] cloneCoordsFloat(AffineTransform at) {
+            // trim arrays:
             float ret[];
             if (at == null) {
-                // LBO: trim arrays:
                 ret = Arrays.copyOf(floatCoords, numCoords);
-//                ret = Arrays.copyOf(this.floatCoords, this.floatCoords.length);
             } else {
-                // LBO: trim arrays:
                 ret = new float[numCoords];                
-//                ret = new float[floatCoords.length];
                 at.transform(floatCoords, 0, ret, 0, numCoords / 2);
             }
             return ret;
         }
 
+        @Override
         double[] cloneCoordsDouble(AffineTransform at) {
-            // LBO: trim arrays:
+            // trim arrays:
             double ret[] = new double[numCoords];
-//            double ret[] = new double[floatCoords.length];
             if (at == null) {
                 for (int i = 0; i < numCoords; i++) {
                     ret[i] = floatCoords[i];
@@ -295,6 +289,8 @@ public abstract class Path2D implements Shape, Cloneable {
                 int grow = size;
                 if (grow > EXPAND_MAX) {
                     grow = EXPAND_MAX;
+                } else if (grow == 0) {
+                    grow = 1;
                 }
                 pointTypes = Arrays.copyOf(pointTypes, size+grow);
             }
@@ -1069,8 +1065,8 @@ public abstract class Path2D implements Shape, Cloneable {
                 Path2D p2d = (Path2D) s;
                 setWindingRule(p2d.windingRule);
                 this.numTypes = p2d.numTypes;
-                this.pointTypes = Arrays.copyOf(p2d.pointTypes,
-                                                p2d.pointTypes.length);
+                // trim arrays:
+                this.pointTypes = Arrays.copyOf(p2d.pointTypes, p2d.numTypes);
                 this.numCoords = p2d.numCoords;
                 this.doubleCoords = p2d.cloneCoordsDouble(at);
             } else {
@@ -1082,8 +1078,10 @@ public abstract class Path2D implements Shape, Cloneable {
             }
         }
 
+        @Override
         float[] cloneCoordsFloat(AffineTransform at) {
-            float ret[] = new float[doubleCoords.length];
+            // trim arrays:
+            float ret[] = new float[numCoords];
             if (at == null) {
                 for (int i = 0; i < numCoords; i++) {
                     ret[i] = (float) doubleCoords[i];
@@ -1094,13 +1092,14 @@ public abstract class Path2D implements Shape, Cloneable {
             return ret;
         }
 
+        @Override
         double[] cloneCoordsDouble(AffineTransform at) {
+            // trim arrays:
             double ret[];
             if (at == null) {
-                ret = Arrays.copyOf(this.doubleCoords,
-                                    this.doubleCoords.length);
+                ret = Arrays.copyOf(doubleCoords, numCoords);
             } else {
-                ret = new double[doubleCoords.length];
+                ret = new double[numCoords];
                 at.transform(doubleCoords, 0, ret, 0, numCoords / 2);
             }
             return ret;
@@ -1131,6 +1130,8 @@ public abstract class Path2D implements Shape, Cloneable {
                 int grow = size;
                 if (grow > EXPAND_MAX) {
                     grow = EXPAND_MAX;
+                } else if (grow == 0) {
+                    grow = 1;
                 }
                 pointTypes = Arrays.copyOf(pointTypes, size+grow);
             }
@@ -1936,9 +1937,9 @@ public abstract class Path2D implements Shape, Cloneable {
      * maintains, but it may contain no more precision either.
      * If the tradeoff of precision vs. storage size in the result is
      * important then the convenience constructors in the
-     * {@link Path2D.Float#Path2D.Float(Shape, AffineTransform) Path2D.Float}
+     * {@link Path2D.Float#Float(Shape, AffineTransform) Path2D.Float}
      * and
-     * {@link Path2D.Double#Path2D.Double(Shape, AffineTransform) Path2D.Double}
+     * {@link Path2D.Double#Double(Shape, AffineTransform) Path2D.Double}
      * subclasses should be used to make the choice explicit.
      *
      * @param at the {@code AffineTransform} used to transform a
