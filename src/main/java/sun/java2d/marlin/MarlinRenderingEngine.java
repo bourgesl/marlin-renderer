@@ -40,7 +40,9 @@ import sun.java2d.pipe.RenderingEngine;
 /**
  * Marlin RendererEngine implementation (derived from Pisces)
  */
-public class MarlinRenderingEngine extends RenderingEngine implements MarlinConst {
+public class MarlinRenderingEngine extends RenderingEngine 
+                                   implements MarlinConst {
+    
     private static enum NormMode {OFF, ON_NO_AA, ON_WITH_AA}
 
     /**
@@ -71,8 +73,11 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
     {
         final RendererContext rdrCtx = getRendererContext();
 
-        // initialize a large copyable FastPath2D to avoid a lot of array growing:
-        final Path2D.Float p2d = (rdrCtx.p2d == null) ? (rdrCtx.p2d = new Path2D.Float(INITIAL_MEDIUM_ARRAY)) : rdrCtx.p2d;
+        // initialize a large copyable Path2D to avoid a lot of array growing:
+        final Path2D.Float p2d = 
+                (rdrCtx.p2d == null) ? 
+                (rdrCtx.p2d = new Path2D.Float(INITIAL_MEDIUM_ARRAY)) 
+                : rdrCtx.p2d;
         // reset
         p2d.reset();
         
@@ -80,7 +85,7 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
                  src,
                  null,
                  width,
-                 NormMode.OFF, /* LBO: should use ON_WITH_AA to be more precise ? */
+                 NormMode.OFF, /* should use ON_WITH_AA to be more precise ? */
                  caps,
                  join,
                  miterlimit,
@@ -388,7 +393,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
             if (!recycleDashes) {
                 dashLen = dashes.length;
             }
-            pc2d = rdrCtx.dasher.init(pc2d, dashes, dashLen, dashphase, recycleDashes);
+            pc2d = rdrCtx.dasher.init(pc2d, dashes, dashLen, dashphase, 
+                                      recycleDashes);
         }
         pc2d = transformerPC2D.inverseDeltaTransformConsumer(pc2d, strokerat);
         pathTo(rdrCtx.float6, pi, pc2d);
@@ -439,7 +445,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         NormalizingPathIterator init(PathIterator src, NormMode mode) {
             this.src = src;
             
-            // TODO: use two different implementations to avoid computations with lval = 0 !
+            // TODO: use two different implementations 
+            // to avoid computations with lval = 0 !
             switch (mode) {
                 case ON_NO_AA:
                     // round to nearest (0.25, 0.25) pixel
@@ -449,7 +456,7 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
                 case ON_WITH_AA:
                     // round to nearest pixel center
                     lval = 0f;
-                    rval = 0.5f;
+                    rval = 0.5f;LBO: 
                     skip_lval = true; // most probable case
                     break;
                 case OFF:
@@ -579,10 +586,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         }
     }
 
-    static void pathTo(final float[] coords, final PathIterator pi, final PathConsumer2D pc2d) {
-        /*
-         * TODO: clipping bounds (lines first)
-         */
+    static void pathTo(final float[] coords, final PathIterator pi, 
+                       final PathConsumer2D pc2d) {
         while (!pi.isDone()) {
             switch (pi.currentSegment(coords)) {
             case PathIterator.SEG_MOVETO:
@@ -669,7 +674,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         final RendererContext rdrCtx = getRendererContext();
         
         // Test if at is identity:
-        final AffineTransform _at = (at != null && !at.isIdentity()) ? at : null;
+        final AffineTransform _at = (at != null && !at.isIdentity()) ? at 
+                                    : null;
         
         Renderer r;
         NormMode norm = (normalize) ? NormMode.ON_WITH_AA : NormMode.OFF;
@@ -693,7 +699,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         if (r.endRendering()) {
             MarlinTileGenerator ptg = rdrCtx.ptg.init();
             ptg.getBbox(bbox);
-            // note: do not returnRendererContext(rdrCtx) as it will be called later by renderer dispose()
+            // note: do not returnRendererContext(rdrCtx) 
+            // as it will be called later by renderer dispose()
             return ptg;
         }
         // dispose renderer and calls returnRendererContext(rdrCtx)
@@ -765,7 +772,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         if (r.endRendering()) {
             MarlinTileGenerator ptg = rdrCtx.ptg.init();
             ptg.getBbox(bbox);
-            // note: do not returnRendererContext(rdrCtx) as it will be called later by renderer dispose()
+            // note: do not returnRendererContext(rdrCtx) 
+            // as it will be called later by renderer dispose()
             return ptg;
         }
         // dispose renderer and calls returnRendererContext(rdrCtx)
@@ -813,9 +821,9 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
     /* reference type stored in either TL or CLQ */
     static final int REF_TYPE;
 
-    /** Per-thread TileState */
+    /** Per-thread RendererContext */
     private static final ThreadLocal<Object> rdrCtxThreadLocal;
-    /** TileState queue when ThreadLocal is disabled */
+    /** RendererContext queue when ThreadLocal is disabled */
     private static final ConcurrentLinkedQueue<Object> rdrCtxQueue;
 
     /* Static initializer to use TL or CLQ mode */
@@ -823,10 +831,12 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         // TL mode by default:
         useThreadLocal = isUseThreadLocal();
         rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<Object>() : null;
-        rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>() : null;
+        rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>() 
+                      : null;
 
         // Hard reference by default:
-        String refType = System.getProperty("sun.java2d.renderer.useRef", "soft");
+        String refType = System.getProperty("sun.java2d.renderer.useRef", 
+                                            "soft");
         switch (refType) {
             default:
             case "hard":
@@ -844,25 +854,34 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         }
 
         /* log information at startup */
-        logInfo("===============================================================================");
+        logInfo("============================================================="
+                + "==================");
 
         final String reClass = System.getProperty("sun.java2d.renderer");
 
         if (MarlinRenderingEngine.class.getName().equals(reClass)) {
             logInfo("Marlin software rasterizer           = ENABLED");
-            logInfo("Version                              = [" + Version.getVersion() + "]");
+            logInfo("Version                              = ["
+                    + Version.getVersion() + "]");
             logInfo("sun.java2d.renderer                  = " + reClass);
-            logInfo("sun.java2d.renderer.useThreadLocal   = " + isUseThreadLocal());
+            logInfo("sun.java2d.renderer.useThreadLocal   = " 
+                    + isUseThreadLocal());
             logInfo("sun.java2d.renderer.useRef           = " + refType);
 
-            logInfo("sun.java2d.renderer.pixelsize        = " + getInitialImageSize());
-            logInfo("sun.java2d.renderer.subPixel_log2_X  = " + getSubPixel_Log2_X());
-            logInfo("sun.java2d.renderer.subPixel_log2_Y  = " + getSubPixel_Log2_Y());
-            logInfo("sun.java2d.renderer.tileSize_log2    = " + getTileSize_Log2());
-            logInfo("sun.java2d.renderer.useFastMath      = " + isUseFastMath());
+            logInfo("sun.java2d.renderer.pixelsize        = " 
+                    + getInitialImageSize());
+            logInfo("sun.java2d.renderer.subPixel_log2_X  = " 
+                    + getSubPixel_Log2_X());
+            logInfo("sun.java2d.renderer.subPixel_log2_Y  = " 
+                    + getSubPixel_Log2_Y());
+            logInfo("sun.java2d.renderer.tileSize_log2    = " 
+                    + getTileSize_Log2());
+            logInfo("sun.java2d.renderer.useFastMath      = " 
+                    + isUseFastMath());
 
             /* optimisation parameters */
-            logInfo("sun.java2d.renderer.useSimplifier    = " + isUseSimplifier());
+            logInfo("sun.java2d.renderer.useSimplifier    = " 
+                    + isUseSimplifier());
 
             /* debugging parameters */
             logInfo("sun.java2d.renderer.doStats          = " + isDoStats());
@@ -871,13 +890,16 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
 
             /* logging parameters */
             logInfo("sun.java2d.renderer.useJul           = " + isUseJul());
-            logInfo("sun.java2d.renderer.logCreateContext = " + isLogCreateContext());
-            logInfo("sun.java2d.renderer.logUnsafeMalloc  = " + isLogUnsafeMalloc());
+            logInfo("sun.java2d.renderer.logCreateContext = " 
+                    + isLogCreateContext());
+            logInfo("sun.java2d.renderer.logUnsafeMalloc  = " 
+                    + isLogUnsafeMalloc());
 
         } else {
             logInfo("sun.java2d.renderer                  = " + reClass);
         }
-        logInfo("===============================================================================");
+        logInfo("============================================================="
+                + "==================");
     }
 
     /**
@@ -887,10 +909,12 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
     @SuppressWarnings({"unchecked"})
     static RendererContext getRendererContext() {
         RendererContext rdrCtx = null;
-        final Object ref = (useThreadLocal) ? rdrCtxThreadLocal.get() : rdrCtxQueue.poll();
+        final Object ref = (useThreadLocal) ? rdrCtxThreadLocal.get() 
+                           : rdrCtxQueue.poll();
         if (ref != null) {
             // resolve reference:
-            rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref) : ((Reference<RendererContext>) ref).get();
+            rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref) 
+                     : ((Reference<RendererContext>) ref).get();
         }
         /* create a new RendererContext if none is available */
         if (rdrCtx == null) {
@@ -907,7 +931,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
     }
 
     /**
-     * Restore the given RendererContext instance for reuse (used by the queue mode)
+     * Restore the given RendererContext instance for reuse 
+     * (used by the queue mode)
      * @param rdrCtx RendererContext instance
      */
     static void returnRendererContext(final RendererContext rdrCtx) {
@@ -926,7 +951,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
     }
 
     /**
-     * Return the initial pixel size used to define initial arrays (tile AA chunk, alpha line, buckets)
+     * Return the initial pixel size used to define initial arrays 
+     * (tile AA chunk, alpha line, buckets)
      *
      * @return 64 < initial pixel size < 32768 (2048 by default)
      */
@@ -937,7 +963,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
     /**
      * Return the log(2) corresponding to subpixel on x-axis (
      *
-     * @return 1 (2 subpixels) < initial pixel size < 4 (256 subpixels) (3 by default ie 8 subpixels)
+     * @return 1 (2 subpixels) < initial pixel size < 4 (256 subpixels) 
+     * (3 by default ie 8 subpixels)
      */
     public static int getSubPixel_Log2_X() {
         return getInteger("sun.java2d.renderer.subPixel_log2_X", 3, 1, 8);
@@ -946,7 +973,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
     /**
      * Return the log(2) corresponding to subpixel on y-axis (
      *
-     * @return 1 (2 subpixels) < initial pixel size < 8 (256 subpixels) (3 by default ie 8 subpixels)
+     * @return 1 (2 subpixels) < initial pixel size < 8 (256 subpixels) 
+     * (3 by default ie 8 subpixels)
      */
     public static int getSubPixel_Log2_Y() {
         return getInteger("sun.java2d.renderer.subPixel_log2_Y", 3, 1, 8);
@@ -955,7 +983,8 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
     /**
      * Return the log(2) corresponding to the square tile size in pixels
      *
-     * @return 3 (8x8 pixels) < tile size < 8 (256x256 pixels) (5 by default ie 32x32 pixels)
+     * @return 3 (8x8 pixels) < tile size < 8 (256x256 pixels) 
+     * (5 by default ie 32x32 pixels)
      */
     public static int getTileSize_Log2() {
         return getInteger("sun.java2d.renderer.tileSize_log2", 5, 3, 8);
@@ -1003,11 +1032,13 @@ public class MarlinRenderingEngine extends RenderingEngine implements MarlinCons
         return Boolean.valueOf(System.getProperty(key, def));
     }
 
-    public static int getInteger(final String key, final int def, final int min, final int max) {
+    public static int getInteger(final String key, final int def, 
+                                 final int min, final int max) {
         int value = Integer.getInteger(key, def);
         /* check for invalid values */
         if (value < min || value > max) {
-            logInfo("Invalid value for " + key + " = " + value + "; expect value in range[" + min + ", " + max + "] !");
+            logInfo("Invalid value for " + key + " = " + value 
+                    + "; expect value in range[" + min + ", " + max + "] !");
             value = def;
         }
         return value;

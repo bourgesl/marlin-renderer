@@ -44,13 +44,16 @@ final class IntArrayCache implements MarlinConst {
 
     void dumpStats() {
         if (getOp > 0) {
-            logInfo("IntArrayCache[" + arraySize + "]: get: " + getOp + " created: " + createOp + " - returned: " + returnOp + " :: cache size: " + intArrays.size());
+            logInfo("IntArrayCache[" + arraySize + "]: get: " + getOp
+                    + " created: " + createOp + " - returned: " + returnOp
+                    + " :: cache size: " + intArrays.size());
         }
     }
 
     IntArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        this.intArrays = new ArrayDeque<int[]>(6); /* small but enough: almost 1 cache line */
+        /* small but enough: almost 1 cache line */
+        this.intArrays = new ArrayDeque<int[]>(6); 
     }
 
     int[] getArray() {
@@ -71,7 +74,8 @@ final class IntArrayCache implements MarlinConst {
         return new int[arraySize];
     }
 
-    void putArray(final int[] array, final int length, final int fromIndex, final int toIndex) {
+    void putArray(final int[] array, final int length, 
+                  final int fromIndex, final int toIndex) {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -87,10 +91,12 @@ final class IntArrayCache implements MarlinConst {
         intArrays.addLast(array);
     }
 
-    static void fill(final int[] array, final int fromIndex, final int toIndex, final int value) {
+    static void fill(final int[] array, final int fromIndex, final int toIndex, 
+                     final int value) {
         // clear array data:
         /*
-         * Arrays.fill is faster than System.arraycopy(empty array) or Unsafe.setMemory(byte 0)
+         * Arrays.fill is faster than System.arraycopy(empty array)
+         * or Unsafe.setMemory(byte 0)
          */
         if (toIndex != 0) {
             Arrays.fill(array, fromIndex, toIndex, value);
@@ -101,7 +107,8 @@ final class IntArrayCache implements MarlinConst {
         }
     }
 
-    static boolean check(final int[] array, final int fromIndex, final int toIndex, final int value) {
+    static boolean check(final int[] array, final int fromIndex, 
+                         final int toIndex, final int value) {
         if (doChecks) {
             boolean empty = true;
             int i;
@@ -113,7 +120,8 @@ final class IntArrayCache implements MarlinConst {
                 }
             }
             if (!empty) {
-                logException("Invalid array value at " + i + "\n" + Arrays.toString(array), new Throwable());
+                logException("Invalid array value at " + i + "\n"
+                             + Arrays.toString(array), new Throwable());
 
                 // ensure array is correctly filled:
                 Arrays.fill(array, value);
@@ -134,7 +142,8 @@ final class IntArrayCache implements MarlinConst {
         }
 
         // TODO: pool eviction
-        // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
+        // NO clear array data = DIRTY ARRAY ie manual clean 
+        // when getting an array!!
         // fill cache:
         intArrays.addLast(array);
     }

@@ -73,7 +73,9 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     boolean recycleDashes;
 
     /* per-thread initial arrays (large enough to satisfy most usages */
-    private final float[] firstSegmentsBuffer_initial = new float[INITIAL_ARRAY + 1]; // +1 to avoid recycling in Helpers.widenArray()
+    // +1 to avoid recycling in Helpers.widenArray()
+    private final float[] firstSegmentsBuffer_initial = new float[INITIAL_ARRAY
+                                                                  + 1]; 
 
     /**
      * Constructs a <code>Dasher</code>.
@@ -97,7 +99,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
      * @param phase a <code>float</code> containing the dash phase
      * @return this instance
      */
-    Dasher init(final PathConsumer2D out, float[] dash, int dashLen, float phase, boolean recycleDashes) {
+    Dasher init(final PathConsumer2D out, float[] dash, int dashLen, 
+                float phase, boolean recycleDashes) {
         if (phase < 0) {
             throw new IllegalArgumentException("phase < 0 !");
         }
@@ -309,7 +312,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         }
         li.initializeIterationOnCurve(curCurvepts, type);
 
-        int curCurveoff = 0; // initially the current curve is at curCurvepts[0...type]
+        // initially the current curve is at curCurvepts[0...type]
+        int curCurveoff = 0; 
         float lastSplitT = 0;
         float t = 0;
         float leftInThisDashSegment = dash[idx] - phase;
@@ -393,8 +397,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         LengthIterator() {
             this.recCurveStack = new float[recLimit + 1][8];
             this.sides = new Side[recLimit];
-            // if any methods are called without first initializing this object on
-            // a curve, we want it to fail ASAP.
+            // if any methods are called without first initializing this object 
+            // on a curve, we want it to fail ASAP.
             this.nextT = Float.MAX_VALUE;
             this.lenAtNextT = Float.MAX_VALUE;
             this.lenAtLastSplit = Float.MIN_VALUE;
@@ -583,7 +587,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
             _sides[_recLevel] = Side.RIGHT;
             // optimize arraycopy (8 values faster than 6 = type):
-            System.arraycopy(recCurveStack[_recLevel], 0, recCurveStack[_recLevel+1], 0, 8);
+            System.arraycopy(recCurveStack[_recLevel], 0, 
+                             recCurveStack[_recLevel+1], 0, 8);
             _recLevel++;
             
             recLevel = _recLevel;
@@ -627,7 +632,9 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
                 y0 = y1;
             }
 
-            final float lineLen = Helpers.linelen(curve[0], curve[1], curve[curveType-2], curve[curveType-1]);
+            final float lineLen = Helpers.linelen(curve[0], curve[1], 
+                                                  curve[curveType-2], 
+                                                  curve[curveType-1]);
             if (polyLen - lineLen < ERR || recLevel == recLimit) {
                 return (polyLen + lineLen)/2;
             }

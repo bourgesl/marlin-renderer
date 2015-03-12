@@ -52,7 +52,8 @@ final class FastMath implements MarlinConst {
              if (doChecks) {
              final int ceil_math = (int) Math.ceil(x);
              if (ceil != ceil_math) {
-             logInfo("fast ceil(float) is wrong: " + ceil + " :: " + ceil_math + " x: " + x);
+             logInfo("fast ceil(float) is wrong: " + ceil + " :: " + 
+             ceil_math + " x: " + x);
              }
              }
              return ceil;
@@ -77,7 +78,8 @@ final class FastMath implements MarlinConst {
              if (doChecks) {
              final int floor_math = (int) Math.floor(x);
              if (floor != floor_math) {
-             logInfo("fast floor(float) is wrong: " + floor + " :: " + floor_math + " x: " + x);
+             logInfo("fast floor(float) is wrong: " + floor + " :: " + 
+             floor_math + " x: " + x);
              }
              }
              return floor;

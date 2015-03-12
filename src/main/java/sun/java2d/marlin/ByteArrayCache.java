@@ -142,7 +142,8 @@ final class ByteArrayCache implements MarlinConst {
         }
 
         // TODO: pool eviction
-        // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
+        // NO clear array data = DIRTY ARRAY ie manual clean 
+        // when getting an array!!
         // fill cache:
         byteArrays.addLast(array);
     }

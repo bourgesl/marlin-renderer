@@ -47,7 +47,7 @@ final class CollinearSimplifier implements PathConsumer2D {
     public CollinearSimplifier init(PathConsumer2D delegate) {
         this.delegate = delegate;
         this.state = SimplifierState.Empty;
-        
+
         return this; // fluent API
     }
 
@@ -75,7 +75,8 @@ final class CollinearSimplifier implements PathConsumer2D {
     }
 
     @Override
-    public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) {
+    public void curveTo(float x1, float y1, float x2, float y2,
+                        float x3, float y3) {
         emitStashedLine();
         delegate.curveTo(x1, y1, x2, y2, x3, y3);
     }
@@ -136,7 +137,8 @@ final class CollinearSimplifier implements PathConsumer2D {
 
     private float getSlope(float x1, float y1, float x2, float y2) {
         if (y2 == y1) {
-            return (x2 > x1) ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY;
+            return (x2 > x1) ? Float.POSITIVE_INFINITY
+                    : Float.NEGATIVE_INFINITY;
         }
         return (x2 - x1) / (y2 - y1);
     }

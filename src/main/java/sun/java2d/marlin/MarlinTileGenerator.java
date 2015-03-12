@@ -30,7 +30,8 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
     
     private static final int TILE_SIZE = MarlinCache.TILE_SIZE;
 
-    private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE * Renderer.MAX_AA_ALPHA;
+    private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE 
+                                                  * Renderer.MAX_AA_ALPHA;
 
     /* members */
     private final Renderer rdr;
@@ -143,7 +144,8 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
      * once per tile, but not both.
      */
     @Override
-    public void getAlpha(final byte tile[], final int offset, final int rowstride) {
+    public void getAlpha(final byte tile[], final int offset, 
+                                            final int rowstride) {
         if (doMonitors) {
             RendererContext.stats.mon_ptg_getAlpha.start();
         }
@@ -166,7 +168,8 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         }
 
         if (doLogBounds) {
-            MarlinUtils.logInfo("getAlpha = [" + x0 + " ... " + x1 + "[ [" + y0 + " ... " + y1 + "[");
+            MarlinUtils.logInfo("getAlpha = [" + x0 + " ... " + x1 
+                                + "[ [" + y0 + " ... " + y1 + "[");
         }
         
         final int skipRowPixels = (rowstride - (x1 - x0));
@@ -189,7 +192,8 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
                 final int aax0 = rowAAx0[cy]; // inclusive
 
                 if (aax0 < x1) {
-                    // note: cx is the cursor pointer in the tile array (left to right)
+                    // note: cx is the cursor pointer in the tile array 
+                    // (left to right)
                     cx = aax0;
 
                     // ensure cx >= x0
@@ -197,7 +201,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
                         cx = x0;
                     } else {
                         // fill line start until first AA pixel aax0 exclusive:
-                        for (final int end = idx + (cx - x0); idx < end; idx++) {
+                        for (int end = idx + (cx - x0); idx < end; idx++) {
                             tile[idx] = 0;
                         }
                     }
@@ -211,7 +215,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
                     final int off = pos - aax0;
 
                     /* note: System.arrayCopy is slower than copy loop */
-                    for (final int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
+                    for (int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
                         // cx inside tile[x0; x1[ :
                         tile[idx] = rowAAChunk[cx + off];
                     }

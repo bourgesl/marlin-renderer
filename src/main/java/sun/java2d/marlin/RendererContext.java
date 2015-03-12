@@ -34,7 +34,7 @@ import static sun.java2d.marlin.MarlinUtils.getCallerInfo;
 import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 /**
- * This class is a renderer context dedicated to a single thread (using thread local)
+ * This class is a renderer context dedicated to a single thread
  */
 final class RendererContext implements MarlinConst {
 
@@ -42,7 +42,8 @@ final class RendererContext implements MarlinConst {
     /** RendererContext created counter */
     private static final AtomicInteger contextCount = new AtomicInteger(1);
     /** RendererContext statistics */
-    static final RendererStats stats = (doStats || doMonitors) ? RendererStats.createInstance(): null;
+    static final RendererStats stats = (doStats || doMonitors) 
+                                       ? RendererStats.createInstance(): null;
 
     /**
      * Create a new renderer context
@@ -50,7 +51,8 @@ final class RendererContext implements MarlinConst {
      * @return new RendererContext instance
      */
     static RendererContext createContext() {
-        final RendererContext newCtx = new RendererContext("ctx" + Integer.toString(contextCount.getAndIncrement()));
+        final RendererContext newCtx = new RendererContext("ctx" 
+                    + Integer.toString(contextCount.getAndIncrement()));
         if (RendererContext.stats != null) {
             RendererContext.stats.allContexts.add(newCtx);
         }
@@ -171,7 +173,8 @@ final class RendererContext implements MarlinConst {
         }
 
         if (doLogOverSize) {
-            logInfo("getDirtyIntArray[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("getDirtyIntArray[oversize]: length=\t" + length 
+                    + "\tfrom=\t" + getCallerInfo(className));
         }
 
         return new byte[length];
@@ -185,23 +188,28 @@ final class RendererContext implements MarlinConst {
     }
 
     /* TODO: replace with new signature */
-    byte[] widenDirtyArray(final byte[] in, final int cursize, final int numToAdd) {
+    byte[] widenDirtyArray(final byte[] in, final int cursize, 
+                           final int numToAdd) {
         final int length = in.length;
         final int newSize = cursize + numToAdd;
         if (length >= newSize) {
             return in;
         }
 
-        final byte[] res = RendererContext.this.widenDirtyArray(in, length, cursize, newSize);
+        final byte[] res = RendererContext.this.widenDirtyArray(in, length, 
+                                                                cursize, 
+                                                                newSize);
 
         if (doLog) {
-            logInfo("widenDirtyArray int[" + res.length + "]: cursize=\t" + cursize + "\tlength=\t" + length
-                    + "\tnew length=\t" + newSize + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("widenDirtyArray int[" + res.length + "]: cursize=\t" 
+                    + cursize + "\tlength=\t" + length + "\tnew length=\t" 
+                    + newSize + "\tfrom=\t" + getCallerInfo(className));
         }
         return res;
     }
 
-    private byte[] widenDirtyArray(final byte[] in, final int length, final int usedSize, final int newSize) {
+    private byte[] widenDirtyArray(final byte[] in, final int length, 
+                                   final int usedSize, final int newSize) {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -215,7 +223,9 @@ final class RendererContext implements MarlinConst {
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
         // maybe return current array:
-        putDirtyArray(in); // NO clear array data = DIRTY ARRAY ie manual clean when getting an array!!
+        // NO clear array data = DIRTY ARRAY ie manual clean 
+        // when getting an array!!
+        putDirtyArray(in); 
 
         return res;
     }
@@ -231,14 +241,16 @@ final class RendererContext implements MarlinConst {
         }
 
         if (doLogOverSize) {
-            logInfo("getIntArray[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("getIntArray[oversize]: length=\t" + length + "\tfrom=\t" 
+                    + getCallerInfo(className));
         }
 
         return new int[length];
     }
 
     /* TODO: replace with new signature */
-    int[] widenArray(final int[] in, final int length, final int usedSize, final int newSize, final int clearTo) {
+    int[] widenArray(final int[] in, final int length, final int usedSize, 
+                     final int newSize, final int clearTo) {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -257,7 +269,9 @@ final class RendererContext implements MarlinConst {
         return res;
     }
 
-    int[] widenArrayPartially(final int[] in, final int length, final int fromIndex, final int toIndex, final int newSize) {
+    int[] widenArrayPartially(final int[] in, final int length, 
+                              final int fromIndex, final int toIndex, 
+                              final int newSize) {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -268,7 +282,8 @@ final class RendererContext implements MarlinConst {
         // maybe change bucket:
         final int[] res = getIntArray(getNewSize(newSize)); // Use GROW or x2
 
-        System.arraycopy(in, fromIndex, res, fromIndex, toIndex - fromIndex); // copy only used elements
+        // copy only used elements:
+        System.arraycopy(in, fromIndex, res, fromIndex, toIndex - fromIndex); 
 
         // maybe return current array:
         putIntArray(in, fromIndex, toIndex); // only partially cleared
@@ -276,7 +291,8 @@ final class RendererContext implements MarlinConst {
         return res;
     }
 
-    void putIntArray(final int[] array, final int fromIndex, final int toIndex) {
+    void putIntArray(final int[] array, final int fromIndex, 
+                     final int toIndex) {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getIntArrayCache(length).putArray(array, length, fromIndex, toIndex);
@@ -294,14 +310,16 @@ final class RendererContext implements MarlinConst {
         }
 
         if (doLogOverSize) {
-            logInfo("getFloatArray[oversize]: length=\t" + length + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("getFloatArray[oversize]: length=\t" + length + "\tfrom=\t" 
+                    + getCallerInfo(className));
         }
 
         return new float[length];
     }
 
     /* TODO: replace with new signature */
-    float[] widenArray(final float[] in, final int length, final int usedSize, final int newSize, final int clearTo) {
+    float[] widenArray(final float[] in, final int length, final int usedSize, 
+                       final int newSize, final int clearTo) {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -315,15 +333,18 @@ final class RendererContext implements MarlinConst {
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
         // maybe return current array:
-        putFloatArray(in, 0, clearTo); // ensure all array is cleared (grow-reduce algo)
+        // ensure all array is cleared (grow-reduce algo):
+        putFloatArray(in, 0, clearTo); 
 
         return res;
     }
 
-    void putFloatArray(final float[] array, final int fromIndex, final int toIndex) {
+    void putFloatArray(final float[] array, final int fromIndex, 
+                       final int toIndex) {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
-            getFloatArrayCache(length).putArray(array, length, fromIndex, toIndex);
+            getFloatArrayCache(length).putArray(array, length, 
+                                                fromIndex, toIndex);
         }
     }
 }

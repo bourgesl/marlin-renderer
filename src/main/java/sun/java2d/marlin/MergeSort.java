@@ -25,8 +25,9 @@
 package sun.java2d.marlin;
 
 /**
- * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[]) to swap two arrays at the same time (x &
- * y) and use external auxiliary storage for temporary arrays
+ * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[]) 
+ * to swap two arrays at the same time (x & y) 
+ * and use external auxiliary storage for temporary arrays
  */
 final class MergeSort {
 
@@ -47,18 +48,21 @@ final class MergeSort {
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
             // explicit check to avoid bound checks within hot loops (below):
-            throw new ArrayIndexOutOfBoundsException("bad arguments: toIndex=" + toIndex);
+            throw new ArrayIndexOutOfBoundsException("bad arguments: toIndex=" 
+                                                     + toIndex);
         }
 
-        // sort second part only using merge / insertion sort in auxiliary storage (auxX/auxY)
+        // sort second part only using merge / insertion sort 
+        // in auxiliary storage (auxX/auxY)
         mergeSort(x, y, x, auxX, y, auxY, insertionSortIndex, toIndex);
 
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
-        if ((insertionSortIndex == 0) || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
+        if ((insertionSortIndex == 0) 
+            || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
 //            System.out.println("mergeSortNoCopy: ordered");
             // 34 occurences
-            // no initial left part or both sublists (auxX, auxY) are already sorted:
+            // no initial left part or both sublists (auxX, auxY) are sorted:
             // copy back data into (x, y):
             System.arraycopy(auxX, 0, x, 0, toIndex);
             System.arraycopy(auxY, 0, y, 0, toIndex);
@@ -66,7 +70,8 @@ final class MergeSort {
         }
 
         for (int i = 0, p = 0, q = insertionSortIndex; i < toIndex; i++) {
-            if ((q >= toIndex) || ((p < insertionSortIndex) && (auxX[p] <= auxX[q]))) {
+            if ((q >= toIndex) || ((p < insertionSortIndex) 
+                                   && (auxX[p] <= auxX[q]))) {
                 x[i] = auxX[p];
                 y[i] = auxY[p];
                 p++;
@@ -92,8 +97,8 @@ final class MergeSort {
         final int length = high - low;
 
         /*
-         * Tuning parameter: list size at or below which insertion sort will be used in preference to mergesort.
-         * Benchmarks indicates 10 as the best threshold among [5,10,20]
+         * Tuning parameter: list size at or below which insertion sort 
+         * will be used in preference to mergesort.
          */
         if (length <= INSERTION_SORT_THRESHOLD) {
             // Insertion sort on smallest arrays

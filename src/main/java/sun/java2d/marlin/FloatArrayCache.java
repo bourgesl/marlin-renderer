@@ -44,14 +44,16 @@ final class FloatArrayCache implements MarlinConst {
 
     void dumpStats() {
         if (getOp > 0) {
-            logInfo("FloatArrayCache[" + arraySize + "]: get: " + getOp + " created: " + createOp + " - returned: " + returnOp + " :: cache size: " + floatArrays.size());
+            logInfo("FloatArrayCache[" + arraySize + "]: get: " + getOp
+                    + " created: " + createOp + " - returned: " + returnOp
+                    + " :: cache size: " + floatArrays.size());
         }
     }
 
     FloatArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        this.floatArrays = new ArrayDeque<float[]>(6); /* small but enough: almost 1 cache line */
-
+        /* small but enough: almost 1 cache line */
+        this.floatArrays = new ArrayDeque<float[]>(6); 
     }
 
     float[] getArray() {
@@ -73,7 +75,8 @@ final class FloatArrayCache implements MarlinConst {
         return new float[arraySize];
     }
 
-    void putArray(final float[] array, final int length, final int fromIndex, final int toIndex) {
+    void putArray(final float[] array, final int length, final int fromIndex, 
+                  final int toIndex) {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -89,10 +92,12 @@ final class FloatArrayCache implements MarlinConst {
         floatArrays.addLast(array);
     }
 
-    static void fill(final float[] array, final int fromIndex, final int toIndex, final float value) {
+    static void fill(final float[] array, final int fromIndex, 
+                     final int toIndex, final float value) {
         // clear array data:
         /*
-         * Arrays.fill is faster than System.arraycopy(empty array) or Unsafe.setMemory(byte 0)
+         * Arrays.fill is faster than System.arraycopy(empty array) 
+         * or Unsafe.setMemory(byte 0)
          */
         if (toIndex != 0) {
             Arrays.fill(array, fromIndex, toIndex, value);
@@ -103,7 +108,8 @@ final class FloatArrayCache implements MarlinConst {
         }
     }
 
-    static void check(final float[] array, final int fromIndex, final int toIndex, final float value) {
+    static void check(final float[] array, final int fromIndex, 
+                      final int toIndex, final float value) {
         if (doChecks) {
             boolean empty = true;
             int i;
@@ -115,7 +121,8 @@ final class FloatArrayCache implements MarlinConst {
                 }
             }
             if (!empty) {
-                logException("Invalid array value at " + i + "\n" + Arrays.toString(array), new Throwable());
+                logException("Invalid array value at " + i + "\n"
+                             + Arrays.toString(array), new Throwable());
 
                 // ensure array is correctly filled:
                 Arrays.fill(array, value);

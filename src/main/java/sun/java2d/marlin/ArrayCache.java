@@ -84,7 +84,8 @@ public final class ArrayCache implements MarlinConst {
             logInfo("ArrayCache.BUCKETS        = " + BUCKETS);
             logInfo("ArrayCache.MIN_ARRAY_SIZE = " + MIN_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_ARRAY_SIZE = " + MAX_ARRAY_SIZE);
-            logInfo("ArrayCache.MAX_DIRTY_ARRAY_SIZE = " + MAX_DIRTY_ARRAY_SIZE);
+            logInfo("ArrayCache.MAX_DIRTY_ARRAY_SIZE = " + 
+                    MAX_DIRTY_ARRAY_SIZE);
         }
     }
 

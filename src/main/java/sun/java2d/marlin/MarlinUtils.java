@@ -34,12 +34,13 @@ import sun.misc.SharedSecrets;
 public final class MarlinUtils {
 
     /**
-     * logger (use JUL but should use PlatformLogger.getLogger("sun.java2d.marlin") in JDK8 to avoid initializing JUL
+     * TODO: use PlatformLogger.getLogger("sun.java2d.marlin")
      */
     static final java.util.logging.Logger log;
 
     static {
-        log = (useJUL) ? java.util.logging.Logger.getLogger(MarlinConst.class.getPackage().getName()) : null;
+        log = (useJUL) ? java.util.logging.Logger.getLogger("sun.java2d.marlin")
+              : null;
     }
 
     private MarlinUtils() {

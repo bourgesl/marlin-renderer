@@ -78,7 +78,8 @@ public class StatLong {
 
     public final StringBuilder toString(final StringBuilder sb) {
         sb.append(name).append('[').append(count);
-        sb.append("] sum: ").append(sum).append(" avg: ").append(trimTo3Digits(((double) sum) / count));
+        sb.append("] sum: ").append(sum).append(" avg: ");
+        sb.append(trimTo3Digits(((double) sum) / count));
         sb.append(" [").append(min).append(" | ").append(max).append("]");
         return sb;
     }

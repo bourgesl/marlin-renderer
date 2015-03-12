@@ -111,8 +111,9 @@ public class AAShapePipe
         renderTiles(sg, ts.computeBBox(ux1, uy1, ux2, uy2), aatg, abox, ts);
     }
 
-    /** Per-thread TileState (~1K very small so do not use any Soft or Weak Reference) */
-    private static final ThreadLocal<TileState> tileStateThreadLocal = new ThreadLocal<TileState>() {
+    /** Per-thread TileState (~1K very small so do not use any Weak Reference) */
+    private static final ThreadLocal<TileState> tileStateThreadLocal = 
+            new ThreadLocal<TileState>() {
         @Override
         protected TileState initialValue() {
             return new TileState();
@@ -201,7 +202,8 @@ public class AAShapePipe
         private final Rectangle2D.Double bbox2D = new Rectangle2D.Double();
 
         static {
-            System.out.println("INFO: AAShapePipe: overriding JDK implementation: marlin-renderer TILE patch enabled.");
+            System.out.println("INFO: AAShapePipe: overriding JDK implementation"
+                               + ": marlin-renderer TILE patch enabled.");
         }
         
         byte[] getAlphaTile(int len) {

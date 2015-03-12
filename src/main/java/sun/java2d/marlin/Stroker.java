@@ -920,7 +920,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     // finds values of t where the curve in pts should be subdivided in order
     // to get good offset curves a distance of w away from the middle curve.
     // Stores the points in ts, and returns how many of them there were.
-    private static int findSubdivPoints(final Curve c, float[] pts, float[] ts, final int type, final float w)
+    private static int findSubdivPoints(final Curve c, float[] pts, float[] ts, 
+                                        final int type, final float w)
     {
         final float x12 = pts[2] - pts[0];
         final float y12 = pts[3] - pts[1];
@@ -1154,7 +1155,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         /** per-thread renderer context */
         final RendererContext rdrCtx;
 
-        /* per-thread initial arrays (large enough to satisfy most usages (8192) */
+        /* per-thread initial arrays (large enough to satisfy most usages: 8192) */
         // +1 to avoid recycling in Helpers.widenArray()
         private final float[] curves_initial = new float[INITIAL_LARGE_ARRAY + 1]; // 32K
         private final int[] curveTypes_initial = new int[INITIAL_LARGE_ARRAY + 1]; // 32K
@@ -1215,11 +1216,13 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             // LBO: use Helpers widenArray
             if (end + n >= curves.length) {
                 updateUsed();
-                curves = Helpers.widenArray(rdrCtx, curves, end, n, curvesUseMark);
+                curves = Helpers.widenArray(rdrCtx, curves, end, n, 
+                                            curvesUseMark);
             }
             if (numCurves + 1 >= curveTypes.length) {
                 updateUsed();
-                curveTypes = Helpers.widenArray(rdrCtx, curveTypes, numCurves, 1, curveTypesUseMark);
+                curveTypes = Helpers.widenArray(rdrCtx, curveTypes, numCurves, 
+                                                1, curveTypesUseMark);
             }
         }
 
@@ -1256,8 +1259,12 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         
         void updateUsed() {
             // update used marks:
-            if (numCurves > curveTypesUseMark) { curveTypesUseMark = numCurves; }
-            if (end > curvesUseMark) { curvesUseMark = end; }
+            if (numCurves > curveTypesUseMark) { 
+                curveTypesUseMark = numCurves; 
+            }
+            if (end > curvesUseMark) { 
+                curvesUseMark = end; 
+            }
         }
 
         void popAll(PathConsumer2D io) {
@@ -1307,7 +1314,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                     ret += "line: ";
                     break;
                 }
-                ret += Arrays.toString(Arrays.copyOfRange(curves, e, e+type-2)) + "\n";
+                ret += Arrays.toString(Arrays.copyOfRange(curves, e, e+type-2)) 
+                                       + "\n";
             }
             return ret;
         }

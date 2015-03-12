@@ -78,14 +78,15 @@ interface MarlinConst {
     /** 2048 pixel (width x height) for initial capacity */
     static final int INITIAL_PIXEL_DIM    = MarlinRenderingEngine.getInitialImageSize();
 
-    /* only odd numbers allowed below */
+    /* typical array sizes: only odd numbers allowed below */
     static final int INITIAL_ARRAY        = 256;
-    static final int INITIAL_SMALL_ARRAY  = 1024;  // large enough to avoid 99% array resizing for active edge lists
-    static final int INITIAL_MEDIUM_ARRAY = 4096;  // large enough to avoid 99% array resizing
-    static final int INITIAL_LARGE_ARRAY  = 8192;  // large enough to avoid 99% array resizing
-    static final int INITIAL_ARRAY_16K    = 16384; // very large to avoid 99.99% array resizing
-    static final int INITIAL_ARRAY_32K    = 32768; // very large to avoid 99.99% array resizing
-    static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_DIM; /* alpha row dimension */
+    static final int INITIAL_SMALL_ARRAY  = 1024;
+    static final int INITIAL_MEDIUM_ARRAY = 4096;
+    static final int INITIAL_LARGE_ARRAY  = 8192;
+    static final int INITIAL_ARRAY_16K    = 16384;
+    static final int INITIAL_ARRAY_32K    = 32768;
+    /** alpha row dimension */
+    static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_DIM; 
     
     /* zero value as byte */
     static final byte BYTE_0 = (byte) 0;

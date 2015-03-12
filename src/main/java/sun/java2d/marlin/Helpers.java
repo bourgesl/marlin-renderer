@@ -153,7 +153,8 @@ final class Helpers implements MarlinConst {
     }
 
     /* TODO: replace with new signature see: widenArrayPartially() */
-    static float[] widenArray(final RendererContext rdrCtx, final float[] in, final int cursize, 
+    static float[] widenArray(final RendererContext rdrCtx, final float[] in, 
+                              final int cursize, 
                               final int numToAdd, final int clearTo) {
         
         final int length = in.length;
@@ -162,17 +163,20 @@ final class Helpers implements MarlinConst {
             return in;
         }
         
-        final float[] res = rdrCtx.widenArray(in, length, cursize, newSize, clearTo);
+        final float[] res = rdrCtx.widenArray(in, length, cursize, newSize, 
+                                              clearTo);
         
         if (doLog) {
-            logInfo("widenArray float[" + res.length + "]: cursize=\t" + cursize +"\tlength=\t" + length 
-                    + "\tnew length=\t" + newSize + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("widenArray float[" + res.length + "]: cursize=\t" + cursize
+                    + "\tlength=\t" + length + "\tnew length=\t" + newSize
+                    + "\tfrom=\t" + getCallerInfo(className));
         }
         return res;
     }
 
     /* TODO: replace with new signature see: widenArrayPartially() */
-    static int[] widenArray(final RendererContext rdrCtx, final int[] in, final int cursize, 
+    static int[] widenArray(final RendererContext rdrCtx, final int[] in, 
+                            final int cursize, 
                             final int numToAdd, final int clearTo) {
         
         final int length = in.length;
@@ -181,28 +185,35 @@ final class Helpers implements MarlinConst {
             return in;
         }
 
-        final int[] res = rdrCtx.widenArray(in, length, cursize, newSize, clearTo);
+        final int[] res = rdrCtx.widenArray(in, length, cursize, newSize, 
+                                            clearTo);
 
         if (doLog) {
-            logInfo("widenArray int[" + res.length + "]: cursize=\t" + cursize +"\tlength=\t" + length 
-                    + "\tnew length=\t" + newSize + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("widenArray int[" + res.length + "]: cursize=\t" + cursize
+                    + "\tlength=\t" + length + "\tnew length=\t" + newSize 
+                    + "\tfrom=\t" + getCallerInfo(className));
         }
         return res;
     }
 
-    static int[] widenArrayPartially(final RendererContext rdrCtx, final int[] in, 
-                                     final int fromIndex, final int toIndex, final int newSize) {
+    static int[] widenArrayPartially(final RendererContext rdrCtx, 
+                                     final int[] in, 
+                                     final int fromIndex, final int toIndex, 
+                                     final int newSize) {
         
         final int length = in.length;
         if (length >= newSize) {
             return in;
         }
 
-        final int[] res = rdrCtx.widenArrayPartially(in, length, fromIndex, toIndex, newSize);
+        final int[] res = rdrCtx.widenArrayPartially(in, length, fromIndex, 
+                                                     toIndex, newSize);
 
         if (doLog) {
-            logInfo("widenArray int[" + res.length + "]: fromIndex=\t" + fromIndex +"\ttoIndex=\t" + toIndex +"\tlength=\t" + length 
-                    + "\tnew length=\t" + newSize + "\tfrom=\t" + getCallerInfo(className));
+            logInfo("widenArray int[" + res.length + "]: fromIndex=\t" 
+                    + fromIndex + "\ttoIndex=\t" + toIndex + "\tlength=\t" 
+                    + length + "\tnew length=\t" + newSize + "\tfrom=\t"
+                    + getCallerInfo(className));
         }
         return res;
     }

@@ -164,7 +164,8 @@ public final class RendererStats implements MarlinConst {
                 final long total = mon_pre_getAATileGenerator.sum;
                 if (total != 0L) {
                     for (Monitor monitor : monitors) {
-                        logInfo(monitor.name + " : " + ((100d * monitor.sum) / total) + " %");
+                        logInfo(monitor.name + " : " 
+                                + ((100d * monitor.sum) / total) + " %");
                     }
                 }
                 if (doFlushMonitors) {
