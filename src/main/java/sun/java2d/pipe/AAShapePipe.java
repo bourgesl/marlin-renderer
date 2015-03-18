@@ -43,6 +43,15 @@ public class AAShapePipe
 {
     static RenderingEngine renderengine = RenderingEngine.getInstance();
 
+    /** Per-thread TileState (~1K very small so do not use any Weak Reference) */
+    private static final ThreadLocal<TileState> tileStateThreadLocal = 
+            new ThreadLocal<TileState>() {
+        @Override
+        protected TileState initialValue() {
+            return new TileState();
+        }
+    };
+
     CompositePipe outpipe;
 
     public AAShapePipe(CompositePipe pipe) {
@@ -76,6 +85,7 @@ public class AAShapePipe
         Region clip = sg.getCompClip();
         final TileState ts = tileStateThreadLocal.get();
         final int[] abox = ts.abox;
+        
         AATileGenerator aatg =
             renderengine.getAATileGenerator(x, y, dx1, dy1, dx2, dy2, 0, 0,
                                             clip, abox);
@@ -98,9 +108,10 @@ public class AAShapePipe
         Region clip = sg.getCompClip();
         final TileState ts = tileStateThreadLocal.get();
         final int[] abox = ts.abox;
+        
         AATileGenerator aatg =
-        renderengine.getAATileGenerator(x, y, dx1, dy1, dx2, dy2, lw1, lw2,
-                                        clip, abox);
+            renderengine.getAATileGenerator(x, y, dx1, dy1, dx2, dy2, lw1, lw2,
+                                            clip, abox);
         if (aatg == null) {
             // Nothing to render
             return;
@@ -111,15 +122,6 @@ public class AAShapePipe
         renderTiles(sg, ts.computeBBox(ux1, uy1, ux2, uy2), aatg, abox, ts);
     }
 
-    /** Per-thread TileState (~1K very small so do not use any Weak Reference) */
-    private static final ThreadLocal<TileState> tileStateThreadLocal = 
-            new ThreadLocal<TileState>() {
-        @Override
-        protected TileState initialValue() {
-            return new TileState();
-        }
-    };
-
     public void renderPath(SunGraphics2D sg, Shape s, BasicStroke bs) {
         boolean adjust = (bs != null &&
                           sg.strokeHint != SunHints.INTVAL_STROKE_PURE);
@@ -128,6 +130,7 @@ public class AAShapePipe
         Region clip = sg.getCompClip();
         final TileState ts = tileStateThreadLocal.get();
         final int[] abox = ts.abox;
+        
         AATileGenerator aatg =
             renderengine.getAATileGenerator(s, sg.transform, clip,
                                             bs, thin, adjust, abox);
@@ -140,8 +143,7 @@ public class AAShapePipe
     }
 
     public void renderTiles(SunGraphics2D sg, Shape s,
-                            AATileGenerator aatg, int abox[],
-                            TileState ts)
+                            AATileGenerator aatg, int abox[], TileState ts)
     {
         Object context = null;
         try {
@@ -192,7 +194,7 @@ public class AAShapePipe
 
     /** Tile state used by AAShapePipe */
     static final class TileState {
-        /** cached tile (32x32 tile by default) */
+        /** cached tile (32 x 32 tile by default) */
         private byte[] theTile = new byte[32 * 32];
         /** dirty aabox array */
         final int[] abox = new int[4];
@@ -200,16 +202,11 @@ public class AAShapePipe
         private final Rectangle dev = new Rectangle();
         /** dirty bbox rectangle2D.Double */
         private final Rectangle2D.Double bbox2D = new Rectangle2D.Double();
-
-        static {
-            System.out.println("INFO: AAShapePipe: overriding JDK implementation"
-                               + ": marlin-renderer TILE patch enabled.");
-        }
         
         byte[] getAlphaTile(int len) {
             byte[] t = theTile;
             if (t.length < len) {
-                // create a larger theTile and may free current theTile (too small)
+                // create a larger tile and may free current theTile (too small)
                 theTile = t = new byte[len];
             }
             return t;
@@ -225,7 +222,8 @@ public class AAShapePipe
         }
 
         Rectangle2D computeBBox(double ux1, double uy1,
-                                double ux2, double uy2) {
+                                double ux2, double uy2)
+        {
             if ((ux2 -= ux1) < 0.0) {
                 ux1 += ux2;
                 ux2 = -ux2;

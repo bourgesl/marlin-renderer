@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import sun.awt.geom.PathConsumer2D;
@@ -33,7 +34,7 @@ final class CollinearSimplifier implements PathConsumer2D {
         Empty, PreviousPoint, PreviousLine
     };
     /* slope precision threshold */
-    static final float EPS = 1e-3f; /* LBO: aaime proposed 1e-3f */
+    static final float EPS = 1e-4f; /* aaime proposed 1e-3f */
 
     /* members */
     PathConsumer2D delegate;

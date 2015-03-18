@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import static java.lang.Math.PI;
@@ -33,6 +34,7 @@ import static sun.java2d.marlin.MarlinUtils.getCallerInfo;
 import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 final class Helpers implements MarlinConst {
+
     private static final String className = Helpers.class.getName();
 
     private Helpers() { 
@@ -155,8 +157,8 @@ final class Helpers implements MarlinConst {
     /* TODO: replace with new signature see: widenArrayPartially() */
     static float[] widenArray(final RendererContext rdrCtx, final float[] in, 
                               final int cursize, 
-                              final int numToAdd, final int clearTo) {
-        
+                              final int numToAdd, final int clearTo)
+    {
         final int length = in.length;
         final int newSize = cursize + numToAdd;
         if (length >= newSize) {
@@ -177,8 +179,8 @@ final class Helpers implements MarlinConst {
     /* TODO: replace with new signature see: widenArrayPartially() */
     static int[] widenArray(final RendererContext rdrCtx, final int[] in, 
                             final int cursize, 
-                            final int numToAdd, final int clearTo) {
-        
+                            final int numToAdd, final int clearTo)
+    {
         final int length = in.length;
         final int newSize = cursize + numToAdd;
         if (length >= newSize) {
@@ -199,8 +201,8 @@ final class Helpers implements MarlinConst {
     static int[] widenArrayPartially(final RendererContext rdrCtx, 
                                      final int[] in, 
                                      final int fromIndex, final int toIndex, 
-                                     final int newSize) {
-        
+                                     final int newSize)
+    {
         final int length = in.length;
         if (length >= newSize) {
             return in;
@@ -217,7 +219,7 @@ final class Helpers implements MarlinConst {
         }
         return res;
     }
-    
+
     static float evalCubic(final float a, final float b,
                            final float c, final float d,
                            final float t)
@@ -245,7 +247,7 @@ final class Helpers implements MarlinConst {
     }
 
     static float polyLineLength(float[] poly, final int off, final int nCoords) {
-        // assert nCoords % 2 == 0 && poly.length >= off + nCoords : "";
+        assert nCoords % 2 == 0 && poly.length >= off + nCoords : "";
         float acc = 0;
         for (int i = off + 2; i < off + nCoords; i += 2) {
             acc += linelen(poly[i], poly[i+1], poly[i-2], poly[i-1]);

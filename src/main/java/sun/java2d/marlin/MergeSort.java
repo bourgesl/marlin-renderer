@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 /**
@@ -43,8 +44,8 @@ final class MergeSort {
     static void mergeSortNoCopy(final int[] x, final int[] y,
                                 final int[] auxX, final int[] auxY,
                                 final int toIndex,
-                                final int insertionSortIndex) {
-
+                                final int insertionSortIndex)
+    {
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
             // explicit check to avoid bound checks within hot loops (below):
@@ -92,8 +93,8 @@ final class MergeSort {
     private static void mergeSort(final int[] refX, final int[] refY,
                                   final int[] srcX, final int[] dstX,
                                   final int[] srcY, final int[] dstY,
-                                  final int low, final int high) {
-
+                                  final int low, final int high)
+    {
         final int length = high - low;
 
         /*

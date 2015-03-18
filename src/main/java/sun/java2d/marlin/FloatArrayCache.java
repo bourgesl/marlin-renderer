@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.util.ArrayDeque;
@@ -75,8 +76,9 @@ final class FloatArrayCache implements MarlinConst {
         return new float[arraySize];
     }
 
-    void putArray(final float[] array, final int length, final int fromIndex, 
-                  final int toIndex) {
+    void putArray(final float[] array, final int length, 
+                  final int fromIndex, final int toIndex)
+    {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -93,7 +95,8 @@ final class FloatArrayCache implements MarlinConst {
     }
 
     static void fill(final float[] array, final int fromIndex, 
-                     final int toIndex, final float value) {
+                     final int toIndex, final float value)
+    {
         // clear array data:
         /*
          * Arrays.fill is faster than System.arraycopy(empty array) 
@@ -109,7 +112,8 @@ final class FloatArrayCache implements MarlinConst {
     }
 
     static void check(final float[] array, final int fromIndex, 
-                      final int toIndex, final float value) {
+                      final int toIndex, final float value)
+    {
         if (doChecks) {
             boolean empty = true;
             int i;

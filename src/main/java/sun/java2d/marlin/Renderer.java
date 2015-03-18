@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.lang.reflect.Field;
@@ -53,13 +54,13 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     
 
     /* constants */
-    /* hard coded 8x8 antialiasing -> 64 subpixels */
-    /* may use System properties to define expected subpixels (4x4, 8x8, 16x16) */
+    /* subpixels expressed as log2 */
     public final static int SUBPIXEL_LG_POSITIONS_X = MarlinRenderingEngine.getSubPixel_Log2_X();
     public final static int SUBPIXEL_LG_POSITIONS_Y = MarlinRenderingEngine.getSubPixel_Log2_Y();
+    /* number of subpixels */
     public final static int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
     public final static int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
-    // LBO: use float to make tosubpix methods faster (no int to float conversion)
+    // use float to make tosubpix methods faster (no int to float conversion)
     public final static float f_SUBPIXEL_POSITIONS_X = (float) SUBPIXEL_POSITIONS_X;
     public final static float f_SUBPIXEL_POSITIONS_Y = (float) SUBPIXEL_POSITIONS_Y;
     public final static int SUBPIXEL_MASK_X = SUBPIXEL_POSITIONS_X - 1;
@@ -137,7 +138,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     /* auxiliary storage for edge pointers (merge sort) */
     private int[] aux_edgePtrs;
     
-    // LBO: max used for both edgePtrs and crossings
+    /* max used for both edgePtrs and crossings */
     private int activeEdgeMaxUsed;
 
     /* per-thread initial arrays (large enough to satisfy most usages) (1024) */
@@ -174,14 +175,14 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     // X0, Y0, D*[X|Y], COUNT; not variables used for computing scanline crossings).
     private void quadBreakIntoLinesAndAdd(float x0, float y0,
             final Curve c,
-            final float x2, final float y2) {
-        
+            final float x2, final float y2)
+    {
         int count = QUAD_COUNT; /* 2^countlg where count_lg=4 */
         float icount2 = QUAD_INV_COUNT_SQ; /* 1 / count^2 */
         float maxDD = Math.max(c.dbx * icount2, c.dby * icount2);
 
         final float _QUAD_DEC_BND = QUAD_DEC_BND;
-        
+
         while (maxDD > _QUAD_DEC_BND) { /* 32 */
             maxDD *= 0.25f;
             count <<= 1;
@@ -189,7 +190,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
         float icount = 1f / count;
         icount2 = icount * icount; /* 1 / count^2 */
-        
+
         final float ddx = c.dbx * icount2;
         final float ddy = c.dby * icount2;
         float dx = c.bx * icount2 + c.cx * icount;
@@ -221,9 +222,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     // Another alternative would be to pass all the control points, and call c.set
     // here, but then too many numbers are passed around.
     private void curveBreakIntoLinesAndAdd(float x0, float y0,
-            final Curve c,
-            final float x3, final float y3) {
-        
+                                           final Curve c,
+                                           final float x3, final float y3)
+    {
         final float icount = CUB_INV_COUNT;    /* 1 / count */
         final float icount2 = CUB_INV_COUNT_2; /* 1 / count^2 */
         final float icount3 = CUB_INV_COUNT_3; /* 1 / count^3 */
@@ -512,7 +513,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             }
         }
         if (doCleanDirty) {
-            // LBO: keep crossings and edgePtrs dirty
+            // keep crossings and edgePtrs dirty
             IntArrayCache.fill(crossings,     0, activeEdgeMaxUsed, 0);
             IntArrayCache.fill(aux_crossings, 0, activeEdgeMaxUsed, 0);
             IntArrayCache.fill(edgePtrs,      0, activeEdgeMaxUsed, 0);
@@ -603,7 +604,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     @Override
     public void curveTo(float x1, float y1,
             float x2, float y2,
-            float x3, float y3) {
+            float x3, float y3)
+    {
         final float xe = tosubpixx(x3);
         final float ye = tosubpixy(y3);
         curve.set(x0, y0, tosubpixx(x1), tosubpixy(y1), tosubpixx(x2), tosubpixy(y2), xe, ye);
@@ -668,7 +670,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // merge sort auxiliary storage:
         int[] _aux_crossings = this.aux_crossings;
         int[] _aux_edgePtrs  = this.aux_edgePtrs;
-        
+
         // copy constants:
         final int _OFF_SLOPE   = OFF_SLOPE;
         final int _OFF_NEXT    = OFF_NEXT;
@@ -712,7 +714,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
         int low, high, mid, prevNumCrossings;
         boolean useBinarySearch;
-        
+
         int lastY = -1; // last emited row
 
 
@@ -729,7 +731,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 if (doStats) {
                     RendererContext.stats.stat_rdr_activeEdges_updates.add(numCrossings);
                 }
-                
+
                 // last bit set to 1 means that edges ends
                 if ((bucketcount & 0x1) != 0) {
                     /* note: edge[YMAX] is multiplied by 2 so compare it with 2*y + 1 (any orientation) */
@@ -783,7 +785,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                         // random access so use unsafe:
                         ecur = _unsafe.getInt(addr + ecur);
                     }
-                    
+
                     if (crossingsLen < numCrossings) {
                         // Get larger array:
                         if (_crossings != crossings_initial) {
@@ -797,7 +799,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                         this.aux_crossings = _aux_crossings = rdrCtx.getIntArray(numCrossings);
                         crossingsLen   = _crossings.length;
                     }
-                    // LBO: max used mark
+                    // update max used mark
                     if (numCrossings > _arrayMaxUsed) {
                         _arrayMaxUsed = numCrossings;
                     }
@@ -815,21 +817,21 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                         RendererContext.stats.hist_rdr_crossings.add(numCrossings);
                         RendererContext.stats.hist_rdr_crossings_adds.add(ptrLen);
                     }
-                    
+
                     /*
                      * Tuning parameter: list size at or higher which binary insertion sort will be used 
                      * in preference to straight insertion sort (to reduce minimize comparisons).
                      * Benchmarks indicates 20 as the best threshold among [10,15,20,25]
                      */
                     useBinarySearch = (numCrossings >= 20);
-                    
+
                     // if small enough:
                     lastCross = _MIN_VALUE;
 
                     for (i = 0; i < numCrossings; i++) {
                         /* get the pointer to the edge */
                         ecur = _edgePtrs[i];
-                        
+
                         // random access so use unsafe:
                         addr = addr0 + ecur; /* ecur + OFF_F_CURX */
                         f_curx = _unsafe.getFloat(addr);
@@ -851,7 +853,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                             if (doStats) {
                                 RendererContext.stats.stat_rdr_crossings_sorts.add(i);
                             }
-                            
+
                             /* use binary search for newly added edges / crossings if arrays are large enough */
                             if (useBinarySearch && (i >= prevNumCrossings)) { 
                                 if (doStats) {
@@ -961,7 +963,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                                               _aux_crossings, _aux_edgePtrs, 
                                               numCrossings,   prevNumCrossings);
                 }
-                
+
                 // reset ptrLen
                 ptrLen = 0;
                 // --- from former ScanLineIterator.next()
@@ -982,7 +984,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 if (tmp > pix_maxX) {
                     pix_maxX = tmp;
                 }
-                
+
                 /* compute pixel coverages */
                 curxo = _crossings[0];
                 prev = curx = curxo >> 1;
@@ -991,14 +993,14 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
                 if (windingRuleEvenOdd) {
                     sum = crorientation;
-                        
+
                     // Even Odd winding rule: take care of mask ie sum(orientations)
                     for (i = 1; i < numCrossings; i++) {
                         curxo = _crossings[i];
                         curx  =  curxo >> 1;
                         // to turn {0, 1} into {-1, 1}, multiply by 2 and subtract 1.
                         crorientation = ((curxo & 0x1) << 1) - 1; /* last bit contains orientation (0 or 1) */
-                        
+
                         if ((sum & 0x1) != 0) {
                             x0 = (prev > bboxx0) ? prev : bboxx0;
                             x1 = (curx < bboxx1) ? curx : bboxx1;
@@ -1036,7 +1038,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                     // Non-zero winding rule: optimize that case (default) and avoid processing intermediate crossings
                     for (i = 1, sum = 0;; i++) {
                         sum += crorientation;
-                        
+
                         if (sum != 0) {
                             /* prev = min(curx) */
                             if (prev > curx) {
@@ -1117,7 +1119,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // update member:
         edgeCount = numCrossings;
 
-        // LBO: max used mark
+        // update max used mark
         activeEdgeMaxUsed = _arrayMaxUsed;
     }
 
@@ -1128,7 +1130,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         }
 
         /* TODO: improve accuracy using correct float rounding to int ie use ceil(x - 0.5f) */
-        
+
         /* bounds as inclusive intervals */
         final int spminX = Math.max(FastMath.ceil(edgeMinX), boundsMinX);
         final int spmaxX = Math.min(FastMath.ceil(edgeMaxX), boundsMaxX - 1);
@@ -1146,7 +1148,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         if ((spminX > spmaxX) || (spminY > spmaxY)) { 
             return false;
         }
-        
+
         /* half open intervals */
         final int pminX =  spminX                    >> SUBPIXEL_LG_POSITIONS_X; // inclusive
         final int pmaxX = (spmaxX + SUBPIXEL_MASK_X) >> SUBPIXEL_LG_POSITIONS_X; // exclusive
@@ -1156,7 +1158,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // store BBox to answer ptg.getBBox():
         this.cache.init(pminX, pminY, pmaxX, pmaxY);
 
-        // LBO: memorize the rendering bounding box:
+        // memorize the rendering bounding box:
         /* note: bbox_spminX and bbox_spmaxX must be pixel boundaries to have correct coverage computation */
         bbox_spminX = pminX << SUBPIXEL_LG_POSITIONS_X; // inclusive
         bbox_spmaxX = pmaxX << SUBPIXEL_LG_POSITIONS_X; // exclusive
@@ -1170,7 +1172,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                                 + bbox_spmaxX + "[ [" + bbox_spminY + " ... " 
                                 + bbox_spmaxY + "[");
         }
-        
+
         // Prepare alpha line:
         // add 2 to better deal with the last pixel in a pixel row.
         final int width = (pmaxX - pminX) + 2;
@@ -1201,7 +1203,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             // process a complete tile line ie scanlines for 32 rows
             final int spmaxY = Math.min(bbox_spmaxY, spminY + SUBPIXEL_TILE);
 
-            // LBO: hack to process tile line [0 - 32]
+            // process tile line [0 - 32]
             cache.resetTileLine(pminY);
 
             if (doMonitors) {

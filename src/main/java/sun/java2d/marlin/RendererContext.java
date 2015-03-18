@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.awt.geom.Path2D;
@@ -189,7 +190,8 @@ final class RendererContext implements MarlinConst {
 
     /* TODO: replace with new signature */
     byte[] widenDirtyArray(final byte[] in, final int cursize, 
-                           final int numToAdd) {
+                           final int numToAdd)
+    {
         final int length = in.length;
         final int newSize = cursize + numToAdd;
         if (length >= newSize) {
@@ -209,7 +211,8 @@ final class RendererContext implements MarlinConst {
     }
 
     private byte[] widenDirtyArray(final byte[] in, final int length, 
-                                   final int usedSize, final int newSize) {
+                                   final int usedSize, final int newSize)
+    {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -250,7 +253,8 @@ final class RendererContext implements MarlinConst {
 
     /* TODO: replace with new signature */
     int[] widenArray(final int[] in, final int length, final int usedSize, 
-                     final int newSize, final int clearTo) {
+                     final int newSize, final int clearTo)
+    {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -271,7 +275,8 @@ final class RendererContext implements MarlinConst {
 
     int[] widenArrayPartially(final int[] in, final int length, 
                               final int fromIndex, final int toIndex, 
-                              final int newSize) {
+                              final int newSize)
+    {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -292,7 +297,8 @@ final class RendererContext implements MarlinConst {
     }
 
     void putIntArray(final int[] array, final int fromIndex, 
-                     final int toIndex) {
+                     final int toIndex)
+    {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getIntArrayCache(length).putArray(array, length, fromIndex, toIndex);
@@ -319,7 +325,8 @@ final class RendererContext implements MarlinConst {
 
     /* TODO: replace with new signature */
     float[] widenArray(final float[] in, final int length, final int usedSize, 
-                       final int newSize, final int clearTo) {
+                       final int newSize, final int clearTo)
+    {
         if (doChecks && length >= newSize) {
             return in;
         }
@@ -340,7 +347,8 @@ final class RendererContext implements MarlinConst {
     }
 
     void putFloatArray(final float[] array, final int fromIndex, 
-                       final int toIndex) {
+                       final int toIndex)
+    {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getFloatArrayCache(length).putArray(array, length, 

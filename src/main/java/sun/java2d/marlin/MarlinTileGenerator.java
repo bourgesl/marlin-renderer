@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import sun.java2d.pipe.AATileGenerator;
@@ -131,7 +132,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
             y += TILE_SIZE;
 
             if (y < cache.bboxY1) {
-                // LBO: compute rowAAStride for the tile line
+                // compute for the tile line
                 // [ y; max(y + TILE_SIZE, bboxY1) ]
                 this.rdr.endRendering(y);
             }
@@ -145,7 +146,8 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
      */
     @Override
     public void getAlpha(final byte tile[], final int offset, 
-                                            final int rowstride) {
+                                            final int rowstride) 
+    {
         if (doMonitors) {
             RendererContext.stats.mon_ptg_getAlpha.start();
         }
@@ -174,12 +176,12 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         
         final int skipRowPixels = (rowstride - (x1 - x0));
 
-        // LBO: hack to process tile line [0 - 32[
+        // note: process tile line [0 - 32[
         y1 -= y0;
         y0 = 0;
 
         int idx = offset;
-        
+
         for (int cy = y0; cy < y1; cy++) {
             // empty line (default)
             int cx = x0;

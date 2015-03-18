@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.util.ArrayDeque;
@@ -75,7 +76,8 @@ final class ByteArrayCache implements MarlinConst {
     }
 
     void putArray(final byte[] array, final int length,
-            final int fromIndex, final int toIndex) {
+                  final int fromIndex, final int toIndex)
+    {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -91,8 +93,9 @@ final class ByteArrayCache implements MarlinConst {
         byteArrays.addLast(array);
     }
 
-    static void fill(final byte[] array, final int fromIndex, final int toIndex,
-            final byte value) {
+    static void fill(final byte[] array, final int fromIndex, 
+                     final int toIndex, final byte value)
+    {
         // clear array data:
         /*
          * Arrays.fill is faster than System.arraycopy(empty array) 
@@ -108,7 +111,8 @@ final class ByteArrayCache implements MarlinConst {
     }
 
     static boolean check(final byte[] array, final int fromIndex,
-            final int toIndex, final byte value) {
+                         final int toIndex, final byte value)
+    {
         if (doChecks) {
             boolean empty = true;
             int i;

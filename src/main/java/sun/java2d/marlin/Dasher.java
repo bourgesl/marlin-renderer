@@ -22,10 +22,12 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.util.Arrays;
 import sun.awt.geom.PathConsumer2D;
+
 /**
  * The <code>Dasher</code> class takes a series of linear commands
  * (<code>moveTo</code>, <code>lineTo</code>, <code>close</code> and
@@ -38,6 +40,7 @@ import sun.awt.geom.PathConsumer2D;
  *
  */
 final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
+
     final static int recLimit = 4;
     final static float ERR = 0.01f;
     final static float minTincrement = 1f / (1 << recLimit);
@@ -65,7 +68,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
     /** per-thread renderer context */
     final RendererContext rdrCtx;
-    
+
     /* dashes array (dirty) */
     final float[] dashes_initial = new float[INITIAL_ARRAY];
 
@@ -74,8 +77,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
     /* per-thread initial arrays (large enough to satisfy most usages */
     // +1 to avoid recycling in Helpers.widenArray()
-    private final float[] firstSegmentsBuffer_initial = new float[INITIAL_ARRAY
-                                                                  + 1]; 
+    private final float[] firstSegmentsBuffer_initial = new float[INITIAL_ARRAY + 1]; 
 
     /**
      * Constructs a <code>Dasher</code>.
@@ -96,11 +98,14 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
      *
      * @param out an output <code>PathConsumer2D</code>.
      * @param dash an array of <code>float</code>s containing the dash pattern
+     * @param dashLen length of the given dash array
      * @param phase a <code>float</code> containing the dash phase
+     * @param recycleDashes true to indicate to recycle the given dash array
      * @return this instance
      */
     Dasher init(final PathConsumer2D out, float[] dash, int dashLen, 
-                float phase, boolean recycleDashes) {
+                float phase, boolean recycleDashes)
+    {
         if (phase < 0) {
             throw new IllegalArgumentException("phase < 0 !");
         }
@@ -123,12 +128,12 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         this.startIdx = idx;
         this.starting = true;
         needsMoveTo = false;
-        
+
         firstSegUsed = 0;
         firstSegidx = 0;
-        
+
         this.recycleDashes = recycleDashes;
-        
+
         return this; // fluent API
     }
 
@@ -141,19 +146,20 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         if (this.recycleDashes && dash != dashes_initial) {
             rdrCtx.putFloatArray(dash, 0, dashLen);
         }
-        
+
         if (firstSegmentsBuffer != firstSegmentsBuffer_initial) {
             rdrCtx.putFloatArray(firstSegmentsBuffer, 0, firstSegUsed);
             firstSegmentsBuffer = firstSegmentsBuffer_initial;
         }
-        
+
         if (doCleanDirty) {
-            // LBO: keep curCurvepts and firstSegmentsBuffer dirty
+            // keep curCurvepts and firstSegmentsBuffer dirty
             Arrays.fill(curCurvepts, 0);
-            Arrays.fill(firstSegmentsBuffer, 0, firstSegUsed, 0);
+            Arrays.fill(firstSegmentsBuffer, 0);
         }
     }
 
+    @Override
     public void moveTo(float x0, float y0) {
         if (firstSegidx > 0) {
             out.moveTo(sx, sy);
@@ -186,7 +192,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
     private void emitFirstSegments() {
         final float[] fSegBuf = firstSegmentsBuffer;
-        
+
         for (int i = 0; i < firstSegidx; ) {
             int type = (int)fSegBuf[i];
             emitSeg(fSegBuf, i + 1, type);
@@ -202,7 +208,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     private int firstSegidx;
     // max used mark
     private int firstSegUsed;
-    
+
     // precondition: pts must be in relative coordinates (relative to x0,y0)
     // fullCurve is true iff the curve in pts has not been split.
     private void goTo(float[] pts, int off, final int type) {
@@ -240,6 +246,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         this.y0 = y;
     }
 
+    @Override
     public void lineTo(float x1, float y1) {
         float dx = x1 - x0;
         float dy = y1 - y0;
@@ -252,8 +259,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
         // The scaling factors needed to get the dx and dy of the
         // transformed dash segments.
-        final float cx = dx / len;
-        final float cy = dy / len;
+        float cx = dx / len;
+        float cy = dy / len;
 
         final float[] _curCurvepts = curCurvepts;
         final float[] _dash = dash;
@@ -263,12 +270,12 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         
         while (true) {
             leftInThisDashSegment = _dash[idx] - phase;
-            
+
             if (len <= leftInThisDashSegment) {
                 _curCurvepts[0] = x1;
                 _curCurvepts[1] = y1;
                 goTo(_curCurvepts, 0, 4);
-                
+
                 // Advance phase within current dash segment
                 phase += len;
                 if (len == leftInThisDashSegment) {
@@ -281,7 +288,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
             dashdx = _dash[idx] * cx;
             dashdy = _dash[idx] * cy;
-            
+
             if (phase == 0) {
                 _curCurvepts[0] = x0 + dashdx;
                 _curCurvepts[1] = y0 + dashdy;
@@ -315,8 +322,9 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         // initially the current curve is at curCurvepts[0...type]
         int curCurveoff = 0; 
         float lastSplitT = 0;
-        float t = 0;
+        float t;
         float leftInThisDashSegment = dash[idx] - phase;
+
         while ((t = li.next(leftInThisDashSegment)) < 1) {
             if (t != 0) {
                 Helpers.subdivideAt((t - lastSplitT) / (1 - lastSplitT),
@@ -340,7 +348,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             idx = (idx + 1) % dashLen;
             dashOn = !dashOn;
         }
-        // LBO: reset LengthIterator:
+        // reset LengthIterator:
         li.reset();
     }
 
@@ -411,7 +419,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
          * Reset this LengthIterator.
          */
         void reset() {
-            // LBO: keep liData dirty 
+            // keep data dirty 
             // as it appears not useful to reset data:
             if (doCleanDirty) {
                 final int recLimit = recCurveStack.length - 1;
@@ -492,7 +500,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         // invalid when it's third element is negative, since in any
         // valid flattened curve, this would be >= 0.
         private final float[] flatLeafCoefCache = new float[]{0f, 0f, -1f, 0f};
-        
+
         // returns the t value where the remaining curve should be split in
         // order for the left subdivided curve to have length len. If len
         // is >= than the length of the uniterated curve, it returns 1.
@@ -517,20 +525,20 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
                 // solve this to get the parameter of the original leaf that
                 // gives us the desired length.
                 final float[] _flatLeafCoefCache = flatLeafCoefCache;
-                
+
                 if (_flatLeafCoefCache[2] < 0) {
                     float x = 0f + curLeafCtrlPolyLengths[0],
-                            y = x + curLeafCtrlPolyLengths[1];
+                          y = x  + curLeafCtrlPolyLengths[1];
                     if (curveType == 8) {
                         float z = y + curLeafCtrlPolyLengths[2];
-                        _flatLeafCoefCache[0] = 3f * (x - y) + z;
-                        _flatLeafCoefCache[1] = 3f * (y - 2f * x);
-                        _flatLeafCoefCache[2] = 3f * x;
+                        _flatLeafCoefCache[0] = 3 * (x - y) + z;
+                        _flatLeafCoefCache[1] = 3 * (y - 2 * x);
+                        _flatLeafCoefCache[2] = 3 * x;
                         _flatLeafCoefCache[3] = -z;
                     } else if (curveType == 6) {
                         _flatLeafCoefCache[0] = 0f;
-                        _flatLeafCoefCache[1] = y - 2f * x;
-                        _flatLeafCoefCache[2] = 2f * x;
+                        _flatLeafCoefCache[1] = y - 2 * x;
+                        _flatLeafCoefCache[2] = 2 * x;
                         _flatLeafCoefCache[3] = -y;
                     }
                 }
@@ -574,7 +582,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             // right child.
             int _recLevel = recLevel;
             final Side[] _sides = sides;
-            
+
             _recLevel--;
             while(_sides[_recLevel] == Side.RIGHT) {
                 if (_recLevel == 0) {
@@ -590,7 +598,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             System.arraycopy(recCurveStack[_recLevel], 0, 
                              recCurveStack[_recLevel+1], 0, 8);
             _recLevel++;
-            
+
             recLevel = _recLevel;
             goLeft();
         }
@@ -664,6 +672,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         somethingTo(6);
     }
 
+    @Override
     public void closePath() {
         lineTo(sx, sy);
         if (firstSegidx > 0) {
@@ -675,6 +684,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         moveTo(sx, sy);
     }
 
+    @Override
     public void pathDone() {
         if (firstSegidx > 0) {
             out.moveTo(sx, sy);

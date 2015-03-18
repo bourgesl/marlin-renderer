@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.util.Arrays;
@@ -32,6 +33,7 @@ import java.util.Arrays;
  * @see Renderer
  */
 public final class MarlinCache implements MarlinConst {
+
     /* constants */
     public static final int TILE_SIZE_LG = MarlinRenderingEngine.getTileSize_Log2();
     public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
@@ -130,7 +132,7 @@ public final class MarlinCache implements MarlinConst {
     }
 
     void resetTileLine(final int pminY) {
-        // LBO: hack to process tile line [0 - 32]
+        // update bboxY0 to process a complete tile line [0 - 32]
         bboxY0 = pminY;
 
         /* reset current pos */
@@ -158,7 +160,7 @@ public final class MarlinCache implements MarlinConst {
     }
 
     void clearAARow(final int y) {
-        // LBO: hack to process tile line [0 - 32]
+        // process tile line [0 - 32]
         final int row = y - bboxY0;
         
         // update pixel range:
@@ -176,25 +178,26 @@ public final class MarlinCache implements MarlinConst {
      * @param px1 last pixel exclusive x1
      */
     void copyAARow(final int[] alphaRow, final int y, 
-                   final int px0, final int px1) {
+                   final int px0, final int px1)
+    {
         if (doMonitors) {
             RendererContext.stats.mon_rdr_emitRow.start();
         }
 
         /* skip useless pixels above boundary */
         final int px_bbox1 = Math.min(px1, bboxX1);
-    
+
         if (doLogBounds) {
             MarlinUtils.logInfo("row = [" + px0 + " ... " + px_bbox1 
                                 + " (" + px1 + ") [ for y=" + y);
         }
-        
+
         final int row = y - bboxY0;
-        
+
         // update pixel range:
         rowAAx0[row] = px0;      // first pixel inclusive
         rowAAx1[row] = px_bbox1; //  last pixel exclusive
-        
+
         final int len = px_bbox1 - px0;
         
         // get current position:
@@ -224,7 +227,7 @@ public final class MarlinCache implements MarlinConst {
 
         // fix offset in rowAAChunk:
         final int off = pos - from;
-        
+
         // compute alpha sum into rowAA:
         for (int x = from, val = 0; x < to; x++) {
             /* alphaRow is in [0; MAX_COVERAGE] */
@@ -232,7 +235,6 @@ public final class MarlinCache implements MarlinConst {
 
             /* ensure values are in [0; MAX_AA_ALPHA] range */
             if (DO_AA_RANGE_CHECK) {
-                /* TODO: fix a faster way */            
                 if (val < 0) {
                     System.out.println("Invalid coverage = " + val);
                     val = 0;
@@ -242,12 +244,12 @@ public final class MarlinCache implements MarlinConst {
                     val = _MAX_AA_ALPHA;
                 }
             }
-            
+
             /* TODO: better int to byte conversion (filter normalization) */
-            
+
             // store alpha sum (as byte):
             _rowAAChunk[x + off] = _ALPHA_MAP[val];
-            
+
             if (val != 0) {
                 // update touchedTile
                 touchedLine[x >> _TILE_SIZE_LG] += val;
@@ -271,17 +273,16 @@ public final class MarlinCache implements MarlinConst {
         if (doLogBounds) {
             MarlinUtils.logInfo("clear = [" + from + " ... " + to + "[");
         }
-        
+
         // Clear alpha row for reuse:
         IntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
-        
+
         if (doMonitors) {
             RendererContext.stats.mon_rdr_emitRow.stop();
         }
     }
 
     int alphaSumInTile(final int x) {
-        // LBO: hack to process tile line [0 - 32]
         return touchedTile[(x - bboxX0) >> TILE_SIZE_LG];
     }
 

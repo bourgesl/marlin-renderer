@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.awt.BasicStroke;
@@ -41,8 +42,8 @@ import sun.java2d.pipe.RenderingEngine;
  * Marlin RendererEngine implementation (derived from Pisces)
  */
 public class MarlinRenderingEngine extends RenderingEngine 
-                                   implements MarlinConst {
-    
+                                   implements MarlinConst
+{
     private static enum NormMode {OFF, ON_NO_AA, ON_WITH_AA}
 
     /**
@@ -76,7 +77,8 @@ public class MarlinRenderingEngine extends RenderingEngine
         // initialize a large copyable Path2D to avoid a lot of array growing:
         final Path2D.Float p2d = 
                 (rdrCtx.p2d == null) ? 
-                (rdrCtx.p2d = new Path2D.Float(INITIAL_MEDIUM_ARRAY)) 
+                (rdrCtx.p2d = new Path2D.Float(Path2D.WIND_NON_ZERO, 
+                                               INITIAL_MEDIUM_ARRAY)) 
                 : rdrCtx.p2d;
         // reset
         p2d.reset();
@@ -289,7 +291,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             final double c = at.getShearY();
             final double d = at.getScaleY();
             final double det = a * d - c * b;
-            if (Math.abs(det) <= 2d * Float.MIN_VALUE) {
+            if (Math.abs(det) <= 2 * Float.MIN_VALUE) {
                 // this rendering engine takes one dimensional curves and turns
                 // them into 2D shapes by giving them width.
                 // However, if everything is to be passed through a singular
@@ -312,16 +314,12 @@ public class MarlinRenderingEngine extends RenderingEngine
             // the scaled width. This condition is satisfied if
             // a*b == -c*d && a*a+c*c == b*b+d*d. In the actual check below, we
             // leave a bit of room for error.
-            if (nearZero(a*b + c*d, 2d) && nearZero(a*a+c*c - (b*b+d*d), 2d)) {
+            if (nearZero(a*b + c*d, 2) && nearZero(a*a+c*c - (b*b+d*d), 2)) {
                 final float scale = (float) Math.sqrt(a*a + c*c);
-                // TODO: keep scale factor to compute transformed clip's bounding box
-                
                 if (dashes != null) {
-                    // LBO: copy into recyclable array:
                     recycleDashes = true;
                     dashLen = dashes.length;
                     
-                    // LBO: use dashes_initial if large enough
                     final float[] newDashes = (dashLen <= INITIAL_ARRAY) ? 
                             rdrCtx.dasher.dashes_initial : rdrCtx.getFloatArray(dashLen);
                     
@@ -431,7 +429,7 @@ public class MarlinRenderingEngine extends RenderingEngine
 
         private final float[] tmp;
         
-        // LBO: flag to skip lval (ie != 0)
+        /** flag to skip lval (ie != 0) */
         private boolean skip_lval;
 
         /** per-thread renderer context */
@@ -456,7 +454,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                 case ON_WITH_AA:
                     // round to nearest pixel center
                     lval = 0f;
-                    rval = 0.5f;LBO: 
+                    rval = 0.5f;
                     skip_lval = true; // most probable case
                     break;
                 case OFF:
@@ -587,7 +585,8 @@ public class MarlinRenderingEngine extends RenderingEngine
     }
 
     static void pathTo(final float[] coords, final PathIterator pi, 
-                       final PathConsumer2D pc2d) {
+                       final PathConsumer2D pc2d)
+    {
         while (!pi.isDone()) {
             switch (pi.currentSegment(coords)) {
             case PathIterator.SEG_MOVETO:
@@ -611,7 +610,6 @@ public class MarlinRenderingEngine extends RenderingEngine
             }
             pi.next();
         }
-        
         pc2d.pathDone();
     }
 
@@ -1033,7 +1031,8 @@ public class MarlinRenderingEngine extends RenderingEngine
     }
 
     public static int getInteger(final String key, final int def, 
-                                 final int min, final int max) {
+                                 final int min, final int max)
+    {
         int value = Integer.getInteger(key, def);
         /* check for invalid values */
         if (value < min || value > max) {

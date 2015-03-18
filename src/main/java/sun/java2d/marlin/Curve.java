@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.util.Iterator;
@@ -59,31 +60,31 @@ final class Curve {
              float x3, float y3,
              float x4, float y4)
     {
-        ax = 3f * (x2 - x3) + x4 - x1;
-        ay = 3f * (y2 - y3) + y4 - y1;
-        bx = 3f * (x1 - 2f * x2 + x3);
-        by = 3f * (y1 - 2f * y2 + y3);
-        cx = 3f * (x2 - x1);
-        cy = 3f * (y2 - y1);
+        ax = 3 * (x2 - x3) + x4 - x1;
+        ay = 3 * (y2 - y3) + y4 - y1;
+        bx = 3 * (x1 - 2 * x2 + x3);
+        by = 3 * (y1 - 2 * y2 + y3);
+        cx = 3 * (x2 - x1);
+        cy = 3 * (y2 - y1);
         dx = x1;
         dy = y1;
-        dax = 3f * ax; day = 3f * ay;
-        dbx = 2f * bx; dby = 2f * by;
+        dax = 3 * ax; day = 3 * ay;
+        dbx = 2 * bx; dby = 2 * by;
     }
 
     void set(float x1, float y1,
              float x2, float y2,
              float x3, float y3)
     {
-        ax = ay = 0f;
-        bx = x1 - 2f * x2 + x3;
-        by = y1 - 2f * y2 + y3;
-        cx = 2f * (x2 - x1);
-        cy = 2f * (y2 - y1);
+        ax = 0f; ay = 0f;
+        bx = x1 - 2 * x2 + x3;
+        by = y1 - 2 * y2 + y3;
+        cx = 2 * (x2 - x1);
+        cy = 2 * (y2 - y1);
         dx = x1;
         dy = y1;
-        dax = 0; day = 0;
-        dbx = 2f * bx; dby = 2f * by;
+        dax = 0f; day = 0f;
+        dbx = 2 * bx; dby = 2 * by;
     }
 
     float xat(float t) {
@@ -124,7 +125,7 @@ final class Curve {
     // perpendicular. This happens when g(t) = f'(t)*f''(t) == 0 (where
     // * is a dot product). Unfortunately, we have to solve a cubic.
     private int perpendiculardfddf(float[] pts, int off) {
-        // assert pts.length >= off + 4;
+        assert pts.length >= off + 4;
 
         // these are the coefficients of some multiple of g(t) (not g(t),
         // because the roots of a polynomial are not changed after multiplication
@@ -151,7 +152,7 @@ final class Curve {
     // problem for what we're trying to do (draw a nice looking curve).
     int rootsOfROCMinusW(float[] roots, int off, final float w, final float err) {
         // no OOB exception, because by now off<=6, and roots.length >= 10
-        // assert off <= 6 && roots.length >= 10;
+        assert off <= 6 && roots.length >= 10;
         int ret = off;
         int numPerpdfddf = perpendiculardfddf(roots, off);
         float t0 = 0, ft0 = ROCsq(t0) - w*w;
@@ -249,14 +250,14 @@ final class Curve {
     Iterator<Integer> breakPtsAtTs(final float[] pts, final int type,
                                    final float[] Ts, final int numTs)
     {
-        // assert pts.length >= 2*type && numTs <= Ts.length;
-        
+        assert pts.length >= 2*type && numTs <= Ts.length;
+
         // initialize shared iterator:
         iterator.init(pts, type, Ts, numTs);
-        
+
         return iterator;
     }
-    
+
     static final class BreakPtrIterator implements Iterator<Integer> {
         // these prevent object creation and destruction during autoboxing.
         // Because of this, the compiler should be able to completely
@@ -271,7 +272,7 @@ final class Curve {
         private int type;
         private float[] Ts;
         private int numTs;
-        
+
         void init(final float[] pts, final int type,
                   final float[] Ts, final int numTs) {
             this.pts = pts;
@@ -285,11 +286,13 @@ final class Curve {
             prevT = 0;
         }
 
-        @Override public boolean hasNext() {
+        @Override
+        public boolean hasNext() {
             return nextCurveIdx < numTs + 1;
         }
 
-        @Override public Integer next() {
+        @Override
+        public Integer next() {
             Integer ret;
             if (nextCurveIdx < numTs) {
                 float curT = Ts[nextCurveIdx];
@@ -308,7 +311,8 @@ final class Curve {
             return ret;
         }
 
-        @Override public void remove() {}
+        @Override
+        public void remove() {}
     }
 }
 

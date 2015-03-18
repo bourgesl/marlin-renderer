@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package sun.java2d.marlin;
 
 import java.util.Arrays;
@@ -42,24 +43,42 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
     private static final int CLOSE = 2;
 
-    /** Constant value for join style. */
-    static final int JOIN_MITER = 0;
-    /** Constant value for join style. */
-    static final int JOIN_ROUND = 1;
-    /** Constant value for join style. */
-    static final int JOIN_BEVEL = 2;
+    /**
+     * Constant value for join style.
+     */
+    public static final int JOIN_MITER = 0;
 
-    /** Constant value for end cap style. */
-    static final int CAP_BUTT = 0;
-    /** Constant value for end cap style. */
-    static final int CAP_ROUND = 1;
-    /** Constant value for end cap style. */
-    static final int CAP_SQUARE = 2;
+    /**
+     * Constant value for join style.
+     */
+    public static final int JOIN_ROUND = 1;
+
+    /**
+     * Constant value for join style.
+     */
+    public static final int JOIN_BEVEL = 2;
+
+    /**
+     * Constant value for end cap style.
+     */
+    public static final int CAP_BUTT = 0;
+
+    /**
+     * Constant value for end cap style.
+     */
+    public static final int CAP_ROUND = 1;
+
+    /**
+     * Constant value for end cap style.
+     */
+    public static final int CAP_SQUARE = 2;
 
     // pisces used to use fixed point arithmetic with 16 decimal digits. I
     // didn't want to change the values of the constant below when I converted
     // it to floating point, so that's why the divisions by 2^16 are there.
     private static final float ROUND_JOIN_THRESHOLD = 1000/65536f;
+
+    private final static float C = 0.5522847498307933f;
 
     private static final int MAX_N_CURVES = 11;
     
@@ -163,7 +182,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         this.reverse.dispose();
         
         if (doCleanDirty) {
-            // LBO: keep data dirty 
+            // keep data dirty 
             // as it appears not useful to reset data:
             for (int i = 2; i >= 0; i--) {
                 Arrays.fill(offset[i], 0, 2, 0);
@@ -308,8 +327,6 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         emitCurveTo(x1, y1, x2, y2, x3, y3, x4, y4, rev);
     }
-
-     private final static float C = 0.5522847498307933f;
     
     private void drawRoundCap(float cx, float cy, float mx, float my) {
         // the first and second arguments of the following two calls
@@ -386,6 +403,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
     }
 
+    @Override
     public void moveTo(float x0, float y0) {
         if (prev == DRAWING_OP_TO) {
             finish();
@@ -397,10 +415,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         this.prev = MOVE_TO;
     }
 
+    @Override
     public void lineTo(float x1, float y1) {
-        /*
-         * TODO: clipping at least on lines
-         */
         float dx = x1 - cx0;
         float dy = y1 - cy0;
         if (dx == 0f && dy == 0f) {
@@ -427,6 +443,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         this.prev = DRAWING_OP_TO;
     }
 
+    @Override
     public void closePath() {
         if (prev != DRAWING_OP_TO) {
             if (prev == CLOSE) {
@@ -460,6 +477,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         reverse.popAll(out);
     }
 
+    @Override
     public void pathDone() {
         if (prev == DRAWING_OP_TO) {
             finish();
@@ -570,7 +588,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                                   final float x2, final float y2,
                                   final float ERR)
     {
-        // assert ERR > 0 : "";
+        assert ERR > 0 : "";
         // compare taxicab distance. ERR will always be small, so using
         // true distance won't give much benefit
         return (Helpers.within(x1, x2, ERR) &&  // we want to avoid calling Math.abs
@@ -1145,7 +1163,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     // a stack of polynomial curves where each curve shares endpoints with
     // adjacent ones.
     final static class PolyStack {
-        
+
         /* members */
         float[] curves;
         int end;
@@ -1213,7 +1231,6 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         private void ensureSpace(final int n) {
-            // LBO: use Helpers widenArray
             if (end + n >= curves.length) {
                 updateUsed();
                 curves = Helpers.widenArray(rdrCtx, curves, end, n, 
@@ -1233,7 +1250,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             ensureSpace(6);
             curveTypes[numCurves++] = 8;
             // assert(x0 == lastX && y0 == lastY)
-            
+
             // we reverse the coordinate order to make popping easier
             curves[end++] = x2;    curves[end++] = y2;
             curves[end++] = x1;    curves[end++] = y1;
@@ -1268,7 +1285,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         void popAll(PathConsumer2D io) {
-            // LBO: update max used (even if no use)
+            // update max used (even if no use)
             updateUsed();
 
             while (numCurves != 0) {
