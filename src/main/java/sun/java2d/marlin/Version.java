@@ -25,9 +25,6 @@
 
 package sun.java2d.marlin;
 
-import java.io.InputStream;
-import java.util.Properties;
-
 public final class Version {
 
     private static final String version = "marlin-0.5.6-Unsafe-OpenJDK";
