@@ -41,7 +41,7 @@ public final class RendererStats implements MarlinConst {
     /** singleton */
     private static RendererStats singleton = null;
 
-    final static RendererStats createInstance() {
+    static RendererStats createInstance() {
         if (singleton == null) {
             singleton = new RendererStats();
         }
@@ -55,32 +55,54 @@ public final class RendererStats implements MarlinConst {
     }
 
     /* members */
-    /** RendererContext collection as hard references (only used for debugging purposes) */
-    final ConcurrentLinkedQueue<RendererContext> allContexts = new ConcurrentLinkedQueue<RendererContext>();
+    /** RendererContext collection as hard references 
+     * (only used for debugging purposes) */
+    final ConcurrentLinkedQueue<RendererContext> allContexts 
+        = new ConcurrentLinkedQueue<RendererContext>();
     /* timer */
     private final Timer statTimer;
     /* stats */
-    final StatLong stat_cache_rowAA = new StatLong("cache.rowAA");
-    final StatLong stat_cache_rowAAChunk = new StatLong("cache.rowAAChunk");
-    final StatLong stat_rdr_poly_stack = new StatLong("renderer.poly.stack");
-    final StatLong stat_rdr_curveBreak = new StatLong("renderer.curveBreakIntoLinesAndAdd");
-    final StatLong stat_rdr_quadBreak = new StatLong("renderer.quadBreakIntoLinesAndAdd");
-    final StatLong stat_rdr_edges = new StatLong("renderer.edges");
-    final StatLong stat_rdr_edges_resizes = new StatLong("renderer.edges.resize");
-    final StatLong stat_rdr_activeEdges = new StatLong("renderer.activeEdges");
-    final StatLong stat_rdr_activeEdges_updates = new StatLong("renderer.activeEdges.updates");
-    final StatLong stat_rdr_activeEdges_adds = new StatLong("renderer.activeEdges.adds");
-    final StatLong stat_rdr_activeEdges_adds_high = new StatLong("renderer.activeEdges.adds_high");
-    final StatLong stat_rdr_crossings_updates = new StatLong("renderer.crossings.updates");
-    final StatLong stat_rdr_crossings_sorts = new StatLong("renderer.crossings.sorts");
-    final StatLong stat_rdr_crossings_bsearch = new StatLong("renderer.crossings.bsearch");
-    final StatLong stat_rdr_crossings_msorts = new StatLong("renderer.crossings.msorts");
+    final StatLong stat_cache_rowAA 
+        = new StatLong("cache.rowAA");
+    final StatLong stat_cache_rowAAChunk 
+        = new StatLong("cache.rowAAChunk");
+    final StatLong stat_rdr_poly_stack 
+        = new StatLong("renderer.poly.stack");
+    final StatLong stat_rdr_curveBreak 
+        = new StatLong("renderer.curveBreakIntoLinesAndAdd");
+    final StatLong stat_rdr_quadBreak 
+        = new StatLong("renderer.quadBreakIntoLinesAndAdd");
+    final StatLong stat_rdr_edges 
+        = new StatLong("renderer.edges");
+    final StatLong stat_rdr_edges_resizes 
+        = new StatLong("renderer.edges.resize");
+    final StatLong stat_rdr_activeEdges 
+        = new StatLong("renderer.activeEdges");
+    final StatLong stat_rdr_activeEdges_updates 
+        = new StatLong("renderer.activeEdges.updates");
+    final StatLong stat_rdr_activeEdges_adds 
+        = new StatLong("renderer.activeEdges.adds");
+    final StatLong stat_rdr_activeEdges_adds_high 
+        = new StatLong("renderer.activeEdges.adds_high");
+    final StatLong stat_rdr_crossings_updates 
+        = new StatLong("renderer.crossings.updates");
+    final StatLong stat_rdr_crossings_sorts 
+        = new StatLong("renderer.crossings.sorts");
+    final StatLong stat_rdr_crossings_bsearch 
+        = new StatLong("renderer.crossings.bsearch");
+    final StatLong stat_rdr_crossings_msorts 
+        = new StatLong("renderer.crossings.msorts");
     /* histograms */
-    final Histogram hist_rdr_crossings = new Histogram("renderer.crossings");
-    final Histogram hist_rdr_crossings_ratio = new Histogram("renderer.crossings.ratio");
-    final Histogram hist_rdr_crossings_adds = new Histogram("renderer.crossings.adds");
-    final Histogram hist_rdr_crossings_msorts = new Histogram("renderer.crossings.msorts");
-    final Histogram hist_rdr_crossings_msorts_adds = new Histogram("renderer.crossings.msorts.adds");
+    final Histogram hist_rdr_crossings 
+        = new Histogram("renderer.crossings");
+    final Histogram hist_rdr_crossings_ratio 
+        = new Histogram("renderer.crossings.ratio");
+    final Histogram hist_rdr_crossings_adds 
+        = new Histogram("renderer.crossings.adds");
+    final Histogram hist_rdr_crossings_msorts 
+        = new Histogram("renderer.crossings.msorts");
+    final Histogram hist_rdr_crossings_msorts_adds 
+        = new Histogram("renderer.crossings.msorts.adds");
     /* all stats */
     final StatLong[] statistics = new StatLong[]{
         stat_cache_rowAA,
@@ -105,13 +127,20 @@ public final class RendererStats implements MarlinConst {
         hist_rdr_crossings_msorts_adds
     };
     /* monitors */
-    final Monitor mon_pre_getAATileGenerator = new Monitor("MarlinRenderingEngine.getAATileGenerator()");
-    final Monitor mon_npi_currentSegment = new Monitor("NormalizingPathIterator.currentSegment()");
-    final Monitor mon_rdr_addLine = new Monitor("Renderer.addLine()");
-    final Monitor mon_rdr_endRendering = new Monitor("Renderer.endRendering()");
-    final Monitor mon_rdr_endRendering_Y = new Monitor("Renderer._endRendering(Y)");
-    final Monitor mon_rdr_emitRow = new Monitor("Renderer.emitRow()");
-    final Monitor mon_ptg_getAlpha = new Monitor("MarlinTileGenerator.getAlpha()");
+    final Monitor mon_pre_getAATileGenerator 
+        = new Monitor("MarlinRenderingEngine.getAATileGenerator()");
+    final Monitor mon_npi_currentSegment 
+        = new Monitor("NormalizingPathIterator.currentSegment()");
+    final Monitor mon_rdr_addLine 
+        = new Monitor("Renderer.addLine()");
+    final Monitor mon_rdr_endRendering 
+        = new Monitor("Renderer.endRendering()");
+    final Monitor mon_rdr_endRendering_Y 
+        = new Monitor("Renderer._endRendering(Y)");
+    final Monitor mon_rdr_emitRow 
+        = new Monitor("Renderer.emitRow()");
+    final Monitor mon_ptg_getAlpha 
+        = new Monitor("MarlinTileGenerator.getAlpha()");
     /* all monitors */
     final Monitor[] monitors = new Monitor[]{
         mon_pre_getAATileGenerator,
@@ -184,16 +213,21 @@ public final class RendererStats implements MarlinConst {
                     }
                 }
                 // IntArrayCaches stats:
-                for (IntArrayCache cache : rdrCtx.intArrayCaches) {
+                final RendererContext.ArrayCachesHolder holder 
+                    = rdrCtx.getArrayCachesHolder();
+
+                logInfo("ArrayCache for thread: " + rdrCtx.name);
+                
+                for (IntArrayCache cache : holder.intArrayCaches) {
                     cache.dumpStats();
                 }
                 // FloatArrayCaches stats:
-                for (FloatArrayCache cache : rdrCtx.floatArrayCaches) {
+                for (FloatArrayCache cache : holder.floatArrayCaches) {
                     cache.dumpStats();
                 }
                 // DirtyArrayCaches stats:
                 logInfo("Dirty ArrayCache for thread: " + rdrCtx.name);
-                for (ByteArrayCache cache : rdrCtx.dirtyArrayCaches) {
+                for (ByteArrayCache cache : holder.dirtyArrayCaches) {
                     cache.dumpStats();
                 }
             }
