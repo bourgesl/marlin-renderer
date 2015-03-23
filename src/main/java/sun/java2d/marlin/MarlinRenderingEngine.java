@@ -31,12 +31,14 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.lang.ref.Reference;
+import java.security.AccessController;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import static sun.java2d.marlin.MarlinUtils.logInfo;
 import sun.awt.geom.PathConsumer2D;
 import sun.java2d.pipe.AATileGenerator;
 import sun.java2d.pipe.Region;
 import sun.java2d.pipe.RenderingEngine;
+import sun.security.action.GetPropertyAction;
 
 /**
  * Marlin RendererEngine implementation (derived from Pisces)
@@ -826,78 +828,92 @@ public class MarlinRenderingEngine extends RenderingEngine
 
     /* Static initializer to use TL or CLQ mode */
     static {
-        // TL mode by default:
-        useThreadLocal = isUseThreadLocal();
-        rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<Object>() : null;
-        rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>() 
-                      : null;
-
-        // Hard reference by default:
-        String refType = System.getProperty("sun.java2d.renderer.useRef", 
-                                            "soft");
-        switch (refType) {
-            default:
-            case "hard":
-                refType = "hard";
-                REF_TYPE = REF_HARD;
-                break;
-            case "soft":
-                refType = "soft";
-                REF_TYPE = REF_SOFT;
-                break;
-            case "weak":
-                refType = "weak";
-                REF_TYPE = REF_WEAK;
-                break;
-        }
-
-        /* log information at startup */
-        logInfo("============================================================="
-                + "==================");
-
-        final String reClass = System.getProperty("sun.java2d.renderer");
+        final String reClass = AccessController.doPrivileged(
+                            new GetPropertyAction("sun.java2d.renderer"));
 
         if (MarlinRenderingEngine.class.getName().equals(reClass)) {
+            // Marlin renderer enabled:
+
+            // CLQ mode by default:
+            useThreadLocal = isUseThreadLocal();
+            rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<Object>() 
+                                                 : null;
+            rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>() 
+                                            : null;
+
+            // Hard reference by default:
+            String refType = AccessController.doPrivileged(
+                                new GetPropertyAction("sun.java2d.renderer.useRef", 
+                                "soft"));
+            switch (refType) {
+                default:
+                case "hard":
+                    refType = "hard";
+                    REF_TYPE = REF_HARD;
+                    break;
+                case "soft":
+                    refType = "soft";
+                    REF_TYPE = REF_SOFT;
+                    break;
+                case "weak":
+                    refType = "weak";
+                    REF_TYPE = REF_WEAK;
+                    break;
+            }
+
+            /* log information at startup */
+            logInfo("=========================================================="
+                    + "=====================");
+
             logInfo("Marlin software rasterizer           = ENABLED");
             logInfo("Version                              = ["
                     + Version.getVersion() + "]");
-            logInfo("sun.java2d.renderer                  = " + reClass);
+            logInfo("sun.java2d.renderer                  = " 
+                    + reClass);
             logInfo("sun.java2d.renderer.useThreadLocal   = " 
-                    + isUseThreadLocal());
-            logInfo("sun.java2d.renderer.useRef           = " + refType);
+                    + useThreadLocal);
+            logInfo("sun.java2d.renderer.useRef           = " 
+                    + refType);
 
             logInfo("sun.java2d.renderer.pixelsize        = " 
-                    + getInitialImageSize());
+                    + MarlinConst.INITIAL_PIXEL_DIM);
             logInfo("sun.java2d.renderer.subPixel_log2_X  = " 
-                    + getSubPixel_Log2_X());
+                    + Renderer.SUBPIXEL_LG_POSITIONS_X);
             logInfo("sun.java2d.renderer.subPixel_log2_Y  = " 
-                    + getSubPixel_Log2_Y());
+                    + Renderer.SUBPIXEL_LG_POSITIONS_Y);
             logInfo("sun.java2d.renderer.tileSize_log2    = " 
-                    + getTileSize_Log2());
+                    + MarlinCache.TILE_SIZE_LG);
             logInfo("sun.java2d.renderer.useFastMath      = " 
-                    + isUseFastMath());
+                    + MarlinConst.useFastMath);
 
             /* optimisation parameters */
             logInfo("sun.java2d.renderer.useSimplifier    = " 
-                    + isUseSimplifier());
+                    + MarlinConst.useSimplifier);
 
             /* debugging parameters */
-            logInfo("sun.java2d.renderer.doStats          = " + isDoStats());
-            logInfo("sun.java2d.renderer.doMonitors       = " + isDoMonitors());
-            logInfo("sun.java2d.renderer.doChecks         = " + isDoChecks());
+            logInfo("sun.java2d.renderer.doStats          = " 
+                    + MarlinConst.doStats);
+            logInfo("sun.java2d.renderer.doMonitors       = " 
+                    + MarlinConst.doMonitors);
+            logInfo("sun.java2d.renderer.doChecks         = " 
+                    + MarlinConst.doChecks);
 
             /* logging parameters */
-            logInfo("sun.java2d.renderer.useJul           = " + isUseJul());
+            logInfo("sun.java2d.renderer.useLogger        = " 
+                    + MarlinConst.useLogger);
             logInfo("sun.java2d.renderer.logCreateContext = " 
-                    + isLogCreateContext());
+                    + MarlinConst.logCreateContext);
             logInfo("sun.java2d.renderer.logUnsafeMalloc  = " 
-                    + isLogUnsafeMalloc());
+                    + MarlinConst.logUnsafeMalloc);
 
+            logInfo("=========================================================="
+                    + "=====================");
         } else {
-            logInfo("sun.java2d.renderer                  = " + reClass);
+            useThreadLocal = false;
+            rdrCtxThreadLocal = null;
+            rdrCtxQueue = null;
+            REF_TYPE = REF_HARD;
         }
-        logInfo("============================================================="
-                + "==================");
     }
 
     /**
@@ -1012,8 +1028,8 @@ public class MarlinRenderingEngine extends RenderingEngine
     }
 
     /* logging parameters */
-    public static boolean isUseJul() {
-        return getBoolean("sun.java2d.renderer.useJul", "false");
+    public static boolean isUseLogger() {
+        return getBoolean("sun.java2d.renderer.useLogger", "false");
     }
 
     public static boolean isLogCreateContext() {
@@ -1026,18 +1042,29 @@ public class MarlinRenderingEngine extends RenderingEngine
     
     /* system property utilities */
 
-    public static boolean getBoolean(final String key, final String def) {
-        return Boolean.valueOf(System.getProperty(key, def));
+    static boolean getBoolean(final String key, final String def) {
+        return Boolean.valueOf(AccessController.doPrivileged(new GetPropertyAction(key, def)));
     }
 
-    public static int getInteger(final String key, final int def, 
+    static int getInteger(final String key, final int def, 
                                  final int min, final int max)
     {
-        int value = Integer.getInteger(key, def);
+        final String property = AccessController.doPrivileged(
+                                    new GetPropertyAction(key));
+        
+        int value = def;
+        if (property != null) {
+            try {
+                value = Integer.decode(property);
+            } catch (NumberFormatException e) {
+                logInfo("Invalid integer value for " + key + " = " + property);
+            }
+        }
+        
         /* check for invalid values */
-        if (value < min || value > max) {
+        if ((value < min) || (value > max)) {
             logInfo("Invalid value for " + key + " = " + value 
-                    + "; expect value in range[" + min + ", " + max + "] !");
+                    + "; expected value in range[" + min + ", " + max + "] !");
             value = def;
         }
         return value;
