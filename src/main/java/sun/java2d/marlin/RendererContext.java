@@ -40,7 +40,7 @@ import static sun.java2d.marlin.MarlinUtils.logInfo;
 final class RendererContext implements MarlinConst {
 
     private static final String className = RendererContext.class.getName();
-    /** RendererContext created counter */
+    /** RendererContext creation counter */
     private static final AtomicInteger contextCount = new AtomicInteger(1);
     /** RendererContext statistics */
     static final RendererStats stats = (doStats || doMonitors) 
@@ -61,42 +61,40 @@ final class RendererContext implements MarlinConst {
     }
 
     /* members */
-    /** context name (debugging purposes) */
+    /* context name (debugging purposes) */
     final String name;
-    /**
+    /*
      * Reference to this instance (hard, soft or weak). 
      * @see MarlinRenderingEngine#REF_TYPE
      */
     final Object reference;
-    /** dynamic array caches */
-    final IntArrayCache[] intArrayCaches = new IntArrayCache[BUCKETS];
-    final FloatArrayCache[] floatArrayCaches = new FloatArrayCache[BUCKETS];
-    /* dirty instances (use them carefully) */
-    /** dynamic DIRTY byte array for MarlinCache */
-    final ByteArrayCache[] dirtyArrayCaches = new ByteArrayCache[BUCKETS];
+    /* dynamic array caches kept using weak reference (low memory footprint) */
+    WeakReference<ArrayCachesHolder> refArrayCaches = null;
+    /* hard reference to array caches (for statistics) */
+    ArrayCachesHolder hardRefArrayCaches = null;
     /* shared data */
     /* fixed arrays (dirty) */
     final float[] float6 = new float[6];
-    /** shared curve (dirty) (Renderer / Stroker) */
+    /* shared curve (dirty) (Renderer / Stroker) */
     final Curve curve = new Curve();
     /* Marlin class instances */
-    /** MarlinRenderingEngine.NormalizingPathIterator */
+    /* MarlinRenderingEngine.NormalizingPathIterator */
     final NormalizingPathIterator npIterator;
-    /** MarlinRenderingEngine.TransformingPathConsumer2D */
+    /* MarlinRenderingEngine.TransformingPathConsumer2D */
     final TransformingPathConsumer2D transformerPC2D;
-    /** recycled Path2D instance */
+    /* recycled Path2D instance */
     Path2D.Float p2d = null;
-    /** Renderer */
+    /* Renderer */
     final Renderer renderer;
-    /** Stroker */
+    /* Stroker */
     final Stroker stroker;
-    /** Simplifies out collinear lines */
+    /* Simplifies out collinear lines */
     final CollinearSimplifier simplifier = new CollinearSimplifier();
-    /** Dasher */
+    /* Dasher */
     final Dasher dasher;
-    /** MarlinTileGenerator */
+    /* MarlinTileGenerator */
     final MarlinTileGenerator ptg;
-    /** MarlinCache */
+    /* MarlinCache */
     final MarlinCache cache;
 
     /**
@@ -110,13 +108,6 @@ final class RendererContext implements MarlinConst {
         }
 
         this.name = name;
-
-        for (int i = 0; i < BUCKETS; i++) {
-            intArrayCaches[i] = new IntArrayCache(ARRAY_SIZES[i]);
-            floatArrayCaches[i] = new FloatArrayCache(ARRAY_SIZES[i]);
-            // dirty:
-            dirtyArrayCaches[i] = new ByteArrayCache(DIRTY_ARRAY_SIZES[i]);
-        }
 
         // MarlinRenderingEngine.NormalizingPathIterator:
         npIterator = new NormalizingPathIterator(this);
@@ -148,19 +139,39 @@ final class RendererContext implements MarlinConst {
     }
 
     /* Array caches */
+    ArrayCachesHolder getArrayCachesHolder() {
+        // resolve reference:
+        ArrayCachesHolder holder = (refArrayCaches != null) 
+                                        ? refArrayCaches.get()
+                                        : null;
+        /* create a new ArrayCachesHolder if none is available */
+        if (holder == null) {
+            holder = new ArrayCachesHolder();
+
+            // update reference:
+            refArrayCaches = new WeakReference<ArrayCachesHolder>(holder);
+            
+            if (doStats) {
+                // keep hard reference to get cache statistics:
+                hardRefArrayCaches = holder;
+            }
+        }
+        return holder;
+    }
+    
     IntArrayCache getIntArrayCache(final int length) {
         final int bucket = ArrayCache.getBucket(length);
-        return intArrayCaches[bucket];
+        return getArrayCachesHolder().intArrayCaches[bucket];
     }
 
     FloatArrayCache getFloatArrayCache(final int length) {
         final int bucket = ArrayCache.getBucket(length);
-        return floatArrayCaches[bucket];
+        return getArrayCachesHolder().floatArrayCaches[bucket];
     }
 
     ByteArrayCache getDirtyArrayCache(final int length) {
         final int bucket = ArrayCache.getBucketDirty(length);
-        return dirtyArrayCaches[bucket];
+        return getArrayCachesHolder().dirtyArrayCaches[bucket];
     }
 
     /* dirty byte array cache */
@@ -353,6 +364,27 @@ final class RendererContext implements MarlinConst {
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getFloatArrayCache(length).putArray(array, length, 
                                                 fromIndex, toIndex);
+        }
+    }
+    
+    final static class ArrayCachesHolder {
+        final IntArrayCache[] intArrayCaches;
+        final FloatArrayCache[] floatArrayCaches;
+        /* dirty instances (use them carefully) */
+        /* dynamic DIRTY byte array for MarlinCache */
+        final ByteArrayCache[] dirtyArrayCaches;
+        
+        ArrayCachesHolder() {
+            intArrayCaches = new IntArrayCache[BUCKETS];
+            floatArrayCaches = new FloatArrayCache[BUCKETS];
+            dirtyArrayCaches = new ByteArrayCache[BUCKETS];
+
+            for (int i = 0; i < BUCKETS; i++) {
+                intArrayCaches[i] = new IntArrayCache(ARRAY_SIZES[i]);
+                floatArrayCaches[i] = new FloatArrayCache(ARRAY_SIZES[i]);
+                // dirty bytes:
+                dirtyArrayCaches[i] = new ByteArrayCache(DIRTY_ARRAY_SIZES[i]);
+            }
         }
     }
 }
