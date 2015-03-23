@@ -29,23 +29,25 @@ package sun.java2d.marlin;
  * Marlin constant holder using System properties
  */
 interface MarlinConst {
-    /** enable JUL logger */
-    static final boolean useJUL = MarlinRenderingEngine.isUseJul();
-
-    /** enable development mode */
-    static final boolean doDev = false;
+    /** enable PlatformLogger */
+    static final boolean useLogger = MarlinRenderingEngine.isUseLogger();
 
     /* log new RendererContext */
-    static final boolean logCreateContext = MarlinRenderingEngine.isLogCreateContext();
+    static final boolean logCreateContext
+        = MarlinRenderingEngine.isLogCreateContext();
     /* log misc.Unsafe alloc/realloc/free */
-    static final boolean logUnsafeMalloc = MarlinRenderingEngine.isLogUnsafeMalloc();
+    static final boolean logUnsafeMalloc 
+        = MarlinRenderingEngine.isLogUnsafeMalloc();
 
     /** do statistics */
-    static final boolean doStats = MarlinRenderingEngine.isDoStats();
+    static final boolean doStats 
+        = MarlinRenderingEngine.isDoStats();
     /** do monitors */
-    static final boolean doMonitors = MarlinRenderingEngine.isDoMonitors();
+    static final boolean doMonitors 
+        = MarlinRenderingEngine.isDoMonitors();
     /** do checks */
-    static final boolean doChecks = MarlinRenderingEngine.isDoChecks();
+    static final boolean doChecks 
+        = MarlinRenderingEngine.isDoChecks();
 
     /** do AA range checks: disable when algorithm / code is stable */
     static final boolean DO_AA_RANGE_CHECK = false;
@@ -62,14 +64,17 @@ interface MarlinConst {
     static final boolean useDumpThread = false;
     /** thread dump interval (ms) */
     static final long statDump = 5000L;
+    
     /** do clean dirty array */
     static final boolean doCleanDirty = false;
 
     /** flag to use custom ceil() / floor() functions */
-    static final boolean useFastMath = MarlinRenderingEngine.isUseFastMath();
+    static final boolean useFastMath 
+        = MarlinRenderingEngine.isUseFastMath();
 
     /** flag to use line simplifier */
-    static final boolean useSimplifier = MarlinRenderingEngine.isUseSimplifier();
+    static final boolean useSimplifier 
+        = MarlinRenderingEngine.isUseSimplifier();
 
     /** flag to enable logs related bounds checks */
     static final boolean doLogBounds = false;
@@ -77,7 +82,8 @@ interface MarlinConst {
     /* Initial Array sizing (initial context capacity) ~ 512K to 1 Mb */
 
     /** 2048 pixel (width x height) for initial capacity */
-    static final int INITIAL_PIXEL_DIM    = MarlinRenderingEngine.getInitialImageSize();
+    static final int INITIAL_PIXEL_DIM
+        = MarlinRenderingEngine.getInitialImageSize();
 
     /* typical array sizes: only odd numbers allowed below */
     static final int INITIAL_ARRAY        = 256;

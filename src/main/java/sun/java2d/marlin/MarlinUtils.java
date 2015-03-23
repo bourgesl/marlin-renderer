@@ -25,7 +25,6 @@
 
 package sun.java2d.marlin;
 
-import static sun.java2d.marlin.MarlinConst.useJUL;
 import sun.misc.JavaLangAccess;
 import sun.misc.SharedSecrets;
 
@@ -33,15 +32,15 @@ import sun.misc.SharedSecrets;
  * Utility class
  */
 public final class MarlinUtils {
-
-    /**
-     * TODO: use PlatformLogger.getLogger("sun.java2d.marlin")
-     */
-    static final java.util.logging.Logger log;
-
+    /* TODO: use sun.util.logging.PlatformLogger once in JDK9 */
+    private static final java.util.logging.Logger log;
+    
     static {
-        log = (useJUL) ? java.util.logging.Logger.getLogger("sun.java2d.marlin")
-              : null;
+        if (MarlinConst.useLogger) {
+            log =java.util.logging.Logger.getLogger("sun.java2d.marlin");
+        } else {
+            log = null;
+        }
     }
 
     private MarlinUtils() {
@@ -49,7 +48,7 @@ public final class MarlinUtils {
     }
 
     public static void logInfo(final String msg) {
-        if (useJUL) {
+        if (MarlinConst.useLogger) {
             log.info(msg);
         } else {
             System.out.print("INFO: ");
@@ -58,7 +57,8 @@ public final class MarlinUtils {
     }
 
     public static void logException(final String msg, final Throwable th) {
-        if (useJUL) {
+        if (MarlinConst.useLogger) {
+//            log.warning(msg, th);
             log.log(java.util.logging.Level.WARNING, msg, th);
         } else {
             System.out.print("WARNING: ");
