@@ -89,7 +89,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                  src,
                  null,
                  width,
-                 NormMode.OFF, /* should use ON_WITH_AA to be more precise ? */
+                 NormMode.OFF, // TODO: should use ON_WITH_AA to be more precise ?
                  caps,
                  join,
                  miterlimit,
@@ -98,7 +98,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                  rdrCtx.transformerPC2D.wrapPath2d(p2d)
                 );
         
-        /* Use Path2D copy constructor (trim) */
+        // Use Path2D copy constructor (trim)
         final Path2D path = new Path2D.Float(p2d);
         
         returnRendererContext(rdrCtx);
@@ -195,7 +195,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                                     AffineTransform.TYPE_GENERAL_SCALE)) != 0) {
             widthScale = (float)Math.sqrt(at.getDeterminant());
         } else {
-            /* First calculate the "maximum scale" of this transform. */
+            // First calculate the "maximum scale" of this transform.
             double A = at.getScaleX();       // m00
             double C = at.getShearX();       // m01
             double B = at.getShearY();       // m10
@@ -244,7 +244,7 @@ public class MarlinRenderingEngine extends RenderingEngine
              */
 
             double hypot = Math.sqrt(EB*EB + (EA-EC)*(EA-EC));
-            /* sqrt omitted, compare to squared limits below. */
+            // sqrt omitted, compare to squared limits below.
             double widthsquared = ((EA + EC + hypot)/2.0);
 
             widthScale = (float)Math.sqrt(widthsquared);
@@ -431,10 +431,10 @@ public class MarlinRenderingEngine extends RenderingEngine
 
         private final float[] tmp;
         
-        /** flag to skip lval (ie != 0) */
+        // flag to skip lval (ie != 0)
         private boolean skip_lval;
 
-        /** per-thread renderer context */
+        // per-thread renderer context
         final RendererContext rdrCtx;
 
         NormalizingPathIterator(final RendererContext rdrCtx) {
@@ -508,19 +508,19 @@ public class MarlinRenderingEngine extends RenderingEngine
             {
                 coord = coords[lastCoord];
                 // TODO: optimize rounding coords (floor ...)
-                x_adjust = (float)FastMath.floor(coord) + rval - coord;
+                x_adjust = FloatMath.floor(coord) + rval - coord;
                 
                 coord = coords[lastCoord + 1];
                 // TODO: optimize rounding coords (floor ...)
-                y_adjust = (float)FastMath.floor(coord) + rval - coord;
+                y_adjust = FloatMath.floor(coord) + rval - coord;
             } else {
                 coord = coords[lastCoord];
                 // TODO: optimize rounding coords (floor ...)
-                x_adjust = (float)FastMath.floor(coord + lval) + rval - coord;
+                x_adjust = FloatMath.floor(coord + lval) + rval - coord;
                 
                 coord = coords[lastCoord + 1];
                 // TODO: optimize rounding coords (floor ...)
-                y_adjust = (float)FastMath.floor(coord + lval) + rval - coord;
+                y_adjust = FloatMath.floor(coord + lval) + rval - coord;
             }
             
             coords[lastCoord    ] += x_adjust;
@@ -807,26 +807,26 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
     }
 
-    /* --- RendererContext handling --- */
-    /** use ThreadLocal or ConcurrentLinkedQueue to get one RendererContext */
+    // --- RendererContext handling ---
+    // use ThreadLocal or ConcurrentLinkedQueue to get one RendererContext
     private static final boolean useThreadLocal;
 
-    /* hard reference */
+    // hard reference
     final static int REF_HARD = 0;
-    /* soft reference */
+    // soft reference
     final static int REF_SOFT = 1;
-    /* weak reference */
+    // weak reference
     final static int REF_WEAK = 2;
 
-    /* reference type stored in either TL or CLQ */
+    // reference type stored in either TL or CLQ
     static final int REF_TYPE;
 
-    /** Per-thread RendererContext */
+    // Per-thread RendererContext
     private static final ThreadLocal<Object> rdrCtxThreadLocal;
-    /** RendererContext queue when ThreadLocal is disabled */
+    // RendererContext queue when ThreadLocal is disabled
     private static final ConcurrentLinkedQueue<Object> rdrCtxQueue;
 
-    /* Static initializer to use TL or CLQ mode */
+    // Static initializer to use TL or CLQ mode
     static {
         final String reClass = AccessController.doPrivileged(
                             new GetPropertyAction("sun.java2d.renderer"));
@@ -861,7 +861,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                     break;
             }
 
-            /* log information at startup */
+            // log information at startup
             logInfo("=========================================================="
                     + "=====================");
 
@@ -886,11 +886,11 @@ public class MarlinRenderingEngine extends RenderingEngine
             logInfo("sun.java2d.renderer.useFastMath      = " 
                     + MarlinConst.useFastMath);
 
-            /* optimisation parameters */
+            // optimisation parameters
             logInfo("sun.java2d.renderer.useSimplifier    = " 
                     + MarlinConst.useSimplifier);
 
-            /* debugging parameters */
+            // debugging parameters
             logInfo("sun.java2d.renderer.doStats          = " 
                     + MarlinConst.doStats);
             logInfo("sun.java2d.renderer.doMonitors       = " 
@@ -898,7 +898,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             logInfo("sun.java2d.renderer.doChecks         = " 
                     + MarlinConst.doChecks);
 
-            /* logging parameters */
+            // logging parameters
             logInfo("sun.java2d.renderer.useLogger        = " 
                     + MarlinConst.useLogger);
             logInfo("sun.java2d.renderer.logCreateContext = " 
@@ -930,7 +930,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref) 
                      : ((Reference<RendererContext>) ref).get();
         }
-        /* create a new RendererContext if none is available */
+        // create a new RendererContext if none is available
         if (rdrCtx == null) {
             rdrCtx = RendererContext.createContext();
             if (useThreadLocal) {
@@ -958,7 +958,7 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
     }
 
-    /* marlin system properties */
+    // marlin system properties
 
     public static boolean isUseThreadLocal() {
         return getBoolean("sun.java2d.renderer.useThreadLocal", "false");
@@ -1008,13 +1008,14 @@ public class MarlinRenderingEngine extends RenderingEngine
         return getBoolean("sun.java2d.renderer.useFastMath", "true");
     }
 
-    /* optimisation parameters */
+    // optimisation parameters
     
     public static boolean isUseSimplifier() {
         return getBoolean("sun.java2d.renderer.useSimplifier", "false");
     }
     
-    /* debugging parameters */
+    // debugging parameters
+    
     public static boolean isDoStats() {
         return getBoolean("sun.java2d.renderer.doStats", "false");
     }
@@ -1027,7 +1028,8 @@ public class MarlinRenderingEngine extends RenderingEngine
         return getBoolean("sun.java2d.renderer.doChecks", "false");
     }
 
-    /* logging parameters */
+    // logging parameters
+    
     public static boolean isUseLogger() {
         return getBoolean("sun.java2d.renderer.useLogger", "false");
     }
@@ -1040,7 +1042,7 @@ public class MarlinRenderingEngine extends RenderingEngine
         return getBoolean("sun.java2d.renderer.logUnsafeMalloc", "false");
     }
     
-    /* system property utilities */
+    // system property utilities
 
     static boolean getBoolean(final String key, final String def) {
         return Boolean.valueOf(AccessController.doPrivileged(new GetPropertyAction(key, def)));
@@ -1061,7 +1063,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             }
         }
         
-        /* check for invalid values */
+        // check for invalid values
         if ((value < min) || (value > max)) {
             logInfo("Invalid value for " + key + " = " + value 
                     + "; expected value in range[" + min + ", " + max + "] !");

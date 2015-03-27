@@ -32,7 +32,7 @@ package sun.java2d.marlin;
  */
 final class MergeSort {
 
-    /** insertion sort threshold */
+    // insertion sort threshold
     public final static int INSERTION_SORT_THRESHOLD = 14;
 
     /**

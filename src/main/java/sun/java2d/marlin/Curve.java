@@ -31,7 +31,7 @@ final class Curve {
 
     float ax, ay, bx, by, cx, cy, dx, dy;
     float dax, day, dbx, dby;
-    /* shared iterator instance */
+    // shared iterator instance
     private final BreakPtrIterator iterator = new BreakPtrIterator();
 
     Curve() {
@@ -263,7 +263,7 @@ final class Curve {
         // Because of this, the compiler should be able to completely
         // eliminate the boxing costs.
         private final static Integer i0 = 0;
-        /* members */
+
         private Integer itype;
         private int nextCurveIdx;
         private Integer curCurveOff;

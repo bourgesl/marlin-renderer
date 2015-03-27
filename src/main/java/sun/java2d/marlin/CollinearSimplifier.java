@@ -33,10 +33,9 @@ final class CollinearSimplifier implements PathConsumer2D {
 
         Empty, PreviousPoint, PreviousLine
     };
-    /* slope precision threshold */
-    static final float EPS = 1e-4f; /* aaime proposed 1e-3f */
+    // slope precision threshold
+    static final float EPS = 1e-4f; // aaime proposed 1e-3f
 
-    /* members */
     PathConsumer2D delegate;
     SimplifierState state;
     float px1, py1, px2, py2;
@@ -107,16 +106,16 @@ final class CollinearSimplifier implements PathConsumer2D {
             pslope = getSlope(px1, py1, x, y);
             return;
         }
-        /* state is SimplifierState.PreviousLine */
+        // state is SimplifierState.PreviousLine
         final float slope = getSlope(px2, py2, x, y);
         // test for collinear
         if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
-            /* merge segments */
+            // merge segments
             px2 = x;
             py2 = y;
             return;
         }
-        /* emit previous segment */
+        // emit previous segment
         delegate.lineTo(px2, py2);
         px1 = px2;
         py1 = py2;
@@ -127,7 +126,7 @@ final class CollinearSimplifier implements PathConsumer2D {
 
     private void emitStashedLine() {
         if (state == SimplifierState.Empty) {
-            /* fast return */
+            // fast return
             return;
         }
         if (state == SimplifierState.PreviousLine) {

@@ -29,16 +29,13 @@ import sun.awt.geom.PathConsumer2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 
-/**
- * note: recycle instances in rendererContext
- */
 final class TransformingPathConsumer2D {
     
     TransformingPathConsumer2D() {
         // used by RendererContext
     }
 
-    /* recycled PathConsumer2D instance from transformConsumer() */
+    // recycled PathConsumer2D instance from transformConsumer()
     private final Path2DWrapper        wp_Path2DWrapper        = new Path2DWrapper();
     
     PathConsumer2D wrapPath2d(Path2D.Float p2d)
@@ -46,7 +43,7 @@ final class TransformingPathConsumer2D {
         return wp_Path2DWrapper.init(p2d);
     }
     
-    /* recycled PathConsumer2D instances from transformConsumer() */
+    // recycled PathConsumer2D instances from transformConsumer()
     private final TranslateFilter      tx_TranslateFilter      = new TranslateFilter();
     private final DeltaScaleFilter     tx_DeltaScaleFilter     = new DeltaScaleFilter();
     private final ScaleFilter          tx_ScaleFilter          = new ScaleFilter();
@@ -86,7 +83,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    /* recycled PathConsumer2D instances from deltaTransformConsumer() */
+    // recycled PathConsumer2D instances from deltaTransformConsumer()
     private final DeltaScaleFilter     dt_DeltaScaleFilter     = new DeltaScaleFilter();
     private final DeltaTransformFilter dt_DeltaTransformFilter = new DeltaTransformFilter();
     
@@ -111,7 +108,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    /* recycled PathConsumer2D instances from inverseDeltaTransformConsumer() */
+    // recycled PathConsumer2D instances from inverseDeltaTransformConsumer()
     private final DeltaScaleFilter     iv_DeltaScaleFilter     = new DeltaScaleFilter();
     private final DeltaTransformFilter iv_DeltaTransformFilter = new DeltaTransformFilter();
 

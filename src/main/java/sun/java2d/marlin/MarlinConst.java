@@ -29,72 +29,72 @@ package sun.java2d.marlin;
  * Marlin constant holder using System properties
  */
 interface MarlinConst {
-    /** enable PlatformLogger */
+    // enable Logger
     static final boolean useLogger = MarlinRenderingEngine.isUseLogger();
 
-    /* log new RendererContext */
+    // log new RendererContext
     static final boolean logCreateContext
         = MarlinRenderingEngine.isLogCreateContext();
-    /* log misc.Unsafe alloc/realloc/free */
+    // log misc.Unsafe alloc/realloc/free
     static final boolean logUnsafeMalloc 
         = MarlinRenderingEngine.isLogUnsafeMalloc();
 
-    /** do statistics */
+    // do statistics
     static final boolean doStats 
         = MarlinRenderingEngine.isDoStats();
-    /** do monitors */
+    // do monitors
     static final boolean doMonitors 
         = MarlinRenderingEngine.isDoMonitors();
-    /** do checks */
+    // do checks
     static final boolean doChecks 
         = MarlinRenderingEngine.isDoChecks();
 
-    /** do AA range checks: disable when algorithm / code is stable */
+    // do AA range checks: disable when algorithm / code is stable
     static final boolean DO_AA_RANGE_CHECK = false;
 
-    /** enable logs */
+    // enable logs
     static final boolean doLog = false;
-    /** enable oversize logs */
+    // enable oversize logs
     static final boolean doLogOverSize = false;
-    /** enable traces */
+    // enable traces
     static final boolean doTrace = false;
-    /** do flush monitors */
+    // do flush monitors
     static final boolean doFlushMonitors = true;
-    /** use one polling thread to dump statistics/monitors */
+    // use one polling thread to dump statistics/monitors
     static final boolean useDumpThread = false;
-    /** thread dump interval (ms) */
+    // thread dump interval (ms)
     static final long statDump = 5000L;
     
-    /** do clean dirty array */
+    // do clean dirty array
     static final boolean doCleanDirty = false;
 
-    /** flag to use custom ceil() / floor() functions */
+    // flag to use custom ceil() / floor() functions
     static final boolean useFastMath 
         = MarlinRenderingEngine.isUseFastMath();
 
-    /** flag to use line simplifier */
+    // flag to use line simplifier
     static final boolean useSimplifier 
         = MarlinRenderingEngine.isUseSimplifier();
 
-    /** flag to enable logs related bounds checks */
+    // flag to enable logs related bounds checks
     static final boolean doLogBounds = false;
 
-    /* Initial Array sizing (initial context capacity) ~ 512K to 1 Mb */
+    // Initial Array sizing (initial context capacity) ~ 512K
 
-    /** 2048 pixel (width x height) for initial capacity */
+    // 2048 pixel (width x height) for initial capacity
     static final int INITIAL_PIXEL_DIM
         = MarlinRenderingEngine.getInitialImageSize();
 
-    /* typical array sizes: only odd numbers allowed below */
+    // typical array sizes: only odd numbers allowed below
     static final int INITIAL_ARRAY        = 256;
     static final int INITIAL_SMALL_ARRAY  = 1024;
     static final int INITIAL_MEDIUM_ARRAY = 4096;
     static final int INITIAL_LARGE_ARRAY  = 8192;
     static final int INITIAL_ARRAY_16K    = 16384;
     static final int INITIAL_ARRAY_32K    = 32768;
-    /** alpha row dimension */
+    // alpha row dimension
     static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_DIM; 
     
-    /* zero value as byte */
+    // zero value as byte
     static final byte BYTE_0 = (byte) 0;
 }

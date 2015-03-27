@@ -30,15 +30,11 @@ import java.util.Arrays;
 import static sun.java2d.marlin.MarlinUtils.logException;
 import static sun.java2d.marlin.MarlinUtils.logInfo;
 
-/**
- *
- */
 final class ByteArrayCache implements MarlinConst {
 
-    /* members */
     private final int arraySize;
     private final ArrayDeque<byte[]> byteArrays;
-    /* stats */
+    // stats
     private int getOp = 0;
     private int createOp = 0;
     private int returnOp = 0;
@@ -53,7 +49,7 @@ final class ByteArrayCache implements MarlinConst {
 
     ByteArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        /* small but enough: almost 1 cache line */
+        // small but enough: almost 1 cache line
         this.byteArrays = new ArrayDeque<byte[]>(6);
     }
 

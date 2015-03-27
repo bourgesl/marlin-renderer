@@ -27,9 +27,6 @@ package sun.java2d.marlin;
 
 import static sun.java2d.marlin.MarlinUtils.logInfo;
 
-/**
- *
- */
 public final class ArrayCache implements MarlinConst {
 
     final static int BUCKETS = 4;
@@ -38,24 +35,22 @@ public final class ArrayCache implements MarlinConst {
     final static int BUCKET_DIRTY_GROW_BITS = 1;
     final static int BUCKET_DIRTY_GROW = 1 << BUCKET_DIRTY_GROW_BITS;
     final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arraycopy)
-    /**
-     * threshold to grow arrays by x4 or x2
-     */
+    // threshold to grow arrays by x4 or x2
     final static int THRESHOLD_ARRAY_SIZE = 32 * 1024;
-    /* array sizes */
+    // array sizes
     final static int MAX_ARRAY_SIZE;
     final static int[] ARRAY_SIZES = new int[BUCKETS];
-    /* dirty array sizes */
+    // dirty array sizes
     final static int MAX_DIRTY_ARRAY_SIZE;
     final static int[] DIRTY_ARRAY_SIZES = new int[BUCKETS];
-    /* stats */
+    // stats
     static int resizeInt = 0;
     static int resizeFloat = 0;
     static int resizeDirty = 0;
     static int oversize = 0;
 
     static {
-        /* initialize buckets for int/float arrays */
+        // initialize buckets for int/float arrays
         int arraySize = MIN_ARRAY_SIZE;
 
         for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_GROW) {
@@ -69,7 +64,7 @@ public final class ArrayCache implements MarlinConst {
 
         /* initialize buckets for dirty int arrays 
          (large AA chunk = 32 x pixels) */
-        /* TODO: adjust max size */
+        // TODO: adjust max size
         arraySize = BUCKET_DIRTY_GROW * MarlinCache.TILE_SIZE * 1024;
 
         for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_DIRTY_GROW) {
@@ -103,12 +98,12 @@ public final class ArrayCache implements MarlinConst {
         }
     }
 
-    /* TODO: use shifts to find bucket as fast as possible (no condition) */
-    /* small methods used a lot (to be inlined / optimized by hotspot) */
+    // small methods used a lot (to be inlined / optimized by hotspot)
+    
+    // TODO: use shifts to find bucket as fast as possible (no condition)
     static int getBucket(final int length) {
-        // Use size = (length / 2) * 2 => rounded to power of two
+        // TODO: Use size = (length / 2) * 2 => rounded to power of two
         // then switch == ? (unroll loops ?)
-//        return length / MIN_ARRAY_SIZE
         for (int i = 0; i < BUCKETS; i++) {
             if (length <= ARRAY_SIZES[i]) {
                 return i;
@@ -116,12 +111,10 @@ public final class ArrayCache implements MarlinConst {
         }
         return -1;
     }
-    /* small methods used a lot (to be inlined / optimized by hotspot) */
-
+    
     static int getBucketDirty(final int length) {
-        // Use size = (length / 2) * 2 => rounded to power of two
+        // TODO: Use size = (length / 2) * 2 => rounded to power of two
         // then switch == ? (unroll loops ?)
-//        return length / MIN_ARRAY_SIZE
         for (int i = 0; i < BUCKETS; i++) {
             if (length <= DIRTY_ARRAY_SIZES[i]) {
                 return i;

@@ -28,11 +28,8 @@ package sun.java2d.marlin;
 import sun.misc.JavaLangAccess;
 import sun.misc.SharedSecrets;
 
-/**
- * Utility class
- */
 public final class MarlinUtils {
-    /* TODO: use sun.util.logging.PlatformLogger once in JDK9 */
+    // TODO: use sun.util.logging.PlatformLogger once in JDK9
     private static final java.util.logging.Logger log;
     
     static {

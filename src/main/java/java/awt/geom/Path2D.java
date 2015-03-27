@@ -479,6 +479,9 @@ public abstract class Path2D implements Shape, Cloneable {
         }
 
         int pointCrossings(double px, double py) {
+            if (numTypes == 0) {
+                return 0;
+            }
             double movx, movy, curx, cury, endx, endy;
             float coords[] = floatCoords;
             curx = movx = coords[0];
@@ -556,6 +559,9 @@ public abstract class Path2D implements Shape, Cloneable {
         int rectCrossings(double rxmin, double rymin,
                           double rxmax, double rymax)
         {
+            if (numTypes == 0) {
+                return 0;
+            }
             float coords[] = floatCoords;
             double curx, cury, movx, movy, endx, endy;
             curx = movx = coords[0];
@@ -1091,7 +1097,7 @@ public abstract class Path2D implements Shape, Cloneable {
             }
             return ret;
         }
-        
+
         @Override
         double[] cloneCoordsDouble(AffineTransform at) {
             // trim arrays:
@@ -1209,6 +1215,9 @@ public abstract class Path2D implements Shape, Cloneable {
         }
 
         int pointCrossings(double px, double py) {
+            if (numTypes == 0) {
+                return 0;
+            }
             double movx, movy, curx, cury, endx, endy;
             double coords[] = doubleCoords;
             curx = movx = coords[0];
@@ -1286,6 +1295,9 @@ public abstract class Path2D implements Shape, Cloneable {
         int rectCrossings(double rxmin, double rymin,
                           double rxmax, double rymax)
         {
+            if (numTypes == 0) {
+                return 0;
+            }
             double coords[] = doubleCoords;
             double curx, cury, movx, movy, endx, endy;
             curx = movx = coords[0];

@@ -31,7 +31,7 @@ package sun.java2d.marlin.stats;
 public final class Monitor extends StatLong {
 
     private final static long INVALID = -1L;
-    /* members */
+
     private long start = INVALID;
 
     public Monitor(final String name) {

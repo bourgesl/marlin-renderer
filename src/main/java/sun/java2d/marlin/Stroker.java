@@ -38,7 +38,6 @@ import sun.awt.geom.PathConsumer2D;
 // has methods like plus(Point), minus(Point), dot(Point), cross(Point)and such
 final class Stroker implements PathConsumer2D, MarlinConst {
 
-    /* constants */
     private static final int MOVE_TO = 0;
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
     private static final int CLOSE = 2;
@@ -82,7 +81,6 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
     private static final int MAX_N_CURVES = 11;
     
-    /* Stroker members */
     private PathConsumer2D out;
 
     private int capStyle;
@@ -118,10 +116,10 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     private final float[] rp = new float[8];
     private final float[] subdivTs = new float[MAX_N_CURVES - 1];
     
-    /** per-thread renderer context */
+    // per-thread renderer context
     final RendererContext rdrCtx;
 
-    /** dirty curve */
+    // dirty curve
     final Curve curve;
     
     /**
@@ -1164,21 +1162,20 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     // adjacent ones.
     final static class PolyStack {
 
-        /* members */
         float[] curves;
         int end;
         int[] curveTypes;
         int numCurves;
         
-        /** per-thread renderer context */
+        // per-thread renderer context
         final RendererContext rdrCtx;
 
-        /* per-thread initial arrays (large enough to satisfy most usages: 8192) */
+        // per-thread initial arrays (large enough to satisfy most usages: 8192)
         // +1 to avoid recycling in Helpers.widenArray()
         private final float[] curves_initial = new float[INITIAL_LARGE_ARRAY + 1]; // 32K
         private final int[] curveTypes_initial = new int[INITIAL_LARGE_ARRAY + 1]; // 32K
 
-        /* used marks */
+        // used marks
         int curvesUseMark;
         int curveTypesUseMark;
 

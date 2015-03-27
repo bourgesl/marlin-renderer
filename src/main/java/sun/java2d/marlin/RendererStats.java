@@ -38,7 +38,7 @@ import sun.java2d.marlin.stats.StatLong;
  */
 public final class RendererStats implements MarlinConst {
 
-    /** singleton */
+    // singleton
     private static RendererStats singleton = null;
 
     static RendererStats createInstance() {
@@ -54,14 +54,13 @@ public final class RendererStats implements MarlinConst {
         }
     }
 
-    /* members */
-    /** RendererContext collection as hard references 
-     * (only used for debugging purposes) */
+    /* RendererContext collection as hard references 
+       (only used for debugging purposes) */
     final ConcurrentLinkedQueue<RendererContext> allContexts 
         = new ConcurrentLinkedQueue<RendererContext>();
-    /* timer */
+    // timer
     private final Timer statTimer;
-    /* stats */
+    // stats
     final StatLong stat_cache_rowAA 
         = new StatLong("cache.rowAA");
     final StatLong stat_cache_rowAAChunk 
@@ -92,7 +91,7 @@ public final class RendererStats implements MarlinConst {
         = new StatLong("renderer.crossings.bsearch");
     final StatLong stat_rdr_crossings_msorts 
         = new StatLong("renderer.crossings.msorts");
-    /* histograms */
+    // histograms
     final Histogram hist_rdr_crossings 
         = new Histogram("renderer.crossings");
     final Histogram hist_rdr_crossings_ratio 
@@ -103,7 +102,7 @@ public final class RendererStats implements MarlinConst {
         = new Histogram("renderer.crossings.msorts");
     final Histogram hist_rdr_crossings_msorts_adds 
         = new Histogram("renderer.crossings.msorts.adds");
-    /* all stats */
+    // all stats
     final StatLong[] statistics = new StatLong[]{
         stat_cache_rowAA,
         stat_cache_rowAAChunk,
@@ -126,7 +125,7 @@ public final class RendererStats implements MarlinConst {
         hist_rdr_crossings_msorts,
         hist_rdr_crossings_msorts_adds
     };
-    /* monitors */
+    // monitors
     final Monitor mon_pre_getAATileGenerator 
         = new Monitor("MarlinRenderingEngine.getAATileGenerator()");
     final Monitor mon_npi_currentSegment 
@@ -141,7 +140,7 @@ public final class RendererStats implements MarlinConst {
         = new Monitor("Renderer.emitRow()");
     final Monitor mon_ptg_getAlpha 
         = new Monitor("MarlinTileGenerator.getAlpha()");
-    /* all monitors */
+    // all monitors
     final Monitor[] monitors = new Monitor[]{
         mon_pre_getAATileGenerator,
         mon_npi_currentSegment,
@@ -155,7 +154,6 @@ public final class RendererStats implements MarlinConst {
     private RendererStats() {
         super();
 
-        /* stats */
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {

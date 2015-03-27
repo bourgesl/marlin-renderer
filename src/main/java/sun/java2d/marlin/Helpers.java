@@ -99,7 +99,7 @@ final class Helpers implements MarlinConst {
         // much accuracy and we don't want to create arrays so we use
         // our own customized version).
 
-        /* normal form: x^3 + ax^2 + bx + c = 0 */
+        // normal form: x^3 + ax^2 + bx + c = 0
         a /= d;
         b /= d;
         c /= d;
@@ -116,7 +116,7 @@ final class Helpers implements MarlinConst {
         double p = 1.0/3 * (-1.0/3 * sq_A + b);
         double q = 1.0/2 * (2.0/27 * a * sq_A - 1.0/3 * a * b + c);
 
-        /* use Cardano's formula */
+        // use Cardano's formula
 
         double cb_p = p * p * p;
         double D = q * q + cb_p;
@@ -154,7 +154,7 @@ final class Helpers implements MarlinConst {
         return filterOutNotInAB(pts, off, num, A, B) - off;
     }
 
-    /* TODO: replace with new signature see: widenArrayPartially() */
+    // TODO: replace with new signature see: widenArrayPartially()
     static float[] widenArray(final RendererContext rdrCtx, final float[] in, 
                               final int cursize, 
                               final int numToAdd, final int clearTo)
@@ -176,7 +176,7 @@ final class Helpers implements MarlinConst {
         return res;
     }
 
-    /* TODO: replace with new signature see: widenArrayPartially() */
+    // TODO: replace with new signature see: widenArrayPartially()
     static int[] widenArray(final RendererContext rdrCtx, final int[] in, 
                             final int cursize, 
                             final int numToAdd, final int clearTo)

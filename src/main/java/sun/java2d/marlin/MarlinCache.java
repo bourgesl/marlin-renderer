@@ -34,11 +34,10 @@ import java.util.Arrays;
  */
 public final class MarlinCache implements MarlinConst {
 
-    /* constants */
     public static final int TILE_SIZE_LG = MarlinRenderingEngine.getTileSize_Log2();
     public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
 
-    /* 2048 alpha values (width) x 32 rows (tile) = 64K */
+    // 2048 (pixelSize) alpha values (width) x 32 rows (tile) = 64K
     static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
 
     // The alpha map used by this object (taken out of our map cache) to convert
@@ -46,38 +45,37 @@ public final class MarlinCache implements MarlinConst {
     // [0, maxalpha]) into alpha values, which are in [0,256).
     final static byte[] ALPHA_MAP = buildAlphaMap(Renderer.MAX_AA_ALPHA);
     
-    /* members */
     int bboxX0, bboxY0, bboxX1, bboxY1;
 
-    /* 1D dirty arrays */
-    /* row index in rowAAChunk[] */
+    // 1D dirty arrays
+    // row index in rowAAChunk[]
     final int[] rowAAChunkIndex = new int[TILE_SIZE];
-    /* first pixel (inclusive) for each row */
+    // first pixel (inclusive) for each row
     final int[] rowAAx0 = new int[TILE_SIZE];
-    /* last pixel (exclusive) for each row */
+    // last pixel (exclusive) for each row
     final int[] rowAAx1 = new int[TILE_SIZE];
     
-    /* 1D dirty array containing 32 rows (packed) */
+    // 1D dirty array containing 32 rows (packed)
     // rowAAStride[i] holds the encoding of the pixel row with y = bboxY0+i.
     // The format of each of the inner arrays is: rowAAStride[i][0,1] = (x0, n)
     // where x0 is the first x in row i with nonzero alpha, and n is the
     // number of RLE entries in this row. rowAAStride[i][j,j+1] for j>1 is
     // (val,runlen)
-    /* LBO: TODO: fix doc (no RLE anymore) */
+    // LBO: TODO: fix doc (no RLE anymore)
     byte[] rowAAChunk;
-    /* current position in rowAAChunk array */
+    // current position in rowAAChunk array
     int rowAAChunkPos;
 
     // touchedTile[i] is the sum of all the alphas in the tile with
     // x=j*TILE_SIZE+bboxX0.
     private int[] touchedTile;
 
-    /** per-thread renderer context */
+    // per-thread renderer context
     final RendererContext rdrCtx;
 
-    /** large cached rowAAChunk (dirty) */
+    // large cached rowAAChunk (dirty)
     final byte[] rowAAChunk_initial;
-    /** large cached touchedTile (dirty) */
+    // large cached touchedTile (dirty)
     final int[] touchedTile_initial;
 
     int tileMin, tileMax;
@@ -135,7 +133,7 @@ public final class MarlinCache implements MarlinConst {
         // update bboxY0 to process a complete tile line [0 - 32]
         bboxY0 = pminY;
 
-        /* reset current pos */
+        // reset current pos
         if (doStats) {
             RendererContext.stats.stat_cache_rowAAChunk.add(rowAAChunkPos);
         }
@@ -184,7 +182,7 @@ public final class MarlinCache implements MarlinConst {
             RendererContext.stats.mon_rdr_emitRow.start();
         }
 
-        /* skip useless pixels above boundary */
+        // skip useless pixels above boundary
         final int px_bbox1 = Math.min(px1, bboxX1);
 
         if (doLogBounds) {
@@ -230,10 +228,10 @@ public final class MarlinCache implements MarlinConst {
 
         // compute alpha sum into rowAA:
         for (int x = from, val = 0; x < to; x++) {
-            /* alphaRow is in [0; MAX_COVERAGE] */
+            // alphaRow is in [0; MAX_COVERAGE]
             val += alphaRow[x]; // [from; to[
 
-            /* ensure values are in [0; MAX_AA_ALPHA] range */
+            // ensure values are in [0; MAX_AA_ALPHA] range
             if (DO_AA_RANGE_CHECK) {
                 if (val < 0) {
                     System.out.println("Invalid coverage = " + val);
@@ -245,7 +243,7 @@ public final class MarlinCache implements MarlinConst {
                 }
             }
 
-            /* TODO: better int to byte conversion (filter normalization) */
+            // TODO: better int to byte conversion (filter normalization)
 
             // store alpha sum (as byte):
             _rowAAChunk[x + off] = _ALPHA_MAP[val];

@@ -43,7 +43,7 @@ public class AAShapePipe
 {
     static RenderingEngine renderengine = RenderingEngine.getInstance();
 
-    /** Per-thread TileState (~1K very small so do not use any Weak Reference) */
+    // Per-thread TileState (~1K very small so do not use any Weak Reference)
     private static final ThreadLocal<TileState> tileStateThreadLocal = 
             new ThreadLocal<TileState>() {
         @Override
@@ -192,15 +192,15 @@ public class AAShapePipe
         }
     }
 
-    /** Tile state used by AAShapePipe */
+    // Tile state used by AAShapePipe
     static final class TileState {
-        /** cached tile (32 x 32 tile by default) */
+        // cached tile (32 x 32 tile by default)
         private byte[] theTile = new byte[32 * 32];
-        /** dirty aabox array */
+        // dirty aabox array
         final int[] abox = new int[4];
-        /** dirty bbox rectangle */
+        // dirty bbox rectangle
         private final Rectangle dev = new Rectangle();
-        /** dirty bbox rectangle2D.Double */
+        // dirty bbox rectangle2D.Double
         private final Rectangle2D.Double bbox2D = new Rectangle2D.Double();
         
         byte[] getAlphaTile(int len) {

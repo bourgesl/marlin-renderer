@@ -34,7 +34,6 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
     private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE 
                                                   * Renderer.MAX_AA_ALPHA;
 
-    /* members */
     private final Renderer rdr;
     private final MarlinCache cache;
     private int x, y;
@@ -216,7 +215,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
                     // Copy AA data (sum alpha data):
                     final int off = pos - aax0;
 
-                    /* note: System.arrayCopy is slower than copy loop */
+                    // note: System.arrayCopy is slower than copy loop
                     for (int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
                         // cx inside tile[x0; x1[ :
                         tile[idx] = rowAAChunk[cx + off];

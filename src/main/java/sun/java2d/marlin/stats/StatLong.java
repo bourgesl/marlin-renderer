@@ -30,7 +30,6 @@ package sun.java2d.marlin.stats;
  */
 public class StatLong {
 
-    /* members */
     public final String name;
     public long count = 0l;
     public long sum = 0l;

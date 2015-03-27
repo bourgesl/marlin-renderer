@@ -56,7 +56,7 @@ public final class Histogram extends StatLong {
         }
         return LAST;
     }
-    /* members */
+
     private final StatLong[] stats = new StatLong[MAX];
 
     public Histogram(final String name) {

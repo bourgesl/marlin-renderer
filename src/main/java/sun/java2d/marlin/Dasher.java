@@ -45,7 +45,6 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     final static float ERR = 0.01f;
     final static float minTincrement = 1f / (1 << recLimit);
 
-    /* members */
     private PathConsumer2D out;
     private float[] dash;
     private int dashLen;
@@ -66,16 +65,16 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     // temporary storage for the current curve
     private final float[] curCurvepts;
 
-    /** per-thread renderer context */
+    // per-thread renderer context
     final RendererContext rdrCtx;
 
-    /* dashes array (dirty) */
+    // dashes array (dirty)
     final float[] dashes_initial = new float[INITIAL_ARRAY];
 
-    /* flag to recycle dash array copy */
+    // flag to recycle dash array copy
     boolean recycleDashes;
 
-    /* per-thread initial arrays (large enough to satisfy most usages */
+    // per-thread initial arrays (large enough to satisfy most usages
     // +1 to avoid recycling in Helpers.widenArray()
     private final float[] firstSegmentsBuffer_initial = new float[INITIAL_ARRAY + 1]; 
 
