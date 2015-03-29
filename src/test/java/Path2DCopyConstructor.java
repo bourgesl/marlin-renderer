@@ -33,7 +33,10 @@ import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 
 /**
- * @summary Check Path2D copy constructor modified to trim arrays
+ * @test
+ * @bug 8042103
+ * @summary Check Path2D copy constructor (trims arrays) 
+ *          and constructor with zero capacity
  * @run main Path2DTrimCopy
  */
 public class Path2DCopyConstructor {
@@ -50,50 +53,74 @@ public class Path2DCopyConstructor {
     private final static Point2D.Double pt2d 
         = new Point2D.Double(2.0, 2.5);
 
-    public static void main(String[] args) {
+    public static boolean verbose;
+
+    static void log(String msg) {
+        if (verbose) {
+            System.out.println(msg);
+        }
+    }
+
+    public static void main(String argv[]) {
+        verbose = (argv.length != 0);
+
+        testEmptyDoublePaths();
         testDoublePaths();
 
+        testEmptyFloatPaths();
         testFloatPaths();
+
+        testEmptyGeneralPath();
         testGeneralPath();
     }
 
+    static void testEmptyDoublePaths() {
+        log("\n - Test(Path2D.Double[0]) ---");
+        test(() -> new Path2D.Double(Path2D.WIND_NON_ZERO, 0));
+    }
+
     static void testDoublePaths() {
-        System.out.println("\n - Test(Path2D.Double) ---");
+        log("\n - Test(Path2D.Double) ---");
         test(() -> new Path2D.Double());
     }
 
+    static void testEmptyFloatPaths() {
+        log("\n - Test(Path2D.Float[0]) ---");
+        test(() -> new Path2D.Float(Path2D.WIND_NON_ZERO, 0));
+    }
+
     static void testFloatPaths() {
-        System.out.println("\n - Test(Path2D.Float) ---");
+        log("\n - Test(Path2D.Float) ---");
         test(() -> new Path2D.Float());
     }
 
+    static void testEmptyGeneralPath() {
+        log("\n - Test(GeneralPath[0]) ---");
+        test(() -> new GeneralPath(Path2D.WIND_NON_ZERO, 0));
+    }
+
     static void testGeneralPath() {
-        System.out.println("\n - Test(GeneralPath) ---");
+        log("\n - Test(GeneralPath) ---");
         test(() -> new GeneralPath());
     }
 
     interface PathFactory {
-
         Path2D makePath();
     }
 
-    /**
-     - Perform each of the above tests on a (set of) clone(s) of the following paths:
-     - each of the following executed on both a Float and a Double instance...
-     - an empty path
-     - a path with just a moveto
-     - a path with a moveto+some lines
-     - a path with a moveto+some curves
-     */
     static void test(PathFactory pf) {
-        System.out.println("\n --- test: path(empty) ---");
+        log("\n --- test: path(empty) ---");
         test(pf.makePath(), true);
-        System.out.println("\n\n --- test: path(addMove) ---");
+        log("\n\n --- test: path(addMove) ---");
         test(addMove(pf.makePath()), false);
-        System.out.println("\n\n --- test: path(addMove + addLines) ---");
-        test(addLines(pf.makePath()), false);
-        System.out.println("\n\n --- test: path(addMove + addCurves) ---");
-        test(addCurves(pf.makePath()), false);
+        log("\n\n --- test: path(addMoveAndLines) ---");
+        test(addMoveAndLines(pf.makePath()), false);
+        log("\n\n --- test: path(addMoveAndQuads) ---");
+        test(addMoveAndQuads(pf.makePath()), false);
+        log("\n\n --- test: path(addMoveAndCubics) ---");
+        test(addMoveAndCubics(pf.makePath()), false);
+        log("\n\n --- test: path(addMoveAndClose) ---");
+        test(addMoveAndClose(pf.makePath()), false);
     }
 
     static Path2D addMove(Path2D p2d) {
@@ -101,106 +128,112 @@ public class Path2DCopyConstructor {
         return p2d;
     }
 
-    static Path2D addLines(Path2D p2d) {
+    static Path2D addMoveAndLines(Path2D p2d) {
         addMove(p2d);
-        addLinesOnly(p2d);
+        addLines(p2d);
         return p2d;
     }
 
-    static Path2D addLinesOnly(Path2D p2d) {
+    static Path2D addLines(Path2D p2d) {
         for (int i = 0; i < 10; i++) {
             p2d.lineTo(1.1 * i, 2.3 * i);
         }
         return p2d;
     }
 
-    static Path2D addCurves(Path2D p2d) {
+    static Path2D addMoveAndCubics(Path2D p2d) {
         addMove(p2d);
-        addCurvesOnly(p2d);
+        addCubics(p2d);
         return p2d;
     }
 
-    static Path2D addCurvesOnly(Path2D p2d) {
+    static Path2D addCubics(Path2D p2d) {
         for (int i = 0; i < 10; i++) {
-            p2d.quadTo(1.1 * i, 1.2 * i, 1.3 * i, 1.4 * i);
             p2d.curveTo(1.1 * i, 1.2 * i, 1.3 * i, 1.4 * i, 1.5 * i, 1.6 * i);
         }
         return p2d;
     }
 
-    /**
-     - Write tests that create paths in various forms and run them through the following sub-tests:
-     - each of the following should be tested on a fresh clone...
-     - get a PathIterator and iterate it through until it is done
-     (optional - compare to the expected segments that were in the original)
-     - get a flattened PathIterator using "getPathIterator(flatness,)" and make sure it works
-     (optional - compare to original path if the original was already flat)
-     (but, also run it on a path with curves to make sure flattening engine didn't break)
-     - add various kinds of segments to the cloned path
-     - get the bounds of the cloned path
-     - use the transform() method on the cloned path
-     - call intersects(point), intersects(rect) and contains(rect) on a cloned path
-     - call getCurrentPoint() on the cloned path
-     */
+    static Path2D addMoveAndQuads(Path2D p2d) {
+        addMove(p2d);
+        addQuads(p2d);
+        return p2d;
+    }
+
+    static Path2D addQuads(Path2D p2d) {
+        for (int i = 0; i < 10; i++) {
+            p2d.quadTo(1.1 * i, 1.2 * i, 1.3 * i, 1.4 * i);
+        }
+        return p2d;
+    }
+    
+    static Path2D addMoveAndClose(Path2D p2d) {
+        addMove(p2d);
+        addClose(p2d);
+        return p2d;
+    }
+
+    static Path2D addClose(Path2D p2d) {
+        p2d.closePath();
+        return p2d;
+    }
+
     static void test(Path2D p2d, boolean isEmpty) {
         testEqual(new Path2D.Float(p2d), p2d);
         testEqual(new Path2D.Double(p2d), p2d);
         testEqual(new GeneralPath(p2d), p2d);
 
-        // 3 clone variants:
         testIterator(new Path2D.Float(p2d), p2d);
         testIterator(new Path2D.Double(p2d), p2d);
         testIterator((Path2D) p2d.clone(), p2d);
 
-        // 3 clone variants:
         testFlattening(new Path2D.Float(p2d), p2d);
         testFlattening(new Path2D.Double(p2d), p2d);
         testFlattening((Path2D) p2d.clone(), p2d);
 
-        // 3 clone variants:
         testAddMove(new Path2D.Float(p2d));
         testAddMove(new Path2D.Double(p2d));
         testAddMove((Path2D) p2d.clone());
 
         // These should expect exception if empty
-        // 3 clone variants:
         testAddLine(new Path2D.Float(p2d), isEmpty);
         testAddLine(new Path2D.Double(p2d), isEmpty);
         testAddLine((Path2D) p2d.clone(), isEmpty);
 
-        // 3 clone variants:
         testAddQuad(new Path2D.Float(p2d), isEmpty);
         testAddQuad(new Path2D.Double(p2d), isEmpty);
         testAddQuad((Path2D) p2d.clone(), isEmpty);
 
-        // 3 clone variants:
+        testAddCubic(new Path2D.Float(p2d), isEmpty);
+        testAddCubic(new Path2D.Double(p2d), isEmpty);
+        testAddCubic((Path2D) p2d.clone(), isEmpty);
+
+        testAddClose(new Path2D.Float(p2d), isEmpty);
+        testAddClose(new Path2D.Double(p2d), isEmpty);
+        testAddClose((Path2D) p2d.clone(), isEmpty);
+
         testGetBounds(new Path2D.Float(p2d), p2d);
         testGetBounds(new Path2D.Double(p2d), p2d);
         testGetBounds((Path2D) p2d.clone(), p2d);
 
-        // 3 clone variants:
         testTransform(new Path2D.Float(p2d));
         testTransform(new Path2D.Double(p2d));
         testTransform((Path2D) p2d.clone());
 
-        // 3 clone variants:
         testIntersect(new Path2D.Float(p2d), p2d);
         testIntersect(new Path2D.Double(p2d), p2d);
         testIntersect((Path2D) p2d.clone(), p2d);
 
-        // 3 clone variants:
         testContains(new Path2D.Float(p2d), p2d);
         testContains(new Path2D.Double(p2d), p2d);
         testContains((Path2D) p2d.clone(), p2d);
 
-        // 3 clone variants:
         testGetCurrentPoint(new Path2D.Float(p2d), p2d);
         testGetCurrentPoint(new Path2D.Double(p2d), p2d);
         testGetCurrentPoint((Path2D) p2d.clone(), p2d);
     }
 
     static void testEqual(Path2D pathA, Path2D pathB) {
-        // Grab 2 path iterators and test for equality with float coords[]
         final PathIterator itA = pathA.getPathIterator(null);
         final PathIterator itB = pathB.getPathIterator(null);
 
@@ -216,7 +249,7 @@ public class Path2DCopyConstructor {
                 throw new IllegalStateException("Path-segment[" + n + "] "
                     + " type are not equals [" + typeA + "|" + typeB + "] !");
             }
-            if (!Arrays.equals(coordsA, coordsB)) {
+            if (!equalsArray(coordsA, coordsB, getLength(typeA))) {
                 throw new IllegalStateException("Path-segment[" + n + "] coords"
                     + " are not equals [" + Arrays.toString(coordsA) + "|" 
                     + Arrays.toString(coordsB) + "] !");
@@ -225,12 +258,10 @@ public class Path2DCopyConstructor {
         if (!itA.isDone() || !itB.isDone()) {
             throw new IllegalStateException("Paths do not have same lengths !");
         }
-        System.out.println("testEqual: " + n + " segments.");
+        log("testEqual: " + n + " segments.");
     }
 
     static void testIterator(Path2D pathA, Path2D pathB) {
-        // - get a PathIterator and iterate it through until it is done
-        // (optional - compare to the expected segments that were in the original)
         final PathIterator itA = pathA.getPathIterator(at);
         final PathIterator itB = pathB.getPathIterator(at);
 
@@ -247,7 +278,7 @@ public class Path2DCopyConstructor {
                     + "type are not equals [" + typeA + "|" + typeB + "] !");
             }
             // Take care of floating-point precision:
-            if (!equalsArray(coordsA, coordsB)) {
+            if (!equalsArrayEps(coordsA, coordsB, getLength(typeA))) {
                 throw new IllegalStateException("Path-segment[" + n + "] coords"
                     + " are not equals [" + Arrays.toString(coordsA) + "|" 
                     + Arrays.toString(coordsB) + "] !");
@@ -256,13 +287,10 @@ public class Path2DCopyConstructor {
         if (!itA.isDone() || !itB.isDone()) {
             throw new IllegalStateException("Paths do not have same lengths !");
         }
-        System.out.println("testIterator: " + n + " segments.");
+        log("testIterator: " + n + " segments.");
     }
 
     static void testFlattening(Path2D pathA, Path2D pathB) {
-        // - get a flattened PathIterator using "getPathIterator(flatness,)" and make sure it works
-        // (optional - compare to original path if the original was already flat)
-        // (but, also run it on a path with curves to make sure flattening engine didn't break)
         final PathIterator itA = pathA.getPathIterator(at, FLATNESS);
         final PathIterator itB = pathB.getPathIterator(at, FLATNESS);
 
@@ -279,7 +307,7 @@ public class Path2DCopyConstructor {
                     + "type are not equals [" + typeA + "|" + typeB + "] !");
             }
             // Take care of floating-point precision:
-            if (!equalsArray(coordsA, coordsB)) {
+            if (!equalsArrayEps(coordsA, coordsB, getLength(typeA))) {
                 throw new IllegalStateException("Path-segment[" + n + "] coords"
                     + " are not equals [" + Arrays.toString(coordsA) + "|" 
                     + Arrays.toString(coordsB) + "] !");
@@ -288,21 +316,21 @@ public class Path2DCopyConstructor {
         if (!itA.isDone() || !itB.isDone()) {
             throw new IllegalStateException("Paths do not have same lengths !");
         }
-        System.out.println("testFlattening: " + n + " segments.");
+        log("testFlattening: " + n + " segments.");
     }
 
     static void testAddMove(Path2D pathA) {
         addMove(pathA);
-        System.out.println("testAddMove: passed.");
+        log("testAddMove: passed.");
     }
 
     static void testAddLine(Path2D pathA, boolean isEmpty) {
         try {
-            addLinesOnly(pathA);
+            addLines(pathA);
         }
         catch (IllegalPathStateException ipse) {
             if (isEmpty) {
-                System.out.println("testAddLine: passed "
+                log("testAddLine: passed "
                     + "(expected IllegalPathStateException catched).");
                 return;
             } else {
@@ -312,16 +340,16 @@ public class Path2DCopyConstructor {
         if (isEmpty) {
             throw new IllegalStateException("IllegalPathStateException not thrown !");
         }
-        System.out.println("testAddLine: passed.");
+        log("testAddLine: passed.");
     }
 
     static void testAddQuad(Path2D pathA, boolean isEmpty) {
         try {
-            addCurvesOnly(pathA);
+            addQuads(pathA);
         }
         catch (IllegalPathStateException ipse) {
             if (isEmpty) {
-                System.out.println("testAddQuad: passed "
+                log("testAddQuad: passed "
                     + "(expected IllegalPathStateException catched).");
                 return;
             } else {
@@ -331,11 +359,48 @@ public class Path2DCopyConstructor {
         if (isEmpty) {
             throw new IllegalStateException("IllegalPathStateException not thrown !");
         }
-        System.out.println("testAddQuad: passed.");
+        log("testAddQuad: passed.");
+    }
+
+    static void testAddCubic(Path2D pathA, boolean isEmpty) {
+        try {
+            addCubics(pathA);
+        }
+        catch (IllegalPathStateException ipse) {
+            if (isEmpty) {
+                log("testAddCubic: passed "
+                    + "(expected IllegalPathStateException catched).");
+                return;
+            } else {
+                throw ipse;
+            }
+        }
+        if (isEmpty) {
+            throw new IllegalStateException("IllegalPathStateException not thrown !");
+        }
+        log("testAddCubic: passed.");
+    }
+
+    static void testAddClose(Path2D pathA, boolean isEmpty) {
+        try {
+            addClose(pathA);
+        }
+        catch (IllegalPathStateException ipse) {
+            if (isEmpty) {
+                log("testAddClose: passed "
+                    + "(expected IllegalPathStateException catched).");
+                return;
+            } else {
+                throw ipse;
+            }
+        }
+        if (isEmpty) {
+            throw new IllegalStateException("IllegalPathStateException not thrown !");
+        }
+        log("testAddClose: passed.");
     }
 
     static void testGetBounds(Path2D pathA, Path2D pathB) {
-        // - get the bounds of the cloned path
         final Rectangle rA = pathA.getBounds();
         final Rectangle rB = pathB.getBounds();
 
@@ -350,17 +415,15 @@ public class Path2DCopyConstructor {
             throw new IllegalStateException("Bounds2D are not equals [" 
                 + r2dA + "|" + r2dB + "] !");
         }
-        System.out.println("testGetBounds: passed.");
+        log("testGetBounds: passed.");
     }
 
     static void testTransform(Path2D pathA) {
-        // - use the transform() method on the cloned path
         pathA.transform(at);
-        System.out.println("testTransform: passed.");
+        log("testTransform: passed.");
     }
 
     static void testIntersect(Path2D pathA, Path2D pathB) {
-        // - call intersects(points), intersects(rect) on a cloned path
         boolean resA = pathA.intersects(rect2d);
         boolean resB = pathB.intersects(rect2d);
         if (resA != resB) {
@@ -373,11 +436,10 @@ public class Path2DCopyConstructor {
             throw new IllegalStateException("Intersects(doubles) are not equals ["
                 + resA + "|" + resB + "] !");
         }
-        System.out.println("testIntersect: passed.");
+        log("testIntersect: passed.");
     }
 
     static void testContains(Path2D pathA, Path2D pathB) {
-        // - call contains(pt), contains(rect) on a cloned path
         boolean resA = pathA.contains(pt2d);
         boolean resB = pathB.contains(pt2d);
         if (resA != resB) {
@@ -402,11 +464,10 @@ public class Path2DCopyConstructor {
             throw new IllegalStateException("Contains(doubles) are not equals [" 
                 + resA + "|" + resB + "] !");
         }
-        System.out.println("testContains: passed.");
+        log("testContains: passed.");
     }
 
     static void testGetCurrentPoint(Path2D pathA, Path2D pathB) {
-        // - call getCurrentPoint() on the cloned path
         final Point2D ptA = pathA.getCurrentPoint();
         final Point2D ptB = pathA.getCurrentPoint();
         if (((ptA == null) && (ptB != null))
@@ -415,25 +476,39 @@ public class Path2DCopyConstructor {
             throw new IllegalStateException("getCurrentPoint() are not equals [" 
                 + ptA + "|" + ptB + "] !");
         }
-        System.out.println("testGetCurrentPoint: passed.");
+        log("testGetCurrentPoint: passed.");
     }
 
+    static int getLength(int type) {
+        switch(type) {
+            case PathIterator.SEG_CUBICTO:
+                return 6;
+            case PathIterator.SEG_QUADTO:
+                return 4;
+            case PathIterator.SEG_LINETO:
+                return 2;
+            case PathIterator.SEG_MOVETO:
+            case PathIterator.SEG_CLOSE:
+            default:
+                return 0;
+        }
+    }
+    
+
     // Custom equals methods ---
-    static boolean equalsArray(float[] a, float[] a2) {
-        if (a == a2) {
-            return true;
+    
+    public static boolean equalsArray(float[] a, float[] a2, final int len) {
+        for (int i = 0; i < len; i++) {
+            if (Float.floatToIntBits(a[i]) != Float.floatToIntBits(a2[i])) {
+                return false;
+            }
         }
-        if (a == null || a2 == null) {
-            return false;
-        }
-
-        int length = a.length;
-        if (a2.length != length) {
-            return false;
-        }
-
-        for (int i = 0; i < length; i++) {
-            if (!equals(a[i], a2[i])) {
+        return true;
+    }
+    
+    static boolean equalsArrayEps(float[] a, float[] a2, final int len) {
+        for (int i = 0; i < len; i++) {
+            if (!equalsEps(a[i], a2[i])) {
                 return false;
             }
         }
@@ -445,18 +520,17 @@ public class Path2DCopyConstructor {
         if (a == b) {
             return true;
         }
-        return equals(a.getX(), b.getX())
-            && equals(a.getY(), b.getY())
-            && equals(a.getWidth(), b.getWidth())
-            && equals(a.getHeight(), b.getHeight());
+        return equalsEps(a.getX(), b.getX())
+            && equalsEps(a.getY(), b.getY())
+            && equalsEps(a.getWidth(), b.getWidth())
+            && equalsEps(a.getHeight(), b.getHeight());
     }
 
-    static boolean equals(float a, float b) {
+    static boolean equalsEps(float a, float b) {
         return (Math.abs(a - b) <= EPSILON);
     }
 
-    static boolean equals(double a, double b) {
+    static boolean equalsEps(double a, double b) {
         return (Math.abs(a - b) <= EPSILON);
     }
-
 }
