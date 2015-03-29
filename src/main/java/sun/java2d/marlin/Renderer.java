@@ -44,10 +44,10 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     final static int SIZE;
     
     // Renderer reference queue
-	private final static ReferenceQueue<Renderer> rdrQueue 
+    private final static ReferenceQueue<Renderer> rdrQueue 
         = new ReferenceQueue<Renderer>();
-	// reference list
-	private final static Vector<OffHeapReference> refList 
+    // reference list
+    private final static Vector<OffHeapReference> refList 
         = new Vector<OffHeapReference>(32);
 
     static {
@@ -1384,24 +1384,24 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     }
     
     static final class OffHeapDisposer implements Runnable {
-            @Override
-			public void run() {
-                final Thread currentThread = Thread.currentThread();
-				OffHeapReference ref;
+        @Override
+        public void run() {
+            final Thread currentThread = Thread.currentThread();
+            OffHeapReference ref;
 
-				// check interrupted:
-				for (; !currentThread.isInterrupted();) {
-					try {
-						ref = (OffHeapReference)rdrQueue.remove();
-                        ref.dispose();
-                        
-                        refList.remove(ref);
-                        
-					} catch (InterruptedException ie) {
-                        MarlinUtils.logException("OffHeapDisposer interrupted:", 
-                                                 ie);
-					}
-				}
-			}
+            // check interrupted:
+            for (; !currentThread.isInterrupted();) {
+                try {
+                    ref = (OffHeapReference)rdrQueue.remove();
+                    ref.dispose();
+
+                    refList.remove(ref);
+
+                } catch (InterruptedException ie) {
+                    MarlinUtils.logException("OffHeapDisposer interrupted:", 
+                                             ie);
+                }
+            }
+        }
     }
 }

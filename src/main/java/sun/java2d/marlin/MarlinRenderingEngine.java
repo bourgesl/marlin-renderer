@@ -375,7 +375,8 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
 
         if (useSimplifier) {
-            // Use simplifier after stroker before Dasher to remove collinear segments:
+            // Use simplifier after stroker before Renderer 
+            // to remove collinear segments (notably due to cap square)
             pc2d = rdrCtx.simplifier.init(pc2d);
         }
 

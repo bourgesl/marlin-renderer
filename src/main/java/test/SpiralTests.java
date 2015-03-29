@@ -27,25 +27,30 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Path2D;
+import static java.awt.geom.Path2D.WIND_NON_ZERO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import sun.java2d.marlin.MarlinRenderingEngine;
 import sun.java2d.pipe.RenderingEngine;
 
 /**
- * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers
+ * Simple Line rendering test using GeneralPath to enable Pisces / marlin /
+ * ductus renderers
  */
-public class LineTests {
+public class SpiralTests {
 
     public static void main(String[] args) {
+        final boolean useDashes = true;
         final float lineStroke = 2f;
-        final int size = 600;
+
+        BasicStroke stroke = createStroke(lineStroke, useDashes);
+
+        final int size = 4096;
         
         System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
 
-        System.out.println("LineTests: size = " + size);
+        System.out.println("SpiralTests: size = " + size);
 
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 
@@ -53,52 +58,90 @@ public class LineTests {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
-        
-        g2d.setClip(0, 0, size, size);
-        g2d.setStroke(new BasicStroke(lineStroke));
 
+        g2d.setClip(0, 0, size, size);
         g2d.setBackground(Color.WHITE);
         g2d.clearRect(0, 0, size, size);
 
-        g2d.setColor(Color.RED);
-
+        g2d.setStroke(stroke);
+        g2d.setColor(Color.BLUE);
         final long start = System.nanoTime();
 
-        paint(g2d, size - 2f * lineStroke);
+        paint(g2d, size - 10f);
 
         final long time = System.nanoTime() - start;
 
         System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
 
         try {
-            final File file = new File("LinesTest-norm-subpix_lg_" + MarlinRenderingEngine.getSubPixel_Log2_X()
-                    + "x" + MarlinRenderingEngine.getSubPixel_Log2_Y() + ".png");
+            final String renderer = RenderingEngine.getInstance().getClass().getSimpleName();
+
+            final File file = new File("SpiralTests-" + renderer + "-dash-" + useDashes + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());;
             ImageIO.write(image, "PNG", file);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             ex.printStackTrace();
-        } finally {
+        }
+        finally {
             g2d.dispose();
         }
     }
 
     private static void paint(final Graphics2D g2d, final float size) {
 
-        final Path2D.Float path = new Path2D.Float();
+        final Path2D.Float path = new Path2D.Float(WIND_NON_ZERO, 256 * 1024);
+        path.moveTo(0f, 0f);
 
-        for (float angle = 1f / 3f; angle <= 90f; angle += 1f) {
-            double angRad = Math.toRadians(angle);
+        final double halfSize = size / 2.0;
+        g2d.translate(halfSize, halfSize);
 
-            double cos = Math.cos(angRad);
-            double sin = Math.sin(angRad);
+        final double maxRadius = Math.sqrt(2.0) * halfSize;
+        final double twoPi = 2.0 * Math.PI;
+        final double stepCircle = 10.0;
 
-            path.reset();
+        double r = 1.0;
 
-            path.moveTo(5f * cos, 5f * sin);
-            path.lineTo(size * cos, size * sin);
+        double angle, sa, sr;
 
-            g2d.draw(path);
+        int n = 0;
+
+        while (r < maxRadius) {
+            // circle
+            sa = twoPi / (2.0 * r);
+            sr = stepCircle / (twoPi / sa);
+
+            for (angle = 0.0; angle <= twoPi; angle += sa) {
+                double cos = Math.cos(angle);
+                double sin = Math.sin(angle);
+
+                path.lineTo(r * cos, r * sin);
+
+                r += sr;
+                n++;
+            }
         }
+        System.out.println("draw : " + n + " lines.");
+        g2d.draw(path);
+    }
+
+    private static BasicStroke createStroke(final float width, final boolean useDashes) {
+        final float[] dashes;
+
+        if (useDashes) {
+            dashes = new float[8192];
+
+            float cur, step = 0.1f;
+            cur = step;
+            for (int i = 0; i < dashes.length; i++) {
+                dashes[i] = cur;
+                cur += step;
+            }
+        } else {
+            dashes = null;
+        }
+
+        return new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, dashes, 0.0f);
     }
 }
