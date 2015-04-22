@@ -34,23 +34,23 @@ import java.util.Arrays;
 
 /**
  * @test
- * @bug 8042103
- * @summary Check Path2D copy constructor (trims arrays) 
+ * @bug 8076419
+ * @summary Check Path2D copy constructor (trims arrays)
  *          and constructor with zero capacity
- * @run main Path2DTrimCopy
+ * @run main Path2DCopyConstructor
  */
 public class Path2DCopyConstructor {
 
     private final static float EPSILON = 5e-6f;
     private final static float FLATNESS = 1e-2f;
 
-    private final static AffineTransform at 
+    private final static AffineTransform at
         = AffineTransform.getScaleInstance(1.3, 2.4);
 
-    private final static Rectangle2D.Double rect2d 
+    private final static Rectangle2D.Double rect2d
         = new Rectangle2D.Double(3.2, 4.1, 5.0, 10.0);
 
-    private final static Point2D.Double pt2d 
+    private final static Point2D.Double pt2d
         = new Point2D.Double(2.0, 2.5);
 
     public static boolean verbose;
@@ -166,7 +166,7 @@ public class Path2DCopyConstructor {
         }
         return p2d;
     }
-    
+
     static Path2D addMoveAndClose(Path2D p2d) {
         addMove(p2d);
         addClose(p2d);
@@ -251,7 +251,7 @@ public class Path2DCopyConstructor {
             }
             if (!equalsArray(coordsA, coordsB, getLength(typeA))) {
                 throw new IllegalStateException("Path-segment[" + n + "] coords"
-                    + " are not equals [" + Arrays.toString(coordsA) + "|" 
+                    + " are not equals [" + Arrays.toString(coordsA) + "|"
                     + Arrays.toString(coordsB) + "] !");
             }
         }
@@ -280,7 +280,7 @@ public class Path2DCopyConstructor {
             // Take care of floating-point precision:
             if (!equalsArrayEps(coordsA, coordsB, getLength(typeA))) {
                 throw new IllegalStateException("Path-segment[" + n + "] coords"
-                    + " are not equals [" + Arrays.toString(coordsA) + "|" 
+                    + " are not equals [" + Arrays.toString(coordsA) + "|"
                     + Arrays.toString(coordsB) + "] !");
             }
         }
@@ -309,7 +309,7 @@ public class Path2DCopyConstructor {
             // Take care of floating-point precision:
             if (!equalsArrayEps(coordsA, coordsB, getLength(typeA))) {
                 throw new IllegalStateException("Path-segment[" + n + "] coords"
-                    + " are not equals [" + Arrays.toString(coordsA) + "|" 
+                    + " are not equals [" + Arrays.toString(coordsA) + "|"
                     + Arrays.toString(coordsB) + "] !");
             }
         }
@@ -405,14 +405,14 @@ public class Path2DCopyConstructor {
         final Rectangle rB = pathB.getBounds();
 
         if (!rA.equals(rB)) {
-            throw new IllegalStateException("Bounds are not equals [" + rA 
+            throw new IllegalStateException("Bounds are not equals [" + rA
                 + "|" + rB + "] !");
         }
         final Rectangle2D r2dA = pathA.getBounds2D();
         final Rectangle2D r2dB = pathB.getBounds2D();
 
         if (!equalsRectangle2D(r2dA, r2dB)) {
-            throw new IllegalStateException("Bounds2D are not equals [" 
+            throw new IllegalStateException("Bounds2D are not equals ["
                 + r2dA + "|" + r2dB + "] !");
         }
         log("testGetBounds: passed.");
@@ -443,25 +443,25 @@ public class Path2DCopyConstructor {
         boolean resA = pathA.contains(pt2d);
         boolean resB = pathB.contains(pt2d);
         if (resA != resB) {
-            throw new IllegalStateException("Contains(pt) are not equals [" 
+            throw new IllegalStateException("Contains(pt) are not equals ["
                 + resA + "|" + resB + "] !");
         }
         resA = pathA.contains(pt2d.getX(), pt2d.getY());
         resB = pathB.contains(pt2d.getX(), pt2d.getY());
         if (resA != resB) {
-            throw new IllegalStateException("Contains(x,y) are not equals [" 
+            throw new IllegalStateException("Contains(x,y) are not equals ["
                 + resA + "|" + resB + "] !");
         }
         resA = pathA.contains(rect2d);
         resB = pathB.contains(rect2d);
         if (resA != resB) {
-            throw new IllegalStateException("Contains(rect2d) are not equals [" 
+            throw new IllegalStateException("Contains(rect2d) are not equals ["
                 + resA + "|" + resB + "] !");
         }
         resA = pathA.contains(1.0, 2.0, 13.0, 17.0);
         resB = pathB.contains(1.0, 2.0, 13.0, 17.0);
         if (resA != resB) {
-            throw new IllegalStateException("Contains(doubles) are not equals [" 
+            throw new IllegalStateException("Contains(doubles) are not equals ["
                 + resA + "|" + resB + "] !");
         }
         log("testContains: passed.");
@@ -473,7 +473,7 @@ public class Path2DCopyConstructor {
         if (((ptA == null) && (ptB != null))
             || ((ptA != null) && !ptA.equals(ptB)))
         {
-            throw new IllegalStateException("getCurrentPoint() are not equals [" 
+            throw new IllegalStateException("getCurrentPoint() are not equals ["
                 + ptA + "|" + ptB + "] !");
         }
         log("testGetCurrentPoint: passed.");
@@ -486,17 +486,18 @@ public class Path2DCopyConstructor {
             case PathIterator.SEG_QUADTO:
                 return 4;
             case PathIterator.SEG_LINETO:
-                return 2;
             case PathIterator.SEG_MOVETO:
+                return 2;
             case PathIterator.SEG_CLOSE:
-            default:
                 return 0;
+            default:
+                throw new IllegalStateException("Invalid type: " + type);
         }
     }
-    
+
 
     // Custom equals methods ---
-    
+
     public static boolean equalsArray(float[] a, float[] a2, final int len) {
         for (int i = 0; i < len; i++) {
             if (Float.floatToIntBits(a[i]) != Float.floatToIntBits(a2[i])) {
@@ -505,7 +506,7 @@ public class Path2DCopyConstructor {
         }
         return true;
     }
-    
+
     static boolean equalsArrayEps(float[] a, float[] a2, final int len) {
         for (int i = 0; i < len; i++) {
             if (!equalsEps(a[i], a2[i])) {

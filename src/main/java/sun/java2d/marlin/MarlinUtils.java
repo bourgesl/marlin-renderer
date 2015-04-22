@@ -31,7 +31,7 @@ import sun.misc.SharedSecrets;
 public final class MarlinUtils {
     // TODO: use sun.util.logging.PlatformLogger once in JDK9
     private static final java.util.logging.Logger log;
-    
+
     static {
         if (MarlinConst.useLogger) {
             log =java.util.logging.Logger.getLogger("sun.java2d.marlin");
@@ -66,7 +66,7 @@ public final class MarlinUtils {
 
     /**
      * Checks if x is a power-of-two number.
-     * 
+     *
      * @param x any integer value
      * @return true if x is a power-of-two number
      */

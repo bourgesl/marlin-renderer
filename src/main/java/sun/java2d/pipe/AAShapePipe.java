@@ -44,7 +44,7 @@ public class AAShapePipe
     static RenderingEngine renderengine = RenderingEngine.getInstance();
 
     // Per-thread TileState (~1K very small so do not use any Weak Reference)
-    private static final ThreadLocal<TileState> tileStateThreadLocal = 
+    private static final ThreadLocal<TileState> tileStateThreadLocal =
             new ThreadLocal<TileState>() {
         @Override
         protected TileState initialValue() {
@@ -85,7 +85,7 @@ public class AAShapePipe
         Region clip = sg.getCompClip();
         final TileState ts = tileStateThreadLocal.get();
         final int[] abox = ts.abox;
-        
+
         AATileGenerator aatg =
             renderengine.getAATileGenerator(x, y, dx1, dy1, dx2, dy2, 0, 0,
                                             clip, abox);
@@ -108,7 +108,7 @@ public class AAShapePipe
         Region clip = sg.getCompClip();
         final TileState ts = tileStateThreadLocal.get();
         final int[] abox = ts.abox;
-        
+
         AATileGenerator aatg =
             renderengine.getAATileGenerator(x, y, dx1, dy1, dx2, dy2, lw1, lw2,
                                             clip, abox);
@@ -130,7 +130,7 @@ public class AAShapePipe
         Region clip = sg.getCompClip();
         final TileState ts = tileStateThreadLocal.get();
         final int[] abox = ts.abox;
-        
+
         AATileGenerator aatg =
             renderengine.getAATileGenerator(s, sg.transform, clip,
                                             bs, thin, adjust, abox);
@@ -202,7 +202,7 @@ public class AAShapePipe
         private final Rectangle dev = new Rectangle();
         // dirty bbox rectangle2D.Double
         private final Rectangle2D.Double bbox2D = new Rectangle2D.Double();
-        
+
         byte[] getAlphaTile(int len) {
             byte[] t = theTile;
             if (t.length < len) {
