@@ -143,14 +143,6 @@ public abstract class Path2D implements Shape, Cloneable {
     abstract int rectCrossings(double rxmin, double rymin,
                                double rxmax, double rymax);
 
-    /**
-     * Trims the capacity of this {@code Path2D} instance to be the
-     * path's current size.  An application can use this operation to minimize
-     * the storage of a {@code Path2D} instance.
-     * @since 1.9
-     */
-    public abstract void trimToSize();
-
     static byte[] expandPointTypes(byte[] oldPointTypes, int needed) {
         final int oldSize = oldPointTypes.length;
         final int newSizeMin = oldSize + needed;
@@ -285,16 +277,6 @@ public abstract class Path2D implements Shape, Cloneable {
                 this.pointTypes = new byte[INIT_SIZE];
                 this.floatCoords = new float[INIT_SIZE * 2];
                 append(pi, false);
-            }
-        }
-
-        @Override
-        public void trimToSize() {
-            if (numTypes < pointTypes.length) {
-                pointTypes = Arrays.copyOf(pointTypes, numTypes);
-            }
-            if (numCoords < floatCoords.length) {
-                floatCoords = Arrays.copyOf(floatCoords, numCoords);
             }
         }
 
@@ -1164,16 +1146,6 @@ public abstract class Path2D implements Shape, Cloneable {
                 this.pointTypes = new byte[INIT_SIZE];
                 this.doubleCoords = new double[INIT_SIZE * 2];
                 append(pi, false);
-            }
-        }
-
-        @Override
-        public void trimToSize() {
-            if (numTypes < pointTypes.length) {
-                pointTypes = Arrays.copyOf(pointTypes, numTypes);
-            }
-            if (numCoords < doubleCoords.length) {
-                doubleCoords = Arrays.copyOf(doubleCoords, numCoords);
             }
         }
 
