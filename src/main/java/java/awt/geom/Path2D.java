@@ -144,9 +144,9 @@ public abstract class Path2D implements Shape, Cloneable {
                                double rxmax, double rymax);
 
     /**
-     * Trims the capacity of this <tt>Path2D</tt> instance to be the
+     * Trims the capacity of this {@code Path2D} instance to be the
      * path's current size.  An application can use this operation to minimize
-     * the storage of a <tt>Path2D</tt> instance.
+     * the storage of a {@code Path2D} instance.
      * @since 1.9
      */
     public abstract void trimToSize();
