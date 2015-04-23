@@ -31,6 +31,13 @@ import sun.misc.FloatConsts;
  */
 final class FloatMath implements MarlinConst {
 
+    /* http://www.java-gaming.org/index.php?topic=24194.0 */
+
+    private static final int BIG_ENOUGH_INT = 1024 * 1024 * 1024;    // 1e9 max
+    private static final double BIG_ENOUGH_FLOOR = BIG_ENOUGH_INT;
+
+    static final boolean USE_HACK = true;
+
     static final boolean CHECK = false;
     static final boolean CHECK_OVERFLOW = false;
 
@@ -47,6 +54,9 @@ final class FloatMath implements MarlinConst {
      * mathematical integer.
      */
     public static int ceil(final float a) {
+        if (USE_HACK) {
+            return BIG_ENOUGH_INT - (int) (BIG_ENOUGH_FLOOR - a);
+        }
         if (useFastMath) {
             if (CHECK) {
                 final int ceil = ceil_f(a);
@@ -71,6 +81,9 @@ final class FloatMath implements MarlinConst {
      * integer.
      */
     public static float floor(final float a) {
+        if (USE_HACK) {
+            return (int) (a + BIG_ENOUGH_FLOOR) - BIG_ENOUGH_INT;
+        }
         if (useFastMath) {
             if (CHECK) {
                 final float floor = floor_f(a);
@@ -105,8 +118,8 @@ final class FloatMath implements MarlinConst {
      */
     private static int ceil_f(final float a) {
         // Derived from StrictMath.ceil(double):
-        
-        // Inline call to Math.getExponent(a) to 
+
+        // Inline call to Math.getExponent(a) to
         // compute only once Float.floatToRawIntBits(a)
         final int doppel = Float.floatToRawIntBits(a);
 
@@ -132,19 +145,16 @@ final class FloatMath implements MarlinConst {
         // has to be rounded to one.
         assert exponent >= 0 && exponent <= 22; // 51 for double
 
-        final int mask = FloatConsts.SIGNIF_BIT_MASK >> exponent;
-        final int intpart = doppel & (~mask);
+        final int intpart = doppel
+                            & (~(FloatConsts.SIGNIF_BIT_MASK >> exponent));
 
         if (intpart == doppel) {
             return (int) a; // integral value
         }
 
-        final int result = (int) Float.intBitsToFloat(intpart);
-
-        if (result <= 0) {
-            return result;
-        }
-        return result + 1;
+        // sign: 1 for negative, 0 for positive
+        // add : 0 for negative and 1 for positive
+        return (int) Float.intBitsToFloat(intpart) + ((~(intpart >> 31)) & 1);
     }
 
     /**
@@ -163,8 +173,8 @@ final class FloatMath implements MarlinConst {
      */
     private static float floor_f(final float a) {
         // Derived from StrictMath.floor(double):
-        
-        // Inline call to Math.getExponent(a) to 
+
+        // Inline call to Math.getExponent(a) to
         // compute only once Float.floatToRawIntBits(a)
         final int doppel = Float.floatToRawIntBits(a);
 
@@ -190,19 +200,16 @@ final class FloatMath implements MarlinConst {
         // has to be rounded to one.
         assert exponent >= 0 && exponent <= 22; // 51 for double
 
-        final int mask = FloatConsts.SIGNIF_BIT_MASK >> exponent;
-        final int intpart = doppel & (~mask);
+        final int intpart = doppel
+                            & (~(FloatConsts.SIGNIF_BIT_MASK >> exponent));
 
         if (intpart == doppel) {
             return a; // integral value
         }
 
-        final float result = Float.intBitsToFloat(intpart);
-
-        if (result >= 0f) {
-            return result;
-        }
-        return result - 1f;
+        // sign: 1 for negative, 0 for positive
+        // add : -1 for negative and 0 for positive
+        return Float.intBitsToFloat(intpart) + (intpart >> 31);
     }
 
 }
