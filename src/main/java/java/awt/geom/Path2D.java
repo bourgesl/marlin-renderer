@@ -166,12 +166,10 @@ public abstract class Path2D implements Shape, Cloneable {
             // overflow in growth algorithm computation
             newSize = Integer.MAX_VALUE;
         }
-        byte[] pointTypes;
         while (true) {
             try {
                 // try allocating the larger array
-                pointTypes = new byte[newSize];
-                break;
+                return Arrays.copyOf(oldPointTypes, newSize);
             } catch (OutOfMemoryError oome) {
                 if (newSize == newSizeMin) {
                     throw oome;
@@ -179,9 +177,6 @@ public abstract class Path2D implements Shape, Cloneable {
             }
             newSize = newSizeMin + (newSize - newSizeMin) / 2;
         }
-        // Copy old data into new array
-        System.arraycopy(oldPointTypes, 0, pointTypes, 0, oldSize);
-        return pointTypes;
     }
 
     /**

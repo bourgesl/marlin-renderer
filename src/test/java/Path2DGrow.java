@@ -26,8 +26,8 @@ import java.awt.geom.Path2D;
 
 /**
  * @test
- * @bug TODO
- * @summary Check growing Path2D (needRoom)
+ * @bug 8078464
+ * @summary Check the growth algorithm (needRoom) in Path2D implementations
  * @run main Path2DGrow
  */
 public class Path2DGrow {
