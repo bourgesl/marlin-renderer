@@ -36,7 +36,7 @@ final class FloatMath implements MarlinConst {
     private static final int BIG_ENOUGH_INT = 1024 * 1024 * 1024;    // 1e9 max
     private static final double BIG_ENOUGH_FLOOR = BIG_ENOUGH_INT;
 
-    static final boolean USE_HACK = true;
+    static final boolean USE_HACK = true && useFastMath;
 
     static final boolean CHECK = false;
     static final boolean CHECK_OVERFLOW = false;

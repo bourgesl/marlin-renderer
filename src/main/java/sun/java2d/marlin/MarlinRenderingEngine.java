@@ -293,7 +293,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             final double c = at.getShearY();
             final double d = at.getScaleY();
             final double det = a * d - c * b;
-            if (Math.abs(det) <= 2f * Float.MIN_VALUE) {
+            if (Math.abs(det) <= 2d * Float.MIN_VALUE) {
                 // this rendering engine takes one dimensional curves and turns
                 // them into 2D shapes by giving them width.
                 // However, if everything is to be passed through a singular
@@ -316,7 +316,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             // the scaled width. This condition is satisfied if
             // a*b == -c*d && a*a+c*c == b*b+d*d. In the actual check below, we
             // leave a bit of room for error.
-            if (nearZero(a*b + c*d, 2) && nearZero(a*a+c*c - (b*b+d*d), 2)) {
+            if (nearZero(a*b + c*d, 2d) && nearZero(a*a+c*c - (b*b+d*d), 2d)) {
                 final float scale = (float) Math.sqrt(a*a + c*c);
                 if (dashes != null) {
                     recycleDashes = true;

@@ -116,8 +116,8 @@ final class MergeSort {
                     dstY[j + 1] = dstY[j];
                     if (j-- == low) {
                         break;
+                    }
                 }
-            }
                 dstX[j + 1] = x;
                 dstY[j + 1] = y;
             }
