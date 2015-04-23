@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -24,30 +24,27 @@
  */
 package org.marlin.pisces;
 
-import static org.marlin.pisces.PiscesConst.useJUL;
 import sun.misc.JavaLangAccess;
 import sun.misc.SharedSecrets;
 
-/**
- * Utility class
- */
-public final class PiscesUtils {
-
-    /**
-     * logger (use JUL but should use PlatformLogger.getLogger("sun.java2d.pisces") in JDK8 to avoid initializing JUL
-     */
-    static final java.util.logging.Logger log;
+public final class MarlinUtils {
+    // TODO: use sun.util.logging.PlatformLogger once in JDK9
+    private static final java.util.logging.Logger log;
 
     static {
-        log = (useJUL) ? java.util.logging.Logger.getLogger(PiscesConst.class.getPackage().getName()) : null;
+        if (MarlinConst.useLogger) {
+            log =java.util.logging.Logger.getLogger("sun.java2d.marlin");
+        } else {
+            log = null;
+        }
     }
 
-    private PiscesUtils() {
+    private MarlinUtils() {
         // no-op
     }
 
     public static void logInfo(final String msg) {
-        if (useJUL) {
+        if (MarlinConst.useLogger) {
             log.info(msg);
         } else {
             System.out.print("INFO: ");
@@ -56,7 +53,8 @@ public final class PiscesUtils {
     }
 
     public static void logException(final String msg, final Throwable th) {
-        if (useJUL) {
+        if (MarlinConst.useLogger) {
+//            log.warning(msg, th);
             log.log(java.util.logging.Level.WARNING, msg, th);
         } else {
             System.out.print("WARNING: ");
@@ -67,7 +65,7 @@ public final class PiscesUtils {
 
     /**
      * Checks if x is a power-of-two number.
-     * 
+     *
      * @param x any integer value
      * @return true if x is a power-of-two number
      */

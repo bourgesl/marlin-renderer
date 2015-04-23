@@ -39,7 +39,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import org.marlin.pisces.PiscesRenderingEngine;
+import org.marlin.pisces.MarlinRenderingEngine;
 
 /**
  * Test program that demonstrates a bug in OpenJDK 1.7.0.60 (and

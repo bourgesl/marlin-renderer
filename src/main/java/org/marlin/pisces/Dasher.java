@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,6 +26,7 @@ package org.marlin.pisces;
 
 import java.util.Arrays;
 import sun.awt.geom.PathConsumer2D;
+
 /**
  * The <code>Dasher</code> class takes a series of linear commands
  * (<code>moveTo</code>, <code>lineTo</code>, <code>close</code> and
@@ -37,12 +38,12 @@ import sun.awt.geom.PathConsumer2D;
  * semantics are unclear.
  *
  */
-final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
+final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
+
     final static int recLimit = 4;
     final static float ERR = 0.01f;
     final static float minTincrement = 1f / (1 << recLimit);
 
-    /* members */
     private PathConsumer2D out;
     private float[] dash;
     private int dashLen;
@@ -63,17 +64,18 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
     // temporary storage for the current curve
     private final float[] curCurvepts;
 
-    /** per-thread renderer context */
+    // per-thread renderer context
     final RendererContext rdrCtx;
-    
-    /* dashes array (dirty) */
+
+    // dashes array (dirty)
     final float[] dashes_initial = new float[INITIAL_ARRAY];
 
-    /* flag to recycle dash array copy */
+    // flag to recycle dash array copy
     boolean recycleDashes;
 
-    /* per-thread initial arrays (large enough to satisfy most usages */
-    private final float[] firstSegmentsBuffer_initial = new float[INITIAL_ARRAY + 1]; // +1 to avoid recycling in Helpers.widenArray()
+    // per-thread initial arrays (large enough to satisfy most usages
+    // +1 to avoid recycling in Helpers.widenArray()
+    private final float[] firstSegmentsBuffer_initial = new float[INITIAL_ARRAY + 1];
 
     /**
      * Constructs a <code>Dasher</code>.
@@ -88,16 +90,20 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         // dashing curves, we need to subdivide it
         curCurvepts = new float[8 * 2];
     }
-    
+
     /**
      * Initialize the <code>Dasher</code>.
      *
      * @param out an output <code>PathConsumer2D</code>.
      * @param dash an array of <code>float</code>s containing the dash pattern
+     * @param dashLen length of the given dash array
      * @param phase a <code>float</code> containing the dash phase
+     * @param recycleDashes true to indicate to recycle the given dash array
      * @return this instance
      */
-    Dasher init(final PathConsumer2D out, float[] dash, int dashLen, float phase, boolean recycleDashes) {
+    Dasher init(final PathConsumer2D out, float[] dash, int dashLen,
+                float phase, boolean recycleDashes)
+    {
         if (phase < 0) {
             throw new IllegalArgumentException("phase < 0 !");
         }
@@ -120,12 +126,10 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         this.startIdx = idx;
         this.starting = true;
         needsMoveTo = false;
-        
-        firstSegUsed = 0;
         firstSegidx = 0;
-        
+
         this.recycleDashes = recycleDashes;
-        
+
         return this; // fluent API
     }
 
@@ -136,21 +140,22 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
     void dispose() {
         // Return arrays:
         if (this.recycleDashes && dash != dashes_initial) {
-            rdrCtx.putFloatArray(dash, 0, dashLen);
+            rdrCtx.putDirtyFloatArray(dash);
         }
-        
+
         if (firstSegmentsBuffer != firstSegmentsBuffer_initial) {
-            rdrCtx.putFloatArray(firstSegmentsBuffer, 0, firstSegUsed);
+            rdrCtx.putDirtyFloatArray(firstSegmentsBuffer);
             firstSegmentsBuffer = firstSegmentsBuffer_initial;
         }
-        
+
         if (doCleanDirty) {
-            // LBO: keep curCurvepts and firstSegmentsBuffer dirty
-            Arrays.fill(curCurvepts, 0);
-            Arrays.fill(firstSegmentsBuffer, 0, firstSegUsed, 0);
+            // keep curCurvepts and firstSegmentsBuffer dirty
+            Arrays.fill(curCurvepts, 0f);
+            Arrays.fill(firstSegmentsBuffer, 0f);
         }
     }
 
+    @Override
     public void moveTo(float x0, float y0) {
         if (firstSegidx > 0) {
             out.moveTo(sx, sy);
@@ -183,7 +188,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
 
     private void emitFirstSegments() {
         final float[] fSegBuf = firstSegmentsBuffer;
-        
+
         for (int i = 0; i < firstSegidx; ) {
             int type = (int)fSegBuf[i];
             emitSeg(fSegBuf, i + 1, type);
@@ -197,9 +202,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
     // buffer below.
     private float[] firstSegmentsBuffer; // dynamic array
     private int firstSegidx;
-    // max used mark
-    private int firstSegUsed;
-    
+
     // precondition: pts must be in relative coordinates (relative to x0,y0)
     // fullCurve is true iff the curve in pts has not been split.
     private void goTo(float[] pts, int off, final int type) {
@@ -211,16 +214,18 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
                 int segIdx = firstSegidx;
                 float[] buf = firstSegmentsBuffer;
                 if (segIdx + len  > buf.length) {
-                    firstSegmentsBuffer = buf = Helpers.widenArray(rdrCtx, 
-                            firstSegmentsBuffer, segIdx, len, firstSegUsed);
+                    if (doStats) {
+                        rdrCtx.stats.stat_array_dasher_firstSegmentsBuffer
+                            .add(segIdx + len);
+                    }
+                    firstSegmentsBuffer = buf
+                        = rdrCtx.widenDirtyFloatArray(buf, segIdx, segIdx + len);
                 }
                 buf[segIdx++] = type;
                 len--;
                 // small arraycopy (2, 4 or 6) but with offset:
                 System.arraycopy(pts, off, buf, segIdx, len);
                 segIdx += len;
-                // update used mark
-                if (segIdx > firstSegUsed) { firstSegUsed = segIdx; }
                 firstSegidx = segIdx;
             } else {
                 if (needsMoveTo) {
@@ -237,15 +242,17 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         this.y0 = y;
     }
 
+    @Override
     public void lineTo(float x1, float y1) {
         float dx = x1 - x0;
         float dy = y1 - y0;
 
-        float len = (float) Math.sqrt(dx*dx + dy*dy);
+        float len = dx*dx + dy*dy;
 
         if (len == 0) {
             return;
         }
+        len = (float) Math.sqrt(len);
 
         // The scaling factors needed to get the dx and dy of the
         // transformed dash segments.
@@ -254,18 +261,18 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
 
         final float[] _curCurvepts = curCurvepts;
         final float[] _dash = dash;
-        
+
         float leftInThisDashSegment;
         float dashdx, dashdy, p;
-        
+
         while (true) {
             leftInThisDashSegment = _dash[idx] - phase;
-            
+
             if (len <= leftInThisDashSegment) {
                 _curCurvepts[0] = x1;
                 _curCurvepts[1] = y1;
                 goTo(_curCurvepts, 0, 4);
-                
+
                 // Advance phase within current dash segment
                 phase += len;
                 if (len == leftInThisDashSegment) {
@@ -278,7 +285,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
 
             dashdx = _dash[idx] * cx;
             dashdy = _dash[idx] * cy;
-            
+
             if (phase == 0) {
                 _curCurvepts[0] = x0 + dashdx;
                 _curCurvepts[1] = y0 + dashdy;
@@ -309,10 +316,12 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         }
         li.initializeIterationOnCurve(curCurvepts, type);
 
-        int curCurveoff = 0; // initially the current curve is at curCurvepts[0...type]
+        // initially the current curve is at curCurvepts[0...type]
+        int curCurveoff = 0;
         float lastSplitT = 0;
-        float t = 0;
+        float t;
         float leftInThisDashSegment = dash[idx] - phase;
+
         while ((t = li.next(leftInThisDashSegment)) < 1) {
             if (t != 0) {
                 Helpers.subdivideAt((t - lastSplitT) / (1 - lastSplitT),
@@ -336,7 +345,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
             idx = (idx + 1) % dashLen;
             dashOn = !dashOn;
         }
-        // LBO: reset LengthIterator:
+        // reset LengthIterator:
         li.reset();
     }
 
@@ -393,8 +402,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         LengthIterator() {
             this.recCurveStack = new float[recLimit + 1][8];
             this.sides = new Side[recLimit];
-            // if any methods are called without first initializing this object on
-            // a curve, we want it to fail ASAP.
+            // if any methods are called without first initializing this object
+            // on a curve, we want it to fail ASAP.
             this.nextT = Float.MAX_VALUE;
             this.lenAtNextT = Float.MAX_VALUE;
             this.lenAtLastSplit = Float.MIN_VALUE;
@@ -407,22 +416,23 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
          * Reset this LengthIterator.
          */
         void reset() {
-            // LBO: keep liData dirty 
+            // keep data dirty
             // as it appears not useful to reset data:
             if (doCleanDirty) {
                 final int recLimit = recCurveStack.length - 1;
                 for (int i = recLimit; i >= 0; i--) {
-                    Arrays.fill(recCurveStack[i], 0, 8, 0);
+                    Arrays.fill(recCurveStack[i], 0f);
                 }
-                Arrays.fill(sides, 0, recLimit, Side.LEFT);
-                Arrays.fill(curLeafCtrlPolyLengths, 0, 3, 0);
-                Arrays.fill(nextRoots, 0, 4, 0);
-                Arrays.fill(flatLeafCoefCache, 0, 4, 0);
+                Arrays.fill(sides, Side.LEFT);
+                Arrays.fill(curLeafCtrlPolyLengths, 0f);
+                Arrays.fill(nextRoots, 0f);
+                Arrays.fill(flatLeafCoefCache, 0f);
             }
             // Ensure the cache is
             // invalid when it's third element is negative, since in any
             // valid flattened curve, this would be >= 0.
             flatLeafCoefCache[2] = -1f;
+            cachedHaveLowAcceleration = -1;
         }
 
         void initializeIterationOnCurve(float[] pts, int type) {
@@ -466,8 +476,9 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
                     // if len1 is close to 2 and 2 is close to 3, that probably
                     // means 1 is close to 3 so the second part of this test might
                     // not be needed, but it doesn't hurt to include it.
-                    if (!(Helpers.within(len2, len3, err*len3) &&
-                          Helpers.within(len1, len3, err*len3))) {
+                    final float errLen3 = err * len3;
+                    if (!(Helpers.within(len2, len3, errLen3) &&
+                          Helpers.within(len1, len3, errLen3))) {
                         cachedHaveLowAcceleration = 0;
                         return false;
                     }
@@ -488,7 +499,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         // invalid when it's third element is negative, since in any
         // valid flattened curve, this would be >= 0.
         private final float[] flatLeafCoefCache = new float[]{0f, 0f, -1f, 0f};
-        
+
         // returns the t value where the remaining curve should be split in
         // order for the left subdivided curve to have length len. If len
         // is >= than the length of the uniterated curve, it returns 1.
@@ -497,7 +508,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
             while (lenAtNextT < targetLength) {
                 if (done) {
                     lastSegLen = lenAtNextT - lenAtLastSplit;
-                    return 1;
+                    return 1f;
                 }
                 goToNextLeaf();
             }
@@ -513,10 +524,10 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
                 // solve this to get the parameter of the original leaf that
                 // gives us the desired length.
                 final float[] _flatLeafCoefCache = flatLeafCoefCache;
-                
+
                 if (_flatLeafCoefCache[2] < 0) {
                     float x = 0f + curLeafCtrlPolyLengths[0],
-                            y = x + curLeafCtrlPolyLengths[1];
+                          y = x  + curLeafCtrlPolyLengths[1];
                     if (curveType == 8) {
                         float z = y + curLeafCtrlPolyLengths[2];
                         _flatLeafCoefCache[0] = 3f * (x - y) + z;
@@ -546,8 +557,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
             // t is relative to the current leaf, so we must make it a valid parameter
             // of the original curve.
             t = t * (nextT - lastT) + lastT;
-            if (t >= 1) {
-                t = 1;
+            if (t >= 1f) {
+                t = 1f;
                 done = true;
             }
             // even if done = true, if we're here, that means targetLength
@@ -570,7 +581,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
             // right child.
             int _recLevel = recLevel;
             final Side[] _sides = sides;
-            
+
             _recLevel--;
             while(_sides[_recLevel] == Side.RIGHT) {
                 if (_recLevel == 0) {
@@ -583,9 +594,10 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
 
             _sides[_recLevel] = Side.RIGHT;
             // optimize arraycopy (8 values faster than 6 = type):
-            System.arraycopy(recCurveStack[_recLevel], 0, recCurveStack[_recLevel+1], 0, 8);
+            System.arraycopy(recCurveStack[_recLevel], 0,
+                             recCurveStack[_recLevel+1], 0, 8);
             _recLevel++;
-            
+
             recLevel = _recLevel;
             goLeft();
         }
@@ -593,13 +605,13 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         // go to the leftmost node from the current node. Return its length.
         private void goLeft() {
             float len = onLeaf();
-            if (len >= 0) {
+            if (len >= 0f) {
                 lastT = nextT;
                 lenAtLastT = lenAtNextT;
                 nextT += (1 << (recLimit - recLevel)) * minTincrement;
                 lenAtNextT += len;
                 // invalidate caches
-                flatLeafCoefCache[2] = -1;
+                flatLeafCoefCache[2] = -1f;
                 cachedHaveLowAcceleration = -1;
             } else {
                 Helpers.subdivide(recCurveStack[recLevel], 0,
@@ -615,7 +627,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         // the length of the leaf if we are on a leaf.
         private float onLeaf() {
             float[] curve = recCurveStack[recLevel];
-            float polyLen = 0;
+            float polyLen = 0f;
 
             float x0 = curve[0], y0 = curve[1];
             for (int i = 2; i < curveType; i += 2) {
@@ -627,11 +639,13 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
                 y0 = y1;
             }
 
-            final float lineLen = Helpers.linelen(curve[0], curve[1], curve[curveType-2], curve[curveType-1]);
-            if (polyLen - lineLen < ERR || recLevel == recLimit) {
-                return (polyLen + lineLen)/2;
+            final float lineLen = Helpers.linelen(curve[0], curve[1],
+                                                  curve[curveType-2],
+                                                  curve[curveType-1]);
+            if ((polyLen - lineLen) < ERR || recLevel == recLimit) {
+                return (polyLen + lineLen) / 2f;
             }
-            return -1;
+            return -1f;
         }
     }
 
@@ -657,6 +671,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         somethingTo(6);
     }
 
+    @Override
     public void closePath() {
         lineTo(sx, sy);
         if (firstSegidx > 0) {
@@ -668,6 +683,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, PiscesConst {
         moveTo(sx, sy);
     }
 
+    @Override
     public void pathDone() {
         if (firstSegidx > 0) {
             out.moveTo(sx, sy);

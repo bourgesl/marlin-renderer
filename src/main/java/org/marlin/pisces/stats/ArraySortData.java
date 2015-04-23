@@ -66,7 +66,7 @@ public class ArraySortData implements Serializable, Comparable<ArraySortData> {
     public int getSortedIndex() {
         return sortedIndex;
     }
-    
+
     public int getUnsortedRatio() {
         return ((10 * (toIndex - sortedIndex)) / toIndex);
     }
@@ -80,5 +80,5 @@ public class ArraySortData implements Serializable, Comparable<ArraySortData> {
         return res;
     }
 
-    
+
 }

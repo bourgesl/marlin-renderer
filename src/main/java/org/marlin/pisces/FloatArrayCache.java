@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,32 +26,30 @@ package org.marlin.pisces;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import static org.marlin.pisces.PiscesUtils.logException;
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import static org.marlin.pisces.MarlinUtils.logException;
+import static org.marlin.pisces.MarlinUtils.logInfo;
 
-/**
- *
- */
-final class FloatArrayCache implements PiscesConst {
+final class FloatArrayCache implements MarlinConst {
 
-    /* members */
     private final int arraySize;
     private final ArrayDeque<float[]> floatArrays;
-    /* stats */
+    // stats
     private int getOp = 0;
     private int createOp = 0;
     private int returnOp = 0;
 
     void dumpStats() {
         if (getOp > 0) {
-            logInfo("FloatArrayCache[" + arraySize + "]: get: " + getOp + " created: " + createOp + " - returned: " + returnOp + " :: cache size: " + floatArrays.size());
+            logInfo("FloatArrayCache[" + arraySize + "]: get: " + getOp
+                    + " created: " + createOp + " - returned: " + returnOp
+                    + " :: cache size: " + floatArrays.size());
         }
     }
 
     FloatArrayCache(final int arraySize) {
         this.arraySize = arraySize;
-        this.floatArrays = new ArrayDeque<float[]>(6); /* small but enough: almost 1 cache line */
-
+        // small but enough: almost 1 cache line
+        this.floatArrays = new ArrayDeque<float[]>(6);
     }
 
     float[] getArray() {
@@ -73,7 +71,7 @@ final class FloatArrayCache implements PiscesConst {
         return new float[arraySize];
     }
 
-    void putArray(final float[] array, final int length, final int fromIndex, final int toIndex) {
+    void putDirtyArray(final float[] array, final int length) {
         if (doChecks && (length != arraySize)) {
             System.out.println("bad length = " + length);
             return;
@@ -82,17 +80,37 @@ final class FloatArrayCache implements PiscesConst {
             returnOp++;
         }
 
-        // TODO: pool eviction
-        fill(array, fromIndex, toIndex, 0);
+        // NO clean-up of array data = DIRTY ARRAY
 
         // fill cache:
         floatArrays.addLast(array);
     }
 
-    static void fill(final float[] array, final int fromIndex, final int toIndex, final float value) {
+    void putArray(final float[] array, final int length,
+                  final int fromIndex, final int toIndex)
+    {
+        if (doChecks && (length != arraySize)) {
+            System.out.println("bad length = " + length);
+            return;
+        }
+        if (doStats) {
+            returnOp++;
+        }
+
+        // clean-up array of dirty part[fromIndex; toIndex[
+        fill(array, fromIndex, toIndex, 0f);
+
+        // fill cache:
+        floatArrays.addLast(array);
+    }
+
+    static void fill(final float[] array, final int fromIndex,
+                     final int toIndex, final float value)
+    {
         // clear array data:
         /*
-         * Arrays.fill is faster than System.arraycopy(empty array) or Unsafe.setMemory(byte 0)
+         * Arrays.fill is faster than System.arraycopy(empty array)
+         * or Unsafe.setMemory(byte 0)
          */
         if (toIndex != 0) {
             Arrays.fill(array, fromIndex, toIndex, value);
@@ -103,7 +121,9 @@ final class FloatArrayCache implements PiscesConst {
         }
     }
 
-    static void check(final float[] array, final int fromIndex, final int toIndex, final float value) {
+    static void check(final float[] array, final int fromIndex,
+                      final int toIndex, final float value)
+    {
         if (doChecks) {
             boolean empty = true;
             int i;
@@ -115,7 +135,8 @@ final class FloatArrayCache implements PiscesConst {
                 }
             }
             if (!empty) {
-                logException("Invalid array value at " + i + "\n" + Arrays.toString(array), new Throwable());
+                logException("Invalid array value at " + i + "\n"
+                             + Arrays.toString(array), new Throwable());
 
                 // ensure array is correctly filled:
                 Arrays.fill(array, value);

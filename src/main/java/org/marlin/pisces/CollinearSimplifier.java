@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,26 +28,25 @@ import sun.awt.geom.PathConsumer2D;
 
 final class CollinearSimplifier implements PathConsumer2D {
 
-    enum SimplifierState {
+    private final static int STATE_EMPTY = 0;
+    private final static int STATE_PREV_POINT = 1;
+    private final static int STATE_PREV_LINE = 2;
 
-        Empty, PreviousPoint, PreviousLine
-    };
-    /* slope precision threshold */
-    static final float EPS = 1e-3f; /* LBO: aaime proposed 1e-3f */
+    // slope precision threshold
+    static final float EPS = 1e-4f; // aaime proposed 1e-3f
 
-    /* members */
     PathConsumer2D delegate;
-    SimplifierState state;
-    float px1, py1, px2, py2;
+    int state;
     float pslope;
+    float px1, py1, px2, py2;
 
     CollinearSimplifier() {
     }
 
     public CollinearSimplifier init(PathConsumer2D delegate) {
         this.delegate = delegate;
-        this.state = SimplifierState.Empty;
-        
+        this.state = STATE_EMPTY;
+
         return this; // fluent API
     }
 
@@ -75,7 +74,8 @@ final class CollinearSimplifier implements PathConsumer2D {
     }
 
     @Override
-    public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) {
+    public void curveTo(float x1, float y1, float x2, float y2,
+                        float x3, float y3) {
         emitStashedLine();
         delegate.curveTo(x1, y1, x2, y2, x3, y3);
     }
@@ -84,59 +84,54 @@ final class CollinearSimplifier implements PathConsumer2D {
     public void moveTo(float x, float y) {
         emitStashedLine();
         delegate.moveTo(x, y);
-        state = SimplifierState.PreviousPoint;
+        state = STATE_PREV_POINT;
         px1 = x;
         py1 = y;
     }
 
     @Override
     public void lineTo(final float x, final float y) {
-        if (state == SimplifierState.Empty) {
-            delegate.lineTo(x, y);
-            state = SimplifierState.PreviousPoint;
-            px1 = x;
-            py1 = y;
-            return;
-        }
-        if (state == SimplifierState.PreviousPoint) {
-            state = SimplifierState.PreviousLine;
+        if (state == STATE_PREV_LINE) {
+            // state is STATE_PREV_LINE
+            final float slope = getSlope(px2, py2, x, y);
+            // test for collinear
+            if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
+                // merge segments
+                px2 = x;
+                py2 = y;
+                return;
+            }
+            // emit previous segment
+            delegate.lineTo(px2, py2);
+            px1 = px2;
+            py1 = py2;
+            px2 = x;
+            py2 = y;
+            pslope = slope;
+        } else if (state == STATE_PREV_POINT) {
+            state = STATE_PREV_LINE;
             px2 = x;
             py2 = y;
             pslope = getSlope(px1, py1, x, y);
-            return;
+        } else if (state == STATE_EMPTY) {
+            delegate.lineTo(x, y);
+            state = STATE_PREV_POINT;
+            px1 = x;
+            py1 = y;
         }
-        /* state is SimplifierState.PreviousLine */
-        final float slope = getSlope(px2, py2, x, y);
-        // test for collinear
-        if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
-            /* merge segments */
-            px2 = x;
-            py2 = y;
-            return;
-        }
-        /* emit previous segment */
-        delegate.lineTo(px2, py2);
-        px1 = px2;
-        py1 = py2;
-        px2 = x;
-        py2 = y;
-        pslope = slope;
     }
 
     private void emitStashedLine() {
-        if (state == SimplifierState.Empty) {
-            /* fast return */
-            return;
-        }
-        if (state == SimplifierState.PreviousLine) {
+        if (state == STATE_PREV_LINE) {
             delegate.lineTo(px2, py2);
         }
-        state = SimplifierState.Empty;
+        state = STATE_EMPTY;
     }
 
-    private float getSlope(float x1, float y1, float x2, float y2) {
+    private static float getSlope(float x1, float y1, float x2, float y2) {
         if (y2 == y1) {
-            return (x2 > x1) ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY;
+            return (x2 > x1) ? Float.POSITIVE_INFINITY
+                    : Float.NEGATIVE_INFINITY;
         }
         return (x2 - x1) / (y2 - y1);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,39 +25,33 @@
 package org.marlin.pisces;
 
 /**
- * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[]) to swap two arrays at the same time (x &
- * y) and use external auxiliary storage for temporary arrays
+ * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[])
+ * to swap two arrays at the same time (x & y)
+ * and use external auxiliary storage for temporary arrays
  */
 final class MergeSort {
 
     /** collect array data at each mergeSortNoCopy() invocation */
-    private final static boolean ENABLE_COLLECT_ARRAY_DATA = Boolean.getBoolean("MergeSort.collect.data");
+//    private final static boolean ENABLE_COLLECT_ARRAY_DATA = false; /* Boolean.getBoolean("MergeSort.collect.data"); */
     /** true to enable array data collection and serialization */
-    public final static boolean DO_COLLECT_ARRAY_DATA = PiscesConst.doStats && ENABLE_COLLECT_ARRAY_DATA;
+    public final static boolean DO_COLLECT_ARRAY_DATA = (false) && MarlinConst.doStats;
 
     // 14 MapBench better results
     // 20 MapSortTest better average results on 9000 arrays !
-    /** insertion sort threshold */
+    // insertion sort threshold
     public final static int INSERTION_SORT_THRESHOLD = 14;
-    /*    
-     public final static int INSERTION_SORT_THRESHOLD = Integer.getInteger("MergeSort.threshold", 14); // 14 | 16 | 18 ?
-
-     static {
-     System.out.println("INSERTION_SORT_THRESHOLD: " + INSERTION_SORT_THRESHOLD);
-     }
-     */
 
     /**
      * Modified merge sort:
-     * Input arrays are in both auxX/auxY (sorted: 0 to insertionSortIndex) 
+     * Input arrays are in both auxX/auxY (sorted: 0 to insertionSortIndex)
      *                     and x/y (unsorted: insertionSortIndex to toIndex)
      * Outputs are stored in x/y arrays
      */
     static void mergeSortNoCopy(final int[] x, final int[] y,
                                 final int[] auxX, final int[] auxY,
                                 final int toIndex,
-                                final int insertionSortIndex) {
-
+                                final int insertionSortIndex)
+    {
         // Gather array data:
         if (DO_COLLECT_ARRAY_DATA) {
             // Copy presorted data from auxX/auxY to x/y:
@@ -68,18 +62,21 @@ final class MergeSort {
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
             // explicit check to avoid bound checks within hot loops (below):
-            throw new ArrayIndexOutOfBoundsException("bad arguments: toIndex=" + toIndex);
+            throw new ArrayIndexOutOfBoundsException("bad arguments: toIndex="
+                                                     + toIndex);
         }
 
-        // sort second part only using merge / insertion sort in auxiliary storage (auxX/auxY)
+        // sort second part only using merge / insertion sort
+        // in auxiliary storage (auxX/auxY)
         mergeSort(x, y, x, auxX, y, auxY, insertionSortIndex, toIndex);
 
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
-        if ((insertionSortIndex == 0) || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
+        if ((insertionSortIndex == 0)
+            || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
 //            System.out.println("mergeSortNoCopy: ordered");
             // 34 occurences
-            // no initial left part or both sublists (auxX, auxY) are already sorted:
+            // no initial left part or both sublists (auxX, auxY) are sorted:
             // copy back data into (x, y):
             System.arraycopy(auxX, 0, x, 0, toIndex);
             System.arraycopy(auxY, 0, y, 0, toIndex);
@@ -87,7 +84,8 @@ final class MergeSort {
         }
 
         for (int i = 0, p = 0, q = insertionSortIndex; i < toIndex; i++) {
-            if ((q >= toIndex) || ((p < insertionSortIndex) && (auxX[p] <= auxX[q]))) {
+            if ((q >= toIndex) || ((p < insertionSortIndex)
+                                   && (auxX[p] <= auxX[q]))) {
                 x[i] = auxX[p];
                 y[i] = auxY[p];
                 p++;
@@ -100,21 +98,21 @@ final class MergeSort {
     }
 
     /**
-     * Src is the source array that starts at index 0 
-     * Dest is the (possibly larger) array destination with a possible offset 
-     * low is the index in dest to start sorting 
-     * high is the end index in dest to end sorting 
+     * Src is the source array that starts at index 0
+     * Dest is the (possibly larger) array destination with a possible offset
+     * low is the index in dest to start sorting
+     * high is the end index in dest to end sorting
      */
     private static void mergeSort(final int[] refX, final int[] refY,
                                   final int[] srcX, final int[] dstX,
                                   final int[] srcY, final int[] dstY,
-                                  final int low, final int high) {
-
+                                  final int low, final int high)
+    {
         final int length = high - low;
 
         /*
-         * Tuning parameter: list size at or below which insertion sort will be used in preference to mergesort.
-         * Benchmarks indicates 10 as the best threshold among [5,10,20]
+         * Tuning parameter: list size at or below which insertion sort
+         * will be used in preference to mergesort.
          */
         if (length <= INSERTION_SORT_THRESHOLD) {
             // Insertion sort on smallest arrays

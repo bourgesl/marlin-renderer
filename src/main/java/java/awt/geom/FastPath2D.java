@@ -34,10 +34,6 @@ import java.util.Arrays;
  */
 public final class FastPath2D extends Path2D.Float {
 
-    // only applicable if sun-java2d patch is used: 
-    // TODO: use introspection to detect patch in classpath ?
-    private final static boolean USE_PATH2D_PATCH = false; 
-
     public FastPath2D(int initialCapacity) {
         super(WIND_NON_ZERO, initialCapacity);
     }
@@ -46,9 +42,8 @@ public final class FastPath2D extends Path2D.Float {
             byte[] pointTypes,
             int numTypes,
             float[] pointCoords,
-            int numCoords) {
-        // TODO: provide a Path2D constructor which leaves pointTypes & floatCoords arrays null when given
-
+            int numCoords)
+    {
         // Use initialCapacity=0 to create new byte[0] and new float[0] 
         // as these arrays will be overwritten:
         super(windingRule, 0);
@@ -60,11 +55,6 @@ public final class FastPath2D extends Path2D.Float {
     }
 
     public Path2D trimmedCopy() {
-//        System.out.println("copy: numTypes = " + numTypes + ", numCoords = " + numCoords);
-        if (USE_PATH2D_PATCH) {
-            return new Path2D.Float(this, null);
-        }
-
         // Only copy used array parts:
         return new FastPath2D(this.windingRule,
                 Arrays.copyOf(this.pointTypes, this.numTypes),

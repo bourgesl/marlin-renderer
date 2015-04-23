@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,23 +26,23 @@ package org.marlin.pisces;
 
 import sun.java2d.pipe.AATileGenerator;
 
-final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
-    
-    private static final int TILE_SIZE = PiscesCache.TILE_SIZE;
+final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
 
-    private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE * Renderer.MAX_AA_ALPHA;
+    private static final int TILE_SIZE = MarlinCache.TILE_SIZE;
 
-    /* PiscesTileGenerator members */
+    private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE
+                                                  * Renderer.MAX_AA_ALPHA;
+
     private final Renderer rdr;
-    private final PiscesCache cache;
+    private final MarlinCache cache;
     private int x, y;
 
-    PiscesTileGenerator(Renderer r) {
+    MarlinTileGenerator(Renderer r) {
         this.rdr = r;
         this.cache = r.cache;
     }
 
-    PiscesTileGenerator init() {
+    MarlinTileGenerator init() {
         this.x = cache.bboxX0;
         this.y = cache.bboxY0;
 
@@ -130,7 +130,7 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
             y += TILE_SIZE;
 
             if (y < cache.bboxY1) {
-                // LBO: compute rowAAStride for the tile line
+                // compute for the tile line
                 // [ y; max(y + TILE_SIZE, bboxY1) ]
                 this.rdr.endRendering(y);
             }
@@ -143,7 +143,9 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
      * once per tile, but not both.
      */
     @Override
-    public void getAlpha(final byte tile[], final int offset, final int rowstride) {
+    public void getAlpha(final byte tile[], final int offset,
+                                            final int rowstride)
+    {
         if (doMonitors) {
             RendererContext.stats.mon_ptg_getAlpha.start();
         }
@@ -166,17 +168,18 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
         }
 
         if (doLogBounds) {
-            PiscesUtils.logInfo("getAlpha = [" + x0 + " ... " + x1 + "[ [" + y0 + " ... " + y1 + "[");
+            MarlinUtils.logInfo("getAlpha = [" + x0 + " ... " + x1
+                                + "[ [" + y0 + " ... " + y1 + "[");
         }
-        
+
         final int skipRowPixels = (rowstride - (x1 - x0));
 
-        // LBO: hack to process tile line [0 - 32[
+        // note: process tile line [0 - 32[
         y1 -= y0;
         y0 = 0;
 
         int idx = offset;
-        
+
         for (int cy = y0; cy < y1; cy++) {
             // empty line (default)
             int cx = x0;
@@ -189,7 +192,8 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
                 final int aax0 = rowAAx0[cy]; // inclusive
 
                 if (aax0 < x1) {
-                    // note: cx is the cursor pointer in the tile array (left to right)
+                    // note: cx is the cursor pointer in the tile array
+                    // (left to right)
                     cx = aax0;
 
                     // ensure cx >= x0
@@ -197,21 +201,21 @@ final class PiscesTileGenerator implements AATileGenerator, PiscesConst {
                         cx = x0;
                     } else {
                         // fill line start until first AA pixel aax0 exclusive:
-                        for (final int end = idx + (cx - x0); idx < end; idx++) {
+                        for (int end = idx + (cx - x0); idx < end; idx++) {
                             tile[idx] = 0;
                         }
                     }
 
                     // now: cx >= x0 but cx < aax0 (x1 < aax0)
-                    
+
                     // get row index:
                     final int pos = rowAAChunkIndex[cy];
-                    
+
                     // Copy AA data (sum alpha data):
                     final int off = pos - aax0;
 
-                    /* note: System.arraycopy is slower than copy loop */
-                    for (final int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
+                    // note: System.arrayCopy is slower than copy loop
+                    for (int end = Math.min(aax1, x1); cx < end; cx++, idx++) {
                         // cx inside tile[x0; x1[ :
                         tile[idx] = rowAAChunk[cx + off];
                     }

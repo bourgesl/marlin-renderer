@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -24,63 +24,74 @@
  */
 package org.marlin.pisces;
 
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import java.util.Arrays;
+import static org.marlin.pisces.MarlinUtils.logInfo;
 
-/**
- *
- */
-public final class ArrayCache implements PiscesConst {
+public final class ArrayCache implements MarlinConst {
 
     final static int BUCKETS = 4;
-    final static int BUCKET_GROW_BITS = 2;
-    final static int BUCKET_GROW = 1 << BUCKET_GROW_BITS;
-    final static int BUCKET_DIRTY_GROW_BITS = 1;
-    final static int BUCKET_DIRTY_GROW = 1 << BUCKET_DIRTY_GROW_BITS;
-    final static int MIN_ARRAY_SIZE = 4096; // avoid too many resize (arraycopy)
-    /** threshold to grow arrays by x4 or x2 */
-    final static int THRESHOLD_ARRAY_SIZE = 32 * 1024;
-    /* array sizes */
+    final static int BUCKET_GROW_4 = 2; // 1 << 2 = 4
+    final static int BUCKET_GROW_2 = 1; // 1 << 1 = 2
+    final static int MIN_ARRAY_SIZE = 4096;
     final static int MAX_ARRAY_SIZE;
+    final static int MASK_CLR_1 = ~1;
+    // threshold to grow arrays only by (3/2) instead of 2
+    final static int THRESHOLD_ARRAY_SIZE;
     final static int[] ARRAY_SIZES = new int[BUCKETS];
-    /* dirty array sizes */
-    final static int MAX_DIRTY_ARRAY_SIZE;
-    final static int[] DIRTY_ARRAY_SIZES = new int[BUCKETS];
-    /* stats */
+    // dirty byte array sizes
+    final static int MIN_DIRTY_BYTE_ARRAY_SIZE = 32 * 2048; // 32px x 2048px
+    final static int MAX_DIRTY_BYTE_ARRAY_SIZE;
+    final static int[] DIRTY_BYTE_ARRAY_SIZES = new int[BUCKETS];
+    // stats
     static int resizeInt = 0;
-    static int resizeFloat = 0;
-    static int resizeDirty = 0;
+    static int resizeDirtyInt = 0;
+    static int resizeDirtyFloat = 0;
+    static int resizeDirtyByte = 0;
     static int oversize = 0;
 
     static {
-        /* initialize buckets for int/float arrays */
+        // initialize buckets for int/float arrays
         int arraySize = MIN_ARRAY_SIZE;
 
-        for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_GROW) {
+        for (int i = 0; i < BUCKETS; i++, arraySize <<= BUCKET_GROW_4) {
             ARRAY_SIZES[i] = arraySize;
 
             if (doTrace) {
                 logInfo("arraySize[" + i + "]: " + arraySize);
             }
         }
-        MAX_ARRAY_SIZE = arraySize / BUCKET_GROW;
+        MAX_ARRAY_SIZE = arraySize >> BUCKET_GROW_4;
 
-        /* initialize buckets for dirty int arrays (large AA chunk = 32 x pixels) */
-        arraySize = BUCKET_DIRTY_GROW * PiscesCache.TILE_SIZE * 1024;  /* TODO: adjust max size */
+        /* initialize buckets for dirty byte arrays
+         (large AA chunk = 32 x 2048 pixels) */
+        arraySize = MIN_DIRTY_BYTE_ARRAY_SIZE;
 
-        for (int i = 0; i < BUCKETS; i++, arraySize *= BUCKET_DIRTY_GROW) {
-            DIRTY_ARRAY_SIZES[i] = arraySize;
+        for (int i = 0; i < BUCKETS; i++, arraySize <<= BUCKET_GROW_2) {
+            DIRTY_BYTE_ARRAY_SIZES[i] = arraySize;
 
             if (doTrace) {
                 logInfo("dirty arraySize[" + i + "]: " + arraySize);
             }
         }
-        MAX_DIRTY_ARRAY_SIZE = arraySize / BUCKET_DIRTY_GROW;
+        MAX_DIRTY_BYTE_ARRAY_SIZE = arraySize >> BUCKET_GROW_2;
+
+        // threshold to grow arrays only by (3/2) instead of 2
+        THRESHOLD_ARRAY_SIZE = Math.max(2 * 1024 * 1024, MAX_ARRAY_SIZE);
 
         if (doStats || doMonitors) {
             logInfo("ArrayCache.BUCKETS        = " + BUCKETS);
             logInfo("ArrayCache.MIN_ARRAY_SIZE = " + MIN_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_ARRAY_SIZE = " + MAX_ARRAY_SIZE);
-            logInfo("ArrayCache.MAX_DIRTY_ARRAY_SIZE = " + MAX_DIRTY_ARRAY_SIZE);
+            logInfo("ArrayCache.ARRAY_SIZES = "
+                    + Arrays.toString(ARRAY_SIZES));
+            logInfo("ArrayCache.MIN_DIRTY_BYTE_ARRAY_SIZE = "
+                    + MIN_DIRTY_BYTE_ARRAY_SIZE);
+            logInfo("ArrayCache.MAX_DIRTY_BYTE_ARRAY_SIZE = "
+                    + MAX_DIRTY_BYTE_ARRAY_SIZE);
+            logInfo("ArrayCache.ARRAY_SIZES = "
+                    + Arrays.toString(DIRTY_BYTE_ARRAY_SIZES));
+            logInfo("ArrayCache.THRESHOLD_ARRAY_SIZE = "
+                    + THRESHOLD_ARRAY_SIZE);
         }
     }
 
@@ -89,20 +100,18 @@ public final class ArrayCache implements PiscesConst {
     }
 
     static void dumpStats() {
-        if (resizeInt != 0 || resizeFloat != 0 || resizeDirty != 0) {
+        if (resizeInt != 0 || resizeDirtyFloat != 0 || resizeDirtyByte != 0) {
             logInfo("ArrayCache: int resize: " + resizeInt
-                    + " - float resize: " + resizeFloat
-                    + " - dirty resize: " + resizeDirty
+                    + " - dirty int resize: " + resizeDirtyInt
+                    + " - dirty float resize: " + resizeDirtyFloat
+                    + " - dirty byte resize: " + resizeDirtyByte
                     + " - oversize: " + oversize);
         }
     }
 
-    /* TODO: use shifts to find bucket as fast as possible (no condition) */
-    /* small methods used a lot (to be inlined / optimized by hotspot) */
+    // small methods used a lot (to be inlined / optimized by hotspot)
+
     static int getBucket(final int length) {
-        // Use size = (length / 2) * 2 => rounded to power of two
-        // then switch == ? (unroll loops ?)
-//        return length / MIN_ARRAY_SIZE
         for (int i = 0; i < BUCKETS; i++) {
             if (length <= ARRAY_SIZES[i]) {
                 return i;
@@ -110,14 +119,10 @@ public final class ArrayCache implements PiscesConst {
         }
         return -1;
     }
-    /* small methods used a lot (to be inlined / optimized by hotspot) */
 
     static int getBucketDirty(final int length) {
-        // Use size = (length / 2) * 2 => rounded to power of two
-        // then switch == ? (unroll loops ?)
-//        return length / MIN_ARRAY_SIZE
         for (int i = 0; i < BUCKETS; i++) {
-            if (length <= DIRTY_ARRAY_SIZES[i]) {
+            if (length <= DIRTY_BYTE_ARRAY_SIZES[i]) {
                 return i;
             }
         }
@@ -125,14 +130,15 @@ public final class ArrayCache implements PiscesConst {
     }
 
     /**
-     * Return the corrected  size by the growing factor
-     * @param newSize needed size
-     * @return corrected size
+     * Return the new array size (~ x2)
+     * @param curSize current used size
+     * @return new array size
      */
-    public static int getNewSize(final int newSize) {
-        if (newSize < THRESHOLD_ARRAY_SIZE) {
-            return BUCKET_GROW * newSize;
+    public static int getNewSize(final int curSize) {
+        if (curSize > THRESHOLD_ARRAY_SIZE) {
+            return ((curSize & MASK_CLR_1) * 3) >> BUCKET_GROW_2;
         }
-        return 2 * newSize;
+        // use next bucket giving array ~ x2:
+        return (curSize & MASK_CLR_1) << BUCKET_GROW_2;
     }
 }

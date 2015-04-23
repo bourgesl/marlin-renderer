@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -55,13 +55,14 @@ public final class Histogram extends StatLong {
         }
         return LAST;
     }
-    /* members */
+
     private final StatLong[] stats = new StatLong[MAX];
 
     public Histogram(final String name) {
         super(name);
         for (int i = 0; i < MAX; i++) {
-            stats[i] = new StatLong(String.format("%5s .. %5s", STEPS[i], ((i + 1 < MAX) ? STEPS[i + 1] : "~")));
+            stats[i] = new StatLong(String.format("%5s .. %5s", STEPS[i],
+                                    ((i + 1 < MAX) ? STEPS[i + 1] : "~")));
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,30 +28,27 @@ import sun.awt.geom.PathConsumer2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 
-/**
- * LBO: recycle instances in rendererContext
- */
 final class TransformingPathConsumer2D {
-    
+
     TransformingPathConsumer2D() {
         // used by RendererContext
     }
 
-    /* recycled PathConsumer2D instance from transformConsumer() */
+    // recycled PathConsumer2D instance from transformConsumer()
     private final Path2DWrapper        wp_Path2DWrapper        = new Path2DWrapper();
-    
+
     PathConsumer2D wrapPath2d(Path2D.Float p2d)
     {
         return wp_Path2DWrapper.init(p2d);
     }
-    
-    /* recycled PathConsumer2D instances from transformConsumer() */
+
+    // recycled PathConsumer2D instances from transformConsumer()
     private final TranslateFilter      tx_TranslateFilter      = new TranslateFilter();
     private final DeltaScaleFilter     tx_DeltaScaleFilter     = new DeltaScaleFilter();
     private final ScaleFilter          tx_ScaleFilter          = new ScaleFilter();
     private final DeltaTransformFilter tx_DeltaTransformFilter = new DeltaTransformFilter();
     private final TransformFilter      tx_TransformFilter      = new TransformFilter();
-    
+
     PathConsumer2D transformConsumer(PathConsumer2D out,
                                      AffineTransform at)
     {
@@ -68,24 +65,27 @@ final class TransformingPathConsumer2D {
             if (Mxx == 1f && Myy == 1f) {
                 if (Mxt == 0f && Myt == 0f) {
                     return out;
+                } else {
+                    return tx_TranslateFilter.init(out, Mxt, Myt);
                 }
-                return tx_TranslateFilter.init(out, Mxt, Myt);
             } else {
                 if (Mxt == 0f && Myt == 0f) {
                     return tx_DeltaScaleFilter.init(out, Mxx, Myy);
+                } else {
+                    return tx_ScaleFilter.init(out, Mxx, Myy, Mxt, Myt);
                 }
-                return tx_ScaleFilter.init(out, Mxx, Myy, Mxt, Myt);
             }
         } else if (Mxt == 0f && Myt == 0f) {
             return tx_DeltaTransformFilter.init(out, Mxx, Mxy, Myx, Myy);
+        } else {
+            return tx_TransformFilter.init(out, Mxx, Mxy, Mxt, Myx, Myy, Myt);
         }
-        return tx_TransformFilter.init(out, Mxx, Mxy, Mxt, Myx, Myy, Myt);
     }
 
-    /* recycled PathConsumer2D instances from deltaTransformConsumer() */
+    // recycled PathConsumer2D instances from deltaTransformConsumer()
     private final DeltaScaleFilter     dt_DeltaScaleFilter     = new DeltaScaleFilter();
     private final DeltaTransformFilter dt_DeltaTransformFilter = new DeltaTransformFilter();
-    
+
     PathConsumer2D deltaTransformConsumer(PathConsumer2D out,
                                           AffineTransform at)
     {
@@ -99,13 +99,15 @@ final class TransformingPathConsumer2D {
         if (Mxy == 0f && Myx == 0f) {
             if (Mxx == 1f && Myy == 1f) {
                 return out;
+            } else {
+                return dt_DeltaScaleFilter.init(out, Mxx, Myy);
             }
-            return dt_DeltaScaleFilter.init(out, Mxx, Myy);
+        } else {
+            return dt_DeltaTransformFilter.init(out, Mxx, Mxy, Myx, Myy);
         }
-        return dt_DeltaTransformFilter.init(out, Mxx, Mxy, Myx, Myy);
     }
 
-    /* recycled PathConsumer2D instances from inverseDeltaTransformConsumer() */
+    // recycled PathConsumer2D instances from inverseDeltaTransformConsumer()
     private final DeltaScaleFilter     iv_DeltaScaleFilter     = new DeltaScaleFilter();
     private final DeltaTransformFilter iv_DeltaTransformFilter = new DeltaTransformFilter();
 
@@ -122,15 +124,17 @@ final class TransformingPathConsumer2D {
         if (Mxy == 0f && Myx == 0f) {
             if (Mxx == 1f && Myy == 1f) {
                 return out;
+            } else {
+                return iv_DeltaScaleFilter.init(out, 1.0f/Mxx, 1.0f/Myy);
             }
-            return iv_DeltaScaleFilter.init(out, 1.0f/Mxx, 1.0f/Myy);
+        } else {
+            float det = Mxx * Myy - Mxy * Myx;
+            return iv_DeltaTransformFilter.init(out,
+                                                Myy / det,
+                                               -Mxy / det,
+                                               -Myx / det,
+                                                Mxx / det);
         }
-        float det = Mxx * Myy - Mxy * Myx;
-        return iv_DeltaTransformFilter.init(out,
-                                            Myy / det,
-                                           -Mxy / det,
-                                           -Myx / det,
-                                            Mxx / det);
     }
 
     static final class TranslateFilter implements PathConsumer2D {
@@ -138,7 +142,7 @@ final class TransformingPathConsumer2D {
         private float tx, ty;
 
         TranslateFilter() {}
-        
+
         TranslateFilter init(PathConsumer2D out,
                              float tx, float ty)
         {
@@ -197,9 +201,9 @@ final class TransformingPathConsumer2D {
         private float sx, sy, tx, ty;
 
         ScaleFilter() {}
-        
+
         ScaleFilter init(PathConsumer2D out,
-                         float sx, float sy, 
+                         float sx, float sy,
                          float tx, float ty)
         {
             this.out = out;
@@ -259,7 +263,7 @@ final class TransformingPathConsumer2D {
         private float Mxx, Mxy, Mxt, Myx, Myy, Myt;
 
         TransformFilter() {}
-        
+
         TransformFilter init(PathConsumer2D out,
                              float Mxx, float Mxy, float Mxt,
                              float Myx, float Myy, float Myt)
@@ -330,8 +334,8 @@ final class TransformingPathConsumer2D {
         private float sx, sy;
 
         DeltaScaleFilter() {}
-        
-        DeltaScaleFilter init(PathConsumer2D out, 
+
+        DeltaScaleFilter init(PathConsumer2D out,
                               float Mxx, float Myy)
         {
             this.out = out;
@@ -339,7 +343,7 @@ final class TransformingPathConsumer2D {
             sy = Myy;
             return this; // fluent API
         }
-        
+
         @Override
         public void moveTo(float x0, float y0) {
             out.moveTo(x0 * sx, y0 * sy);
@@ -389,7 +393,7 @@ final class TransformingPathConsumer2D {
         private float Mxx, Mxy, Myx, Myy;
 
         DeltaTransformFilter() {}
-        
+
         DeltaTransformFilter init(PathConsumer2D out,
                                   float Mxx, float Mxy,
                                   float Myx, float Myy)
@@ -452,41 +456,48 @@ final class TransformingPathConsumer2D {
             return 0;
         }
     }
-    
+
     static final class Path2DWrapper implements PathConsumer2D {
         private Path2D.Float p2d;
-        
+
         Path2DWrapper() {}
 
         Path2DWrapper init(Path2D.Float p2d) {
             this.p2d = p2d;
             return this;
         }
-        
+
         @Override
         public void moveTo(float x0, float y0) {
             p2d.moveTo(x0, y0);
         }
+
         @Override
         public void lineTo(float x1, float y1) {
             p2d.lineTo(x1, y1);
         }
+
         @Override
         public void closePath() {
             p2d.closePath();
         }
+
         @Override
         public void pathDone() {}
+
         @Override
         public void curveTo(float x1, float y1,
                             float x2, float y2,
-                            float x3, float y3) {
+                            float x3, float y3)
+        {
             p2d.curveTo(x1, y1, x2, y2, x3, y3);
         }
+
         @Override
         public void quadTo(float x1, float y1, float x2, float y2) {
             p2d.quadTo(x1, y1, x2, y2);
         }
+
         @Override
         public long getNativeConsumer() {
             throw new InternalError("Not using a native peer");
