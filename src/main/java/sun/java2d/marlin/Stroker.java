@@ -1249,7 +1249,6 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                         .add(end + n);
                 }
                 curves = rdrCtx.widenDirtyFloatArray(curves, end, end + n);
-
             }
             if (numCurves + 1 >= curveTypes.length) {
                 if (doStats) {

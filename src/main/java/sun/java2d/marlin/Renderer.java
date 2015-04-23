@@ -298,8 +298,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 dy = 2f * dy + ddy;
                 ddx = 4f * (ddx + dddx);
                 ddy = 4f * (ddy + dddy);
-                dddx = 8f * dddx;
-                dddy = 8f * dddy;
+                dddx *= 8f;
+                dddy *= 8f;
                 count >>= 1;
             }
             count--;
