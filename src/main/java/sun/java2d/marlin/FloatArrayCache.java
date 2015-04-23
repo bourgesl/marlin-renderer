@@ -50,7 +50,7 @@ final class FloatArrayCache implements MarlinConst {
     FloatArrayCache(final int arraySize) {
         this.arraySize = arraySize;
         // small but enough: almost 1 cache line
-        this.floatArrays = new ArrayDeque<float[]>(6); 
+        this.floatArrays = new ArrayDeque<float[]>(6);
     }
 
     float[] getArray() {
@@ -72,7 +72,22 @@ final class FloatArrayCache implements MarlinConst {
         return new float[arraySize];
     }
 
-    void putArray(final float[] array, final int length, 
+    void putDirtyArray(final float[] array, final int length) {
+        if (doChecks && (length != arraySize)) {
+            System.out.println("bad length = " + length);
+            return;
+        }
+        if (doStats) {
+            returnOp++;
+        }
+
+        // NO clean-up of array data = DIRTY ARRAY
+
+        // fill cache:
+        floatArrays.addLast(array);
+    }
+
+    void putArray(final float[] array, final int length,
                   final int fromIndex, final int toIndex)
     {
         if (doChecks && (length != arraySize)) {
@@ -83,19 +98,19 @@ final class FloatArrayCache implements MarlinConst {
             returnOp++;
         }
 
-        // TODO: pool eviction
-        fill(array, fromIndex, toIndex, 0);
+        // clean-up array of dirty part[fromIndex; toIndex[
+        fill(array, fromIndex, toIndex, 0f);
 
         // fill cache:
         floatArrays.addLast(array);
     }
 
-    static void fill(final float[] array, final int fromIndex, 
+    static void fill(final float[] array, final int fromIndex,
                      final int toIndex, final float value)
     {
         // clear array data:
         /*
-         * Arrays.fill is faster than System.arraycopy(empty array) 
+         * Arrays.fill is faster than System.arraycopy(empty array)
          * or Unsafe.setMemory(byte 0)
          */
         if (toIndex != 0) {
@@ -107,7 +122,7 @@ final class FloatArrayCache implements MarlinConst {
         }
     }
 
-    static void check(final float[] array, final int fromIndex, 
+    static void check(final float[] array, final int fromIndex,
                       final int toIndex, final float value)
     {
         if (doChecks) {

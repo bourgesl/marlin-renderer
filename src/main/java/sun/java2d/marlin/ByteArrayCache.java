@@ -71,6 +71,21 @@ final class ByteArrayCache implements MarlinConst {
         return new byte[arraySize];
     }
 
+    void putDirtyArray(final byte[] array, final int length) {
+        if (doChecks && (length != arraySize)) {
+            System.out.println("bad length = " + length);
+            return;
+        }
+        if (doStats) {
+            returnOp++;
+        }
+
+        // NO clean-up of array data = DIRTY ARRAY
+
+        // fill cache:
+        byteArrays.addLast(array);
+    }
+
     void putArray(final byte[] array, final int length,
                   final int fromIndex, final int toIndex)
     {
@@ -82,19 +97,19 @@ final class ByteArrayCache implements MarlinConst {
             returnOp++;
         }
 
-        // TODO: pool eviction
+        // clean-up array of dirty part[fromIndex; toIndex[
         fill(array, fromIndex, toIndex, BYTE_0);
 
         // fill cache:
         byteArrays.addLast(array);
     }
 
-    static void fill(final byte[] array, final int fromIndex, 
+    static void fill(final byte[] array, final int fromIndex,
                      final int toIndex, final byte value)
     {
         // clear array data:
         /*
-         * Arrays.fill is faster than System.arraycopy(empty array) 
+         * Arrays.fill is faster than System.arraycopy(empty array)
          * or Unsafe.setMemory(byte 0)
          */
         if (toIndex != 0) {
@@ -120,7 +135,7 @@ final class ByteArrayCache implements MarlinConst {
                 }
             }
             if (!empty) {
-                logException("Invalid array value at " + i + "\n" 
+                logException("Invalid array value at " + i + "\n"
                         + Arrays.toString(array), new Throwable());
 
                 // ensure array is correctly filled:
@@ -130,21 +145,5 @@ final class ByteArrayCache implements MarlinConst {
             }
         }
         return false;
-    }
-
-    void putDirtyArray(final byte[] array, final int length) {
-        if (doChecks && (length != arraySize)) {
-            System.out.println("bad length = " + length);
-            return;
-        }
-        if (doStats) {
-            returnOp++;
-        }
-
-        // TODO: pool eviction
-        // NO clear array data = DIRTY ARRAY ie manual clean 
-        // when getting an array!!
-        // fill cache:
-        byteArrays.addLast(array);
     }
 }
