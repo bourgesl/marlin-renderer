@@ -36,24 +36,24 @@ interface MarlinConst {
     static final boolean logCreateContext
         = MarlinRenderingEngine.isLogCreateContext();
     // log misc.Unsafe alloc/realloc/free
-    static final boolean logUnsafeMalloc 
+    static final boolean logUnsafeMalloc
         = MarlinRenderingEngine.isLogUnsafeMalloc();
 
     // do statistics
-    static final boolean doStats 
+    static final boolean doStats
         = MarlinRenderingEngine.isDoStats();
     // do monitors
-    static final boolean doMonitors 
+    static final boolean doMonitors
         = MarlinRenderingEngine.isDoMonitors();
     // do checks
-    static final boolean doChecks 
+    static final boolean doChecks
         = MarlinRenderingEngine.isDoChecks();
 
     // do AA range checks: disable when algorithm / code is stable
     static final boolean DO_AA_RANGE_CHECK = false;
 
     // enable logs
-    static final boolean doLog = false;
+    static final boolean doLogWidenArray = false;
     // enable oversize logs
     static final boolean doLogOverSize = false;
     // enable traces
@@ -64,16 +64,16 @@ interface MarlinConst {
     static final boolean useDumpThread = false;
     // thread dump interval (ms)
     static final long statDump = 5000L;
-    
+
     // do clean dirty array
     static final boolean doCleanDirty = false;
 
     // flag to use custom ceil() / floor() functions
-    static final boolean useFastMath 
+    static final boolean useFastMath
         = MarlinRenderingEngine.isUseFastMath();
 
     // flag to use line simplifier
-    static final boolean useSimplifier 
+    static final boolean useSimplifier
         = MarlinRenderingEngine.isUseSimplifier();
 
     // flag to enable logs related bounds checks
@@ -93,8 +93,8 @@ interface MarlinConst {
     static final int INITIAL_ARRAY_16K    = 16384;
     static final int INITIAL_ARRAY_32K    = 32768;
     // alpha row dimension
-    static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_DIM; 
-    
+    static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_DIM;
+
     // zero value as byte
     static final byte BYTE_0 = (byte) 0;
 }
