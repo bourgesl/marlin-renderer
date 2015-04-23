@@ -35,9 +35,7 @@ import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 final class Helpers implements MarlinConst {
 
-    private static final String className = Helpers.class.getName();
-
-    private Helpers() { 
+    private Helpers() {
         throw new Error("This is a non instantiable class");
     }
 
@@ -58,21 +56,21 @@ final class Helpers implements MarlinConst {
         float t;
         if (a != 0f) {
             final float dis = b*b - 4*a*c;
-            if (dis > 0) {
+            if (dis > 0f) {
                 final float sqrtDis = (float)Math.sqrt(dis);
                 // depending on the sign of b we use a slightly different
                 // algorithm than the traditional one to find one of the roots
                 // so we can avoid adding numbers of different signs (which
                 // might result in loss of precision).
-                if (b >= 0) {
-                    zeroes[ret++] = (2 * c) / (-b - sqrtDis);
-                    zeroes[ret++] = (-b - sqrtDis) / (2 * a);
+                if (b >= 0f) {
+                    zeroes[ret++] = (2f * c) / (-b - sqrtDis);
+                    zeroes[ret++] = (-b - sqrtDis) / (2f * a);
                 } else {
-                    zeroes[ret++] = (-b + sqrtDis) / (2 * a);
-                    zeroes[ret++] = (2 * c) / (-b + sqrtDis);
+                    zeroes[ret++] = (-b + sqrtDis) / (2f * a);
+                    zeroes[ret++] = (2f * c) / (-b + sqrtDis);
                 }
             } else if (dis == 0f) {
-                t = (-b) / (2 * a);
+                t = (-b) / (2f * a);
                 zeroes[ret++] = t;
             }
         } else {
@@ -89,7 +87,7 @@ final class Helpers implements MarlinConst {
                               float[] pts, final int off,
                               final float A, final float B)
     {
-        if (d == 0) {
+        if (d == 0f) {
             int num = quadraticRoots(a, b, c, pts, off);
             return filterOutNotInAB(pts, off, num, A, B) - off;
         }
@@ -113,8 +111,8 @@ final class Helpers implements MarlinConst {
         // q = Q/2
         // instead and use those values for simplicity of the code.
         double sq_A = a * a;
-        double p = 1.0/3 * (-1.0/3 * sq_A + b);
-        double q = 1.0/2 * (2.0/27 * a * sq_A - 1.0/3 * a * b + c);
+        double p = (1.0/3) * ((-1.0/3) * sq_A + b);
+        double q = (1.0/2) * ((2.0/27) * a * sq_A - (1.0/3) * a * b + c);
 
         // use Cardano's formula
 
@@ -122,14 +120,14 @@ final class Helpers implements MarlinConst {
         double D = q * q + cb_p;
 
         int num;
-        if (D < 0) {
+        if (D < 0.0) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = 1.0/3 * acos(-q / sqrt(-cb_p));
-            final double t = 2 * sqrt(-p);
+            final double phi = (1.0/3) * acos(-q / sqrt(-cb_p));
+            final double t = 2.0 * sqrt(-p);
 
             pts[ off+0 ] =  (float)( t * cos(phi));
-            pts[ off+1 ] =  (float)(-t * cos(phi + PI / 3));
-            pts[ off+2 ] =  (float)(-t * cos(phi - PI / 3));
+            pts[ off+1 ] =  (float)(-t * cos(phi + (PI / 3)));
+            pts[ off+2 ] =  (float)(-t * cos(phi - (PI / 3)));
             num = 3;
         } else {
             final double sqrt_D = sqrt(D);
@@ -139,85 +137,19 @@ final class Helpers implements MarlinConst {
             pts[ off ] = (float)(u + v);
             num = 1;
 
-            if (within(D, 0, 1e-8)) {
-                pts[off+1] = -(pts[off] / 2);
+            if (within(D, 0.0, 1e-8)) {
+                pts[off+1] = -(pts[off] / 2f);
                 num = 2;
             }
         }
 
-        final float sub = 1.0f/3 * a;
+        final float sub = (1.0f/3) * a;
 
         for (int i = 0; i < num; ++i) {
             pts[ off+i ] -= sub;
         }
 
         return filterOutNotInAB(pts, off, num, A, B) - off;
-    }
-
-    // TODO: replace with new signature see: widenArrayPartially()
-    static float[] widenArray(final RendererContext rdrCtx, final float[] in, 
-                              final int cursize, 
-                              final int numToAdd, final int clearTo)
-    {
-        final int length = in.length;
-        final int newSize = cursize + numToAdd;
-        if (length >= newSize) {
-            return in;
-        }
-        
-        final float[] res = rdrCtx.widenArray(in, length, cursize, newSize, 
-                                              clearTo);
-        
-        if (doLog) {
-            logInfo("widenArray float[" + res.length + "]: cursize=\t" + cursize
-                    + "\tlength=\t" + length + "\tnew length=\t" + newSize
-                    + "\tfrom=\t" + getCallerInfo(className));
-        }
-        return res;
-    }
-
-    // TODO: replace with new signature see: widenArrayPartially()
-    static int[] widenArray(final RendererContext rdrCtx, final int[] in, 
-                            final int cursize, 
-                            final int numToAdd, final int clearTo)
-    {
-        final int length = in.length;
-        final int newSize = cursize + numToAdd;
-        if (length >= newSize) {
-            return in;
-        }
-
-        final int[] res = rdrCtx.widenArray(in, length, cursize, newSize, 
-                                            clearTo);
-
-        if (doLog) {
-            logInfo("widenArray int[" + res.length + "]: cursize=\t" + cursize
-                    + "\tlength=\t" + length + "\tnew length=\t" + newSize 
-                    + "\tfrom=\t" + getCallerInfo(className));
-        }
-        return res;
-    }
-
-    static int[] widenArrayPartially(final RendererContext rdrCtx, 
-                                     final int[] in, 
-                                     final int fromIndex, final int toIndex, 
-                                     final int newSize)
-    {
-        final int length = in.length;
-        if (length >= newSize) {
-            return in;
-        }
-
-        final int[] res = rdrCtx.widenArrayPartially(in, length, fromIndex, 
-                                                     toIndex, newSize);
-
-        if (doLog) {
-            logInfo("widenArray int[" + res.length + "]: fromIndex=\t" 
-                    + fromIndex + "\ttoIndex=\t" + toIndex + "\tlength=\t" 
-                    + length + "\tnew length=\t" + newSize + "\tfrom=\t"
-                    + getCallerInfo(className));
-        }
-        return res;
     }
 
     static float evalCubic(final float a, final float b,
@@ -338,18 +270,18 @@ final class Helpers implements MarlinConst {
             right[rightoff + 6] = x2;
             right[rightoff + 7] = y2;
         }
-        x1 = (x1 + ctrlx1) / 2.0f;
-        y1 = (y1 + ctrly1) / 2.0f;
-        x2 = (x2 + ctrlx2) / 2.0f;
-        y2 = (y2 + ctrly2) / 2.0f;
-        float centerx = (ctrlx1 + ctrlx2) / 2.0f;
-        float centery = (ctrly1 + ctrly2) / 2.0f;
-        ctrlx1 = (x1 + centerx) / 2.0f;
-        ctrly1 = (y1 + centery) / 2.0f;
-        ctrlx2 = (x2 + centerx) / 2.0f;
-        ctrly2 = (y2 + centery) / 2.0f;
-        centerx = (ctrlx1 + ctrlx2) / 2.0f;
-        centery = (ctrly1 + ctrly2) / 2.0f;
+        x1 = (x1 + ctrlx1) / 2f;
+        y1 = (y1 + ctrly1) / 2f;
+        x2 = (x2 + ctrlx2) / 2f;
+        y2 = (y2 + ctrly2) / 2f;
+        float centerx = (ctrlx1 + ctrlx2) / 2f;
+        float centery = (ctrly1 + ctrly2) / 2f;
+        ctrlx1 = (x1 + centerx) / 2f;
+        ctrly1 = (y1 + centery) / 2f;
+        ctrlx2 = (x2 + centerx) / 2f;
+        ctrly2 = (y2 + centery) / 2f;
+        centerx = (ctrlx1 + ctrlx2) / 2f;
+        centery = (ctrly1 + ctrly2) / 2f;
         if (left != null) {
             left[leftoff + 2] = x1;
             left[leftoff + 3] = y1;
@@ -437,12 +369,12 @@ final class Helpers implements MarlinConst {
             right[rightoff + 4] = x2;
             right[rightoff + 5] = y2;
         }
-        x1 = (x1 + ctrlx) / 2.0f;
-        y1 = (y1 + ctrly) / 2.0f;
-        x2 = (x2 + ctrlx) / 2.0f;
-        y2 = (y2 + ctrly) / 2.0f;
-        ctrlx = (x1 + x2) / 2.0f;
-        ctrly = (y1 + y2) / 2.0f;
+        x1 = (x1 + ctrlx) / 2f;
+        y1 = (y1 + ctrly) / 2f;
+        x2 = (x2 + ctrlx) / 2f;
+        y2 = (y2 + ctrly) / 2f;
+        ctrlx = (x1 + x2) / 2f;
+        ctrly = (y1 + y2) / 2f;
         if (left != null) {
             left[leftoff + 2] = x1;
             left[leftoff + 3] = y1;

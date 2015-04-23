@@ -44,7 +44,7 @@ public final class MarlinCache implements MarlinConst {
     // pixel coverage counts gotten from MarlinCache (which are in the range
     // [0, maxalpha]) into alpha values, which are in [0,256).
     final static byte[] ALPHA_MAP = buildAlphaMap(Renderer.MAX_AA_ALPHA);
-    
+
     int bboxX0, bboxY0, bboxX1, bboxY1;
 
     // 1D dirty arrays
@@ -54,14 +54,9 @@ public final class MarlinCache implements MarlinConst {
     final int[] rowAAx0 = new int[TILE_SIZE];
     // last pixel (exclusive) for each row
     final int[] rowAAx1 = new int[TILE_SIZE];
-    
-    // 1D dirty array containing 32 rows (packed)
-    // rowAAStride[i] holds the encoding of the pixel row with y = bboxY0+i.
-    // The format of each of the inner arrays is: rowAAStride[i][0,1] = (x0, n)
-    // where x0 is the first x in row i with nonzero alpha, and n is the
-    // number of RLE entries in this row. rowAAStride[i][j,j+1] for j>1 is
-    // (val,runlen)
-    // LBO: TODO: fix doc (no RLE anymore)
+
+    // 1D dirty array containing pixel coverages for (32) rows (packed)
+    // use rowAAx0/rowAAx1 to get row indices within this byte chunk
     byte[] rowAAChunk;
     // current position in rowAAChunk array
     int rowAAChunkPos;
@@ -86,7 +81,7 @@ public final class MarlinCache implements MarlinConst {
         // +1 to avoid recycling in widenDirtyIntArray()
         this.rowAAChunk_initial  = new byte[INITIAL_CHUNK_ARRAY + 1]; // 64K
         this.touchedTile_initial = new int[INITIAL_ARRAY]; // only 1 tile line
-        
+
         rowAAChunk  = rowAAChunk_initial;
         touchedTile = touchedTile_initial;
 
@@ -106,6 +101,10 @@ public final class MarlinCache implements MarlinConst {
         final int nxTiles = (maxx - minx + TILE_SIZE) >> TILE_SIZE_LG;
 
         if (nxTiles > INITIAL_ARRAY) {
+            if (doStats) {
+                rdrCtx.stats.stat_array_marlincache_touchedTile
+                    .add(nxTiles);
+            }
             touchedTile = rdrCtx.getIntArray(nxTiles);
         }
     }
@@ -120,7 +119,7 @@ public final class MarlinCache implements MarlinConst {
 
         // Return arrays:
         if (rowAAChunk != rowAAChunk_initial) {
-            rdrCtx.putDirtyArray(rowAAChunk);
+            rdrCtx.putDirtyByteArray(rowAAChunk);
             rowAAChunk = rowAAChunk_initial;
         }
         if (touchedTile != touchedTile_initial) {
@@ -160,7 +159,7 @@ public final class MarlinCache implements MarlinConst {
     void clearAARow(final int y) {
         // process tile line [0 - 32]
         final int row = y - bboxY0;
-        
+
         // update pixel range:
         rowAAx0[row] = 0; // first pixel inclusive
         rowAAx1[row] = 0; //  last pixel exclusive
@@ -175,7 +174,7 @@ public final class MarlinCache implements MarlinConst {
      * @param px0 first pixel inclusive x0
      * @param px1 last pixel exclusive x1
      */
-    void copyAARow(final int[] alphaRow, final int y, 
+    void copyAARow(final int[] alphaRow, final int y,
                    final int px0, final int px1)
     {
         if (doMonitors) {
@@ -186,7 +185,7 @@ public final class MarlinCache implements MarlinConst {
         final int px_bbox1 = Math.min(px1, bboxX1);
 
         if (doLogBounds) {
-            MarlinUtils.logInfo("row = [" + px0 + " ... " + px_bbox1 
+            MarlinUtils.logInfo("row = [" + px0 + " ... " + px_bbox1
                                 + " (" + px1 + ") [ for y=" + y);
         }
 
@@ -197,7 +196,7 @@ public final class MarlinCache implements MarlinConst {
         rowAAx1[row] = px_bbox1; //  last pixel exclusive
 
         final int len = px_bbox1 - px0;
-        
+
         // get current position:
         final int pos = rowAAChunkPos;
         // update row index to current position:
@@ -206,8 +205,12 @@ public final class MarlinCache implements MarlinConst {
         byte[] _rowAAChunk = rowAAChunk;
         // ensure rowAAChunk capacity:
         if (_rowAAChunk.length < pos + len) {
-            rowAAChunk = _rowAAChunk = rdrCtx.widenDirtyArray(_rowAAChunk, 
-                                                              pos, len);
+            if (doStats) {
+                rdrCtx.stats.stat_array_marlincache_rowAAChunk
+                    .add(pos + len);
+            }
+            rowAAChunk = _rowAAChunk
+                = rdrCtx.widenDirtyByteArray(_rowAAChunk, pos, pos + len);
         }
         if (doStats) {
             RendererContext.stats.stat_cache_rowAA.add(len);
@@ -253,7 +256,7 @@ public final class MarlinCache implements MarlinConst {
                 touchedLine[x >> _TILE_SIZE_LG] += val;
             }
         }
-        
+
         // update current position:
         rowAAChunkPos = pos + len;
 
@@ -289,11 +292,11 @@ public final class MarlinCache implements MarlinConst {
         String ret = "bbox = ["
                 + bboxX0 + ", " + bboxY0 + " => "
                 + bboxX1 + ", " + bboxY1 + "]\n";
-        
+
         for (int pos : rowAAChunkIndex) {
             ret += ("minTouchedX=" + rowAAChunk[pos]
                     + "\tRLE Entries: " + Arrays.toString(
-                            Arrays.copyOfRange(rowAAChunk, pos + 2, 
+                            Arrays.copyOfRange(rowAAChunk, pos + 2,
                                                pos + rowAAChunk[pos + 1]))
                     + "\n");
         }
@@ -302,13 +305,10 @@ public final class MarlinCache implements MarlinConst {
 
     private static byte[] buildAlphaMap(final int maxalpha) {
         final byte[] alMap = new byte[maxalpha + 1];
-//        System.out.println("buildAlphaMap[" + maxalpha + "]: length: " 
-//                           + alMap.length);
         final int halfmaxalpha = maxalpha >> 2;
-        
         for (int i = 0; i <= maxalpha; i++) {
             alMap[i] = (byte) ((i * 255 + halfmaxalpha) / maxalpha);
-//            System.out.println("alphaMap[" + i + "] = " 
+//            System.out.println("alphaMap[" + i + "] = "
 //                               + Byte.toUnsignedInt(alMap[i]));
         }
         return alMap;
