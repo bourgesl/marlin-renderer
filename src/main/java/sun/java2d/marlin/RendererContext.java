@@ -44,7 +44,7 @@ final class RendererContext implements MarlinConst {
     private static final AtomicInteger contextCount = new AtomicInteger(1);
     // RendererContext statistics
     static final RendererStats stats = (doStats || doMonitors)
-                                       ? RendererStats.createInstance(): null;
+                                       ? RendererStats.getInstance(): null;
 
     private static final boolean USE_CACHE_HARD_REF = false;
 

@@ -216,7 +216,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
                 float[] buf = firstSegmentsBuffer;
                 if (segIdx + len  > buf.length) {
                     if (doStats) {
-                        rdrCtx.stats.stat_array_dasher_firstSegmentsBuffer
+                        RendererContext.stats.stat_array_dasher_firstSegmentsBuffer
                             .add(segIdx + len);
                     }
                     firstSegmentsBuffer = buf

@@ -102,7 +102,7 @@ public final class MarlinCache implements MarlinConst {
 
         if (nxTiles > INITIAL_ARRAY) {
             if (doStats) {
-                rdrCtx.stats.stat_array_marlincache_touchedTile
+                RendererContext.stats.stat_array_marlincache_touchedTile
                     .add(nxTiles);
             }
             touchedTile = rdrCtx.getIntArray(nxTiles);
@@ -206,7 +206,7 @@ public final class MarlinCache implements MarlinConst {
         // ensure rowAAChunk capacity:
         if (_rowAAChunk.length < pos + len) {
             if (doStats) {
-                rdrCtx.stats.stat_array_marlincache_rowAAChunk
+                RendererContext.stats.stat_array_marlincache_rowAAChunk
                     .add(pos + len);
             }
             rowAAChunk = _rowAAChunk

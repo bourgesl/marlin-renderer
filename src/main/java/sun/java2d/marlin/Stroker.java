@@ -1222,8 +1222,10 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             numCurves = 0;
 
             if (doStats) {
-                RendererContext.stats.stat_rdr_poly_stack_types.add(curveTypesUseMark);
-                RendererContext.stats.stat_rdr_poly_stack_curves.add(curvesUseMark);
+                RendererContext.stats.stat_rdr_poly_stack_types
+                    .add(curveTypesUseMark);
+                RendererContext.stats.stat_rdr_poly_stack_curves
+                    .add(curvesUseMark);
                 // reset marks
                 curveTypesUseMark = 0;
                 curvesUseMark = 0;
@@ -1245,14 +1247,14 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         private void ensureSpace(final int n) {
             if (end + n >= curves.length) {
                 if (doStats) {
-                    rdrCtx.stats.stat_array_stroker_polystack_curves
+                    RendererContext.stats.stat_array_stroker_polystack_curves
                         .add(end + n);
                 }
                 curves = rdrCtx.widenDirtyFloatArray(curves, end, end + n);
             }
             if (numCurves + 1 >= curveTypes.length) {
                 if (doStats) {
-                    rdrCtx.stats.stat_array_stroker_polystack_curveTypes
+                    RendererContext.stats.stat_array_stroker_polystack_curveTypes
                         .add(numCurves + 1);
                 }
                 curveTypes = rdrCtx.widenDirtyByteArray(curveTypes,

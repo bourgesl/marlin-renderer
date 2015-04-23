@@ -326,7 +326,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                         newDashes = rdrCtx.dasher.dashes_initial;
                     } else {
                         if (doStats) {
-                            rdrCtx.stats.stat_array_dasher_firstSegmentsBuffer
+                            RendererContext.stats.stat_array_dasher_firstSegmentsBuffer
                                 .add(dashLen);
                         }
                         newDashes = rdrCtx.getDirtyFloatArray(dashLen);
