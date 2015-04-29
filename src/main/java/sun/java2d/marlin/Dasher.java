@@ -249,8 +249,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         float dy = y1 - y0;
 
         float len = dx*dx + dy*dy;
-
-        if (len == 0) {
+        if (len == 0f) {
             return;
         }
         len = (float) Math.sqrt(len);
@@ -319,13 +318,13 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
         // initially the current curve is at curCurvepts[0...type]
         int curCurveoff = 0;
-        float lastSplitT = 0;
+        float lastSplitT = 0f;
         float t;
         float leftInThisDashSegment = dash[idx] - phase;
 
-        while ((t = li.next(leftInThisDashSegment)) < 1) {
-            if (t != 0) {
-                Helpers.subdivideAt((t - lastSplitT) / (1 - lastSplitT),
+        while ((t = li.next(leftInThisDashSegment)) < 1f) {
+            if (t != 0f) {
+                Helpers.subdivideAt((t - lastSplitT) / (1f - lastSplitT),
                                     curCurvepts, curCurveoff,
                                     curCurvepts, 0,
                                     curCurvepts, type, type);
@@ -428,12 +427,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
                 Arrays.fill(curLeafCtrlPolyLengths, 0f);
                 Arrays.fill(nextRoots, 0f);
                 Arrays.fill(flatLeafCoefCache, 0f);
+                flatLeafCoefCache[2] = -1f;
             }
-            // Ensure the cache is
-            // invalid when it's third element is negative, since in any
-            // valid flattened curve, this would be >= 0.
-            flatLeafCoefCache[2] = -1f;
-            cachedHaveLowAcceleration = -1;
         }
 
         void initializeIterationOnCurve(float[] pts, int type) {
@@ -441,12 +436,12 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             System.arraycopy(pts, 0, recCurveStack[0], 0, 8);
             this.curveType = type;
             this.recLevel = 0;
-            this.lastT = 0;
-            this.lenAtLastT = 0;
-            this.nextT = 0;
-            this.lenAtNextT = 0;
+            this.lastT = 0f;
+            this.lenAtLastT = 0f;
+            this.nextT = 0f;
+            this.lenAtNextT = 0f;
             goLeft(); // initializes nextT and lenAtNextT properly
-            this.lenAtLastSplit = 0;
+            this.lenAtLastSplit = 0f;
             if (recLevel > 0) {
                 this.sides[0] = Side.LEFT;
                 this.done = false;
@@ -455,7 +450,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
                 this.sides[0] = Side.RIGHT;
                 this.done = true;
             }
-            this.lastSegLen = 0;
+            this.lastSegLen = 0f;
         }
 
         // 0 == false, 1 == true, -1 == invalid cached value.

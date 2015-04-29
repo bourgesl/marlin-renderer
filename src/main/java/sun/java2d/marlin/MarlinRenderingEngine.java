@@ -727,7 +727,7 @@ public class MarlinRenderingEngine extends RenderingEngine
     {
         // REMIND: Deal with large coordinates!
         double ldx1, ldy1, ldx2, ldy2;
-        boolean innerpgram = (lw1 > 0 && lw2 > 0);
+        boolean innerpgram = (lw1 > 0.0 && lw2 > 0.0);
 
         if (innerpgram) {
             ldx1 = dx1 * lw1;

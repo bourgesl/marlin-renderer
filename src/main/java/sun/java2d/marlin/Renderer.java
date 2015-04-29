@@ -193,6 +193,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
     private int[] edgeBuckets;
     private int[] edgeBucketCounts; // 2*newedges + (1 if pruning needed)
+    // used range for edgeBuckets / edgeBucketCounts
+    private int buckets_minY;
+    private int buckets_maxY;
 
     // +1 to avoid recycling in Helpers.widenArray()
     private final int[] edgeBuckets_initial
@@ -288,8 +291,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 dy = (dy - ddy) / 2f;
                 count <<= 1;
             }
-            // TODO: check these operations as they seem different
-            // between previous and next loops (8,4,2 ratios)
             // can only do this on even "count" values, because we must divide count by 2
             while (count % 2 == 0
                     && Math.abs(dx) <= _INC_BND
@@ -339,7 +340,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             x1 = tmp;
         }
 
-        // copy members:
         final int _boundsMinY = boundsMinY;
 
         /* TODO: improve accuracy using correct float rounding to int
@@ -587,24 +587,21 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         }
 
         if (edgeMinY != Float.POSITIVE_INFINITY) {
-            final int _boundsMinY = boundsMinY;
-            // Find used part
-            // TODO: fix ceil:
-            final int iminY =     Math.max(FloatMath.ceil(edgeMinY), _boundsMinY)
-                                  - _boundsMinY;
-            final int imaxY = 1 + Math.min(FloatMath.ceil(edgeMaxY),  boundsMaxY)
-                                  - _boundsMinY;
-
+            // clear used part
             if (edgeBuckets == edgeBuckets_initial) {
                 // fill only used part
-                IntArrayCache.fill(edgeBuckets,      iminY, imaxY - 1, 0);
-                IntArrayCache.fill(edgeBucketCounts, iminY, imaxY,     0);
+                IntArrayCache.fill(edgeBuckets,      buckets_minY, 
+                                                     buckets_maxY,     0);
+                IntArrayCache.fill(edgeBucketCounts, buckets_minY, 
+                                                     buckets_maxY + 1, 0);
             } else {
                  // clear only used part
-                rdrCtx.putIntArray(edgeBuckets, iminY, imaxY - 1);
+                rdrCtx.putIntArray(edgeBuckets,      buckets_minY, 
+                                                     buckets_maxY);
                 edgeBuckets = edgeBuckets_initial;
 
-                rdrCtx.putIntArray(edgeBucketCounts, iminY, imaxY);
+                rdrCtx.putIntArray(edgeBucketCounts, buckets_minY, 
+                                                     buckets_maxY + 1);
                 edgeBucketCounts = edgeBucketCounts_initial;
             }
         } else if (edgeBuckets != edgeBuckets_initial) {
@@ -1256,11 +1253,23 @@ final class Renderer implements PathConsumer2D, MarlinConst {
            ie use ceil(x - 0.5f) */
 
         // bounds as inclusive intervals
-        // TODO: fix -1 in boundsMaxX and boundsMaxY
         final int spminX = Math.max(FloatMath.ceil(edgeMinX), boundsMinX);
         final int spmaxX = Math.min(FloatMath.ceil(edgeMaxX), boundsMaxX - 1);
-        final int spminY = Math.max(FloatMath.ceil(edgeMinY), boundsMinY);
-        final int spmaxY = Math.min(FloatMath.ceil(edgeMaxY), boundsMaxY - 1);
+        
+        final int _boundsMinY = boundsMinY;
+        final int _boundsMaxY = boundsMaxY - 1;
+        
+        final int spminY = Math.max(FloatMath.ceil(edgeMinY), _boundsMinY);
+        final int spmaxY;
+        int maxY = FloatMath.ceil(edgeMaxY);
+        if (maxY <= _boundsMaxY) {
+            spmaxY = maxY;
+        } else {
+            spmaxY = _boundsMaxY;
+            maxY   = _boundsMaxY + 1;
+        }
+        buckets_minY = spminY - _boundsMinY;
+        buckets_maxY = maxY   - _boundsMinY;
 
         if (doLogBounds) {
             MarlinUtils.logInfo("edgesXY = [" + edgeMinX + " ... " + edgeMaxX
