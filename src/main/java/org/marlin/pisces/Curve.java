@@ -275,7 +275,7 @@ final class Curve {
 
             nextCurveIdx = 0;
             curCurveOff = 0;
-            prevT = 0;
+            prevT = 0f;
         }
 
         public boolean hasNext() {
@@ -286,7 +286,7 @@ final class Curve {
             int ret;
             if (nextCurveIdx < numTs) {
                 float curT = Ts[nextCurveIdx];
-                float splitT = (curT - prevT) / (1 - prevT);
+                float splitT = (curT - prevT) / (1f - prevT);
                 Helpers.subdivideAt(splitT,
                                     pts, curCurveOff,
                                     pts, 0,

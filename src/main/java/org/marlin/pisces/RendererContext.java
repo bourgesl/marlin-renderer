@@ -24,10 +24,10 @@
  */
 package org.marlin.pisces;
 
-import java.awt.geom.FastPath2D;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.marlin.geom.Path2D;
 import static org.marlin.pisces.ArrayCache.*;
 import org.marlin.pisces.MarlinRenderingEngine.NormalizingPathIterator;
 import static org.marlin.pisces.MarlinUtils.getCallerInfo;
@@ -43,9 +43,9 @@ final class RendererContext implements MarlinConst {
     private static final AtomicInteger contextCount = new AtomicInteger(1);
     // RendererContext statistics
     static final RendererStats stats = (doStats || doMonitors)
-                                       ? RendererStats.createInstance(): null;
+                                       ? RendererStats.getInstance(): null;
 
-    private static final boolean USE_CACHE_HARD_REF = true;
+    private static final boolean USE_CACHE_HARD_REF = false;
 
     /**
      * Create a new renderer context
@@ -81,7 +81,7 @@ final class RendererContext implements MarlinConst {
     // MarlinRenderingEngine.TransformingPathConsumer2D
     final TransformingPathConsumer2D transformerPC2D;
     // recycled Path2D instance
-    FastPath2D p2d = null;
+    Path2D.Float p2d = null;
     final Renderer renderer;
     final Stroker stroker;
     // Simplifies out collinear lines

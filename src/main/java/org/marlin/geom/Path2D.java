@@ -23,10 +23,17 @@
  * questions.
  */
 
-package java.awt.geom;
+package org.marlin.geom;
 
 import java.awt.Shape;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.FlatteningPathIterator;
+import java.awt.geom.IllegalPathStateException;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import sun.awt.geom.Curve;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
@@ -827,11 +834,14 @@ public abstract class Path2D implements Shape, Cloneable {
             // offer "public Object clone()" for backwards
             // compatibility so we cannot restrict it further.
             // REMIND: Can we do both somehow?
+// LBO: Fix class incompatibility:            
+/*            
             if (this instanceof GeneralPath) {
                 return new GeneralPath(this);
             } else {
+*/            
                 return new Path2D.Float(this);
-            }
+//            }
         }
 
         /*

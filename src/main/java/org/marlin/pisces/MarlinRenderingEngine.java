@@ -27,12 +27,11 @@ package org.marlin.pisces;
 import java.awt.BasicStroke;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.FastPath2D;
-import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.lang.ref.Reference;
 import java.security.AccessController;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.marlin.geom.Path2D;
 import static org.marlin.pisces.MarlinUtils.logInfo;
 import sun.awt.geom.PathConsumer2D;
 import sun.java2d.pipe.AATileGenerator;
@@ -47,6 +46,14 @@ public class MarlinRenderingEngine extends RenderingEngine
                                    implements MarlinConst
 {
     private static enum NormMode {OFF, ON_NO_AA, ON_WITH_AA}
+    
+    /**
+     * Public constructor
+     */
+    public MarlinRenderingEngine() {
+        super();
+        logSettings(MarlinRenderingEngine.class.getName());
+    }
 
     /**
      * Create a widened path as specified by the parameters.
@@ -76,10 +83,11 @@ public class MarlinRenderingEngine extends RenderingEngine
     {
         final RendererContext rdrCtx = getRendererContext();
 
-        // initialize a large copyable FastPath2D to avoid a lot of array growing:
-        final FastPath2D p2d = 
+        // initialize a large copyable Path2D to avoid a lot of array growing:
+        final Path2D.Float p2d =
                 (rdrCtx.p2d == null) ?
-                (rdrCtx.p2d = new FastPath2D(INITIAL_MEDIUM_ARRAY))
+                (rdrCtx.p2d = new Path2D.Float(Path2D.WIND_NON_ZERO,
+                                               INITIAL_MEDIUM_ARRAY))
                 : rdrCtx.p2d;
         // reset
         p2d.reset();
@@ -97,8 +105,8 @@ public class MarlinRenderingEngine extends RenderingEngine
                  rdrCtx.transformerPC2D.wrapPath2d(p2d)
                 );
 
-        /* Perform Path2D copy efficiently and trim */
-        final Path2D path = p2d.trimmedCopy();
+        // Use Path2D copy constructor (trim)
+        final Path2D path = new Path2D.Float(p2d);
 
         returnRendererContext(rdrCtx);
 
@@ -292,7 +300,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             final double c = at.getShearY();
             final double d = at.getScaleY();
             final double det = a * d - c * b;
-            if (Math.abs(det) <= 2d * Float.MIN_VALUE) {
+            if (Math.abs(det) <= (2f * Float.MIN_VALUE)) {
                 // this rendering engine takes one dimensional curves and turns
                 // them into 2D shapes by giving them width.
                 // However, if everything is to be passed through a singular
@@ -315,7 +323,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             // the scaled width. This condition is satisfied if
             // a*b == -c*d && a*a+c*c == b*b+d*d. In the actual check below, we
             // leave a bit of room for error.
-            if (nearZero(a*b + c*d, 2d) && nearZero(a*a+c*c - (b*b+d*d), 2d)) {
+            if (nearZero(a*b + c*d) && nearZero(a*a+c*c - (b*b+d*d))) {
                 final float scale = (float) Math.sqrt(a*a + c*c);
                 if (dashes != null) {
                     recycleDashes = true;
@@ -325,7 +333,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                         newDashes = rdrCtx.dasher.dashes_initial;
                     } else {
                         if (doStats) {
-                            rdrCtx.stats.stat_array_dasher_firstSegmentsBuffer
+                            RendererContext.stats.stat_array_dasher_firstSegmentsBuffer
                                 .add(dashLen);
                         }
                         newDashes = rdrCtx.getDirtyFloatArray(dashLen);
@@ -419,8 +427,8 @@ public class MarlinRenderingEngine extends RenderingEngine
          */
     }
 
-    private static boolean nearZero(double num, double nulps) {
-        return Math.abs(num) < nulps * Math.ulp(num);
+    private static boolean nearZero(double num) {
+        return Math.abs(num) < 2.0 * Math.ulp(num);
     }
 
     final static class NormalizingPathIterator implements PathIterator {
@@ -726,7 +734,7 @@ public class MarlinRenderingEngine extends RenderingEngine
     {
         // REMIND: Deal with large coordinates!
         double ldx1, ldy1, ldx2, ldy2;
-        boolean innerpgram = (lw1 > 0 && lw2 > 0);
+        boolean innerpgram = (lw1 > 0.0 && lw2 > 0.0);
 
         if (innerpgram) {
             ldx1 = dx1 * lw1;
@@ -739,12 +747,12 @@ public class MarlinRenderingEngine extends RenderingEngine
             dy1 += ldy1;
             dx2 += ldx2;
             dy2 += ldy2;
-            if (lw1 > 1 && lw2 > 1) {
+            if (lw1 > 1.0 && lw2 > 1.0) {
                 // Inner parallelogram was entirely consumed by stroke...
                 innerpgram = false;
             }
         } else {
-            ldx1 = ldy1 = ldx2 = ldy2 = 0;
+            ldx1 = ldy1 = ldx2 = ldy2 = 0.0;
         }
 
         final RendererContext rdrCtx = getRendererContext();
@@ -772,7 +780,6 @@ public class MarlinRenderingEngine extends RenderingEngine
             r.lineTo((float) (x+dx2), (float) (y+dy2));
             r.closePath();
         }
-
         r.pathDone();
 
         if (r.endRendering()) {
@@ -847,75 +854,90 @@ public class MarlinRenderingEngine extends RenderingEngine
                             "soft"));
         switch (refType) {
             default:
-            case "hard":
-                refType = "hard";
-                REF_TYPE = REF_HARD;
-                break;
             case "soft":
-                refType = "soft";
                 REF_TYPE = REF_SOFT;
                 break;
             case "weak":
-                refType = "weak";
                 REF_TYPE = REF_WEAK;
                 break;
+            case "hard":
+                REF_TYPE = REF_HARD;
+                break;
         }
-
-        final String reClass = AccessController.doPrivileged(
-                            new GetPropertyAction("sun.java2d.renderer"));
-
-        if (MarlinRenderingEngine.class.getName().equals(reClass)
-            || PiscesRenderingEngine.class.getName().equals(reClass)) {
-            // Marlin renderer enabled:
-
-            // log information at startup
-            logInfo("=========================================================="
-                    + "=====================");
-
-            logInfo("Marlin software rasterizer           = ENABLED");
-            logInfo("Version                              = ["
-                    + Version.getVersion() + "]");
-            logInfo("sun.java2d.renderer                  = "
-                    + reClass);
-            logInfo("sun.java2d.renderer.useThreadLocal   = "
-                    + useThreadLocal);
-            logInfo("sun.java2d.renderer.useRef           = "
-                    + refType);
-
-            logInfo("sun.java2d.renderer.pixelsize        = "
-                    + MarlinConst.INITIAL_PIXEL_DIM);
-            logInfo("sun.java2d.renderer.subPixel_log2_X  = "
-                    + Renderer.SUBPIXEL_LG_POSITIONS_X);
-            logInfo("sun.java2d.renderer.subPixel_log2_Y  = "
-                    + Renderer.SUBPIXEL_LG_POSITIONS_Y);
-            logInfo("sun.java2d.renderer.tileSize_log2    = "
-                    + MarlinCache.TILE_SIZE_LG);
-            logInfo("sun.java2d.renderer.useFastMath      = "
-                    + MarlinConst.useFastMath);
-
-            // optimisation parameters
-            logInfo("sun.java2d.renderer.useSimplifier    = "
-                    + MarlinConst.useSimplifier);
-
-            // debugging parameters
-            logInfo("sun.java2d.renderer.doStats          = "
-                    + MarlinConst.doStats);
-            logInfo("sun.java2d.renderer.doMonitors       = "
-                    + MarlinConst.doMonitors);
-            logInfo("sun.java2d.renderer.doChecks         = "
-                    + MarlinConst.doChecks);
-
-            // logging parameters
-            logInfo("sun.java2d.renderer.useLogger        = "
-                    + MarlinConst.useLogger);
-            logInfo("sun.java2d.renderer.logCreateContext = "
-                    + MarlinConst.logCreateContext);
-            logInfo("sun.java2d.renderer.logUnsafeMalloc  = "
-                    + MarlinConst.logUnsafeMalloc);
-
-            logInfo("=========================================================="
-                    + "=====================");
+    }
+    
+    private static boolean settingsLogged = false;
+    
+    private static void logSettings(final String reClass) {
+        if (settingsLogged) {
+            return;
         }
+        settingsLogged = true;
+        
+        String refType;
+        switch (REF_TYPE) {
+            default:
+            case REF_HARD:
+                refType = "hard";
+                break;
+            case REF_SOFT:
+                refType = "soft";
+                break;
+            case REF_WEAK:
+                refType = "weak";
+                break;
+        }
+        
+        logInfo("=========================================================="
+                + "=====================");
+
+        logInfo("Marlin software rasterizer           = ENABLED");
+        logInfo("Version                              = ["
+                + Version.getVersion() + "]");
+        logInfo("sun.java2d.renderer                  = "
+                + reClass);
+        logInfo("sun.java2d.renderer.useThreadLocal   = "
+                + useThreadLocal);
+        logInfo("sun.java2d.renderer.useRef           = "
+                + refType);
+
+        logInfo("sun.java2d.renderer.pixelsize        = "
+                + MarlinConst.INITIAL_PIXEL_DIM);
+        logInfo("sun.java2d.renderer.subPixel_log2_X  = "
+                + Renderer.SUBPIXEL_LG_POSITIONS_X);
+        logInfo("sun.java2d.renderer.subPixel_log2_Y  = "
+                + Renderer.SUBPIXEL_LG_POSITIONS_Y);
+        logInfo("sun.java2d.renderer.tileSize_log2    = "
+                + MarlinCache.TILE_SIZE_LG);
+        logInfo("sun.java2d.renderer.useFastMath      = "
+                + MarlinConst.useFastMath);
+
+        // optimisation parameters
+        logInfo("sun.java2d.renderer.useSimplifier    = "
+                + MarlinConst.useSimplifier);
+
+        // debugging parameters
+        logInfo("sun.java2d.renderer.doStats          = "
+                + MarlinConst.doStats);
+        logInfo("sun.java2d.renderer.doMonitors       = "
+                + MarlinConst.doMonitors);
+        logInfo("sun.java2d.renderer.doChecks         = "
+                + MarlinConst.doChecks);
+
+        // logging parameters
+        logInfo("sun.java2d.renderer.useLogger        = "
+                + MarlinConst.useLogger);
+        logInfo("sun.java2d.renderer.logCreateContext = "
+                + MarlinConst.logCreateContext);
+        logInfo("sun.java2d.renderer.logUnsafeMalloc  = "
+                + MarlinConst.logUnsafeMalloc);
+
+        /* quality settings */
+        logInfo("sun.java2d.renderer.gamma            = "
+                + getGamma());
+
+        logInfo("=========================================================="
+                + "=====================");        
     }
 
     /**
@@ -1045,10 +1067,17 @@ public class MarlinRenderingEngine extends RenderingEngine
         return getBoolean("sun.java2d.renderer.logUnsafeMalloc", "false");
     }
 
+    /* quality settings */
+
+    public static double getGamma() {
+        return getDouble("sun.java2d.renderer.gamma", 1.0, 0.5, 4.0);
+    }
+
     // system property utilities
 
     static boolean getBoolean(final String key, final String def) {
-        return Boolean.valueOf(AccessController.doPrivileged(new GetPropertyAction(key, def)));
+        return Boolean.valueOf(AccessController.doPrivileged(
+                  new GetPropertyAction(key, def)));
     }
 
     static int getInteger(final String key, final int def,
@@ -1074,5 +1103,27 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
         return value;
     }
+    
+    public static double getDouble(final String key, final double def,
+                                   final double min, final double max)
+    {
+        double value = def;
+        final String property = AccessController.doPrivileged(
+                                    new GetPropertyAction(key));
 
+        if (property != null) {
+            try {
+                value = Double.parseDouble(property);
+            } catch (NumberFormatException nfe) {
+                logInfo("Invalid value for " + key + " = " + property + " !");
+            }
+        }
+        /* check for invalid values */
+        if (value < min || value > max) {
+            logInfo("Invalid value for " + key + " = " + value
+                    + "; expect value in range[" + min + ", " + max + "] !");
+            value = def;
+        }
+        return value;
+    }
 }

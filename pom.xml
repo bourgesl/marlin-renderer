@@ -71,7 +71,6 @@
                         </goals>
                         <configuration>
                             <includes>
-                                <include>java/awt/geom/FastPath2D*</include>
                                 <include>org/**</include>
                                 <include>META-INF/services/*</include>
                             </includes>
@@ -86,7 +85,6 @@
                         <configuration>
                             <classifier>sun-java2d</classifier>
                             <includes>
-                                <!-- <include>java/awt/geom/Path2D*</include> -->
                                 <include>sun/java2d/**</include>
                             </includes>
                         </configuration>

@@ -32,6 +32,8 @@ import java.util.Arrays;
  * @see Renderer
  */
 public final class MarlinCache implements MarlinConst {
+    
+    private final static double GAMMA = PiscesRenderingEngine.getGamma();
 
     public static final int TILE_SIZE_LG = MarlinRenderingEngine.getTileSize_Log2();
     public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
@@ -101,7 +103,7 @@ public final class MarlinCache implements MarlinConst {
 
         if (nxTiles > INITIAL_ARRAY) {
             if (doStats) {
-                rdrCtx.stats.stat_array_marlincache_touchedTile
+                RendererContext.stats.stat_array_marlincache_touchedTile
                     .add(nxTiles);
             }
             touchedTile = rdrCtx.getIntArray(nxTiles);
@@ -205,7 +207,7 @@ public final class MarlinCache implements MarlinConst {
         // ensure rowAAChunk capacity:
         if (_rowAAChunk.length < pos + len) {
             if (doStats) {
-                rdrCtx.stats.stat_array_marlincache_rowAAChunk
+                RendererContext.stats.stat_array_marlincache_rowAAChunk
                     .add(pos + len);
             }
             rowAAChunk = _rowAAChunk
@@ -310,6 +312,18 @@ public final class MarlinCache implements MarlinConst {
 //            System.out.println("alphaMap[" + i + "] = "
 //                               + Byte.toUnsignedInt(alMap[i]));
         }
+        
+        if (GAMMA != 1.0) {
+//            System.out.println("alphaMap[gamma = " + GAMMA + "]");
+            final double invGamma = 1.0 / GAMMA;
+            final double max = (double)maxalpha;
+            
+            for (int i = 0; i <= maxalpha; i++) {
+                alMap[i] = (byte) (0xFF * Math.pow(i / max, invGamma));
+//                System.out.println("alphaMap[" + i + "] = " + PiscesUtils.toUnsignedInt(alMap[i]) + " :: "+Math.pow(i / (double)maxalpha, 1d / GAMMA));
+            }
+        }
+
         return alMap;
     }
 }

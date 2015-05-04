@@ -195,6 +195,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
     private int[] edgeBuckets;
     private int[] edgeBucketCounts; // 2*newedges + (1 if pruning needed)
+    // used range for edgeBuckets / edgeBucketCounts
+    private int buckets_minY;
+    private int buckets_maxY;
 
     // +1 to avoid recycling in Helpers.widenArray()
     private final int[] edgeBuckets_initial
@@ -290,8 +293,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 dy = (dy - ddy) / 2f;
                 count <<= 1;
             }
-            // TODO: check these operations as they seem different
-            // between previous and next loops (8,4,2 ratios)
             // can only do this on even "count" values, because we must divide count by 2
             while (count % 2 == 0
                     && Math.abs(dx) <= _INC_BND
@@ -300,8 +301,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 dy = 2f * dy + ddy;
                 ddx = 4f * (ddx + dddx);
                 ddy = 4f * (ddy + dddy);
-                dddx = 8f * dddx;
-                dddy = 8f * dddy;
+                dddx *= 8f;
+                dddy *= 8f;
                 count >>= 1;
             }
             count--;
@@ -341,7 +342,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             x1 = tmp;
         }
 
-        // copy members:
         final int _boundsMinY = boundsMinY;
 
         /* TODO: improve accuracy using correct float rounding to int
@@ -517,9 +517,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
         if (edgeBucketsLength > INITIAL_BUCKET_ARRAY) {
             if (doStats) {
-                rdrCtx.stats.stat_array_renderer_edgeBuckets
+                RendererContext.stats.stat_array_renderer_edgeBuckets
                     .add(edgeBucketsLength);
-                rdrCtx.stats.stat_array_renderer_edgeBucketCounts
+                RendererContext.stats.stat_array_renderer_edgeBucketCounts
                     .add(edgeBucketsLength);
             }
             edgeBuckets = rdrCtx.getIntArray(edgeBucketsLength);
@@ -573,7 +573,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // Return arrays:
         if (doStats) {
             RendererContext.stats.stat_rdr_edges.add(edges.used);
-            RendererContext.stats.stat_rdr_edges_count.add(edges.used / SIZEOF_EDGE_BYTES);
+            RendererContext.stats.stat_rdr_edges_count
+                .add(edges.used / SIZEOF_EDGE_BYTES);
         }
         // resize back off-heap edges to initial size
         if (edges.length != INITIAL_EDGES_CAPACITY) {
@@ -588,24 +589,21 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         }
 
         if (edgeMinY != Float.POSITIVE_INFINITY) {
-            final int _boundsMinY = boundsMinY;
-            // Find used part
-            // TODO: fix ceil:
-            final int iminY =     Math.max(FloatMath.ceil(edgeMinY), _boundsMinY)
-                                  - _boundsMinY;
-            final int imaxY = 1 + Math.min(FloatMath.ceil(edgeMaxY),  boundsMaxY)
-                                  - _boundsMinY;
-
+            // clear used part
             if (edgeBuckets == edgeBuckets_initial) {
                 // fill only used part
-                IntArrayCache.fill(edgeBuckets,      iminY, imaxY - 1, 0);
-                IntArrayCache.fill(edgeBucketCounts, iminY, imaxY,     0);
+                IntArrayCache.fill(edgeBuckets,      buckets_minY, 
+                                                     buckets_maxY,     0);
+                IntArrayCache.fill(edgeBucketCounts, buckets_minY, 
+                                                     buckets_maxY + 1, 0);
             } else {
                  // clear only used part
-                rdrCtx.putIntArray(edgeBuckets, iminY, imaxY - 1);
+                rdrCtx.putIntArray(edgeBuckets,      buckets_minY, 
+                                                     buckets_maxY);
                 edgeBuckets = edgeBuckets_initial;
 
-                rdrCtx.putIntArray(edgeBucketCounts, iminY, imaxY);
+                rdrCtx.putIntArray(edgeBucketCounts, buckets_minY, 
+                                                     buckets_maxY + 1);
                 edgeBucketCounts = edgeBucketCounts_initial;
             }
         } else if (edgeBuckets != edgeBuckets_initial) {
@@ -822,7 +820,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
                     if (edgePtrsLen < ptrEnd) {
                         if (doStats) {
-                            rdrCtx.stats.stat_array_renderer_edgePtrs
+                            RendererContext.stats.stat_array_renderer_edgePtrs
                                 .add(ptrEnd);
                         }
                         this.edgePtrs = _edgePtrs
@@ -837,7 +835,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                         // use ArrayCache.getNewSize() to use the same growing
                         // factor than widenDirtyIntArray():
                         if (doStats) {
-                            rdrCtx.stats.stat_array_renderer_aux_edgePtrs
+                            RendererContext.stats.stat_array_renderer_aux_edgePtrs
                                 .add(ptrEnd);
                         }
                         this.aux_edgePtrs = _aux_edgePtrs
@@ -864,7 +862,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                             rdrCtx.putDirtyIntArray(_crossings);
                         }
                         if (doStats) {
-                            rdrCtx.stats.stat_array_renderer_crossings
+                            RendererContext.stats.stat_array_renderer_crossings
                                 .add(numCrossings);
                         }
                         this.crossings = _crossings
@@ -875,7 +873,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                             rdrCtx.putDirtyIntArray(_aux_crossings);
                         }
                         if (doStats) {
-                            rdrCtx.stats.stat_array_renderer_aux_crossings
+                            RendererContext.stats.stat_array_renderer_aux_crossings
                                 .add(numCrossings);
                         }
                         this.aux_crossings = _aux_crossings
@@ -1257,11 +1255,23 @@ final class Renderer implements PathConsumer2D, MarlinConst {
            ie use ceil(x - 0.5f) */
 
         // bounds as inclusive intervals
-        // TODO: fix -1 in boundsMaxX and boundsMaxY
         final int spminX = Math.max(FloatMath.ceil(edgeMinX), boundsMinX);
         final int spmaxX = Math.min(FloatMath.ceil(edgeMaxX), boundsMaxX - 1);
-        final int spminY = Math.max(FloatMath.ceil(edgeMinY), boundsMinY);
-        final int spmaxY = Math.min(FloatMath.ceil(edgeMaxY), boundsMaxY - 1);
+        
+        final int _boundsMinY = boundsMinY;
+        final int _boundsMaxY = boundsMaxY - 1;
+        
+        final int spminY = Math.max(FloatMath.ceil(edgeMinY), _boundsMinY);
+        final int spmaxY;
+        int maxY = FloatMath.ceil(edgeMaxY);
+        if (maxY <= _boundsMaxY) {
+            spmaxY = maxY;
+        } else {
+            spmaxY = _boundsMaxY;
+            maxY   = _boundsMaxY + 1;
+        }
+        buckets_minY = spminY - _boundsMinY;
+        buckets_maxY = maxY   - _boundsMinY;
 
         if (doLogBounds) {
             MarlinUtils.logInfo("edgesXY = [" + edgeMinX + " ... " + edgeMaxX
@@ -1315,7 +1325,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // Useful when processing tile line by tile line
         if (width > INITIAL_AA_ARRAY) {
             if (doStats) {
-                rdrCtx.stats.stat_array_renderer_alphaline
+                RendererContext.stats.stat_array_renderer_alphaline
                     .add(width);
             }
             alphaLine = rdrCtx.getIntArray(width);

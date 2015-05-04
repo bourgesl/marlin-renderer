@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import org.marlin.pisces.MarlinRenderingEngine;
+import sun.java2d.pipe.RenderingEngine;
 
 /**
  * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers
@@ -43,6 +44,8 @@ public class LineTests {
     public static void main(String[] args) {
         final float lineStroke = 2f;
         final int size = 600;
+        
+        System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
 
         System.out.println("LineTests: size = " + size);
 

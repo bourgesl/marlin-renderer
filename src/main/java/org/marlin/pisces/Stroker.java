@@ -30,6 +30,7 @@ import static java.lang.Math.ulp;
 import static java.lang.Math.sqrt;
 
 import sun.awt.geom.PathConsumer2D;
+import org.marlin.pisces.Curve.BreakPtrIterator;
 
 
 // TODO: some of the arithmetic here is too verbose and prone to hard to
@@ -330,16 +331,12 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // but we put them in anyway, as opposed to just giving it 4 zeroes,
         // because it's just 4 additions and it's not good to rely on this
         // sort of assumption (right now it's true, but that may change).
-        emitCurveTo(cx+mx,      cy+my,
-                    cx+mx-C*my, cy+my+C*mx,
+        emitCurveTo(cx+mx-C*my, cy+my+C*mx,
                     cx-my+C*mx, cy+mx+C*my,
-                    cx-my,      cy+mx,
-                    false);
-        emitCurveTo(cx-my,      cy+mx,
-                    cx-my-C*mx, cy+mx-C*my,
+                    cx-my,      cy+mx);
+        emitCurveTo(cx-my-C*mx, cy+mx-C*my,
                     cx-mx-C*my, cy-my+C*mx,
-                    cx-mx,      cy-my,
-                    false);
+                    cx-mx,      cy-my);
     }
 
     // Put the intersection point of the lines (x0, y0) -> (x1, y1)
@@ -429,8 +426,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         emitLineTo(cx0 + mx, cy0 + my);
         emitLineTo( x1 + mx,  y1 + my);
 
-        emitLineTo(cx0 - mx, cy0 - my, true);
-        emitLineTo( x1 - mx,  y1 - my, true);
+        emitLineToRev(cx0 - mx, cy0 - my);
+        emitLineToRev( x1 - mx,  y1 - my);
 
         this.cmx = mx;
         this.cmy = my;
@@ -518,25 +515,44 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         out.lineTo(x1, y1);
     }
 
+    private void emitLineToRev(final float x1, final float y1) {
+        reverse.pushLine(x1, y1);
+    }
+
     private void emitLineTo(final float x1, final float y1,
                             final boolean rev)
     {
         if (rev) {
-            reverse.pushLine(x1, y1);
+            emitLineToRev(x1, y1);
         } else {
             emitLineTo(x1, y1);
         }
     }
 
-    private void emitQuadTo(final float x0, final float y0,
-                            final float x1, final float y1,
-                            final float x2, final float y2, final boolean rev)
+    private void emitQuadTo(final float x1, final float y1,
+                            final float x2, final float y2)
     {
-        if (rev) {
-            reverse.pushQuad(x0, y0, x1, y1);
-        } else {
-            out.quadTo(x1, y1, x2, y2);
-        }
+        out.quadTo(x1, y1, x2, y2);
+    }
+
+    private void emitQuadToRev(final float x0, final float y0,
+                               final float x1, final float y1)
+    {
+        reverse.pushQuad(x0, y0, x1, y1);
+    }
+
+    private void emitCurveTo(final float x1, final float y1,
+                             final float x2, final float y2,
+                             final float x3, final float y3)
+    {
+        out.curveTo(x1, y1, x2, y2, x3, y3);
+    }
+    
+    private void emitCurveToRev(final float x0, final float y0,
+                                final float x1, final float y1,
+                                final float x2, final float y2)
+    {
+        reverse.pushCubic(x0, y0, x1, y1, x2, y2);
     }
 
     private void emitCurveTo(final float x0, final float y0,
@@ -646,7 +662,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         // if p2-p1 and p4-p3 are parallel, that must mean this curve is a line
         float dotsq = (dx1 * dx4 + dy1 * dy4);
-        dotsq = dotsq * dotsq;
+        dotsq *= dotsq;
         float l1sq = dx1 * dx1 + dy1 * dy1, l4sq = dx4 * dx4 + dy4 * dy4;
         if (Helpers.within(dotsq, l1sq * l4sq, 4f * ulp(dotsq))) {
             getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
@@ -1060,7 +1076,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         int kind = 0;
         int curCurveOff;
-        Curve.BreakPtrIterator it = curve.breakPtsAtTs(mid, 8, subdivTs, nSplits);
+        BreakPtrIterator it = curve.breakPtsAtTs(mid, 8, subdivTs, nSplits);
         while(it.hasNext()) {
             curCurveOff = it.next();
 
@@ -1068,17 +1084,15 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             emitLineTo(l[0], l[1]);
             switch(kind) {
             case 8:
-                emitCurveTo(l[0], l[1], l[2], l[3], l[4], l[5],
-                            l[6], l[7], false);
-                emitCurveTo(r[0], r[1], r[2], r[3], r[4], r[5],
-                            r[6], r[7], true);
+                emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
+                emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
                 break;
             case 4:
                 emitLineTo(l[2], l[3]);
-                emitLineTo(r[0], r[1], true);
+                emitLineToRev(r[0], r[1]);
                 break;
             }
-            emitLineTo(r[kind - 2], r[kind - 1], true);
+            emitLineToRev(r[kind - 2], r[kind - 1]);
         }
 
         this.cmx = (l[kind - 2] - r[kind - 2]) / 2f;
@@ -1138,7 +1152,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         int kind = 0;
         int curCurveOff;
-        Curve.BreakPtrIterator it = curve.breakPtsAtTs(mid, 6, subdivTs, nSplits);
+        BreakPtrIterator it = curve.breakPtsAtTs(mid, 6, subdivTs, nSplits);
         while(it.hasNext()) {
             curCurveOff = it.next();
 
@@ -1146,15 +1160,15 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             emitLineTo(l[0], l[1]);
             switch(kind) {
             case 6:
-                emitQuadTo(l[0], l[1], l[2], l[3], l[4], l[5], false);
-                emitQuadTo(r[0], r[1], r[2], r[3], r[4], r[5], true);
+                emitQuadTo(l[2], l[3], l[4], l[5]);
+                emitQuadToRev(r[0], r[1], r[2], r[3]);
                 break;
             case 4:
                 emitLineTo(l[2], l[3]);
-                emitLineTo(r[0], r[1], true);
+                emitLineToRev(r[0], r[1]);
                 break;
             }
-            emitLineTo(r[kind - 2], r[kind - 1], true);
+            emitLineToRev(r[kind - 2], r[kind - 1]);
         }
 
         this.cmx = (l[kind - 2] - r[kind - 2]) / 2f;
@@ -1221,8 +1235,10 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             numCurves = 0;
 
             if (doStats) {
-                RendererContext.stats.stat_rdr_poly_stack_types.add(curveTypesUseMark);
-                RendererContext.stats.stat_rdr_poly_stack_curves.add(curvesUseMark);
+                RendererContext.stats.stat_rdr_poly_stack_types
+                    .add(curveTypesUseMark);
+                RendererContext.stats.stat_rdr_poly_stack_curves
+                    .add(curvesUseMark);
                 // reset marks
                 curveTypesUseMark = 0;
                 curvesUseMark = 0;
@@ -1244,15 +1260,14 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         private void ensureSpace(final int n) {
             if (end + n >= curves.length) {
                 if (doStats) {
-                    rdrCtx.stats.stat_array_stroker_polystack_curves
+                    RendererContext.stats.stat_array_stroker_polystack_curves
                         .add(end + n);
                 }
                 curves = rdrCtx.widenDirtyFloatArray(curves, end, end + n);
-
             }
             if (numCurves + 1 >= curveTypes.length) {
                 if (doStats) {
-                    rdrCtx.stats.stat_array_stroker_polystack_curveTypes
+                    RendererContext.stats.stat_array_stroker_polystack_curveTypes
                         .add(numCurves + 1);
                 }
                 curveTypes = rdrCtx.widenDirtyByteArray(curveTypes,
@@ -1314,19 +1329,17 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 case TYPE_LINETO:
                     e -= 2;
                     io.lineTo(_curves[e], _curves[e+1]);
-                    break;
+                    continue;
                 case TYPE_QUADTO:
                     e -= 4;
                     io.quadTo(_curves[e+0], _curves[e+1],
                               _curves[e+2], _curves[e+3]);
-                    break;
+                    continue;
                 case TYPE_CUBICTO:
                     e -= 6;
                     io.curveTo(_curves[e+0], _curves[e+1],
                                _curves[e+2], _curves[e+3],
                                _curves[e+4], _curves[e+5]);
-                    break;
-                default:
                 }
             }
             numCurves = 0;

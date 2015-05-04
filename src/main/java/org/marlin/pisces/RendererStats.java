@@ -41,7 +41,7 @@ public final class RendererStats implements MarlinConst {
     // singleton
     private static RendererStats singleton = null;
 
-    static RendererStats createInstance() {
+    static RendererStats getInstance() {
         if (singleton == null) {
             singleton = new RendererStats();
         }

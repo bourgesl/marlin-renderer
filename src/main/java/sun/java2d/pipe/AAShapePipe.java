@@ -28,7 +28,6 @@ import java.awt.BasicStroke;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
-import org.marlin.pisces.MarlinCache;
 import sun.awt.SunHints;
 import sun.java2d.SunGraphics2D;
 
@@ -193,7 +192,7 @@ public class AAShapePipe
     /** Tile state used by AAShapePipe */
     static final class TileState {
         /** cached tile (32x32 tile by default) */
-        private byte[] theTile = new byte[MarlinCache.TILE_SIZE * MarlinCache.TILE_SIZE];
+        private byte[] theTile = new byte[32 * 32];
         /** dirty aabox array */
         final int[] abox = new int[4];
         /** dirty bbox rectangle */

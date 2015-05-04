@@ -26,7 +26,7 @@ package org.marlin.pisces;
 
 import sun.awt.geom.PathConsumer2D;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Path2D;
+import org.marlin.geom.Path2D;
 
 final class TransformingPathConsumer2D {
 
