@@ -32,7 +32,7 @@ import java.util.Arrays;
  * @see Renderer
  */
 public final class MarlinCache implements MarlinConst {
-    
+
     private final static double GAMMA = PiscesRenderingEngine.getGamma();
 
     public static final int TILE_SIZE_LG = MarlinRenderingEngine.getTileSize_Log2();
@@ -153,6 +153,7 @@ public final class MarlinCache implements MarlinConst {
         }
 
         if (doCleanDirty) {
+            // Force zero-fill dirty arrays:
             Arrays.fill(rowAAChunk, BYTE_0);
         }
     }
@@ -312,12 +313,12 @@ public final class MarlinCache implements MarlinConst {
 //            System.out.println("alphaMap[" + i + "] = "
 //                               + Byte.toUnsignedInt(alMap[i]));
         }
-        
+
         if (GAMMA != 1.0) {
 //            System.out.println("alphaMap[gamma = " + GAMMA + "]");
             final double invGamma = 1.0 / GAMMA;
             final double max = (double)maxalpha;
-            
+
             for (int i = 0; i <= maxalpha; i++) {
                 alMap[i] = (byte) (0xFF * Math.pow(i / max, invGamma));
 //                System.out.println("alphaMap[" + i + "] = " + PiscesUtils.toUnsignedInt(alMap[i]) + " :: "+Math.pow(i / (double)maxalpha, 1d / GAMMA));

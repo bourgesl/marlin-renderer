@@ -81,6 +81,11 @@ final class IntArrayCache implements MarlinConst {
 
         // NO clean-up of array data = DIRTY ARRAY
 
+        if (doCleanDirty) {
+            // Force zero-fill dirty arrays:
+            fill(array, 0, array.length, 0);
+        }
+
         // fill cache:
         intArrays.addLast(array);
     }
@@ -120,29 +125,22 @@ final class IntArrayCache implements MarlinConst {
         }
     }
 
-    static boolean check(final int[] array, final int fromIndex,
+    static void check(final int[] array, final int fromIndex,
                          final int toIndex, final int value)
     {
         if (doChecks) {
-            boolean empty = true;
-            int i;
             // check zero on full array:
-            for (i = fromIndex; i < toIndex; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (array[i] != value) {
-                    empty = false;
-                    break;
+                    logException("Invalid array value at " + i + "\n"
+                            + Arrays.toString(array), new Throwable());
+
+                    // ensure array is correctly filled:
+                    Arrays.fill(array, value);
+
+                    return;
                 }
             }
-            if (!empty) {
-                logException("Invalid array value at " + i + "\n"
-                             + Arrays.toString(array), new Throwable());
-
-                // ensure array is correctly filled:
-                Arrays.fill(array, value);
-
-                return true;
-            }
         }
-        return false;
     }
 }

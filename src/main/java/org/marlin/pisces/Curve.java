@@ -247,7 +247,7 @@ final class Curve {
     // LengthIterator an Iterator<Float> and feed it to this function to simplify
     // the loop in Dasher.somethingTo.
     BreakPtrIterator breakPtsAtTs(final float[] pts, final int type,
-                                   final float[] Ts, final int numTs)
+                                  final float[] Ts, final int numTs)
     {
         assert pts.length >= 2*type && numTs <= Ts.length;
 

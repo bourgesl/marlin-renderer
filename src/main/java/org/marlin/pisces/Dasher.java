@@ -138,6 +138,11 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
      * clean up before reusing this instance
      */
     void dispose() {
+        if (doCleanDirty) {
+            // Force zero-fill dirty arrays:
+            Arrays.fill(curCurvepts, 0f);
+            Arrays.fill(firstSegmentsBuffer, 0f);
+        }
         // Return arrays:
         if (this.recycleDashes && dash != dashes_initial) {
             rdrCtx.putDirtyFloatArray(dash);
@@ -146,12 +151,6 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         if (firstSegmentsBuffer != firstSegmentsBuffer_initial) {
             rdrCtx.putDirtyFloatArray(firstSegmentsBuffer);
             firstSegmentsBuffer = firstSegmentsBuffer_initial;
-        }
-
-        if (doCleanDirty) {
-            // keep curCurvepts and firstSegmentsBuffer dirty
-            Arrays.fill(curCurvepts, 0f);
-            Arrays.fill(firstSegmentsBuffer, 0f);
         }
     }
 

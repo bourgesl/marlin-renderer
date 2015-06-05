@@ -177,8 +177,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         this.reverse.dispose();
 
         if (doCleanDirty) {
-            // keep data dirty
-            // as it appears not useful to reset data:
+            // Force zero-fill dirty arrays:
             Arrays.fill(offset0, 0f);
             Arrays.fill(offset1, 0f);
             Arrays.fill(offset2, 0f);
@@ -479,6 +478,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         out.pathDone();
+
         // this shouldn't matter since this object won't be used
         // after the call to this method.
         this.prev = CLOSE;
@@ -547,7 +547,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     {
         out.curveTo(x1, y1, x2, y2, x3, y3);
     }
-    
+
     private void emitCurveToRev(final float x0, final float y0,
                                 final float x1, final float y1,
                                 final float x2, final float y2)
@@ -903,15 +903,15 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             dyf /= len;
         }
 
-        computeOffset(dxs, dys, lineWidth2, offset[0]);
-        final float mx = offset[0][0];
-        final float my = offset[0][1];
+        computeOffset(dxs, dys, lineWidth2, offset0);
+        final float mx = offset0[0];
+        final float my = offset0[1];
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, mx, my);
 
-        int nSplits = findSubdivPoints(middle, subdivTs, type, lineWidth2);
+        int nSplits = findSubdivPoints(curve, middle, subdivTs, type, lineWidth2);
 
         int kind = 0;
-        Iterator<Integer> it = Curve.breakPtsAtTs(middle, type, subdivTs, nSplits);
+        BreakPtrIterator it = curve.breakPtsAtTs(middle, type, subdivTs, nSplits);
         while(it.hasNext()) {
             int curCurveOff = it.next();
 
@@ -926,12 +926,12 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             emitLineTo(lp[0], lp[1]);
             switch(kind) {
             case 8:
-                emitCurveTo(lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], lp[6], lp[7], false);
-                emitCurveTo(rp[0], rp[1], rp[2], rp[3], rp[4], rp[5], rp[6], rp[7], true);
+                emitCurveTo(lp[2], lp[3], lp[4], lp[5], lp[6], lp[7]);
+                emitCurveToRev(rp[0], rp[1], rp[2], rp[3], rp[4], rp[5]);
                 break;
             case 6:
-                emitQuadTo(lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], false);
-                emitQuadTo(rp[0], rp[1], rp[2], rp[3], rp[4], rp[5], true);
+                emitQuadTo(lp[2], lp[3], lp[4], lp[5]);
+                emitQuadToRev(rp[0], rp[1], rp[2], rp[3]);
                 break;
             case 4:
                 emitLineTo(lp[2], lp[3]);
@@ -1075,10 +1075,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         final float[] r = rp;
 
         int kind = 0;
-        int curCurveOff;
         BreakPtrIterator it = curve.breakPtsAtTs(mid, 8, subdivTs, nSplits);
         while(it.hasNext()) {
-            curCurveOff = it.next();
+            int curCurveOff = it.next();
 
             kind = computeOffsetCubic(mid, curCurveOff, l, r);
             emitLineTo(l[0], l[1]);
@@ -1151,10 +1150,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         final float[] r = rp;
 
         int kind = 0;
-        int curCurveOff;
         BreakPtrIterator it = curve.breakPtsAtTs(mid, 6, subdivTs, nSplits);
         while(it.hasNext()) {
-            curCurveOff = it.next();
+            int curCurveOff = it.next();
 
             kind = computeOffsetQuad(mid, curCurveOff, l, r);
             emitLineTo(l[0], l[1]);

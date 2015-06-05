@@ -110,8 +110,8 @@ final class Helpers implements MarlinConst {
         // q = Q/2
         // instead and use those values for simplicity of the code.
         double sq_A = a * a;
-        double p = (1.0/3) * ((-1.0/3) * sq_A + b);
-        double q = (1.0/2) * ((2.0/27) * a * sq_A - (1.0/3) * a * b + c);
+        double p = (1.0/3.0) * ((-1.0/3.0) * sq_A + b);
+        double q = (1.0/2.0) * ((2.0/27.0) * a * sq_A - (1.0/3.0) * a * b + c);
 
         // use Cardano's formula
 
@@ -121,12 +121,12 @@ final class Helpers implements MarlinConst {
         int num;
         if (D < 0.0) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = (1.0/3) * acos(-q / sqrt(-cb_p));
+            final double phi = (1.0/3.0) * acos(-q / sqrt(-cb_p));
             final double t = 2.0 * sqrt(-p);
 
             pts[ off+0 ] =  (float)( t * cos(phi));
-            pts[ off+1 ] =  (float)(-t * cos(phi + (PI / 3)));
-            pts[ off+2 ] =  (float)(-t * cos(phi - (PI / 3)));
+            pts[ off+1 ] =  (float)(-t * cos(phi + (PI / 3.0)));
+            pts[ off+2 ] =  (float)(-t * cos(phi - (PI / 3.0)));
             num = 3;
         } else {
             final double sqrt_D = sqrt(D);
@@ -142,7 +142,7 @@ final class Helpers implements MarlinConst {
             }
         }
 
-        final float sub = (1.0f/3) * a;
+        final float sub = (1f/3f) * a;
 
         for (int i = 0; i < num; ++i) {
             pts[ off+i ] -= sub;

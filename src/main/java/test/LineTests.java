@@ -43,7 +43,7 @@ public class LineTests {
 
     public static void main(String[] args) {
         final float lineStroke = 2f;
-        final int size = 600;
+        final int size = 2600;
         
         System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
 

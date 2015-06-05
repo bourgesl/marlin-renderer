@@ -532,6 +532,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         edgeMaxX = Float.NEGATIVE_INFINITY;
 
         // reset used mark:
+        edgeCount = 0;
+        activeEdgeMaxUsed = 0;
         edges.used = 0;
 
         return this; // fluent API
@@ -541,6 +543,20 @@ final class Renderer implements PathConsumer2D, MarlinConst {
      * Disposes this renderer and recycle it clean up before reusing this instance
      */
     void dispose() {
+        if (doStats) {
+            RendererContext.stats.stat_rdr_activeEdges.add(activeEdgeMaxUsed);
+            RendererContext.stats.stat_rdr_edges.add(edges.used);
+            RendererContext.stats.stat_rdr_edges_count
+                .add(edges.used / SIZEOF_EDGE_BYTES);
+        }
+        if (doCleanDirty) {
+            // Force zero-fill dirty arrays:
+            Arrays.fill(crossings,     0);
+            Arrays.fill(aux_crossings, 0);
+            Arrays.fill(edgePtrs,      0);
+            Arrays.fill(aux_edgePtrs,  0);
+        }
+        // Return arrays:
         if (crossings != crossings_initial) {
             rdrCtx.putDirtyIntArray(crossings);
             crossings = crossings_initial;
@@ -557,30 +573,12 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 aux_edgePtrs = aux_edgePtrs_initial;
             }
         }
-        if (doCleanDirty) {
-            // keep crossings and edgePtrs dirty
-            Arrays.fill(crossings,     0);
-            Arrays.fill(aux_crossings, 0);
-            Arrays.fill(edgePtrs,      0);
-            Arrays.fill(aux_edgePtrs,  0);
-        }
-        if (doStats) {
-            RendererContext.stats.stat_rdr_activeEdges.add(activeEdgeMaxUsed);
-        }
-        edgeCount = 0;
-        activeEdgeMaxUsed = 0;
-
-        // Return arrays:
-        if (doStats) {
-            RendererContext.stats.stat_rdr_edges.add(edges.used);
-            RendererContext.stats.stat_rdr_edges_count
-                .add(edges.used / SIZEOF_EDGE_BYTES);
-        }
         // resize back off-heap edges to initial size
         if (edges.length != INITIAL_EDGES_CAPACITY) {
             edges.resize(INITIAL_EDGES_CAPACITY);
         }
         if (doCleanDirty) {
+            // Force zero-fill dirty arrays:
             edges.fill(BYTE_0);
         }
         if (alphaLine != alphaLine_initial) {
@@ -592,17 +590,17 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             // clear used part
             if (edgeBuckets == edgeBuckets_initial) {
                 // fill only used part
-                IntArrayCache.fill(edgeBuckets,      buckets_minY, 
+                IntArrayCache.fill(edgeBuckets,      buckets_minY,
                                                      buckets_maxY,     0);
-                IntArrayCache.fill(edgeBucketCounts, buckets_minY, 
+                IntArrayCache.fill(edgeBucketCounts, buckets_minY,
                                                      buckets_maxY + 1, 0);
             } else {
                  // clear only used part
-                rdrCtx.putIntArray(edgeBuckets,      buckets_minY, 
+                rdrCtx.putIntArray(edgeBuckets,      buckets_minY,
                                                      buckets_maxY);
                 edgeBuckets = edgeBuckets_initial;
 
-                rdrCtx.putIntArray(edgeBucketCounts, buckets_minY, 
+                rdrCtx.putIntArray(edgeBucketCounts, buckets_minY,
                                                      buckets_maxY + 1);
                 edgeBucketCounts = edgeBucketCounts_initial;
             }
@@ -1257,18 +1255,18 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // bounds as inclusive intervals
         final int spminX = Math.max(FloatMath.ceil(edgeMinX), boundsMinX);
         final int spmaxX = Math.min(FloatMath.ceil(edgeMaxX), boundsMaxX - 1);
-        
+
         final int _boundsMinY = boundsMinY;
-        final int _boundsMaxY = boundsMaxY - 1;
-        
+        final int _boundsMaxYm1 = boundsMaxY - 1;
+
         final int spminY = Math.max(FloatMath.ceil(edgeMinY), _boundsMinY);
         final int spmaxY;
         int maxY = FloatMath.ceil(edgeMaxY);
-        if (maxY <= _boundsMaxY) {
+        if (maxY <= _boundsMaxYm1) {
             spmaxY = maxY;
         } else {
-            spmaxY = _boundsMaxY;
-            maxY   = _boundsMaxY + 1;
+            spmaxY = _boundsMaxYm1;
+            maxY   = _boundsMaxYm1 + 1;
         }
         buckets_minY = spminY - _boundsMinY;
         buckets_maxY = maxY   - _boundsMinY;

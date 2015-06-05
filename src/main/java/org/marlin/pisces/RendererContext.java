@@ -45,7 +45,8 @@ final class RendererContext implements MarlinConst {
     static final RendererStats stats = (doStats || doMonitors)
                                        ? RendererStats.getInstance(): null;
 
-    private static final boolean USE_CACHE_HARD_REF = false;
+    private static final boolean USE_CACHE_HARD_REF = doStats
+        || (MarlinRenderingEngine.REF_TYPE == MarlinRenderingEngine.REF_WEAK);
 
     /**
      * Create a new renderer context
@@ -149,7 +150,7 @@ final class RendererContext implements MarlinConst {
 
                 holder = new ArrayCachesHolder();
 
-                if (USE_CACHE_HARD_REF || doStats) {
+                if (USE_CACHE_HARD_REF) {
                     // update hard reference:
                     hardRefArrayCaches = holder;
                 }
@@ -162,36 +163,21 @@ final class RendererContext implements MarlinConst {
     }
 
     void resetArrayCachesHolder() {
-        // keep hard reference to get cache statistics:
-        if (!USE_CACHE_HARD_REF && !doStats) {
+        // keep hard reference:
+        if (!USE_CACHE_HARD_REF) {
             hardRefArrayCaches = null;
         }
     }
 
-    IntArrayCache getIntArrayCache(final int length) {
-        final int bucket = ArrayCache.getBucket(length);
-        return getArrayCachesHolder().intArrayCaches[bucket];
-    }
-
-    IntArrayCache getDirtyIntArrayCache(final int length) {
-        final int bucket = ArrayCache.getBucket(length);
-        return getArrayCachesHolder().dirtyIntArrayCaches[bucket];
-    }
-
-    FloatArrayCache getDirtyFloatArrayCache(final int length) {
-        final int bucket = ArrayCache.getBucket(length);
-        return getArrayCachesHolder().dirtyFloatArrayCaches[bucket];
-    }
-
-    ByteArrayCache getDirtyArrayCache(final int length) {
-        final int bucket = ArrayCache.getBucketDirty(length);
+    // dirty byte array cache
+    ByteArrayCache getDirtyByteArrayCache(final int length) {
+        final int bucket = ArrayCache.getBucketDirtyBytes(length);
         return getArrayCachesHolder().dirtyByteArrayCaches[bucket];
     }
 
-    // dirty byte array cache
-    byte[] getByteDirtyArray(final int length) {
+    byte[] getDirtyByteArray(final int length) {
         if (length <= MAX_DIRTY_BYTE_ARRAY_SIZE) {
-            return getDirtyArrayCache(length).getArray();
+            return getDirtyByteArrayCache(length).getArray();
         }
 
         if (doStats) {
@@ -199,7 +185,7 @@ final class RendererContext implements MarlinConst {
         }
 
         if (doLogOverSize) {
-            logInfo("getByteDirtyArray[oversize]: length=\t" + length
+            logInfo("getDirtyByteArray[oversize]: length=\t" + length
                     + "\tfrom=\t" + getCallerInfo(className));
         }
 
@@ -209,7 +195,7 @@ final class RendererContext implements MarlinConst {
     void putDirtyByteArray(final byte[] array) {
         final int length = array.length;
         if (((length & 0x1) == 0) && (length <= MAX_DIRTY_BYTE_ARRAY_SIZE)) {
-            getDirtyArrayCache(length).putDirtyArray(array, length);
+            getDirtyByteArrayCache(length).putDirtyArray(array, length);
         }
     }
 
@@ -226,7 +212,7 @@ final class RendererContext implements MarlinConst {
 
         // maybe change bucket:
         // ensure getNewSize() > newSize:
-        final byte[] res = getByteDirtyArray(getNewSize(usedSize));
+        final byte[] res = getDirtyByteArray(getNewSize(usedSize));
 
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
@@ -235,7 +221,7 @@ final class RendererContext implements MarlinConst {
         putDirtyByteArray(in);
 
         if (doLogWidenArray) {
-            logInfo("widenDirtyArray byte[" + res.length + "]: usedSize=\t"
+            logInfo("widenDirtyByteArray[" + res.length + "]: usedSize=\t"
                     + usedSize + "\tlength=\t" + length + "\tnew length=\t"
                     + newSize + "\tfrom=\t" + getCallerInfo(className));
         }
@@ -243,6 +229,11 @@ final class RendererContext implements MarlinConst {
     }
 
     // int array cache
+    IntArrayCache getIntArrayCache(final int length) {
+        final int bucket = ArrayCache.getBucket(length);
+        return getArrayCachesHolder().intArrayCaches[bucket];
+    }
+
     int[] getIntArray(final int length) {
         if (length <= MAX_ARRAY_SIZE) {
             return getIntArrayCache(length).getArray();
@@ -282,7 +273,7 @@ final class RendererContext implements MarlinConst {
         putIntArray(in, 0, clearTo); // ensure all array is cleared (grow-reduce algo)
 
         if (doLogWidenArray) {
-            logInfo("widenArray int[" + res.length + "]: usedSize=\t"
+            logInfo("widenIntArray[" + res.length + "]: usedSize=\t"
                     + usedSize + "\tlength=\t" + length + "\tnew length=\t"
                     + newSize + "\tfrom=\t" + getCallerInfo(className));
         }
@@ -299,6 +290,11 @@ final class RendererContext implements MarlinConst {
     }
 
     // dirty int array cache
+    IntArrayCache getDirtyIntArrayCache(final int length) {
+        final int bucket = ArrayCache.getBucket(length);
+        return getArrayCachesHolder().dirtyIntArrayCaches[bucket];
+    }
+
     int[] getDirtyIntArray(final int length) {
         if (length <= MAX_ARRAY_SIZE) {
             return getDirtyIntArrayCache(length).getArray();
@@ -353,6 +349,11 @@ final class RendererContext implements MarlinConst {
     }
 
     // dirty float array cache
+    FloatArrayCache getDirtyFloatArrayCache(final int length) {
+        final int bucket = ArrayCache.getBucket(length);
+        return getArrayCachesHolder().dirtyFloatArrayCaches[bucket];
+    }
+
     float[] getDirtyFloatArray(final int length) {
         if (length <= MAX_ARRAY_SIZE) {
             return getDirtyFloatArrayCache(length).getArray();
@@ -406,6 +407,7 @@ final class RendererContext implements MarlinConst {
         }
     }
 
+    /* class holding all array cache instances */
     final static class ArrayCachesHolder {
         // zero-filled int array cache:
         final IntArrayCache[] intArrayCaches;

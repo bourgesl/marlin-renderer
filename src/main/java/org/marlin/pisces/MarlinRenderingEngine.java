@@ -46,7 +46,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                                    implements MarlinConst
 {
     private static enum NormMode {OFF, ON_NO_AA, ON_WITH_AA}
-    
+
     /**
      * Public constructor
      */
@@ -865,15 +865,15 @@ public class MarlinRenderingEngine extends RenderingEngine
                 break;
         }
     }
-    
+
     private static boolean settingsLogged = false;
-    
+
     private static void logSettings(final String reClass) {
         if (settingsLogged) {
             return;
         }
         settingsLogged = true;
-        
+
         String refType;
         switch (REF_TYPE) {
             default:
@@ -887,7 +887,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                 refType = "weak";
                 break;
         }
-        
+
         logInfo("=========================================================="
                 + "=====================");
 
@@ -937,7 +937,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                 + getGamma());
 
         logInfo("=========================================================="
-                + "=====================");        
+                + "=====================");
     }
 
     /**
@@ -1103,7 +1103,7 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
         return value;
     }
-    
+
     public static double getDouble(final String key, final double def,
                                    final double min, final double max)
     {
