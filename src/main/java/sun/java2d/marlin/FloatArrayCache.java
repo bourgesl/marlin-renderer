@@ -83,6 +83,11 @@ final class FloatArrayCache implements MarlinConst {
 
         // NO clean-up of array data = DIRTY ARRAY
 
+        if (doCleanDirty) {
+            // Force zero-fill dirty arrays:
+            fill(array, 0, array.length, 0f);
+        }
+
         // fill cache:
         floatArrays.addLast(array);
     }
@@ -126,21 +131,17 @@ final class FloatArrayCache implements MarlinConst {
                       final int toIndex, final float value)
     {
         if (doChecks) {
-            boolean empty = true;
-            int i;
             // check zero on full array:
-            for (i = fromIndex; i < toIndex; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (array[i] != value) {
-                    empty = false;
-                    break;
-                }
-            }
-            if (!empty) {
-                logException("Invalid array value at " + i + "\n"
-                             + Arrays.toString(array), new Throwable());
+                    logException("Invalid array value at " + i + "\n"
+                            + Arrays.toString(array), new Throwable());
 
-                // ensure array is correctly filled:
-                Arrays.fill(array, value);
+                    // ensure array is correctly filled:
+                    Arrays.fill(array, value);
+
+                    return;
+                }
             }
         }
     }

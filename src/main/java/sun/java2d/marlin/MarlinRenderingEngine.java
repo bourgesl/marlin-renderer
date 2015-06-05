@@ -49,6 +49,14 @@ public class MarlinRenderingEngine extends RenderingEngine
     private static enum NormMode {OFF, ON_NO_AA, ON_WITH_AA}
 
     /**
+     * Public constructor
+     */
+    public MarlinRenderingEngine() {
+        super();
+        logSettings(MarlinRenderingEngine.class.getName());
+    }
+
+    /**
      * Create a widened path as specified by the parameters.
      * <p>
      * The specified {@code src} {@link Shape} is widened according
@@ -740,12 +748,12 @@ public class MarlinRenderingEngine extends RenderingEngine
             dy1 += ldy1;
             dx2 += ldx2;
             dy2 += ldy2;
-            if (lw1 > 1 && lw2 > 1) {
+            if (lw1 > 1.0 && lw2 > 1.0) {
                 // Inner parallelogram was entirely consumed by stroke...
                 innerpgram = false;
             }
         } else {
-            ldx1 = ldy1 = ldx2 = ldy2 = 0;
+            ldx1 = ldy1 = ldx2 = ldy2 = 0.0;
         }
 
         final RendererContext rdrCtx = getRendererContext();
@@ -773,7 +781,6 @@ public class MarlinRenderingEngine extends RenderingEngine
             r.lineTo((float) (x+dx2), (float) (y+dy2));
             r.closePath();
         }
-
         r.pathDone();
 
         if (r.endRendering()) {
@@ -848,74 +855,87 @@ public class MarlinRenderingEngine extends RenderingEngine
                             "weak"));
         switch (refType) {
             default:
-            case "hard":
-                refType = "hard";
-                REF_TYPE = REF_HARD;
-                break;
             case "soft":
-                refType = "soft";
                 REF_TYPE = REF_SOFT;
                 break;
             case "weak":
-                refType = "weak";
                 REF_TYPE = REF_WEAK;
+                break;
+            case "hard":
+                REF_TYPE = REF_HARD;
+                break;
+        }
+    }
+
+    private static boolean settingsLogged = false;
+
+    private static void logSettings(final String reClass) {
+        // log information at startup
+        if (settingsLogged) {
+            return;
+        }
+        settingsLogged = true;
+
+        String refType;
+        switch (REF_TYPE) {
+            default:
+            case REF_HARD:
+                refType = "hard";
+                break;
+            case REF_SOFT:
+                refType = "soft";
+                break;
+            case REF_WEAK:
+                refType = "weak";
                 break;
         }
 
-        final String reClass = AccessController.doPrivileged(
-                            new GetPropertyAction("sun.java2d.renderer"));
+        logInfo("=========================================================="
+                + "=====================");
 
-        if (MarlinRenderingEngine.class.getName().equals(reClass)) {
-            // Marlin renderer enabled:
+        logInfo("Marlin software rasterizer           = ENABLED");
+        logInfo("Version                              = ["
+                + Version.getVersion() + "]");
+        logInfo("sun.java2d.renderer                  = "
+                + reClass);
+        logInfo("sun.java2d.renderer.useThreadLocal   = "
+                + useThreadLocal);
+        logInfo("sun.java2d.renderer.useRef           = "
+                + refType);
 
-            // log information at startup
-            logInfo("=========================================================="
-                    + "=====================");
+        logInfo("sun.java2d.renderer.pixelsize        = "
+                + MarlinConst.INITIAL_PIXEL_DIM);
+        logInfo("sun.java2d.renderer.subPixel_log2_X  = "
+                + Renderer.SUBPIXEL_LG_POSITIONS_X);
+        logInfo("sun.java2d.renderer.subPixel_log2_Y  = "
+                + Renderer.SUBPIXEL_LG_POSITIONS_Y);
+        logInfo("sun.java2d.renderer.tileSize_log2    = "
+                + MarlinCache.TILE_SIZE_LG);
+        logInfo("sun.java2d.renderer.useFastMath      = "
+                + MarlinConst.useFastMath);
 
-            logInfo("Marlin software rasterizer           = ENABLED");
-            logInfo("Version                              = ["
-                    + Version.getVersion() + "]");
-            logInfo("sun.java2d.renderer                  = "
-                    + reClass);
-            logInfo("sun.java2d.renderer.useThreadLocal   = "
-                    + useThreadLocal);
-            logInfo("sun.java2d.renderer.useRef           = "
-                    + refType);
+        // optimisation parameters
+        logInfo("sun.java2d.renderer.useSimplifier    = "
+                + MarlinConst.useSimplifier);
 
-            logInfo("sun.java2d.renderer.pixelsize        = "
-                    + MarlinConst.INITIAL_PIXEL_DIM);
-            logInfo("sun.java2d.renderer.subPixel_log2_X  = "
-                    + Renderer.SUBPIXEL_LG_POSITIONS_X);
-            logInfo("sun.java2d.renderer.subPixel_log2_Y  = "
-                    + Renderer.SUBPIXEL_LG_POSITIONS_Y);
-            logInfo("sun.java2d.renderer.tileSize_log2    = "
-                    + MarlinCache.TILE_SIZE_LG);
-            logInfo("sun.java2d.renderer.useFastMath      = "
-                    + MarlinConst.useFastMath);
+        // debugging parameters
+        logInfo("sun.java2d.renderer.doStats          = "
+                + MarlinConst.doStats);
+        logInfo("sun.java2d.renderer.doMonitors       = "
+                + MarlinConst.doMonitors);
+        logInfo("sun.java2d.renderer.doChecks         = "
+                + MarlinConst.doChecks);
 
-            // optimisation parameters
-            logInfo("sun.java2d.renderer.useSimplifier    = "
-                    + MarlinConst.useSimplifier);
+        // logging parameters
+        logInfo("sun.java2d.renderer.useLogger        = "
+                + MarlinConst.useLogger);
+        logInfo("sun.java2d.renderer.logCreateContext = "
+                + MarlinConst.logCreateContext);
+        logInfo("sun.java2d.renderer.logUnsafeMalloc  = "
+                + MarlinConst.logUnsafeMalloc);
 
-            // debugging parameters
-            logInfo("sun.java2d.renderer.doStats          = "
-                    + MarlinConst.doStats);
-            logInfo("sun.java2d.renderer.doMonitors       = "
-                    + MarlinConst.doMonitors);
-            logInfo("sun.java2d.renderer.doChecks         = "
-                    + MarlinConst.doChecks);
-
-            // logging parameters
-            logInfo("sun.java2d.renderer.useLogger        = "
-                    + MarlinConst.useLogger);
-            logInfo("sun.java2d.renderer.logCreateContext = "
-                    + MarlinConst.logCreateContext);
-            logInfo("sun.java2d.renderer.logUnsafeMalloc  = "
-                    + MarlinConst.logUnsafeMalloc);
-
-            logInfo("=========================================================="
-                    + "=====================");
-        }
+        logInfo("=========================================================="
+                + "=====================");
     }
 
     /**
@@ -1048,7 +1068,8 @@ public class MarlinRenderingEngine extends RenderingEngine
     // system property utilities
 
     static boolean getBoolean(final String key, final String def) {
-        return Boolean.valueOf(AccessController.doPrivileged(new GetPropertyAction(key, def)));
+        return Boolean.valueOf(AccessController.doPrivileged(
+                  new GetPropertyAction(key, def)));
     }
 
     static int getInteger(final String key, final int def,

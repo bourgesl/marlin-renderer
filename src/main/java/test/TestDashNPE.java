@@ -13,7 +13,7 @@ public class TestDashNPE {
     public static void main(String[] args) {
         final String renderer = RenderingEngine.getInstance().getClass().getSimpleName();
         System.out.println("Testing renderer = " + renderer);
-        
+
         GeneralPath shape = new GeneralPath();
         int[] pointTypes = {0, 0, 1, 1, 0, 1, 1, 0};
         double[] xpoints = {428, 420, 400, 400, 400, 400, 420, 733};

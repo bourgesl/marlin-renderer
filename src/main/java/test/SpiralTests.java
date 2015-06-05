@@ -47,7 +47,7 @@ public class SpiralTests {
         BasicStroke stroke = createStroke(lineStroke, useDashes);
 
         final int size = 4096;
-        
+
         System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
 
         System.out.println("SpiralTests: size = " + size);

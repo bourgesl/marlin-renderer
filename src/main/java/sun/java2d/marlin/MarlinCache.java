@@ -152,6 +152,7 @@ public final class MarlinCache implements MarlinConst {
         }
 
         if (doCleanDirty) {
+            // Force zero-fill dirty arrays:
             Arrays.fill(rowAAChunk, BYTE_0);
         }
     }

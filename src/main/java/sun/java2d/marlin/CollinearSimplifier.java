@@ -34,12 +34,11 @@ final class CollinearSimplifier implements PathConsumer2D {
     private final static int STATE_PREV_LINE = 2;
 
     // slope precision threshold
-    static final float EPS = 1e-6f; // aaime proposed 1e-3f
+    static final float EPS = 1e-4f; // aaime proposed 1e-3f
 
     PathConsumer2D delegate;
     int state;
-    float pslope;
-    float px1, py1, px2, py2;
+    float px1, py1, px2, py2, pslope;
 
     CollinearSimplifier() {
     }
@@ -54,12 +53,14 @@ final class CollinearSimplifier implements PathConsumer2D {
     @Override
     public void pathDone() {
         emitStashedLine();
+        state = STATE_EMPTY;
         delegate.pathDone();
     }
 
     @Override
     public void closePath() {
         emitStashedLine();
+        state = STATE_EMPTY;
         delegate.closePath();
     }
 
@@ -72,6 +73,10 @@ final class CollinearSimplifier implements PathConsumer2D {
     public void quadTo(float x1, float y1, float x2, float y2) {
         emitStashedLine();
         delegate.quadTo(x1, y1, x2, y2);
+        // final end point:
+        state = STATE_PREV_POINT;
+        px1 = x2;
+        py1 = y2;
     }
 
     @Override
@@ -79,6 +84,10 @@ final class CollinearSimplifier implements PathConsumer2D {
                         float x3, float y3) {
         emitStashedLine();
         delegate.curveTo(x1, y1, x2, y2, x3, y3);
+        // final end point:
+        state = STATE_PREV_POINT;
+        px1 = x3;
+        py1 = y3;
     }
 
     @Override
@@ -92,33 +101,39 @@ final class CollinearSimplifier implements PathConsumer2D {
 
     @Override
     public void lineTo(final float x, final float y) {
-        if (state == STATE_PREV_LINE) {
-            // state is STATE_PREV_LINE
-            final float slope = getSlope(px2, py2, x, y);
-            // test for collinear
-            if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
-                // merge segments
+        switch (state) {
+            case STATE_EMPTY:
+                delegate.lineTo(x, y);
+                state = STATE_PREV_POINT;
+                px1 = x;
+                py1 = y;
+                return;
+
+            case STATE_PREV_POINT:
+                state = STATE_PREV_LINE;
                 px2 = x;
                 py2 = y;
+                pslope = getSlope(px1, py1, x, y);
                 return;
-            }
-            // emit previous segment
-            delegate.lineTo(px2, py2);
-            px1 = px2;
-            py1 = py2;
-            px2 = x;
-            py2 = y;
-            pslope = slope;
-        } else if (state == STATE_PREV_POINT) {
-            state = STATE_PREV_LINE;
-            px2 = x;
-            py2 = y;
-            pslope = getSlope(px1, py1, x, y);
-        } else if (state == STATE_EMPTY) {
-            delegate.lineTo(x, y);
-            state = STATE_PREV_POINT;
-            px1 = x;
-            py1 = y;
+
+            case STATE_PREV_LINE:
+                final float slope = getSlope(px2, py2, x, y);
+                // test for collinearity
+                if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
+                    // merge segments
+                    px2 = x;
+                    py2 = y;
+                    return;
+                }
+                // emit previous segment
+                delegate.lineTo(px2, py2);
+                px1 = px2;
+                py1 = py2;
+                px2 = x;
+                py2 = y;
+                pslope = slope;
+                return;
+            default:
         }
     }
 
@@ -126,14 +141,14 @@ final class CollinearSimplifier implements PathConsumer2D {
         if (state == STATE_PREV_LINE) {
             delegate.lineTo(px2, py2);
         }
-        state = STATE_EMPTY;
     }
 
     private static float getSlope(float x1, float y1, float x2, float y2) {
-        if (y2 == y1) {
+        float dy = y2 - y1;
+        if (dy == 0f) {
             return (x2 > x1) ? Float.POSITIVE_INFINITY
-                    : Float.NEGATIVE_INFINITY;
+                   : Float.NEGATIVE_INFINITY;
         }
-        return (x2 - x1) / (y2 - y1);
+        return (x2 - x1) / dy;
     }
 }

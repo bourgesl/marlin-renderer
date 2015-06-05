@@ -149,12 +149,12 @@ final class FloatMath implements MarlinConst {
                             & (~(FloatConsts.SIGNIF_BIT_MASK >> exponent));
 
         if (intpart == doppel) {
-            return (int) a; // integral value
+            return (int) a; // integral value (including 0)
         }
 
-        // sign: 1 for negative, 0 for positive
-        // add : 0 for negative and 1 for positive
-        return (int) Float.intBitsToFloat(intpart) + ((~(intpart >> 31)) & 1);
+        // sign: 1 for negative, 0 for positive numbers
+        // add : 0 for negative and 1 for positive numbers
+        return (int) Float.intBitsToFloat(intpart) + ((~(intpart >>> 31)) & 1);
     }
 
     /**
@@ -204,11 +204,11 @@ final class FloatMath implements MarlinConst {
                             & (~(FloatConsts.SIGNIF_BIT_MASK >> exponent));
 
         if (intpart == doppel) {
-            return a; // integral value
+            return a; // integral value (including 0)
         }
 
-        // sign: 1 for negative, 0 for positive
-        // add : -1 for negative and 0 for positive
+        // sign: 1 for negative, 0 for positive numbers
+        // add : -1 for negative and 0 for positive numbers
         return Float.intBitsToFloat(intpart) + (intpart >> 31);
     }
 

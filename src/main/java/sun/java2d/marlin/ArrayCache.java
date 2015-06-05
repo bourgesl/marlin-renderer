@@ -31,8 +31,6 @@ import static sun.java2d.marlin.MarlinUtils.logInfo;
 public final class ArrayCache implements MarlinConst {
 
     final static int BUCKETS = 4;
-    final static int BUCKET_GROW_4 = 2; // 1 << 2 = 4
-    final static int BUCKET_GROW_2 = 1; // 1 << 1 = 2
     final static int MIN_ARRAY_SIZE = 4096;
     final static int MAX_ARRAY_SIZE;
     final static int MASK_CLR_1 = ~1;
@@ -54,27 +52,27 @@ public final class ArrayCache implements MarlinConst {
         // initialize buckets for int/float arrays
         int arraySize = MIN_ARRAY_SIZE;
 
-        for (int i = 0; i < BUCKETS; i++, arraySize <<= BUCKET_GROW_4) {
+        for (int i = 0; i < BUCKETS; i++, arraySize <<= 2) {
             ARRAY_SIZES[i] = arraySize;
 
             if (doTrace) {
                 logInfo("arraySize[" + i + "]: " + arraySize);
             }
         }
-        MAX_ARRAY_SIZE = arraySize >> BUCKET_GROW_4;
+        MAX_ARRAY_SIZE = arraySize >> 2;
 
         /* initialize buckets for dirty byte arrays
          (large AA chunk = 32 x 2048 pixels) */
         arraySize = MIN_DIRTY_BYTE_ARRAY_SIZE;
 
-        for (int i = 0; i < BUCKETS; i++, arraySize <<= BUCKET_GROW_2) {
+        for (int i = 0; i < BUCKETS; i++, arraySize <<= 1) {
             DIRTY_BYTE_ARRAY_SIZES[i] = arraySize;
 
             if (doTrace) {
                 logInfo("dirty arraySize[" + i + "]: " + arraySize);
             }
         }
-        MAX_DIRTY_BYTE_ARRAY_SIZE = arraySize >> BUCKET_GROW_2;
+        MAX_DIRTY_BYTE_ARRAY_SIZE = arraySize >> 1;
 
         // threshold to grow arrays only by (3/2) instead of 2
         THRESHOLD_ARRAY_SIZE = Math.max(2 * 1024 * 1024, MAX_ARRAY_SIZE);
@@ -101,7 +99,8 @@ public final class ArrayCache implements MarlinConst {
     }
 
     static void dumpStats() {
-        if (resizeInt != 0 || resizeDirtyFloat != 0 || resizeDirtyByte != 0) {
+        if (resizeInt != 0 || resizeDirtyInt != 0 || resizeDirtyFloat != 0
+                || resizeDirtyByte != 0 || oversize != 0) {
             logInfo("ArrayCache: int resize: " + resizeInt
                     + " - dirty int resize: " + resizeDirtyInt
                     + " - dirty float resize: " + resizeDirtyFloat
@@ -113,7 +112,7 @@ public final class ArrayCache implements MarlinConst {
     // small methods used a lot (to be inlined / optimized by hotspot)
 
     static int getBucket(final int length) {
-        for (int i = 0; i < BUCKETS; i++) {
+        for (int i = 0; i < ARRAY_SIZES.length; i++) {
             if (length <= ARRAY_SIZES[i]) {
                 return i;
             }
@@ -121,8 +120,8 @@ public final class ArrayCache implements MarlinConst {
         return -1;
     }
 
-    static int getBucketDirty(final int length) {
-        for (int i = 0; i < BUCKETS; i++) {
+    static int getBucketDirtyBytes(final int length) {
+        for (int i = 0; i < DIRTY_BYTE_ARRAY_SIZES.length; i++) {
             if (length <= DIRTY_BYTE_ARRAY_SIZES[i]) {
                 return i;
             }
@@ -137,9 +136,9 @@ public final class ArrayCache implements MarlinConst {
      */
     public static int getNewSize(final int curSize) {
         if (curSize > THRESHOLD_ARRAY_SIZE) {
-            return ((curSize & MASK_CLR_1) * 3) >> BUCKET_GROW_2;
+            return ((curSize & MASK_CLR_1) * 3) >> 1;
         }
         // use next bucket giving array ~ x2:
-        return (curSize & MASK_CLR_1) << BUCKET_GROW_2;
+        return (curSize & MASK_CLR_1) << 1;
     }
 }

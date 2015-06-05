@@ -42,16 +42,18 @@ import sun.java2d.pipe.RenderingEngine;
  * ductus renderers
  */
 public class StrokerTest {
-    static final boolean SHOW_OUTLINE = true;
 
-    static final Stroke OUTLINE_STROKE = new BasicStroke(2f);
+    static final boolean SHOW_OUTLINE = false;
+    static final boolean SHOW_POINTS = false;
+
+    static final Stroke OUTLINE_STROKE = new BasicStroke(1f);
     static final Color COLOR_MOVETO = new Color(255, 0, 0, 128);
     static final Color COLOR_LINETO_ODD = new Color(0, 0, 255, 128);
     static final Color COLOR_LINETO_EVEN = new Color(0, 255, 0, 128);
 
     public static void main(String[] args) {
-        final int nSteps = 20;
-        final float lineStroke = 25f;
+        final int nSteps = 29;
+        final float lineStroke = 5f;
         final float miterLimit = 5f;
         final int height = 300;
         final float margin = 10f + lineStroke;
@@ -81,11 +83,10 @@ public class StrokerTest {
         g2d.setBackground(Color.WHITE);
         g2d.clearRect(0, 0, width, height);
 
-        
         final Stroke stroke = new BasicStroke(lineStroke, cap, join, miterLimit, null, 0.0f);
 
         g2d.translate(margin, margin);
-        
+
         final long start = System.nanoTime();
 
         paint(g2d, stroke, height, margin, nSteps);
@@ -112,33 +113,32 @@ public class StrokerTest {
     }
 
     private static void paint(final Graphics2D g2d, final Stroke stroke,
-                                                    final float size,
-                                                    final float margin,
-                                                    final int nSteps)
-    {
+                              final float size,
+                              final float margin,
+                              final int nSteps) {
         final float half = 0.5f * (size - 2f * margin);
         final double step = 2.0 * Math.PI / nSteps;
 
         final Path2D.Float path = new Path2D.Float();
-        
+
         int ns = 0;
-        
-        for (double angle = -Math.PI/4.0; angle <= (Math.PI*7.0/4.0) ; angle += step, ns++) {
+
+        for (double angle = -Math.PI / 4.0; angle <= (Math.PI * 7.0 / 4.0); angle += step, ns++) {
             System.out.println("--------------------------------------------------");
-            System.out.println("Test angle="+angle);
-        
+            System.out.println("Test angle=" + angle);
+
             path.reset();
 
             path.moveTo(0f, 0f);
             path.lineTo(half, half);
             path.lineTo(half + half * Math.cos(angle), half + half * Math.sin(angle));
-    /*
-            // CCW
-            path.moveTo(size, 0f);
-            path.lineTo(size, half);
-            path.lineTo(size - 80, 0f);
-    */
-            
+            /*
+             // CCW
+             path.moveTo(size, 0f);
+             path.lineTo(size, half);
+             path.lineTo(size - 80, 0f);
+             */
+
             g2d.setStroke(stroke);
             final Shape strokedShape = g2d.getStroke().createStrokedShape(path);
 
@@ -169,10 +169,14 @@ public class StrokerTest {
                 switch (type) {
                     case PathIterator.SEG_MOVETO:
                         nMove++;
-                        g2d.setColor(COLOR_MOVETO);
+                        if (SHOW_POINTS) {
+                            g2d.setColor(COLOR_MOVETO);
+                        }
                         break;
                     case PathIterator.SEG_LINETO:
-                        g2d.setColor( (nLine % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
+                        if (SHOW_POINTS) {
+                            g2d.setColor((nLine % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
+                        }
                         nLine++;
                         break;
                     case PathIterator.SEG_CLOSE:
@@ -186,12 +190,14 @@ public class StrokerTest {
 
                 System.out.println("point[" + (n++) + "|seg=" + type + "]: " + px + " " + py);
 
-                ellipse.setFrame(px - 2.5f, py - 2.5f, 5f, 5f);
-                g2d.fill(ellipse);
+                if (SHOW_POINTS) {
+                    ellipse.setFrame(px - 2.5f, py - 2.5f, 5f, 5f);
+                    g2d.fill(ellipse);
+                }
             }
             System.out.println("Stoked Path moveTo=" + nMove + ", lineTo=" + nLine);
             System.out.println("--------------------------------------------------");
-            
+
             g2d.translate(size, 0.0);
         }
     }
