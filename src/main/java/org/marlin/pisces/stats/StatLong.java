@@ -93,4 +93,3 @@ public class StatLong {
         return ((long) (1e3d * value)) / 1e3d;
     }
 }
-

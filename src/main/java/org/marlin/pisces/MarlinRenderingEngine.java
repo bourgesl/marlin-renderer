@@ -869,6 +869,7 @@ public class MarlinRenderingEngine extends RenderingEngine
     private static boolean settingsLogged = false;
 
     private static void logSettings(final String reClass) {
+        // log information at startup
         if (settingsLogged) {
             return;
         }

@@ -126,7 +126,7 @@ final class IntArrayCache implements MarlinConst {
     }
 
     static void check(final int[] array, final int fromIndex,
-                         final int toIndex, final int value)
+                      final int toIndex, final int value)
     {
         if (doChecks) {
             // check zero on full array:

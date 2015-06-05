@@ -126,7 +126,7 @@ final class ByteArrayCache implements MarlinConst {
     }
 
     static void check(final byte[] array, final int fromIndex,
-                         final int toIndex, final byte value)
+                      final int toIndex, final byte value)
     {
         if (doChecks) {
             // check zero on full array:

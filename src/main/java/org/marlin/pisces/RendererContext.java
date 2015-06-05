@@ -334,7 +334,7 @@ final class RendererContext implements MarlinConst {
         putDirtyIntArray(in);
 
         if (doLogWidenArray) {
-            logInfo("widenDirtyArray int[" + res.length + "]: usedSize=\t"
+            logInfo("widenDirtyIntArray[" + res.length + "]: usedSize=\t"
                     + usedSize + "\tlength=\t" + length + "\tnew length=\t"
                     + newSize + "\tfrom=\t" + getCallerInfo(className));
         }
@@ -393,7 +393,7 @@ final class RendererContext implements MarlinConst {
         putDirtyFloatArray(in);
 
         if (doLogWidenArray) {
-            logInfo("widenDirtyArray float[" + res.length + "]: usedSize=\t"
+            logInfo("widenDirtyFloatArray[" + res.length + "]: usedSize=\t"
                     + usedSize + "\tlength=\t" + length + "\tnew length=\t"
                     + newSize + "\tfrom=\t" + getCallerInfo(className));
         }
