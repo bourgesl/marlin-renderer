@@ -41,11 +41,11 @@ public final class ArrayCache implements MarlinConst {
     final static int MAX_DIRTY_BYTE_ARRAY_SIZE;
     final static int[] DIRTY_BYTE_ARRAY_SIZES = new int[BUCKETS];
     // stats
-    static int resizeInt = 0;
-    static int resizeDirtyInt = 0;
-    static int resizeDirtyFloat = 0;
-    static int resizeDirtyByte = 0;
-    static int oversize = 0;
+    private static int resizeInt = 0;
+    private static int resizeDirtyInt = 0;
+    private static int resizeDirtyFloat = 0;
+    private static int resizeDirtyByte = 0;
+    private static int oversize = 0;
 
     static {
         // initialize buckets for int/float arrays
@@ -95,6 +95,26 @@ public final class ArrayCache implements MarlinConst {
 
     private ArrayCache() {
         // Utility class
+    }
+
+    static synchronized void incResizeInt() {
+        resizeInt++;
+    }
+
+    static synchronized void incResizeDirtyInt() {
+        resizeDirtyInt++;
+    }
+
+    static synchronized void incResizeDirtyFloat() {
+        resizeDirtyFloat++;
+    }
+
+    static synchronized void incResizeDirtyByte() {
+        resizeDirtyByte++;
+    }
+
+    static synchronized void incOversize() {
+        oversize++;
     }
 
     static void dumpStats() {

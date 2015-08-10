@@ -77,8 +77,10 @@ final class RendererContext implements MarlinConst {
     final float[] float6 = new float[6];
     // shared curve (dirty) (Renderer / Stroker)
     final Curve curve = new Curve();
-    // MarlinRenderingEngine.NormalizingPathIterator
-    final NormalizingPathIterator npIterator;
+    // MarlinRenderingEngine NormalizingPathIterator NearestPixelCenter:
+    final NormalizingPathIterator nPCPathIterator;
+    // MarlinRenderingEngine NearestPixelQuarter NormalizingPathIterator:
+    final NormalizingPathIterator nPQPathIterator;
     // MarlinRenderingEngine.TransformingPathConsumer2D
     final TransformingPathConsumer2D transformerPC2D;
     // recycled Path2D instance
@@ -103,8 +105,9 @@ final class RendererContext implements MarlinConst {
 
         this.name = name;
 
-        // MarlinRenderingEngine.NormalizingPathIterator:
-        npIterator = new NormalizingPathIterator(this);
+        // NormalizingPathIterator instances:
+        nPCPathIterator = new NormalizingPathIterator.NearestPixelCenter(float6);
+        nPQPathIterator  = new NormalizingPathIterator.NearestPixelQuarter(float6);
 
         // MarlinRenderingEngine.TransformingPathConsumer2D
         transformerPC2D = new TransformingPathConsumer2D();
@@ -181,7 +184,7 @@ final class RendererContext implements MarlinConst {
         }
 
         if (doStats) {
-            oversize++;
+            incOversize();
         }
 
         if (doLogOverSize) {
@@ -194,6 +197,8 @@ final class RendererContext implements MarlinConst {
 
     void putDirtyByteArray(final byte[] array) {
         final int length = array.length;
+        // odd sized array are non-cached arrays (initial arrays)
+        // ensure to never store initial arrays in cache:
         if (((length & 0x1) == 0) && (length <= MAX_DIRTY_BYTE_ARRAY_SIZE)) {
             getDirtyByteArrayCache(length).putDirtyArray(array, length);
         }
@@ -207,7 +212,7 @@ final class RendererContext implements MarlinConst {
             return in;
         }
         if (doStats) {
-            resizeDirtyByte++;
+            incResizeDirtyByte();
         }
 
         // maybe change bucket:
@@ -240,7 +245,7 @@ final class RendererContext implements MarlinConst {
         }
 
         if (doStats) {
-            oversize++;
+            incOversize();
         }
 
         if (doLogOverSize) {
@@ -260,7 +265,7 @@ final class RendererContext implements MarlinConst {
             return in;
         }
         if (doStats) {
-            resizeInt++;
+            incResizeInt();
         }
 
         // maybe change bucket:
@@ -284,6 +289,8 @@ final class RendererContext implements MarlinConst {
                      final int toIndex)
     {
         final int length = array.length;
+        // odd sized array are non-cached arrays (initial arrays)
+        // ensure to never store initial arrays in cache:
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getIntArrayCache(length).putArray(array, length, fromIndex, toIndex);
         }
@@ -301,7 +308,7 @@ final class RendererContext implements MarlinConst {
         }
 
         if (doStats) {
-            oversize++;
+            incOversize();
         }
 
         if (doLogOverSize) {
@@ -320,7 +327,7 @@ final class RendererContext implements MarlinConst {
             return in;
         }
         if (doStats) {
-            resizeDirtyInt++;
+            incResizeDirtyInt();
         }
 
         // maybe change bucket:
@@ -343,6 +350,8 @@ final class RendererContext implements MarlinConst {
 
     void putDirtyIntArray(final int[] array) {
         final int length = array.length;
+        // odd sized array are non-cached arrays (initial arrays)
+        // ensure to never store initial arrays in cache:
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getDirtyIntArrayCache(length).putDirtyArray(array, length);
         }
@@ -360,7 +369,7 @@ final class RendererContext implements MarlinConst {
         }
 
         if (doStats) {
-            oversize++;
+            incOversize();
         }
 
         if (doLogOverSize) {
@@ -379,7 +388,7 @@ final class RendererContext implements MarlinConst {
             return in;
         }
         if (doStats) {
-            resizeDirtyFloat++;
+            incResizeDirtyFloat();
         }
 
         // maybe change bucket:
@@ -402,6 +411,8 @@ final class RendererContext implements MarlinConst {
 
     void putDirtyFloatArray(final float[] array) {
         final int length = array.length;
+        // odd sized array are non-cached arrays (initial arrays)
+        // ensure to never store initial arrays in cache:
         if (((length & 0x1) == 0) && (length <= MAX_ARRAY_SIZE)) {
             getDirtyFloatArrayCache(length).putDirtyArray(array, length);
         }
