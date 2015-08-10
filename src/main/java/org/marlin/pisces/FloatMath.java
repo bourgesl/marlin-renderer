@@ -24,79 +24,22 @@
  */
 package org.marlin.pisces;
 
+import sun.misc.DoubleConsts;
 import sun.misc.FloatConsts;
 
 /**
  * Faster Math ceil / floor routines derived from StrictMath
  */
-final class FloatMath implements MarlinConst {
+public final class FloatMath implements MarlinConst {
 
-    /* http://www.java-gaming.org/index.php?topic=24194.0 */
+    // overflow / NaN handling enabled:
+    static final boolean CHECK_OVERFLOW = true;
+    static final boolean CHECK_NAN = true;
 
-    private static final int BIG_ENOUGH_INT = 1024 * 1024 * 1024;    // 1e9 max
-    private static final double BIG_ENOUGH_FLOOR = BIG_ENOUGH_INT;
-
-    static final boolean USE_HACK = true && useFastMath;
-
-    static final boolean CHECK = false;
-    static final boolean CHECK_OVERFLOW = false;
+    static final float MAX_INT = Integer.MAX_VALUE;
 
     private FloatMath() {
         // utility class
-    }
-
-    /**
-     * Faster Math.ceil implementation
-     *
-     * @param a a value.
-     * @return the smallest (closest to negative infinity) integer value
-     * that is greater than or equal to the argument and is equal to a
-     * mathematical integer.
-     */
-    public static int ceil(final float a) {
-        if (USE_HACK) {
-            return BIG_ENOUGH_INT - (int) (BIG_ENOUGH_FLOOR - a);
-        }
-        if (useFastMath) {
-            if (CHECK) {
-                final int ceil = ceil_f(a);
-                final int ceil_math = (int) Math.ceil(a);
-                if (ceil != ceil_math) {
-                    MarlinUtils.logInfo("ceil(float) is wrong: " + ceil + " :: "
-                    + ceil_math + " x: " + a);
-                }
-                return ceil_math;
-            }
-            return ceil_f(a);
-        }
-        return (int) Math.ceil(a);
-    }
-
-    /**
-     * Faster Math.floor implementation
-     *
-     * @param a a value.
-     * @return the largest (closest to positive infinity) floating-point value
-     * that less than or equal to the argument and is equal to a mathematical
-     * integer.
-     */
-    public static float floor(final float a) {
-        if (USE_HACK) {
-            return (int) (a + BIG_ENOUGH_FLOOR) - BIG_ENOUGH_INT;
-        }
-        if (useFastMath) {
-            if (CHECK) {
-                final float floor = floor_f(a);
-                final float floor_math = (float) Math.floor(a);
-                if (floor != floor_math) {
-                    MarlinUtils.logInfo("floor(float) is wrong: " + floor + " :: "
-                    + floor_math + " x: " + a);
-                }
-                return floor_math;
-            }
-            return floor_f(a);
-        }
-        return (float) Math.floor(a);
     }
 
     /**
@@ -116,7 +59,7 @@ final class FloatMath implements MarlinConst {
      * that is greater than or equal to the argument and is equal to a
      * mathematical integer.
      */
-    private static int ceil_f(final float a) {
+    public static float ceil_f(final float a) {
         // Derived from StrictMath.ceil(double):
 
         // Inline call to Math.getExponent(a) to
@@ -124,8 +67,8 @@ final class FloatMath implements MarlinConst {
         final int doppel = Float.floatToRawIntBits(a);
 
         final int exponent = ((doppel & FloatConsts.EXP_BIT_MASK)
-                                >> (FloatConsts.SIGNIFICAND_WIDTH - 1))
-                                - FloatConsts.EXP_BIAS;
+                >> (FloatConsts.SIGNIFICAND_WIDTH - 1))
+                - FloatConsts.EXP_BIAS;
 
         if (exponent < 0) {
             /*
@@ -133,28 +76,30 @@ final class FloatMath implements MarlinConst {
              * floorOrceil(-0.0) => -0.0
              * floorOrceil(+0.0) => +0.0
              */
-            return ((a <= 0f) ? 0 : 1);
+            return ((a == 0) ? a :
+                    ( (a < 0f) ? -0f : 1f) );
         }
         if (CHECK_OVERFLOW && (exponent >= 23)) { // 52 for double
             /*
              * Infinity, NaN, or a value so large it must be integral.
              */
-            return ((a < 0f) ? Integer.MIN_VALUE : Integer.MAX_VALUE);
+            return a;
         }
         // Else the argument is either an integral value already XOR it
         // has to be rounded to one.
         assert exponent >= 0 && exponent <= 22; // 51 for double
 
         final int intpart = doppel
-                            & (~(FloatConsts.SIGNIF_BIT_MASK >> exponent));
+                & (~(FloatConsts.SIGNIF_BIT_MASK >> exponent));
 
         if (intpart == doppel) {
-            return (int) a; // integral value (including 0)
+            return a; // integral value (including 0)
         }
 
+        // 0 handled above as an integer
         // sign: 1 for negative, 0 for positive numbers
         // add : 0 for negative and 1 for positive numbers
-        return (int) Float.intBitsToFloat(intpart) + ((~(intpart >>> 31)) & 1);
+        return Float.intBitsToFloat(intpart) + ((~intpart) >>> 31);
     }
 
     /**
@@ -171,7 +116,7 @@ final class FloatMath implements MarlinConst {
      * that less than or equal to the argument and is equal to a mathematical
      * integer.
      */
-    private static float floor_f(final float a) {
+    public static float floor_f(final float a) {
         // Derived from StrictMath.floor(double):
 
         // Inline call to Math.getExponent(a) to
@@ -179,8 +124,8 @@ final class FloatMath implements MarlinConst {
         final int doppel = Float.floatToRawIntBits(a);
 
         final int exponent = ((doppel & FloatConsts.EXP_BIT_MASK)
-                                >> (FloatConsts.SIGNIFICAND_WIDTH - 1))
-                                - FloatConsts.EXP_BIAS;
+                >> (FloatConsts.SIGNIFICAND_WIDTH - 1))
+                - FloatConsts.EXP_BIAS;
 
         if (exponent < 0) {
             /*
@@ -188,7 +133,8 @@ final class FloatMath implements MarlinConst {
              * floorOrceil(-0.0) => -0.0
              * floorOrceil(+0.0) => +0.0
              */
-            return ((a == 0f) ? 0f : ((a < 0f) ? -1f : 0f));
+            return ((a == 0) ? a :
+                    ( (a < 0f) ? -1f : 0f) );
         }
         if (CHECK_OVERFLOW && (exponent >= 23)) { // 52 for double
             /*
@@ -201,15 +147,67 @@ final class FloatMath implements MarlinConst {
         assert exponent >= 0 && exponent <= 22; // 51 for double
 
         final int intpart = doppel
-                            & (~(FloatConsts.SIGNIF_BIT_MASK >> exponent));
+                & (~(FloatConsts.SIGNIF_BIT_MASK >> exponent));
 
         if (intpart == doppel) {
             return a; // integral value (including 0)
         }
 
+        // 0 handled above as an integer
         // sign: 1 for negative, 0 for positive numbers
         // add : -1 for negative and 0 for positive numbers
         return Float.intBitsToFloat(intpart) + (intpart >> 31);
     }
 
+    /**
+     * Faster alternative to ceil(float) optimized to integer domain.
+     * It used floor_f for larger float values (including NaN and +/-Infinity)
+     *
+     * @param a a value.
+     * @return the largest (closest to positive infinity) integer value
+     * that less than or equal to the argument and is equal to a mathematical
+     * integer.
+     */
+    public static int ceil_int(final float a) {
+        final int intpart = (int) a;
+
+        if (a <= intpart
+                || (CHECK_OVERFLOW && intpart == Integer.MAX_VALUE)
+                || CHECK_NAN && Float.isNaN(a)) {
+            return intpart;
+        }
+        return intpart + 1;
+    }
+
+    /**
+     * Faster alternative to floor(float) optimized for the integer domain.
+     * It uses floor_f(float) implementation for larger float values
+     * supporting NaN and +/-Infinity.
+     *
+     * @param a a value.
+     * @return the largest (closest to positive infinity) floating-point value
+     * that less than or equal to the argument and is equal to a mathematical
+     * integer.
+     */
+    public static int floor_int(final float a) {
+        if (CHECK_OVERFLOW && !(Math.abs(a) <= MAX_INT)) {
+            return (int)floor_f(a);
+        }
+        final int intpart = (int) a;
+
+        if (a >= intpart) {
+            return intpart;
+        }
+        return intpart - 1;
+    }
+
+    /**
+     * Returns a floating-point power of two in the normal range.
+     */
+    static double powerOfTwoD(int n) {
+        assert (n >= DoubleConsts.MIN_EXPONENT && n <= DoubleConsts.MAX_EXPONENT);
+        return Double.longBitsToDouble((((long) n + (long) DoubleConsts.EXP_BIAS)
+                << (DoubleConsts.SIGNIFICAND_WIDTH - 1))
+                & DoubleConsts.EXP_BIT_MASK);
+    }
 }
