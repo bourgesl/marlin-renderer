@@ -291,6 +291,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             drawBezApproxForArc(cx, cy, omx, omy, mmx, mmy, rev);
             drawBezApproxForArc(cx, cy, mmx, mmy, mx, my, rev);
             break;
+        default:
         }
     }
 
@@ -975,6 +976,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             final float y2 = cos * pts[3] - sin * pts[2];
             final float x3 = cos * pts[4] + sin * pts[5];
             final float y3 = cos * pts[5] - sin * pts[4];
+
             switch(type) {
             case 8:
                 final float x4 = cos * pts[6] + sin * pts[7];
@@ -984,6 +986,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             case 6:
                 c.set(x1, y1, x2, y2, x3, y3);
                 break;
+            default:
             }
         } else {
             c.set(pts, type);
@@ -1082,6 +1085,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
             kind = computeOffsetCubic(mid, curCurveOff, l, r);
             emitLineTo(l[0], l[1]);
+
             switch(kind) {
             case 8:
                 emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
@@ -1091,6 +1095,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 emitLineTo(l[2], l[3]);
                 emitLineToRev(r[0], r[1]);
                 break;
+            default:
             }
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }
@@ -1157,6 +1162,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
             kind = computeOffsetQuad(mid, curCurveOff, l, r);
             emitLineTo(l[0], l[1]);
+
             switch(kind) {
             case 6:
                 emitQuadTo(l[2], l[3], l[4], l[5]);
@@ -1166,6 +1172,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 emitLineTo(l[2], l[3]);
                 emitLineToRev(r[0], r[1]);
                 break;
+            default:
             }
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }
@@ -1339,6 +1346,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                     io.curveTo(_curves[e+0], _curves[e+1],
                                _curves[e+2], _curves[e+3],
                                _curves[e+4], _curves[e+5]);
+                    continue;
+                default:
                 }
             }
             numCurves = 0;

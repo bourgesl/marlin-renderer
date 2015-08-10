@@ -38,14 +38,13 @@ public final class Histogram extends StatLong {
     static final int[] STEPS = new int[MAX];
 
     static {
-        int step = 1;
-        for (int i = 1; i < MAX; i++) {
-            step *= BUCKET;
-            STEPS[i] = step;
-        }
-        STEPS[0] = 0;
+            STEPS[0] = 0;
+            STEPS[1] = 1;
 
-        System.out.println("Histogram.STEPS = " + Arrays.toString(STEPS));
+            for (int i = 2; i < MAX; i++) {
+                STEPS[i] = STEPS[i - 1] * BUCKET;
+            }
+//            System.out.println("Histogram.STEPS = " + Arrays.toString(STEPS));
     }
 
     static int bucket(int val) {

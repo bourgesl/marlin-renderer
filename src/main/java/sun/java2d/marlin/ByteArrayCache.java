@@ -72,7 +72,7 @@ final class ByteArrayCache implements MarlinConst {
     }
 
     void putDirtyArray(final byte[] array, final int length) {
-        if (doChecks && (length != arraySize)) {
+        if (length != arraySize) {
             System.out.println("bad length = " + length);
             return;
         }
@@ -84,7 +84,7 @@ final class ByteArrayCache implements MarlinConst {
 
         if (doCleanDirty) {
             // Force zero-fill dirty arrays:
-            fill(array, 0, array.length, BYTE_0);
+            Arrays.fill(array, 0, array.length, BYTE_0);
         }
 
         // fill cache:
@@ -94,7 +94,7 @@ final class ByteArrayCache implements MarlinConst {
     void putArray(final byte[] array, final int length,
                   final int fromIndex, final int toIndex)
     {
-        if (doChecks && (length != arraySize)) {
+        if (length != arraySize) {
             System.out.println("bad length = " + length);
             return;
         }

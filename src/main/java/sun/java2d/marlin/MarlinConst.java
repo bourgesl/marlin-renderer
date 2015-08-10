@@ -30,24 +30,19 @@ package sun.java2d.marlin;
  */
 interface MarlinConst {
     // enable Logger
-    static final boolean useLogger = MarlinRenderingEngine.isUseLogger();
+    static final boolean useLogger = MarlinProperties.isUseLogger();
 
     // log new RendererContext
-    static final boolean logCreateContext
-        = MarlinRenderingEngine.isLogCreateContext();
+    static final boolean logCreateContext = MarlinProperties.isLogCreateContext();
     // log misc.Unsafe alloc/realloc/free
-    static final boolean logUnsafeMalloc
-        = MarlinRenderingEngine.isLogUnsafeMalloc();
+    static final boolean logUnsafeMalloc = MarlinProperties.isLogUnsafeMalloc();
 
     // do statistics
-    static final boolean doStats
-        = MarlinRenderingEngine.isDoStats();
+    static final boolean doStats = MarlinProperties.isDoStats();
     // do monitors
-    static final boolean doMonitors
-        = MarlinRenderingEngine.isDoMonitors();
+    static final boolean doMonitors = MarlinProperties.isDoMonitors();
     // do checks
-    static final boolean doChecks
-        = MarlinRenderingEngine.isDoChecks();
+    static final boolean doChecks = MarlinProperties.isDoChecks();
 
     // do AA range checks: disable when algorithm / code is stable
     static final boolean DO_AA_RANGE_CHECK = false;
@@ -68,13 +63,8 @@ interface MarlinConst {
     // do clean dirty array
     static final boolean doCleanDirty = false;
 
-    // flag to use custom ceil() / floor() functions
-    static final boolean useFastMath
-        = MarlinRenderingEngine.isUseFastMath();
-
     // flag to use line simplifier
-    static final boolean useSimplifier
-        = MarlinRenderingEngine.isUseSimplifier();
+    static final boolean useSimplifier = MarlinProperties.isUseSimplifier();
 
     // flag to enable logs related bounds checks
     static final boolean doLogBounds = false;
@@ -83,7 +73,7 @@ interface MarlinConst {
 
     // 2048 pixel (width x height) for initial capacity
     static final int INITIAL_PIXEL_DIM
-        = MarlinRenderingEngine.getInitialImageSize();
+        = MarlinProperties.getInitialImageSize();
 
     // typical array sizes: only odd numbers allowed below
     static final int INITIAL_ARRAY        = 256;
@@ -95,6 +85,29 @@ interface MarlinConst {
     // alpha row dimension
     static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_DIM;
 
+    // initial edges (24 bytes) = 24K [ints] = 96K
+    static final int INITIAL_EDGES_CAPACITY = 4096 * 24; // 6 ints per edges
+
     // zero value as byte
     static final byte BYTE_0 = (byte) 0;
+
+    // subpixels expressed as log2
+    public final static int SUBPIXEL_LG_POSITIONS_X
+        = MarlinProperties.getSubPixel_Log2_X();
+    public final static int SUBPIXEL_LG_POSITIONS_Y
+        = MarlinProperties.getSubPixel_Log2_Y();
+
+    // number of subpixels
+    public final static int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
+    public final static int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
+
+    public final static float NORM_SUBPIXELS
+        = (float)Math.sqrt(( SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_X
+                           + SUBPIXEL_POSITIONS_Y * SUBPIXEL_POSITIONS_Y)/2.0);
+
+    public final static int MAX_AA_ALPHA
+        = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;
+
+    public static final int TILE_SIZE_LG = MarlinProperties.getTileSize_Log2();
+    public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
 }

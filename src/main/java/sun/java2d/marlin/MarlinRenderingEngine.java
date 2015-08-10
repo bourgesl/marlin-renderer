@@ -46,7 +46,9 @@ import sun.security.action.GetPropertyAction;
 public class MarlinRenderingEngine extends RenderingEngine
                                    implements MarlinConst
 {
-    private static enum NormMode {OFF, ON_NO_AA, ON_WITH_AA}
+    private static enum NormMode {ON_WITH_AA, ON_NO_AA, OFF}
+
+    private static final float MIN_PEN_SIZE = 1f / NORM_SUBPIXELS;
 
     /**
      * Public constructor
@@ -150,7 +152,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                          boolean antialias,
                          final PathConsumer2D consumer)
     {
-        NormMode norm = (normalize) ?
+        final NormMode norm = (normalize) ?
                 ((antialias) ? NormMode.ON_WITH_AA : NormMode.ON_NO_AA)
                 : NormMode.OFF;
 
@@ -173,13 +175,16 @@ public class MarlinRenderingEngine extends RenderingEngine
         float lw;
         if (thin) {
             if (antialias) {
-                lw = userSpaceLineWidth(at, 0.5f);
+                lw = userSpaceLineWidth(at, MIN_PEN_SIZE);
             } else {
                 lw = userSpaceLineWidth(at, 1.0f);
             }
         } else {
             lw = bs.getLineWidth();
         }
+
+//        lw += MIN_PEN_SIZE * 0.5f; // Math.sqrt(0.5); // 1/8th pixel * SQRT(2) / 2
+
         strokeTo(rdrCtx,
                  src,
                  at,
@@ -347,18 +352,18 @@ public class MarlinRenderingEngine extends RenderingEngine
                     dashphase = scale * dashphase;
                 }
                 width = scale * width;
-                pi = src.getPathIterator(at);
-                if (normalize != NormMode.OFF) {
-                    pi = rdrCtx.npIterator.init(pi, normalize);
-                }
+                pi = getNormalizingPathIterator(rdrCtx, normalize,
+                                                src.getPathIterator(at));
+
                 // by now strokerat == null && outat == null. Input paths to
                 // stroker (and maybe dasher) will have the full transform at
                 // applied to them and nothing will happen to the output paths.
             } else {
                 if (normalize != NormMode.OFF) {
                     strokerat = at;
-                    pi = src.getPathIterator(at);
-                    pi = rdrCtx.npIterator.init(pi, normalize);
+                    pi = getNormalizingPathIterator(rdrCtx, normalize,
+                                                    src.getPathIterator(at));
+
                     // by now strokerat == at && outat == null. Input paths to
                     // stroker (and maybe dasher) will have the full transform at
                     // applied to them, then they will be normalized, and then
@@ -382,10 +387,8 @@ public class MarlinRenderingEngine extends RenderingEngine
         } else {
             // either at is null or it's the identity. In either case
             // we don't transform the path.
-            pi = src.getPathIterator(null);
-            if (normalize != NormMode.OFF) {
-                pi = rdrCtx.npIterator.init(pi, normalize);
-            }
+            pi = getNormalizingPathIterator(rdrCtx, normalize,
+                                            src.getPathIterator(null));
         }
 
         if (useSimplifier) {
@@ -432,7 +435,26 @@ public class MarlinRenderingEngine extends RenderingEngine
         return Math.abs(num) < 2.0 * Math.ulp(num);
     }
 
-    final static class NormalizingPathIterator implements PathIterator {
+    PathIterator getNormalizingPathIterator(final RendererContext rdrCtx,
+                                            final NormMode mode,
+                                            final PathIterator src)
+    {
+        switch (mode) {
+            case ON_WITH_AA:
+                // NormalizingPathIterator NearestPixelCenter:
+                return rdrCtx.nPCPathIterator.init(src);
+            case ON_NO_AA:
+                // NearestPixel NormalizingPathIterator:
+                return rdrCtx.nPQPathIterator.init(src);
+            case OFF:
+                // return original path iterator if normalization is disabled:
+                return src;
+            default:
+                throw new InternalError("Unrecognized normalization mode");
+        }
+    }
+
+    static abstract class NormalizingPathIterator implements PathIterator {
 
         private PathIterator src;
 
@@ -441,45 +463,14 @@ public class MarlinRenderingEngine extends RenderingEngine
         // the adjustment applied to the last moveTo position.
         private float movx_adjust, movy_adjust;
 
-        // constants used in normalization computations
-        private float lval, rval;
-
         private final float[] tmp;
 
-        // flag to skip lval (ie != 0)
-        private boolean skip_lval;
-
-        // per-thread renderer context
-        final RendererContext rdrCtx;
-
-        NormalizingPathIterator(final RendererContext rdrCtx) {
-            this.rdrCtx = rdrCtx;
-            tmp = rdrCtx.float6;
+        NormalizingPathIterator(final float[] tmp) {
+            this.tmp = tmp;
         }
 
-        NormalizingPathIterator init(PathIterator src, NormMode mode) {
+        NormalizingPathIterator init(final PathIterator src) {
             this.src = src;
-
-            // TODO: use two different implementations
-            // to avoid computations with lval = 0 !
-            switch (mode) {
-                case ON_NO_AA:
-                    // round to nearest (0.25, 0.25) pixel
-                    lval = rval = 0.25f;
-                    skip_lval = false;
-                    break;
-                case ON_WITH_AA:
-                    // round to nearest pixel center
-                    lval = 0f;
-                    rval = 0.5f;
-                    skip_lval = true; // most probable case
-                    break;
-                case OFF:
-                    throw new InternalError("A NormalizingPathIterator should " +
-                              "not be created if no normalization is being done");
-                default:
-                    throw new InternalError("Unrecognized normalization mode");
-            }
             return this; // fluent API
         }
 
@@ -493,15 +484,15 @@ public class MarlinRenderingEngine extends RenderingEngine
 
             int lastCoord;
             switch(type) {
-                case PathIterator.SEG_CUBICTO:
-                    lastCoord = 4;
+                case PathIterator.SEG_MOVETO:
+                case PathIterator.SEG_LINETO:
+                    lastCoord = 0;
                     break;
                 case PathIterator.SEG_QUADTO:
                     lastCoord = 2;
                     break;
-                case PathIterator.SEG_LINETO:
-                case PathIterator.SEG_MOVETO:
-                    lastCoord = 0;
+                case PathIterator.SEG_CUBICTO:
+                    lastCoord = 4;
                     break;
                 case PathIterator.SEG_CLOSE:
                     // we don't want to deal with this case later. We just exit now
@@ -512,55 +503,42 @@ public class MarlinRenderingEngine extends RenderingEngine
                     throw new InternalError("Unrecognized curve type");
             }
 
+            // TODO: handle NaN, Inf and overflow
+
             // normalize endpoint
+            float coord, x_adjust, y_adjust;
 
-            final float x_adjust;
-            final float y_adjust;
-            float coord;
+            coord = coords[lastCoord];
+            x_adjust = normCoord(coord); // new coord
+            coords[lastCoord] = x_adjust;
+            x_adjust -= coord;
 
-            // fast path (avoid lval use):
-            if (skip_lval)
-            {
-                coord = coords[lastCoord];
-                // TODO: optimize rounding coords (floor ...)
-                x_adjust = FloatMath.floor(coord) + rval - coord;
-
-                coord = coords[lastCoord + 1];
-                // TODO: optimize rounding coords (floor ...)
-                y_adjust = FloatMath.floor(coord) + rval - coord;
-            } else {
-                coord = coords[lastCoord];
-                // TODO: optimize rounding coords (floor ...)
-                x_adjust = FloatMath.floor(coord + lval) + rval - coord;
-
-                coord = coords[lastCoord + 1];
-                // TODO: optimize rounding coords (floor ...)
-                y_adjust = FloatMath.floor(coord + lval) + rval - coord;
-            }
-
-            coords[lastCoord    ] += x_adjust;
-            coords[lastCoord + 1] += y_adjust;
+            coord = coords[lastCoord + 1];
+            y_adjust = normCoord(coord); // new coord
+            coords[lastCoord + 1] = y_adjust;
+            y_adjust -= coord;
 
             // now that the end points are done, normalize the control points
             switch(type) {
+                case PathIterator.SEG_MOVETO:
+                    movx_adjust = x_adjust;
+                    movy_adjust = y_adjust;
+                    break;
+                case PathIterator.SEG_LINETO:
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    coords[0] += (curx_adjust + x_adjust) / 2f;
+                    coords[1] += (cury_adjust + y_adjust) / 2f;
+                    break;
                 case PathIterator.SEG_CUBICTO:
                     coords[0] += curx_adjust;
                     coords[1] += cury_adjust;
                     coords[2] += x_adjust;
                     coords[3] += y_adjust;
                     break;
-                case PathIterator.SEG_QUADTO:
-                    coords[0] += (curx_adjust + x_adjust) / 2f;
-                    coords[1] += (cury_adjust + y_adjust) / 2f;
-                    break;
-                case PathIterator.SEG_LINETO:
-                    break;
-                case PathIterator.SEG_MOVETO:
-                    movx_adjust = x_adjust;
-                    movy_adjust = y_adjust;
-                    break;
                 case PathIterator.SEG_CLOSE:
                     throw new InternalError("This should be handled earlier.");
+                default:
             }
             curx_adjust = x_adjust;
             cury_adjust = y_adjust;
@@ -570,6 +548,8 @@ public class MarlinRenderingEngine extends RenderingEngine
             }
             return type;
         }
+
+        abstract float normCoord(final float coord);
 
         @Override
         public int currentSegment(final double[] coords) {
@@ -599,6 +579,34 @@ public class MarlinRenderingEngine extends RenderingEngine
         public void next() {
             src.next();
         }
+
+        static final class NearestPixelCenter
+                                extends NormalizingPathIterator
+        {
+            NearestPixelCenter(final float[] tmp) {
+                super(tmp);
+            }
+
+            @Override
+            float normCoord(final float coord) {
+                // round to nearest pixel center
+                return FloatMath.floor_f(coord) + 0.5f;
+            }
+        }
+
+        static final class NearestPixelQuarter
+                                extends NormalizingPathIterator
+        {
+            NearestPixelQuarter(final float[] tmp) {
+                super(tmp);
+            }
+
+            @Override
+            float normCoord(final float coord) {
+                // round to nearest (0.25, 0.25) pixel quarter
+                return FloatMath.floor_f(coord + 0.25f) + 0.25f;
+            }
+        }
     }
 
     static void pathTo(final float[] coords, final PathIterator pi,
@@ -624,6 +632,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             case PathIterator.SEG_CLOSE:
                 pc2d.closePath();
                 break;
+            default:
             }
             pi.next();
         }
@@ -692,15 +701,12 @@ public class MarlinRenderingEngine extends RenderingEngine
         final AffineTransform _at = (at != null && !at.isIdentity()) ? at
                                     : null;
 
-        Renderer r;
-        NormMode norm = (normalize) ? NormMode.ON_WITH_AA : NormMode.OFF;
+        final NormMode norm = (normalize) ? NormMode.ON_WITH_AA : NormMode.OFF;
+        final Renderer r;
+
         if (bs == null) {
-            PathIterator pi;
-            if (normalize) {
-                pi = rdrCtx.npIterator.init(s.getPathIterator(_at), norm);
-            } else {
-                pi = s.getPathIterator(_at);
-            }
+            final PathIterator pi = getNormalizingPathIterator(rdrCtx, norm,
+                                        s.getPathIterator(_at));
             r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                      clip.getWidth(), clip.getHeight(),
                                      pi.getWindingRule());
@@ -804,7 +810,7 @@ public class MarlinRenderingEngine extends RenderingEngine
      */
     @Override
     public float getMinimumAAPenSize() {
-        return 0.5f;
+        return MIN_PEN_SIZE;
     }
 
     static {
@@ -843,16 +849,16 @@ public class MarlinRenderingEngine extends RenderingEngine
     // Static initializer to use TL or CLQ mode
     static {
         // CLQ mode by default:
-        useThreadLocal = isUseThreadLocal();
+        useThreadLocal = MarlinProperties.isUseThreadLocal();
         rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<Object>()
                                              : null;
         rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>()
                                         : null;
 
-        // Weak reference by default:
+        // Soft reference by default:
         String refType = AccessController.doPrivileged(
                             new GetPropertyAction("sun.java2d.renderer.useRef",
-                            "weak"));
+                            "soft"));
         switch (refType) {
             default:
             case "soft":
@@ -906,13 +912,11 @@ public class MarlinRenderingEngine extends RenderingEngine
         logInfo("sun.java2d.renderer.pixelsize        = "
                 + MarlinConst.INITIAL_PIXEL_DIM);
         logInfo("sun.java2d.renderer.subPixel_log2_X  = "
-                + Renderer.SUBPIXEL_LG_POSITIONS_X);
+                + MarlinConst.SUBPIXEL_LG_POSITIONS_X);
         logInfo("sun.java2d.renderer.subPixel_log2_Y  = "
-                + Renderer.SUBPIXEL_LG_POSITIONS_Y);
+                + MarlinConst.SUBPIXEL_LG_POSITIONS_Y);
         logInfo("sun.java2d.renderer.tileSize_log2    = "
-                + MarlinCache.TILE_SIZE_LG);
-        logInfo("sun.java2d.renderer.useFastMath      = "
-                + MarlinConst.useFastMath);
+                + MarlinConst.TILE_SIZE_LG);
 
         // optimisation parameters
         logInfo("sun.java2d.renderer.useSimplifier    = "
@@ -933,6 +937,13 @@ public class MarlinRenderingEngine extends RenderingEngine
                 + MarlinConst.logCreateContext);
         logInfo("sun.java2d.renderer.logUnsafeMalloc  = "
                 + MarlinConst.logUnsafeMalloc);
+
+        // quality settings
+        logInfo("Renderer settings:");
+        logInfo("CUB_COUNT_LG = " + Renderer.CUB_COUNT_LG);
+        logInfo("CUB_DEC_BND  = " + Renderer.CUB_DEC_BND);
+        logInfo("CUB_INC_BND  = " + Renderer.CUB_INC_BND);
+        logInfo("QUAD_DEC_BND = " + Renderer.QUAD_DEC_BND);
 
         logInfo("=========================================================="
                 + "=====================");
@@ -980,120 +991,4 @@ public class MarlinRenderingEngine extends RenderingEngine
             rdrCtxQueue.offer(rdrCtx.reference);
         }
     }
-
-    // marlin system properties
-
-    public static boolean isUseThreadLocal() {
-        return getBoolean("sun.java2d.renderer.useThreadLocal", "false");
-    }
-
-    /**
-     * Return the initial pixel size used to define initial arrays
-     * (tile AA chunk, alpha line, buckets)
-     *
-     * @return 64 < initial pixel size < 32768 (2048 by default)
-     */
-    public static int getInitialImageSize() {
-        return getInteger("sun.java2d.renderer.pixelsize", 2048, 64, 32 * 1024);
-    }
-
-    /**
-     * Return the log(2) corresponding to subpixel on x-axis (
-     *
-     * @return 1 (2 subpixels) < initial pixel size < 4 (256 subpixels)
-     * (3 by default ie 8 subpixels)
-     */
-    public static int getSubPixel_Log2_X() {
-        return getInteger("sun.java2d.renderer.subPixel_log2_X", 3, 1, 8);
-    }
-
-    /**
-     * Return the log(2) corresponding to subpixel on y-axis (
-     *
-     * @return 1 (2 subpixels) < initial pixel size < 8 (256 subpixels)
-     * (3 by default ie 8 subpixels)
-     */
-    public static int getSubPixel_Log2_Y() {
-        return getInteger("sun.java2d.renderer.subPixel_log2_Y", 3, 1, 8);
-    }
-
-    /**
-     * Return the log(2) corresponding to the square tile size in pixels
-     *
-     * @return 3 (8x8 pixels) < tile size < 8 (256x256 pixels)
-     * (5 by default ie 32x32 pixels)
-     */
-    public static int getTileSize_Log2() {
-        return getInteger("sun.java2d.renderer.tileSize_log2", 5, 3, 8);
-    }
-
-    public static boolean isUseFastMath() {
-        return getBoolean("sun.java2d.renderer.useFastMath", "true");
-    }
-
-    // optimisation parameters
-
-    public static boolean isUseSimplifier() {
-        return getBoolean("sun.java2d.renderer.useSimplifier", "false");
-    }
-
-    // debugging parameters
-
-    public static boolean isDoStats() {
-        return getBoolean("sun.java2d.renderer.doStats", "false");
-    }
-
-    public static boolean isDoMonitors() {
-        return getBoolean("sun.java2d.renderer.doMonitors", "false");
-    }
-
-    public static boolean isDoChecks() {
-        return getBoolean("sun.java2d.renderer.doChecks", "false");
-    }
-
-    // logging parameters
-
-    public static boolean isUseLogger() {
-        return getBoolean("sun.java2d.renderer.useLogger", "false");
-    }
-
-    public static boolean isLogCreateContext() {
-        return getBoolean("sun.java2d.renderer.logCreateContext", "false");
-    }
-
-    public static boolean isLogUnsafeMalloc() {
-        return getBoolean("sun.java2d.renderer.logUnsafeMalloc", "false");
-    }
-
-    // system property utilities
-
-    static boolean getBoolean(final String key, final String def) {
-        return Boolean.valueOf(AccessController.doPrivileged(
-                  new GetPropertyAction(key, def)));
-    }
-
-    static int getInteger(final String key, final int def,
-                                 final int min, final int max)
-    {
-        final String property = AccessController.doPrivileged(
-                                    new GetPropertyAction(key));
-
-        int value = def;
-        if (property != null) {
-            try {
-                value = Integer.decode(property);
-            } catch (NumberFormatException e) {
-                logInfo("Invalid integer value for " + key + " = " + property);
-            }
-        }
-
-        // check for invalid values
-        if ((value < min) || (value > max)) {
-            logInfo("Invalid value for " + key + " = " + value
-                    + "; expected value in range[" + min + ", " + max + "] !");
-            value = def;
-        }
-        return value;
-    }
-
 }

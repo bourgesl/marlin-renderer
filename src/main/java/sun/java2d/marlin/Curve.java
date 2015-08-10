@@ -44,12 +44,12 @@ final class Curve {
                 points[2], points[3],
                 points[4], points[5],
                 points[6], points[7]);
-            break;
+            return;
         case 6:
             set(points[0], points[1],
                 points[2], points[3],
                 points[4], points[5]);
-            break;
+            return;
         default:
             throw new InternalError("Curves can only be cubic or quadratic");
         }
@@ -264,14 +264,14 @@ final class Curve {
         private float prevT;
         private float[] pts;
         private int type;
-        private float[] Ts;
+        private float[] ts;
         private int numTs;
 
         void init(final float[] pts, final int type,
-                  final float[] Ts, final int numTs) {
+                  final float[] ts, final int numTs) {
             this.pts = pts;
             this.type = type;
-            this.Ts = Ts;
+            this.ts = ts;
             this.numTs = numTs;
 
             nextCurveIdx = 0;
@@ -286,7 +286,7 @@ final class Curve {
         public int next() {
             int ret;
             if (nextCurveIdx < numTs) {
-                float curT = Ts[nextCurveIdx];
+                float curT = ts[nextCurveIdx];
                 float splitT = (curT - prevT) / (1f - prevT);
                 Helpers.subdivideAt(splitT,
                                     pts, curCurveOff,
