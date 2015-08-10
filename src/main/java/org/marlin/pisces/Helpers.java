@@ -169,7 +169,7 @@ final class Helpers implements MarlinConst {
                                 final float a, final float b)
     {
         int ret = off;
-        for (int i = off; i < off + len; i++) {
+        for (int i = off, end = off + len; i < end; i++) {
             if (nums[i] >= a && nums[i] < b) {
                 nums[ret++] = nums[i];
             }
@@ -198,19 +198,19 @@ final class Helpers implements MarlinConst {
         switch(type) {
         case 6:
             Helpers.subdivideQuad(src, srcoff, left, leftoff, right, rightoff);
-            break;
+            return;
         case 8:
             Helpers.subdivideCubic(src, srcoff, left, leftoff, right, rightoff);
-            break;
+            return;
         default:
             throw new InternalError("Unsupported curve type");
         }
     }
 
     static void isort(float[] a, int off, int len) {
-        for (int i = off + 1; i < off + len; i++) {
+        for (int i = off + 1, j, end = off + len; i < end; i++) {
             float ai = a[i];
-            int j = i - 1;
+            j = i - 1;
             for (; j >= off && a[j] > ai; j--) {
                 a[j+1] = a[j];
             }
@@ -433,10 +433,10 @@ final class Helpers implements MarlinConst {
         switch(size) {
         case 8:
             subdivideCubicAt(t, src, srcoff, left, leftoff, right, rightoff);
-            break;
+            return;
         case 6:
             subdivideQuadAt(t, src, srcoff, left, leftoff, right, rightoff);
-            break;
+            return;
         }
     }
 }
