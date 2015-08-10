@@ -39,7 +39,7 @@ import org.marlin.pisces.stats.StatLong;
 public final class RendererStats implements MarlinConst {
 
     // singleton
-    private static RendererStats singleton = null;
+    private static volatile RendererStats singleton = null;
 
     static RendererStats getInstance() {
         if (singleton == null) {
@@ -58,8 +58,6 @@ public final class RendererStats implements MarlinConst {
        (only used for debugging purposes) */
     final ConcurrentLinkedQueue<RendererContext> allContexts
         = new ConcurrentLinkedQueue<RendererContext>();
-    // timer
-    private final Timer statTimer;
     // stats
     final StatLong stat_cache_rowAA
         = new StatLong("cache.rowAA");
@@ -69,10 +67,20 @@ public final class RendererStats implements MarlinConst {
         = new StatLong("renderer.poly.stack.curves");
     final StatLong stat_rdr_poly_stack_types
         = new StatLong("renderer.poly.stack.types");
+    final StatLong stat_rdr_addLine
+        = new StatLong("renderer.addLine");
+    final StatLong stat_rdr_addLine_skip
+        = new StatLong("renderer.addLine.skip");
     final StatLong stat_rdr_curveBreak
         = new StatLong("renderer.curveBreakIntoLinesAndAdd");
+    final StatLong stat_rdr_curveBreak_dec
+        = new StatLong("renderer.curveBreakIntoLinesAndAdd.dec");
+    final StatLong stat_rdr_curveBreak_inc
+        = new StatLong("renderer.curveBreakIntoLinesAndAdd.inc");
     final StatLong stat_rdr_quadBreak
         = new StatLong("renderer.quadBreakIntoLinesAndAdd");
+    final StatLong stat_rdr_quadBreak_dec
+        = new StatLong("renderer.quadBreakIntoLinesAndAdd.dec");
     final StatLong stat_rdr_edges
         = new StatLong("renderer.edges");
     final StatLong stat_rdr_edges_count
@@ -137,8 +145,13 @@ public final class RendererStats implements MarlinConst {
         stat_cache_rowAAChunk,
         stat_rdr_poly_stack_types,
         stat_rdr_poly_stack_curves,
+        stat_rdr_addLine,
+        stat_rdr_addLine_skip,
         stat_rdr_curveBreak,
+        stat_rdr_curveBreak_dec,
+        stat_rdr_curveBreak_inc,
         stat_rdr_quadBreak,
+        stat_rdr_quadBreak_dec,
         stat_rdr_edges,
         stat_rdr_edges_count,
         stat_rdr_edges_resizes,
@@ -209,15 +222,13 @@ public final class RendererStats implements MarlinConst {
         });
 
         if (useDumpThread) {
-            statTimer = new Timer("RendererStats");
+            final Timer statTimer = new Timer("RendererStats");
             statTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     dump();
                 }
             }, statDump, statDump);
-        } else {
-            statTimer = null;
         }
     }
 
@@ -225,7 +236,8 @@ public final class RendererStats implements MarlinConst {
         if (doStats) {
             ArrayCache.dumpStats();
         }
-        final RendererContext[] all = allContexts.toArray(new RendererContext[0]);
+        final RendererContext[] all = allContexts.toArray(
+                                          new RendererContext[allContexts.size()]);
         for (RendererContext rdrCtx : all) {
             logInfo("RendererContext: " + rdrCtx.name);
 
