@@ -33,10 +33,7 @@ import java.util.Arrays;
  */
 public final class MarlinCache implements MarlinConst {
 
-    private final static double GAMMA = PiscesRenderingEngine.getGamma();
-
-    public static final int TILE_SIZE_LG = MarlinRenderingEngine.getTileSize_Log2();
-    public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
+    private final static double GAMMA = MarlinProperties.getGamma();
 
     // 2048 (pixelSize) alpha values (width) x 32 rows (tile) = 64K
     static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
@@ -44,7 +41,7 @@ public final class MarlinCache implements MarlinConst {
     // The alpha map used by this object (taken out of our map cache) to convert
     // pixel coverage counts gotten from MarlinCache (which are in the range
     // [0, maxalpha]) into alpha values, which are in [0,256).
-    final static byte[] ALPHA_MAP = buildAlphaMap(Renderer.MAX_AA_ALPHA);
+    final static byte[] ALPHA_MAP = buildAlphaMap(MAX_AA_ALPHA);
 
     int bboxX0, bboxY0, bboxX1, bboxY1;
 
@@ -70,18 +67,15 @@ public final class MarlinCache implements MarlinConst {
     final RendererContext rdrCtx;
 
     // large cached rowAAChunk (dirty)
-    final byte[] rowAAChunk_initial;
+    // +1 to avoid recycling in widenDirtyIntArray()
+    final byte[] rowAAChunk_initial = new byte[INITIAL_CHUNK_ARRAY + 1]; // 64K
     // large cached touchedTile (dirty)
-    final int[] touchedTile_initial;
+    final int[] touchedTile_initial = new int[INITIAL_ARRAY]; // 1 tile line
 
     int tileMin, tileMax;
 
     MarlinCache(final RendererContext rdrCtx) {
         this.rdrCtx = rdrCtx;
-
-        // +1 to avoid recycling in widenDirtyIntArray()
-        this.rowAAChunk_initial  = new byte[INITIAL_CHUNK_ARRAY + 1]; // 64K
-        this.touchedTile_initial = new int[INITIAL_ARRAY]; // only 1 tile line
 
         rowAAChunk  = rowAAChunk_initial;
         touchedTile = touchedTile_initial;
@@ -225,7 +219,6 @@ public final class MarlinCache implements MarlinConst {
 
         final int[] touchedLine = touchedTile;
         final int _TILE_SIZE_LG = TILE_SIZE_LG;
-        final int _MAX_AA_ALPHA = Renderer.MAX_AA_ALPHA;
         final byte[] _ALPHA_MAP = ALPHA_MAP;
 
         // fix offset in rowAAChunk:
@@ -242,9 +235,9 @@ public final class MarlinCache implements MarlinConst {
                     System.out.println("Invalid coverage = " + val);
                     val = 0;
                 }
-                if (val > _MAX_AA_ALPHA) {
+                if (val > MAX_AA_ALPHA) {
                     System.out.println("Invalid coverage = " + val);
-                    val = _MAX_AA_ALPHA;
+                    val = MAX_AA_ALPHA;
                 }
             }
 

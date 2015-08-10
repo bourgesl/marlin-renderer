@@ -28,10 +28,8 @@ import sun.java2d.pipe.AATileGenerator;
 
 final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
 
-    private static final int TILE_SIZE = MarlinCache.TILE_SIZE;
-
     private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE
-                                                  * Renderer.MAX_AA_ALPHA;
+                                                      * MAX_AA_ALPHA;
 
     private final Renderer rdr;
     private final MarlinCache cache;
