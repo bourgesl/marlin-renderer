@@ -193,8 +193,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 //////////////////////////////////////////////////////////////////////////////
 //  EDGE LIST
 //////////////////////////////////////////////////////////////////////////////
-// TODO(maybe): very tempting to use fixed point here. A lot of opportunities
-// for shifts and just removing certain operations altogether.
     private float edgeMinY = Float.POSITIVE_INFINITY;
     private float edgeMaxY = Float.NEGATIVE_INFINITY;
     private float edgeMinX = Float.POSITIVE_INFINITY;
