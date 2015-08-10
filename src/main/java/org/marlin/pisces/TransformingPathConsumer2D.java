@@ -55,30 +55,30 @@ final class TransformingPathConsumer2D {
         if (at == null) {
             return out;
         }
-        float Mxx = (float) at.getScaleX();
-        float Mxy = (float) at.getShearX();
-        float Mxt = (float) at.getTranslateX();
-        float Myx = (float) at.getShearY();
-        float Myy = (float) at.getScaleY();
-        float Myt = (float) at.getTranslateY();
-        if (Mxy == 0f && Myx == 0f) {
-            if (Mxx == 1f && Myy == 1f) {
-                if (Mxt == 0f && Myt == 0f) {
+        float mxx = (float) at.getScaleX();
+        float mxy = (float) at.getShearX();
+        float mxt = (float) at.getTranslateX();
+        float myx = (float) at.getShearY();
+        float myy = (float) at.getScaleY();
+        float myt = (float) at.getTranslateY();
+        if (mxy == 0f && myx == 0f) {
+            if (mxx == 1f && myy == 1f) {
+                if (mxt == 0f && myt == 0f) {
                     return out;
                 } else {
-                    return tx_TranslateFilter.init(out, Mxt, Myt);
+                    return tx_TranslateFilter.init(out, mxt, myt);
                 }
             } else {
-                if (Mxt == 0f && Myt == 0f) {
-                    return tx_DeltaScaleFilter.init(out, Mxx, Myy);
+                if (mxt == 0f && myt == 0f) {
+                    return tx_DeltaScaleFilter.init(out, mxx, myy);
                 } else {
-                    return tx_ScaleFilter.init(out, Mxx, Myy, Mxt, Myt);
+                    return tx_ScaleFilter.init(out, mxx, myy, mxt, myt);
                 }
             }
-        } else if (Mxt == 0f && Myt == 0f) {
-            return tx_DeltaTransformFilter.init(out, Mxx, Mxy, Myx, Myy);
+        } else if (mxt == 0f && myt == 0f) {
+            return tx_DeltaTransformFilter.init(out, mxx, mxy, myx, myy);
         } else {
-            return tx_TransformFilter.init(out, Mxx, Mxy, Mxt, Myx, Myy, Myt);
+            return tx_TransformFilter.init(out, mxx, mxy, mxt, myx, myy, myt);
         }
     }
 
@@ -92,18 +92,18 @@ final class TransformingPathConsumer2D {
         if (at == null) {
             return out;
         }
-        float Mxx = (float) at.getScaleX();
-        float Mxy = (float) at.getShearX();
-        float Myx = (float) at.getShearY();
-        float Myy = (float) at.getScaleY();
-        if (Mxy == 0f && Myx == 0f) {
-            if (Mxx == 1f && Myy == 1f) {
+        float mxx = (float) at.getScaleX();
+        float mxy = (float) at.getShearX();
+        float myx = (float) at.getShearY();
+        float myy = (float) at.getScaleY();
+        if (mxy == 0f && myx == 0f) {
+            if (mxx == 1f && myy == 1f) {
                 return out;
             } else {
-                return dt_DeltaScaleFilter.init(out, Mxx, Myy);
+                return dt_DeltaScaleFilter.init(out, mxx, myy);
             }
         } else {
-            return dt_DeltaTransformFilter.init(out, Mxx, Mxy, Myx, Myy);
+            return dt_DeltaTransformFilter.init(out, mxx, mxy, myx, myy);
         }
     }
 
@@ -117,23 +117,23 @@ final class TransformingPathConsumer2D {
         if (at == null) {
             return out;
         }
-        float Mxx = (float) at.getScaleX();
-        float Mxy = (float) at.getShearX();
-        float Myx = (float) at.getShearY();
-        float Myy = (float) at.getScaleY();
-        if (Mxy == 0f && Myx == 0f) {
-            if (Mxx == 1f && Myy == 1f) {
+        float mxx = (float) at.getScaleX();
+        float mxy = (float) at.getShearX();
+        float myx = (float) at.getShearY();
+        float myy = (float) at.getScaleY();
+        if (mxy == 0f && myx == 0f) {
+            if (mxx == 1f && myy == 1f) {
                 return out;
             } else {
-                return iv_DeltaScaleFilter.init(out, 1.0f/Mxx, 1.0f/Myy);
+                return iv_DeltaScaleFilter.init(out, 1.0f/mxx, 1.0f/myy);
             }
         } else {
-            float det = Mxx * Myy - Mxy * Myx;
+            float det = mxx * myy - mxy * myx;
             return iv_DeltaTransformFilter.init(out,
-                                                Myy / det,
-                                               -Mxy / det,
-                                               -Myx / det,
-                                                Mxx / det);
+                                                myy / det,
+                                               -mxy / det,
+                                               -myx / det,
+                                                mxx / det);
         }
     }
 
@@ -260,44 +260,44 @@ final class TransformingPathConsumer2D {
 
     static final class TransformFilter implements PathConsumer2D {
         private PathConsumer2D out;
-        private float Mxx, Mxy, Mxt, Myx, Myy, Myt;
+        private float mxx, mxy, mxt, myx, myy, myt;
 
         TransformFilter() {}
 
         TransformFilter init(PathConsumer2D out,
-                             float Mxx, float Mxy, float Mxt,
-                             float Myx, float Myy, float Myt)
+                             float mxx, float mxy, float mxt,
+                             float myx, float myy, float myt)
         {
             this.out = out;
-            this.Mxx = Mxx;
-            this.Mxy = Mxy;
-            this.Mxt = Mxt;
-            this.Myx = Myx;
-            this.Myy = Myy;
-            this.Myt = Myt;
+            this.mxx = mxx;
+            this.mxy = mxy;
+            this.mxt = mxt;
+            this.myx = myx;
+            this.myy = myy;
+            this.myt = myt;
             return this; // fluent API
         }
 
         @Override
         public void moveTo(float x0, float y0) {
-            out.moveTo(x0 * Mxx + y0 * Mxy + Mxt,
-                       x0 * Myx + y0 * Myy + Myt);
+            out.moveTo(x0 * mxx + y0 * mxy + mxt,
+                       x0 * myx + y0 * myy + myt);
         }
 
         @Override
         public void lineTo(float x1, float y1) {
-            out.lineTo(x1 * Mxx + y1 * Mxy + Mxt,
-                       x1 * Myx + y1 * Myy + Myt);
+            out.lineTo(x1 * mxx + y1 * mxy + mxt,
+                       x1 * myx + y1 * myy + myt);
         }
 
         @Override
         public void quadTo(float x1, float y1,
                            float x2, float y2)
         {
-            out.quadTo(x1 * Mxx + y1 * Mxy + Mxt,
-                       x1 * Myx + y1 * Myy + Myt,
-                       x2 * Mxx + y2 * Mxy + Mxt,
-                       x2 * Myx + y2 * Myy + Myt);
+            out.quadTo(x1 * mxx + y1 * mxy + mxt,
+                       x1 * myx + y1 * myy + myt,
+                       x2 * mxx + y2 * mxy + mxt,
+                       x2 * myx + y2 * myy + myt);
         }
 
         @Override
@@ -305,12 +305,12 @@ final class TransformingPathConsumer2D {
                             float x2, float y2,
                             float x3, float y3)
         {
-            out.curveTo(x1 * Mxx + y1 * Mxy + Mxt,
-                        x1 * Myx + y1 * Myy + Myt,
-                        x2 * Mxx + y2 * Mxy + Mxt,
-                        x2 * Myx + y2 * Myy + Myt,
-                        x3 * Mxx + y3 * Mxy + Mxt,
-                        x3 * Myx + y3 * Myy + Myt);
+            out.curveTo(x1 * mxx + y1 * mxy + mxt,
+                        x1 * myx + y1 * myy + myt,
+                        x2 * mxx + y2 * mxy + mxt,
+                        x2 * myx + y2 * myy + myt,
+                        x3 * mxx + y3 * mxy + mxt,
+                        x3 * myx + y3 * myy + myt);
         }
 
         @Override
@@ -336,11 +336,11 @@ final class TransformingPathConsumer2D {
         DeltaScaleFilter() {}
 
         DeltaScaleFilter init(PathConsumer2D out,
-                              float Mxx, float Myy)
+                              float mxx, float myy)
         {
             this.out = out;
-            sx = Mxx;
-            sy = Myy;
+            sx = mxx;
+            sy = myy;
             return this; // fluent API
         }
 
@@ -390,42 +390,42 @@ final class TransformingPathConsumer2D {
 
     static final class DeltaTransformFilter implements PathConsumer2D {
         private PathConsumer2D out;
-        private float Mxx, Mxy, Myx, Myy;
+        private float mxx, mxy, myx, myy;
 
         DeltaTransformFilter() {}
 
         DeltaTransformFilter init(PathConsumer2D out,
-                                  float Mxx, float Mxy,
-                                  float Myx, float Myy)
+                                  float mxx, float mxy,
+                                  float myx, float myy)
         {
             this.out = out;
-            this.Mxx = Mxx;
-            this.Mxy = Mxy;
-            this.Myx = Myx;
-            this.Myy = Myy;
+            this.mxx = mxx;
+            this.mxy = mxy;
+            this.myx = myx;
+            this.myy = myy;
             return this; // fluent API
         }
 
         @Override
         public void moveTo(float x0, float y0) {
-            out.moveTo(x0 * Mxx + y0 * Mxy,
-                       x0 * Myx + y0 * Myy);
+            out.moveTo(x0 * mxx + y0 * mxy,
+                       x0 * myx + y0 * myy);
         }
 
         @Override
         public void lineTo(float x1, float y1) {
-            out.lineTo(x1 * Mxx + y1 * Mxy,
-                       x1 * Myx + y1 * Myy);
+            out.lineTo(x1 * mxx + y1 * mxy,
+                       x1 * myx + y1 * myy);
         }
 
         @Override
         public void quadTo(float x1, float y1,
                            float x2, float y2)
         {
-            out.quadTo(x1 * Mxx + y1 * Mxy,
-                       x1 * Myx + y1 * Myy,
-                       x2 * Mxx + y2 * Mxy,
-                       x2 * Myx + y2 * Myy);
+            out.quadTo(x1 * mxx + y1 * mxy,
+                       x1 * myx + y1 * myy,
+                       x2 * mxx + y2 * mxy,
+                       x2 * myx + y2 * myy);
         }
 
         @Override
@@ -433,12 +433,12 @@ final class TransformingPathConsumer2D {
                             float x2, float y2,
                             float x3, float y3)
         {
-            out.curveTo(x1 * Mxx + y1 * Mxy,
-                        x1 * Myx + y1 * Myy,
-                        x2 * Mxx + y2 * Mxy,
-                        x2 * Myx + y2 * Myy,
-                        x3 * Mxx + y3 * Mxy,
-                        x3 * Myx + y3 * Myy);
+            out.curveTo(x1 * mxx + y1 * mxy,
+                        x1 * myx + y1 * myy,
+                        x2 * mxx + y2 * mxy,
+                        x2 * myx + y2 * myy,
+                        x3 * mxx + y3 * mxy,
+                        x3 * myx + y3 * myy);
         }
 
         @Override
