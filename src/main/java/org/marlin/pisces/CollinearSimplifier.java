@@ -28,16 +28,17 @@ import sun.awt.geom.PathConsumer2D;
 
 final class CollinearSimplifier implements PathConsumer2D {
 
-    private final static int STATE_EMPTY = 0;
+    private final static int STATE_PREV_LINE = 0;
     private final static int STATE_PREV_POINT = 1;
-    private final static int STATE_PREV_LINE = 2;
+    private final static int STATE_EMPTY = 2;
 
     // slope precision threshold
     static final float EPS = 1e-4f; // aaime proposed 1e-3f
 
     PathConsumer2D delegate;
     int state;
-    float px1, py1, px2, py2, pslope;
+    float px1, py1, px2, py2;
+    float pslope;
 
     CollinearSimplifier() {
     }
@@ -65,7 +66,7 @@ final class CollinearSimplifier implements PathConsumer2D {
 
     @Override
     public long getNativeConsumer() {
-        return delegate.getNativeConsumer();
+        return 0;
     }
 
     @Override
@@ -100,39 +101,39 @@ final class CollinearSimplifier implements PathConsumer2D {
 
     @Override
     public void lineTo(final float x, final float y) {
-        switch (state) {
-            case STATE_EMPTY:
-                delegate.lineTo(x, y);
-                state = STATE_PREV_POINT;
-                px1 = x;
-                py1 = y;
-                return;
-
-            case STATE_PREV_POINT:
-                state = STATE_PREV_LINE;
+        // most probable case first:
+        if (state == STATE_PREV_LINE) {
+            final float slope = getSlope(px2, py2, x, y);
+            // test for collinearity
+            // note: the equality test is used to check Infinty slopes
+            if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
+                // TODO: store cumulated error on slope ?
+                // merge segments
                 px2 = x;
                 py2 = y;
-                pslope = getSlope(px1, py1, x, y);
                 return;
-
-            case STATE_PREV_LINE:
-                final float slope = getSlope(px2, py2, x, y);
-                // test for collinearity
-                if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
-                    // merge segments
-                    px2 = x;
-                    py2 = y;
-                    return;
-                }
-                // emit previous segment
-                delegate.lineTo(px2, py2);
-                px1 = px2;
-                py1 = py2;
-                px2 = x;
-                py2 = y;
-                pslope = slope;
-                return;
-            default:
+            }
+            // emit previous segment
+            delegate.lineTo(px2, py2);
+            px1 = px2;
+            py1 = py2;
+            px2 = x;
+            py2 = y;
+            pslope = slope;
+            return;
+        }
+        if (state == STATE_PREV_POINT) {
+            state = STATE_PREV_LINE;
+            px2 = x;
+            py2 = y;
+            pslope = getSlope(px1, py1, x, y);
+            return;
+        }
+        if (state == STATE_EMPTY) {
+            delegate.lineTo(x, y);
+            state = STATE_PREV_POINT;
+            px1 = x;
+            py1 = y;
         }
     }
 
