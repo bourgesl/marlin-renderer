@@ -138,7 +138,10 @@ final class MergeSort {
         }
 
         // Recursively sort halves of dest into src
-        final int mid = (low + high) >> 1; // not >>> as small arrays
+
+        // note: use signed shift (not >>>) for performance
+        // as indices are small enough to exceed Integer.MAX_VALUE
+        final int mid = (low + high) >> 1;
 
         mergeSort(refX, refY, dstX, srcX, dstY, srcY, low, mid);
         mergeSort(refX, refY, dstX, srcX, dstY, srcY, mid, high);
