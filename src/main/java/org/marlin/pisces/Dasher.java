@@ -104,7 +104,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     Dasher init(final PathConsumer2D out, float[] dash, int dashLen,
                 float phase, boolean recycleDashes)
     {
-        if (phase < 0) {
+        if (phase < 0f) {
             throw new IllegalArgumentException("phase < 0 !");
         }
         this.out = out;
@@ -144,7 +144,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             Arrays.fill(firstSegmentsBuffer, 0f);
         }
         // Return arrays:
-        if (this.recycleDashes && dash != dashes_initial) {
+        if (recycleDashes && dash != dashes_initial) {
             rdrCtx.putDirtyFloatArray(dash);
         }
 
@@ -175,13 +175,15 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             out.curveTo(buf[off+0], buf[off+1],
                         buf[off+2], buf[off+3],
                         buf[off+4], buf[off+5]);
-            break;
+            return;
         case 6:
             out.quadTo(buf[off+0], buf[off+1],
                        buf[off+2], buf[off+3]);
-            break;
+            return;
         case 4:
             out.lineTo(buf[off], buf[off+1]);
+            return;
+        default:
         }
     }
 
@@ -273,6 +275,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
                 // Advance phase within current dash segment
                 phase += len;
+                // TODO: compare float values using epsilon:
                 if (len == leftInThisDashSegment) {
                     phase = 0f;
                     idx = (idx + 1) % dashLen;
@@ -284,7 +287,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             dashdx = _dash[idx] * cx;
             dashdy = _dash[idx] * cy;
 
-            if (phase == 0) {
+            if (phase == 0f) {
                 _curCurvepts[0] = x0 + dashdx;
                 _curCurvepts[1] = y0 + dashdy;
             } else {
@@ -299,7 +302,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             // Advance to next dash segment
             idx = (idx + 1) % dashLen;
             dashOn = !dashOn;
-            phase = 0;
+            phase = 0f;
         }
     }
 
@@ -333,7 +336,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             // Advance to next dash segment
             idx = (idx + 1) % dashLen;
             dashOn = !dashOn;
-            phase = 0;
+            phase = 0f;
             leftInThisDashSegment = dash[idx];
         }
         goTo(curCurvepts, curCurveoff+2, type);
@@ -349,6 +352,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
     private static boolean pointCurve(float[] curve, int type) {
         for (int i = 2; i < type; i++) {
+            // TODO: compare float values using epsilon:
             if (curve[i] != curve[i-2]) {
                 return false;
             }
