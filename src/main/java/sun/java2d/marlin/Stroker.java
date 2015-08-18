@@ -26,7 +26,6 @@
 package sun.java2d.marlin;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import static java.lang.Math.ulp;
 import static java.lang.Math.sqrt;
 

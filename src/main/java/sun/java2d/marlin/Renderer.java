@@ -40,8 +40,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
     final static boolean DISABLE_RENDER = false;
 
-    final static int ERR_STEP_MAX = 0x7fffffff; // Integer.MAX_VALUE = 2^31 - 1
-    final static double D_ERR_STEP_MAX = (double)(ERR_STEP_MAX);
+    private final static int ERR_STEP_MAX = 0x7fffffff; // = 2^31 - 1
 
     private final static double POWER_2_TO_32 = FloatMath.powerOfTwoD(32);
 
@@ -508,7 +507,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         _edgeBuckets[bucketIdx]       = edgePtr;
         _edgeBucketCounts[bucketIdx] += 2; // 1 << 1
         // last bit means edge end
-        _edgeBucketCounts[lastCrossing - _boundsMinY] |= 0x1;
+        _edgeBucketCounts[lastCrossing - _boundsMinY] |= 1;
 
         // update free pointer (ie length in bytes)
         _edges.used += _SIZEOF_EDGE_BYTES;
@@ -777,8 +776,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         final int bboxx0 = bbox_spminX;
         final int bboxx1 = bbox_spmaxX;
 
-        // Mask to determine the relevant bit of the crossing sum
-        // 0x1 if EVEN_ODD, all bits if NON_ZERO
         final boolean windingRuleEvenOdd = (windingRule == WIND_EVEN_ODD);
 
         // Useful when processing tile line by tile line
@@ -798,14 +795,14 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         int[] _aux_edgePtrs  = this.aux_edgePtrs;
 
         // copy constants:
-        final long _OFF_ERROR   = OFF_ERROR;
-        final long _OFF_BUMP_X  = OFF_BUMP_X;
-        final long _OFF_BUMP_ERR= OFF_BUMP_ERR;
+        final long _OFF_ERROR    = OFF_ERROR;
+        final long _OFF_BUMP_X   = OFF_BUMP_X;
+        final long _OFF_BUMP_ERR = OFF_BUMP_ERR;
 
-        final long _OFF_NEXT    = OFF_NEXT;
-        final long _OFF_YMAX_OR = OFF_YMAX_OR;
+        final long _OFF_NEXT     = OFF_NEXT;
+        final long _OFF_YMAX_OR  = OFF_YMAX_OR;
 
-        final int _ERR_STEP_MAX= ERR_STEP_MAX;
+        final int _ERR_STEP_MAX  = ERR_STEP_MAX;
 
         // unsafe I/O:
         final Unsafe _unsafe = unsafe;
@@ -838,7 +835,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         int _arrayMaxUsed = activeEdgeMaxUsed;
         int ptrLen = 0, newCount, ptrEnd;
 
-        int bucketcount, i, j, ecur, lowx, highx;
+        int bucketcount, i, j, ecur, lowx, highx, yLim;
         int cross, lastCross;
         int x0, x1, tmp, sum, prev, curx, curxo, crorientation, err;
         int pix_x, pix_xmaxm1, pix_xmax;
@@ -865,10 +862,10 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 }
 
                 // last bit set to 1 means that edges ends
-                if ((bucketcount & 0x1) != 0) {
+                if ((bucketcount & 1) != 0) {
                     /* note: edge[YMAX] is multiplied by 2
                        so compare it with 2*y + 1 (any orientation) */
-                    final int yLim = (y << 1) | 0x1;
+                    yLim = (y << 1) | 1;
                     // eviction in active edge list
                     // cache edges[] address + offset
                     addr = addr0 + _OFF_YMAX_OR;
@@ -1012,7 +1009,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
                         // update crossing with orientation at last bit:
                         cross = (curx << 1)
-                                | _unsafe.getInt(addr + _OFF_YMAX_OR) & 0x1;
+                                | _unsafe.getInt(addr + _OFF_YMAX_OR) & 1;
 
                         // Increment x using DDA (fixed point):
                         curx += _unsafe.getInt(addr + _OFF_BUMP_X);
@@ -1117,7 +1114,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
                         // update crossing with orientation at last bit:
                         cross = (curx << 1)
-                                | _unsafe.getInt(addr + _OFF_YMAX_OR) & 0x1;
+                                | _unsafe.getInt(addr + _OFF_YMAX_OR) & 1;
 
                         // Increment x using DDA (fixed point):
                         curx += _unsafe.getInt(addr + _OFF_BUMP_X);
@@ -1197,7 +1194,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 prev = curx = curxo >> 1;
                 // to turn {0, 1} into {-1, 1}, multiply by 2 and subtract 1.
                 // last bit contains orientation (0 or 1)
-                crorientation = ((curxo & 0x1) << 1) - 1;
+                crorientation = ((curxo & 1) << 1) - 1;
 
                 if (windingRuleEvenOdd) {
                     sum = crorientation;
@@ -1208,9 +1205,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                         curx  =  curxo >> 1;
                         // to turn {0, 1} into {-1, 1}, multiply by 2 and subtract 1.
                         // last bit contains orientation (0 or 1)
-                        crorientation = ((curxo & 0x1) << 1) - 1;
+                        crorientation = ((curxo & 1) << 1) - 1;
 
-                        if ((sum & 0x1) != 0) {
+                        if ((sum & 1) != 0) {
                             x0 = (prev > bboxx0) ? prev : bboxx0;
                             x1 = (curx < bboxx1) ? curx : bboxx1;
 
@@ -1301,7 +1298,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                         curx  =  curxo >> 1;
                         // to turn {0, 1} into {-1, 1}, multiply by 2 and subtract 1.
                         // last bit contains orientation (0 or 1)
-                        crorientation = ((curxo & 0x1) << 1) - 1;
+                        crorientation = ((curxo & 1) << 1) - 1;
                     }
                 }
             } // numCrossings > 0

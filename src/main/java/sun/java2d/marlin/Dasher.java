@@ -353,7 +353,6 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
     private static boolean pointCurve(float[] curve, int type) {
         for (int i = 2; i < type; i++) {
-            // TODO: compare float values using epsilon:
             if (curve[i] != curve[i-2]) {
                 return false;
             }
