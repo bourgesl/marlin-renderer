@@ -612,29 +612,28 @@ public class MarlinRenderingEngine extends RenderingEngine
     static void pathTo(final float[] coords, final PathIterator pi,
                        final PathConsumer2D pc2d)
     {
-        while (!pi.isDone()) {
+        for (; !pi.isDone(); pi.next()) {
             switch (pi.currentSegment(coords)) {
-            case PathIterator.SEG_MOVETO:
-                pc2d.moveTo(coords[0], coords[1]);
-                break;
-            case PathIterator.SEG_LINETO:
-                pc2d.lineTo(coords[0], coords[1]);
-                break;
-            case PathIterator.SEG_QUADTO:
-                pc2d.quadTo(coords[0], coords[1],
-                            coords[2], coords[3]);
-                break;
-            case PathIterator.SEG_CUBICTO:
-                pc2d.curveTo(coords[0], coords[1],
-                             coords[2], coords[3],
-                             coords[4], coords[5]);
-                break;
-            case PathIterator.SEG_CLOSE:
-                pc2d.closePath();
-                break;
-            default:
+                case PathIterator.SEG_MOVETO:
+                    pc2d.moveTo(coords[0], coords[1]);
+                    continue;
+                case PathIterator.SEG_LINETO:
+                    pc2d.lineTo(coords[0], coords[1]);
+                    continue;
+                case PathIterator.SEG_QUADTO:
+                    pc2d.quadTo(coords[0], coords[1],
+                                coords[2], coords[3]);
+                    continue;
+                case PathIterator.SEG_CUBICTO:
+                    pc2d.curveTo(coords[0], coords[1],
+                                 coords[2], coords[3],
+                                 coords[4], coords[5]);
+                    continue;
+                case PathIterator.SEG_CLOSE:
+                    pc2d.closePath();
+                    continue;
+                default:
             }
-            pi.next();
         }
         pc2d.pathDone();
     }
@@ -705,13 +704,16 @@ public class MarlinRenderingEngine extends RenderingEngine
         final Renderer r;
 
         if (bs == null) {
+            // fill shape:
             final PathIterator pi = getNormalizingPathIterator(rdrCtx, norm,
                                         s.getPathIterator(_at));
+            // TODO: subdivide quad/cubic curves into monotonic curves ?
             r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                      clip.getWidth(), clip.getHeight(),
                                      pi.getWindingRule());
             pathTo(rdrCtx.float6, pi, r);
         } else {
+            // draw shape with given stroke:
             r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                      clip.getWidth(), clip.getHeight(),
                                      PathIterator.WIND_NON_ZERO);
