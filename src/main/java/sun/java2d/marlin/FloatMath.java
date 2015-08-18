@@ -36,8 +36,6 @@ public final class FloatMath implements MarlinConst {
     static final boolean CHECK_OVERFLOW = true;
     static final boolean CHECK_NAN = true;
 
-    static final float MAX_INT = Integer.MAX_VALUE;
-
     private FloatMath() {
         // utility class
     }
@@ -160,8 +158,8 @@ public final class FloatMath implements MarlinConst {
     }
 
     /**
-     * Faster alternative to ceil(float) optimized to integer domain.
-     * It used floor_f for larger float values (including NaN and +/-Infinity)
+     * Faster alternative to ceil(float) optimized for the integer domain
+     * and supporting NaN and +/-Infinity.
      *
      * @param a a value.
      * @return the largest (closest to positive infinity) integer value
@@ -180,9 +178,8 @@ public final class FloatMath implements MarlinConst {
     }
 
     /**
-     * Faster alternative to floor(float) optimized for the integer domain.
-     * It uses floor_f(float) implementation for larger float values
-     * supporting NaN and +/-Infinity.
+     * Faster alternative to floor(float) optimized for the integer domain
+     * and supporting NaN and +/-Infinity.
      *
      * @param a a value.
      * @return the largest (closest to positive infinity) floating-point value
@@ -190,12 +187,11 @@ public final class FloatMath implements MarlinConst {
      * integer.
      */
     public static int floor_int(final float a) {
-        if (CHECK_OVERFLOW && !(Math.abs(a) <= MAX_INT)) {
-            return (int)floor_f(a);
-        }
         final int intpart = (int) a;
 
-        if (a >= intpart) {
+        if (a >= intpart
+                || (CHECK_OVERFLOW && intpart == Integer.MIN_VALUE)
+                || CHECK_NAN && Float.isNaN(a)) {
             return intpart;
         }
         return intpart - 1;
