@@ -105,7 +105,7 @@ public final class MarlinCache implements MarlinConst {
     }
 
     /**
-     * Disposes this renderer:
+     * Disposes this cache:
      * clean up before reusing this instance
      */
     void dispose() {
@@ -135,6 +135,9 @@ public final class MarlinCache implements MarlinConst {
 
         // Reset touchedTile:
         if (tileMin != Integer.MAX_VALUE) {
+            if (doStats) {
+                RendererContext.stats.stat_cache_tiles.add(tileMax - tileMin);
+            }
             // clean only dirty touchedTile:
             if (tileMax == 1) {
                 touchedTile[0] = 0;
@@ -174,7 +177,7 @@ public final class MarlinCache implements MarlinConst {
                    final int px0, final int px1)
     {
         if (doMonitors) {
-            RendererContext.stats.mon_rdr_emitRow.start();
+            RendererContext.stats.mon_rdr_copyAARow.start();
         }
 
         // skip useless pixels above boundary
@@ -274,7 +277,7 @@ public final class MarlinCache implements MarlinConst {
         IntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
 
         if (doMonitors) {
-            RendererContext.stats.mon_rdr_emitRow.stop();
+            RendererContext.stats.mon_rdr_copyAARow.stop();
         }
     }
 
@@ -299,7 +302,8 @@ public final class MarlinCache implements MarlinConst {
     }
 
     private static byte[] buildAlphaMap(final int maxalpha) {
-        final byte[] alMap = new byte[maxalpha + 1];
+        // double size !
+        final byte[] alMap = new byte[maxalpha << 1];
         final int halfmaxalpha = maxalpha >> 2;
         for (int i = 0; i <= maxalpha; i++) {
             alMap[i] = (byte) ((i * 255 + halfmaxalpha) / maxalpha);

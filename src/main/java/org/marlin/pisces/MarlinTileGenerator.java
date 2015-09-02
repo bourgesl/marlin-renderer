@@ -53,10 +53,16 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
      */
     @Override
     public void dispose() {
+        if (doMonitors) {
+            // called from AAShapePipe.renderTiles() (render tiles end):
+            RendererContext.stats.mon_pipe_renderTiles.stop();
+        }
         // dispose cache:
-        this.cache.dispose();
-        // dispose renderer and calls returnRendererContext(rdrCtx)
-        this.rdr.dispose();
+        cache.dispose();
+        // dispose renderer:
+        rdr.dispose();
+        // recycle the RendererContext instance
+        MarlinRenderingEngine.returnRendererContext(rdr.rdrCtx);
     }
 
     void getBbox(int bbox[]) {
@@ -72,6 +78,10 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
      */
     @Override
     public int getTileWidth() {
+        if (doMonitors) {
+            // called from AAShapePipe.renderTiles() (render tiles start):
+            RendererContext.stats.mon_pipe_renderTiles.start();
+        }
         return TILE_SIZE;
     }
 
@@ -112,8 +122,12 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         // of the current tile. This would eliminate the 2 Math.min calls that
         // would be needed here, since our caller needs to compute these 2
         // values anyway.
-        return (al == 0x00 ? 0x00
-                : (al == MAX_TILE_ALPHA_SUM ? 0xff : 0x80));
+        final int alpha = (al == 0x00 ? 0x00
+                              : (al == MAX_TILE_ALPHA_SUM ? 0xff : 0x80));
+        if (doStats) {
+            RendererContext.stats.hist_tile_generator_alpha.add(alpha);
+        }
+        return alpha;
     }
 
     /**

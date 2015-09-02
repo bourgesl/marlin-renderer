@@ -208,9 +208,9 @@ final class Helpers implements MarlinConst {
     }
 
     static void isort(float[] a, int off, int len) {
-        for (int i = off + 1, j, end = off + len; i < end; i++) {
+        for (int i = off + 1, end = off + len; i < end; i++) {
             float ai = a[i];
-            j = i - 1;
+            int j = i - 1;
             for (; j >= off && a[j] > ai; j--) {
                 a[j+1] = a[j];
             }

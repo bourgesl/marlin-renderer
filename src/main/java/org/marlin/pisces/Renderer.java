@@ -38,17 +38,14 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
     final static boolean DISABLE_RENDER = false;
 
-    final static int ERR_STEP_MAX = 0x7fffffff; // Integer.MAX_VALUE = 2^31 - 1
-    final static double D_ERR_STEP_MAX = (double)(ERR_STEP_MAX);
+    private final static int ERR_STEP_MAX = 0x7fffffff; // = 2^31 - 1
 
     private final static double POWER_2_TO_32 = FloatMath.powerOfTwoD(32);
 
     // unsafe reference
     final static Unsafe unsafe;
-    // array offset
-    final static int OFFSET;
     // size of int / float
-    final static int SIZE;
+    final static int SIZE_INT;
 
     // Renderer reference queue
     private final static ReferenceQueue<Renderer> rdrQueue
@@ -69,8 +66,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         }
         unsafe = ref;
 
-        OFFSET = Unsafe.ARRAY_INT_BASE_OFFSET;
-        SIZE = Unsafe.ARRAY_INT_INDEX_SCALE;
+        SIZE_INT = Unsafe.ARRAY_INT_INDEX_SCALE;
 
         // Mimics Java2D Disposer:
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
@@ -109,17 +105,17 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     // common to all types of input path segments.
     // OFFSET as bytes
     // only integer values:
-    public static final long OFF_CURX    = 0;
-    public static final long OFF_ERROR   = OFF_CURX + SIZE;
+    public static final long OFF_CURX     = 0;
+    public static final long OFF_ERROR    = OFF_CURX + SIZE_INT;
 
-    public static final long OFF_BUMP_X  = OFF_ERROR + SIZE;
-    public static final long OFF_BUMP_ERR= OFF_BUMP_X + SIZE;
+    public static final long OFF_BUMP_X   = OFF_ERROR + SIZE_INT;
+    public static final long OFF_BUMP_ERR = OFF_BUMP_X + SIZE_INT;
 
-    public static final long OFF_NEXT    = OFF_BUMP_ERR + SIZE;
-    public static final long OFF_YMAX_OR = OFF_NEXT + SIZE;
+    public static final long OFF_NEXT     = OFF_BUMP_ERR + SIZE_INT;
+    public static final long OFF_YMAX_OR  = OFF_NEXT + SIZE_INT;
 
     // size of one edge in bytes
-    public static final int SIZEOF_EDGE_BYTES = (int)(OFF_YMAX_OR + SIZE);
+    public static final int SIZEOF_EDGE_BYTES = (int)(OFF_YMAX_OR + SIZE_INT);
 
     // curve break into lines
     // cubic error in subpixels to decrement step
@@ -650,14 +646,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 aux_edgePtrs = aux_edgePtrs_initial;
             }
         }
-        // resize back off-heap edges to initial size
-        if (edges.length != INITIAL_EDGES_CAPACITY) {
-            edges.resize(INITIAL_EDGES_CAPACITY);
-        }
-        if (doCleanDirty) {
-            // Force zero-fill dirty arrays:
-            edges.fill(BYTE_0);
-        }
         if (alphaLine != alphaLine_initial) {
             rdrCtx.putIntArray(alphaLine, 0, 0); // already zero filled
             alphaLine = alphaLine_initial;
@@ -689,12 +677,18 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             rdrCtx.putIntArray(edgeBucketCounts, 0, 0);
             edgeBucketCounts = edgeBucketCounts_initial;
         }
+        // At last: resize back off-heap edges to initial size
+        if (edges.length != INITIAL_EDGES_CAPACITY) {
+            // note: may throw OOME:
+            edges.resize(INITIAL_EDGES_CAPACITY);
+        }
+        if (doCleanDirty) {
+            // Force zero-fill dirty arrays:
+            edges.fill(BYTE_0);
+        }
         if (doMonitors) {
             RendererContext.stats.mon_rdr_endRendering.stop();
-            RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
-        // recycle the RendererContext instance
-        MarlinRenderingEngine.returnRendererContext(rdrCtx);
     }
 
     private static float tosubpixx(final float pix_x) {
@@ -770,7 +764,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     private final int[] alphaLine_initial = new int[INITIAL_AA_ARRAY]; // 8K
 
     private void _endRendering(final int ymin, final int ymax) {
-
         if (DISABLE_RENDER) {
             return;
         }
@@ -779,8 +772,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         final int bboxx0 = bbox_spminX;
         final int bboxx1 = bbox_spmaxX;
 
-        // Mask to determine the relevant bit of the crossing sum
-        // 0x1 if EVEN_ODD, all bits if NON_ZERO
         final boolean windingRuleEvenOdd = (windingRule == WIND_EVEN_ODD);
 
         // Useful when processing tile line by tile line

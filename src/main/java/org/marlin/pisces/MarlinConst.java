@@ -28,6 +28,7 @@ package org.marlin.pisces;
  * Marlin constant holder using System properties
  */
 interface MarlinConst {
+
     // enable Logger
     static final boolean useLogger = MarlinProperties.isUseLogger();
 

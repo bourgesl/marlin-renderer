@@ -84,35 +84,36 @@ public class MarlinRenderingEngine extends RenderingEngine
                                     float dashphase)
     {
         final RendererContext rdrCtx = getRendererContext();
+        try {
+            // initialize a large copyable Path2D to avoid a lot of array growing:
+            final Path2D.Float p2d =
+                    (rdrCtx.p2d == null) ?
+                    (rdrCtx.p2d = new Path2D.Float(Path2D.WIND_NON_ZERO,
+                                                   INITIAL_MEDIUM_ARRAY))
+                    : rdrCtx.p2d;
+            // reset
+            p2d.reset();
 
-        // initialize a large copyable Path2D to avoid a lot of array growing:
-        final Path2D.Float p2d =
-                (rdrCtx.p2d == null) ?
-                (rdrCtx.p2d = new Path2D.Float(Path2D.WIND_NON_ZERO,
-                                               INITIAL_MEDIUM_ARRAY))
-                : rdrCtx.p2d;
-        // reset
-        p2d.reset();
+            strokeTo(rdrCtx,
+                     src,
+                     null,
+                     width,
+                     NormMode.OFF,
+                     caps,
+                     join,
+                     miterlimit,
+                     dashes,
+                     dashphase,
+                     rdrCtx.transformerPC2D.wrapPath2d(p2d)
+                    );
 
-        strokeTo(rdrCtx,
-                 src,
-                 null,
-                 width,
-                 NormMode.OFF, // TODO: should use ON_WITH_AA to be more precise ?
-                 caps,
-                 join,
-                 miterlimit,
-                 dashes,
-                 dashphase,
-                 rdrCtx.transformerPC2D.wrapPath2d(p2d)
-                );
+            // Use Path2D copy constructor (trim)
+            return new Path2D.Float(p2d);
 
-        // Use Path2D copy constructor (trim)
-        final Path2D path = new Path2D.Float(p2d);
-
-        returnRendererContext(rdrCtx);
-
-        return path;
+        } finally {
+            // recycle the RendererContext instance
+            returnRendererContext(rdrCtx);
+        }
     }
 
     /**
@@ -156,10 +157,12 @@ public class MarlinRenderingEngine extends RenderingEngine
                 : NormMode.OFF;
 
         final RendererContext rdrCtx = getRendererContext();
-
-        strokeTo(rdrCtx, src, at, bs, thin, norm, antialias, consumer);
-
-        returnRendererContext(rdrCtx);
+        try {
+            strokeTo(rdrCtx, src, at, bs, thin, norm, antialias, consumer);
+        } finally {
+            // recycle the RendererContext instance
+            returnRendererContext(rdrCtx);
+        }
     }
 
     final void strokeTo(final RendererContext rdrCtx,
@@ -411,11 +414,12 @@ public class MarlinRenderingEngine extends RenderingEngine
                                       recycleDashes);
         }
         pc2d = transformerPC2D.inverseDeltaTransformConsumer(pc2d, strokerat);
-        pathTo(rdrCtx.float6, pi, pc2d);
+        pathTo(rdrCtx, pi, pc2d);
 
         /*
          * Pipeline seems to be:
          *    shape.getPathIterator
+         * -> NormalizingPathIterator
          * -> inverseDeltaTransformConsumer
          * -> Dasher
          * -> Stroker
@@ -427,7 +431,7 @@ public class MarlinRenderingEngine extends RenderingEngine
          */
     }
 
-    private static boolean nearZero(double num) {
+    private static boolean nearZero(final double num) {
         return Math.abs(num) < 2.0 * Math.ulp(num);
     }
 
@@ -465,20 +469,28 @@ public class MarlinRenderingEngine extends RenderingEngine
             this.tmp = tmp;
         }
 
-        NormalizingPathIterator init(final PathIterator src) {
+        final NormalizingPathIterator init(final PathIterator src) {
             this.src = src;
             return this; // fluent API
         }
 
-        @Override
-        public int currentSegment(final float[] coords) {
-            final int type = src.currentSegment(coords);
+        /**
+         * Disposes this path iterator:
+         * clean up before reusing this instance
+         */
+        final void dispose() {
+            // free source PathIterator:
+            this.src = null;
+        }
 
+        @Override
+        public final int currentSegment(final float[] coords) {
             if (doMonitors) {
                 RendererContext.stats.mon_npi_currentSegment.start();
             }
-
             int lastCoord;
+            final int type = src.currentSegment(coords);
+
             switch(type) {
                 case PathIterator.SEG_MOVETO:
                 case PathIterator.SEG_LINETO:
@@ -494,6 +506,10 @@ public class MarlinRenderingEngine extends RenderingEngine
                     // we don't want to deal with this case later. We just exit now
                     curx_adjust = movx_adjust;
                     cury_adjust = movy_adjust;
+
+                    if (doMonitors) {
+                        RendererContext.stats.mon_npi_currentSegment.stop();
+                    }
                     return type;
                 default:
                     throw new InternalError("Unrecognized curve type");
@@ -548,7 +564,7 @@ public class MarlinRenderingEngine extends RenderingEngine
         abstract float normCoord(final float coord);
 
         @Override
-        public int currentSegment(final double[] coords) {
+        public final int currentSegment(final double[] coords) {
             final float[] _tmp = tmp; // dirty
             int type = this.currentSegment(_tmp);
             for (int i = 0; i < 6; i++) {
@@ -558,21 +574,22 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
 
         @Override
-        public int getWindingRule() {
+        public final int getWindingRule() {
             return src.getWindingRule();
         }
 
         @Override
-        public boolean isDone() {
+        public final boolean isDone() {
             if (src.isDone()) {
-                this.src = null; // free source PathIterator
+                // Dispose this instance:
+                dispose();
                 return true;
             }
             return false;
         }
 
         @Override
-        public void next() {
+        public final void next() {
             src.next();
         }
 
@@ -605,34 +622,41 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
     }
 
-    static void pathTo(final float[] coords, final PathIterator pi,
-                       final PathConsumer2D pc2d)
+    private static void pathTo(final RendererContext rdrCtx, final PathIterator pi,
+                               final PathConsumer2D pc2d)
     {
-        while (!pi.isDone()) {
+        // mark context as DIRTY:
+        rdrCtx.dirty = true;
+
+        final float[] coords = rdrCtx.float6;
+
+        for (; !pi.isDone(); pi.next()) {
             switch (pi.currentSegment(coords)) {
-            case PathIterator.SEG_MOVETO:
-                pc2d.moveTo(coords[0], coords[1]);
-                break;
-            case PathIterator.SEG_LINETO:
-                pc2d.lineTo(coords[0], coords[1]);
-                break;
-            case PathIterator.SEG_QUADTO:
-                pc2d.quadTo(coords[0], coords[1],
-                            coords[2], coords[3]);
-                break;
-            case PathIterator.SEG_CUBICTO:
-                pc2d.curveTo(coords[0], coords[1],
-                             coords[2], coords[3],
-                             coords[4], coords[5]);
-                break;
-            case PathIterator.SEG_CLOSE:
-                pc2d.closePath();
-                break;
-            default:
+                case PathIterator.SEG_MOVETO:
+                    pc2d.moveTo(coords[0], coords[1]);
+                    continue;
+                case PathIterator.SEG_LINETO:
+                    pc2d.lineTo(coords[0], coords[1]);
+                    continue;
+                case PathIterator.SEG_QUADTO:
+                    pc2d.quadTo(coords[0], coords[1],
+                                coords[2], coords[3]);
+                    continue;
+                case PathIterator.SEG_CUBICTO:
+                    pc2d.curveTo(coords[0], coords[1],
+                                 coords[2], coords[3],
+                                 coords[4], coords[5]);
+                    continue;
+                case PathIterator.SEG_CLOSE:
+                    pc2d.closePath();
+                    continue;
+                default:
             }
-            pi.next();
         }
         pc2d.pathDone();
+
+        // mark context as CLEAN:
+        rdrCtx.dirty = false;
     }
 
     /**
@@ -691,40 +715,54 @@ public class MarlinRenderingEngine extends RenderingEngine
                                               boolean normalize,
                                               int bbox[])
     {
+        MarlinTileGenerator ptg = null;
+        Renderer r = null;
+
         final RendererContext rdrCtx = getRendererContext();
+        try {
+            // Test if at is identity:
+            final AffineTransform _at = (at != null && !at.isIdentity()) ? at
+                                        : null;
 
-        // Test if at is identity:
-        final AffineTransform _at = (at != null && !at.isIdentity()) ? at
-                                    : null;
+            final NormMode norm = (normalize) ? NormMode.ON_WITH_AA : NormMode.OFF;
 
-        final NormMode norm = (normalize) ? NormMode.ON_WITH_AA : NormMode.OFF;
-        final Renderer r;
+            if (bs == null) {
+                // fill shape:
+                final PathIterator pi = getNormalizingPathIterator(rdrCtx, norm,
+                                            s.getPathIterator(_at));
 
-        if (bs == null) {
-            final PathIterator pi = getNormalizingPathIterator(rdrCtx, norm,
-                                        s.getPathIterator(_at));
-            r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
-                                     clip.getWidth(), clip.getHeight(),
-                                     pi.getWindingRule());
-            pathTo(rdrCtx.float6, pi, r);
-        } else {
-            r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
-                                     clip.getWidth(), clip.getHeight(),
-                                     PathIterator.WIND_NON_ZERO);
-            strokeTo(rdrCtx, s, _at, bs, thin, norm, true, r);
+                r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
+                                         clip.getWidth(), clip.getHeight(),
+                                         pi.getWindingRule());
+
+                // TODO: subdivide quad/cubic curves into monotonic curves ?
+                pathTo(rdrCtx, pi, r);
+            } else {
+                // draw shape with given stroke:
+                r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
+                                         clip.getWidth(), clip.getHeight(),
+                                         PathIterator.WIND_NON_ZERO);
+
+                strokeTo(rdrCtx, s, _at, bs, thin, norm, true, r);
+            }
+            if (r.endRendering()) {
+                ptg = rdrCtx.ptg.init();
+                ptg.getBbox(bbox);
+                // note: do not returnRendererContext(rdrCtx)
+                // as it will be called later by MarlinTileGenerator.dispose()
+                r = null;
+            }
+        } finally {
+            if (r != null) {
+                // dispose renderer:
+                r.dispose();
+                // recycle the RendererContext instance
+                MarlinRenderingEngine.returnRendererContext(rdrCtx);
+            }
         }
-        if (r.endRendering()) {
-            MarlinTileGenerator ptg = rdrCtx.ptg.init();
-            ptg.getBbox(bbox);
-            // note: do not returnRendererContext(rdrCtx)
-            // as it will be called later by renderer dispose()
-            return ptg;
-        }
-        // dispose renderer and calls returnRendererContext(rdrCtx)
-        r.dispose();
 
         // Return null to cancel AA tile generation (nothing to render)
-        return null;
+        return ptg;
     }
 
     @Override
@@ -758,45 +796,54 @@ public class MarlinRenderingEngine extends RenderingEngine
             ldx1 = ldy1 = ldx2 = ldy2 = 0.0;
         }
 
+        MarlinTileGenerator ptg = null;
+        Renderer r = null;
+
         final RendererContext rdrCtx = getRendererContext();
+        try {
+            r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
+                                         clip.getWidth(), clip.getHeight(),
+                                         Renderer.WIND_EVEN_ODD);
 
-        Renderer r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
-                                          clip.getWidth(), clip.getHeight(),
-                                          Renderer.WIND_EVEN_ODD);
-
-        r.moveTo((float) x, (float) y);
-        r.lineTo((float) (x+dx1), (float) (y+dy1));
-        r.lineTo((float) (x+dx1+dx2), (float) (y+dy1+dy2));
-        r.lineTo((float) (x+dx2), (float) (y+dy2));
-        r.closePath();
-
-        if (innerpgram) {
-            x += ldx1 + ldx2;
-            y += ldy1 + ldy2;
-            dx1 -= 2.0 * ldx1;
-            dy1 -= 2.0 * ldy1;
-            dx2 -= 2.0 * ldx2;
-            dy2 -= 2.0 * ldy2;
             r.moveTo((float) x, (float) y);
             r.lineTo((float) (x+dx1), (float) (y+dy1));
             r.lineTo((float) (x+dx1+dx2), (float) (y+dy1+dy2));
             r.lineTo((float) (x+dx2), (float) (y+dy2));
             r.closePath();
-        }
-        r.pathDone();
 
-        if (r.endRendering()) {
-            MarlinTileGenerator ptg = rdrCtx.ptg.init();
-            ptg.getBbox(bbox);
-            // note: do not returnRendererContext(rdrCtx)
-            // as it will be called later by renderer dispose()
-            return ptg;
+            if (innerpgram) {
+                x += ldx1 + ldx2;
+                y += ldy1 + ldy2;
+                dx1 -= 2.0 * ldx1;
+                dy1 -= 2.0 * ldy1;
+                dx2 -= 2.0 * ldx2;
+                dy2 -= 2.0 * ldy2;
+                r.moveTo((float) x, (float) y);
+                r.lineTo((float) (x+dx1), (float) (y+dy1));
+                r.lineTo((float) (x+dx1+dx2), (float) (y+dy1+dy2));
+                r.lineTo((float) (x+dx2), (float) (y+dy2));
+                r.closePath();
+            }
+            r.pathDone();
+
+            if (r.endRendering()) {
+                ptg = rdrCtx.ptg.init();
+                ptg.getBbox(bbox);
+                // note: do not returnRendererContext(rdrCtx)
+                // as it will be called later by MarlinTileGenerator.dispose()
+                r = null;
+            }
+        } finally {
+            if (r != null) {
+                // dispose renderer:
+                r.dispose();
+                // recycle the RendererContext instance
+                MarlinRenderingEngine.returnRendererContext(rdrCtx);
+            }
         }
-        // dispose renderer and calls returnRendererContext(rdrCtx)
-        r.dispose();
 
         // Return null to cancel AA tile generation (nothing to render)
-        return null;
+        return ptg;
     }
 
     /**
@@ -977,12 +1024,12 @@ public class MarlinRenderingEngine extends RenderingEngine
     }
 
     /**
-     * Restore the given RendererContext instance for reuse
-     * (used by the queue mode)
+     * Reset and return the given RendererContext instance for reuse
      * @param rdrCtx RendererContext instance
      */
     static void returnRendererContext(final RendererContext rdrCtx) {
-        rdrCtx.resetArrayCachesHolder();
+        rdrCtx.dispose();
+
         if (doMonitors) {
             RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }

@@ -69,6 +69,8 @@ final class RendererContext implements MarlinConst {
      * @see MarlinRenderingEngine#REF_TYPE
      */
     final Object reference;
+    // dirty flag indicating an exception occured during pipeline in pathTo()
+    boolean dirty = false;
     // dynamic array caches kept using weak reference (low memory footprint)
     WeakReference<ArrayCachesHolder> refArrayCaches = null;
     // hard reference to array caches (for statistics)
@@ -135,6 +137,33 @@ final class RendererContext implements MarlinConst {
         }
     }
 
+    /**
+     * Disposes this renderer context:
+     * clean up before reusing this context
+     */
+    void dispose() {
+        // reset hard reference to array caches if needed:
+        if (!USE_CACHE_HARD_REF) {
+            hardRefArrayCaches = null;
+        }
+        // if context is maked as DIRTY:
+        if (dirty) {
+            // may happen if an exception if thrown in the pipeline processing:
+            // force cleanup of all possible pipelined blocks (except Renderer):
+
+            // NormalizingPathIterator instances:
+            this.nPCPathIterator.dispose();
+            this.nPQPathIterator.dispose();
+            // Dasher:
+            this.dasher.dispose();
+            // Stroker:
+            this.stroker.dispose();
+
+            // mark context as CLEAN:
+            dirty = false;
+        }
+    }
+
     // Array caches
     ArrayCachesHolder getArrayCachesHolder() {
         // Use hard reference first (cached resolved weak reference):
@@ -163,13 +192,6 @@ final class RendererContext implements MarlinConst {
             }
         }
         return holder;
-    }
-
-    void resetArrayCachesHolder() {
-        // keep hard reference:
-        if (!USE_CACHE_HARD_REF) {
-            hardRefArrayCaches = null;
-        }
     }
 
     // dirty byte array cache

@@ -173,8 +173,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
      * Disposes this stroker:
      * clean up before reusing this instance
      */
-    private void dispose() {
-        this.reverse.dispose();
+    void dispose() {
+        reverse.dispose();
 
         if (doCleanDirty) {
             // Force zero-fill dirty arrays:
