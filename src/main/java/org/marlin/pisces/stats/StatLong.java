@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,7 +29,6 @@ package org.marlin.pisces.stats;
  */
 public class StatLong {
 
-    /* members */
     public final String name;
     public long count = 0l;
     public long sum = 0l;
@@ -78,7 +77,8 @@ public class StatLong {
 
     public final StringBuilder toString(final StringBuilder sb) {
         sb.append(name).append('[').append(count);
-        sb.append("] sum: ").append(sum).append(" avg: ").append(trimTo3Digits(((double) sum) / count));
+        sb.append("] sum: ").append(sum).append(" avg: ");
+        sb.append(trimTo3Digits(((double) sum) / count));
         sb.append(" [").append(min).append(" | ").append(max).append("]");
         return sb;
     }

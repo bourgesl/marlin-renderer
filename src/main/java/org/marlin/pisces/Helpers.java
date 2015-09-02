@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,13 +29,12 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.acos;
-import static org.marlin.pisces.PiscesUtils.getCallerInfo;
-import static org.marlin.pisces.PiscesUtils.logInfo;
+import static org.marlin.pisces.MarlinUtils.getCallerInfo;
+import static org.marlin.pisces.MarlinUtils.logInfo;
 
-final class Helpers implements PiscesConst {
-    private static final String className = Helpers.class.getName();
+final class Helpers implements MarlinConst {
 
-    private Helpers() { 
+    private Helpers() {
         throw new Error("This is a non instantiable class");
     }
 
@@ -56,21 +55,21 @@ final class Helpers implements PiscesConst {
         float t;
         if (a != 0f) {
             final float dis = b*b - 4*a*c;
-            if (dis > 0) {
+            if (dis > 0f) {
                 final float sqrtDis = (float)Math.sqrt(dis);
                 // depending on the sign of b we use a slightly different
                 // algorithm than the traditional one to find one of the roots
                 // so we can avoid adding numbers of different signs (which
                 // might result in loss of precision).
-                if (b >= 0) {
-                    zeroes[ret++] = (2 * c) / (-b - sqrtDis);
-                    zeroes[ret++] = (-b - sqrtDis) / (2 * a);
+                if (b >= 0f) {
+                    zeroes[ret++] = (2f * c) / (-b - sqrtDis);
+                    zeroes[ret++] = (-b - sqrtDis) / (2f * a);
                 } else {
-                    zeroes[ret++] = (-b + sqrtDis) / (2 * a);
-                    zeroes[ret++] = (2 * c) / (-b + sqrtDis);
+                    zeroes[ret++] = (-b + sqrtDis) / (2f * a);
+                    zeroes[ret++] = (2f * c) / (-b + sqrtDis);
                 }
             } else if (dis == 0f) {
-                t = (-b) / (2 * a);
+                t = (-b) / (2f * a);
                 zeroes[ret++] = t;
             }
         } else {
@@ -87,7 +86,7 @@ final class Helpers implements PiscesConst {
                               float[] pts, final int off,
                               final float A, final float B)
     {
-        if (d == 0) {
+        if (d == 0f) {
             int num = quadraticRoots(a, b, c, pts, off);
             return filterOutNotInAB(pts, off, num, A, B) - off;
         }
@@ -97,7 +96,7 @@ final class Helpers implements PiscesConst {
         // much accuracy and we don't want to create arrays so we use
         // our own customized version).
 
-        /* normal form: x^3 + ax^2 + bx + c = 0 */
+        // normal form: x^3 + ax^2 + bx + c = 0
         a /= d;
         b /= d;
         c /= d;
@@ -111,23 +110,23 @@ final class Helpers implements PiscesConst {
         // q = Q/2
         // instead and use those values for simplicity of the code.
         double sq_A = a * a;
-        double p = 1.0/3 * (-1.0/3 * sq_A + b);
-        double q = 1.0/2 * (2.0/27 * a * sq_A - 1.0/3 * a * b + c);
+        double p = (1.0/3.0) * ((-1.0/3.0) * sq_A + b);
+        double q = (1.0/2.0) * ((2.0/27.0) * a * sq_A - (1.0/3.0) * a * b + c);
 
-        /* use Cardano's formula */
+        // use Cardano's formula
 
         double cb_p = p * p * p;
         double D = q * q + cb_p;
 
         int num;
-        if (D < 0) {
+        if (D < 0.0) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = 1.0/3 * acos(-q / sqrt(-cb_p));
-            final double t = 2 * sqrt(-p);
+            final double phi = (1.0/3.0) * acos(-q / sqrt(-cb_p));
+            final double t = 2.0 * sqrt(-p);
 
             pts[ off+0 ] =  (float)( t * cos(phi));
-            pts[ off+1 ] =  (float)(-t * cos(phi + PI / 3));
-            pts[ off+2 ] =  (float)(-t * cos(phi - PI / 3));
+            pts[ off+1 ] =  (float)(-t * cos(phi + (PI / 3.0)));
+            pts[ off+2 ] =  (float)(-t * cos(phi - (PI / 3.0)));
             num = 3;
         } else {
             final double sqrt_D = sqrt(D);
@@ -137,13 +136,13 @@ final class Helpers implements PiscesConst {
             pts[ off ] = (float)(u + v);
             num = 1;
 
-            if (within(D, 0, 1e-8)) {
-                pts[off+1] = -(pts[off] / 2);
+            if (within(D, 0.0, 1e-8)) {
+                pts[off+1] = -(pts[off] / 2f);
                 num = 2;
             }
         }
 
-        final float sub = 1.0f/3 * a;
+        final float sub = (1f/3f) * a;
 
         for (int i = 0; i < num; ++i) {
             pts[ off+i ] -= sub;
@@ -152,61 +151,6 @@ final class Helpers implements PiscesConst {
         return filterOutNotInAB(pts, off, num, A, B) - off;
     }
 
-    /* TODO: replace with new signature see: widenArrayPartially() */
-    static float[] widenArray(final RendererContext rdrCtx, final float[] in, final int cursize, 
-                              final int numToAdd, final int clearTo) {
-        
-        final int length = in.length;
-        final int newSize = cursize + numToAdd;
-        if (length >= newSize) {
-            return in;
-        }
-        
-        final float[] res = rdrCtx.widenArray(in, length, cursize, newSize, clearTo);
-        
-        if (doLog) {
-            logInfo("widenArray float[" + res.length + "]: cursize=\t" + cursize +"\tlength=\t" + length 
-                    + "\tnew length=\t" + newSize + "\tfrom=\t" + getCallerInfo(className));
-        }
-        return res;
-    }
-
-    /* TODO: replace with new signature see: widenArrayPartially() */
-    static int[] widenArray(final RendererContext rdrCtx, final int[] in, final int cursize, 
-                            final int numToAdd, final int clearTo) {
-        
-        final int length = in.length;
-        final int newSize = cursize + numToAdd;
-        if (length >= newSize) {
-            return in;
-        }
-
-        final int[] res = rdrCtx.widenArray(in, length, cursize, newSize, clearTo);
-
-        if (doLog) {
-            logInfo("widenArray int[" + res.length + "]: cursize=\t" + cursize +"\tlength=\t" + length 
-                    + "\tnew length=\t" + newSize + "\tfrom=\t" + getCallerInfo(className));
-        }
-        return res;
-    }
-
-    static int[] widenArrayPartially(final RendererContext rdrCtx, final int[] in, 
-                                     final int fromIndex, final int toIndex, final int newSize) {
-        
-        final int length = in.length;
-        if (length >= newSize) {
-            return in;
-        }
-
-        final int[] res = rdrCtx.widenArrayPartially(in, length, fromIndex, toIndex, newSize);
-
-        if (doLog) {
-            logInfo("widenArray int[" + res.length + "]: fromIndex=\t" + fromIndex +"\ttoIndex=\t" + toIndex +"\tlength=\t" + length 
-                    + "\tnew length=\t" + newSize + "\tfrom=\t" + getCallerInfo(className));
-        }
-        return res;
-    }
-    
     static float evalCubic(final float a, final float b,
                            final float c, final float d,
                            final float t)
@@ -225,7 +169,7 @@ final class Helpers implements PiscesConst {
                                 final float a, final float b)
     {
         int ret = off;
-        for (int i = off; i < off + len; i++) {
+        for (int i = off, end = off + len; i < end; i++) {
             if (nums[i] >= a && nums[i] < b) {
                 nums[ret++] = nums[i];
             }
@@ -234,7 +178,7 @@ final class Helpers implements PiscesConst {
     }
 
     static float polyLineLength(float[] poly, final int off, final int nCoords) {
-        // assert nCoords % 2 == 0 && poly.length >= off + nCoords : "";
+        assert nCoords % 2 == 0 && poly.length >= off + nCoords : "";
         float acc = 0;
         for (int i = off + 2; i < off + nCoords; i += 2) {
             acc += linelen(poly[i], poly[i+1], poly[i-2], poly[i-1]);
@@ -254,17 +198,17 @@ final class Helpers implements PiscesConst {
         switch(type) {
         case 6:
             Helpers.subdivideQuad(src, srcoff, left, leftoff, right, rightoff);
-            break;
+            return;
         case 8:
             Helpers.subdivideCubic(src, srcoff, left, leftoff, right, rightoff);
-            break;
+            return;
         default:
             throw new InternalError("Unsupported curve type");
         }
     }
 
     static void isort(float[] a, int off, int len) {
-        for (int i = off + 1; i < off + len; i++) {
+        for (int i = off + 1, end = off + len; i < end; i++) {
             float ai = a[i];
             int j = i - 1;
             for (; j >= off && a[j] > ai; j--) {
@@ -325,18 +269,18 @@ final class Helpers implements PiscesConst {
             right[rightoff + 6] = x2;
             right[rightoff + 7] = y2;
         }
-        x1 = (x1 + ctrlx1) / 2.0f;
-        y1 = (y1 + ctrly1) / 2.0f;
-        x2 = (x2 + ctrlx2) / 2.0f;
-        y2 = (y2 + ctrly2) / 2.0f;
-        float centerx = (ctrlx1 + ctrlx2) / 2.0f;
-        float centery = (ctrly1 + ctrly2) / 2.0f;
-        ctrlx1 = (x1 + centerx) / 2.0f;
-        ctrly1 = (y1 + centery) / 2.0f;
-        ctrlx2 = (x2 + centerx) / 2.0f;
-        ctrly2 = (y2 + centery) / 2.0f;
-        centerx = (ctrlx1 + ctrlx2) / 2.0f;
-        centery = (ctrly1 + ctrly2) / 2.0f;
+        x1 = (x1 + ctrlx1) / 2f;
+        y1 = (y1 + ctrly1) / 2f;
+        x2 = (x2 + ctrlx2) / 2f;
+        y2 = (y2 + ctrly2) / 2f;
+        float centerx = (ctrlx1 + ctrlx2) / 2f;
+        float centery = (ctrly1 + ctrly2) / 2f;
+        ctrlx1 = (x1 + centerx) / 2f;
+        ctrly1 = (y1 + centery) / 2f;
+        ctrlx2 = (x2 + centerx) / 2f;
+        ctrly2 = (y2 + centery) / 2f;
+        centerx = (ctrlx1 + ctrlx2) / 2f;
+        centery = (ctrly1 + ctrly2) / 2f;
         if (left != null) {
             left[leftoff + 2] = x1;
             left[leftoff + 3] = y1;
@@ -424,12 +368,12 @@ final class Helpers implements PiscesConst {
             right[rightoff + 4] = x2;
             right[rightoff + 5] = y2;
         }
-        x1 = (x1 + ctrlx) / 2.0f;
-        y1 = (y1 + ctrly) / 2.0f;
-        x2 = (x2 + ctrlx) / 2.0f;
-        y2 = (y2 + ctrly) / 2.0f;
-        ctrlx = (x1 + x2) / 2.0f;
-        ctrly = (y1 + y2) / 2.0f;
+        x1 = (x1 + ctrlx) / 2f;
+        y1 = (y1 + ctrly) / 2f;
+        x2 = (x2 + ctrlx) / 2f;
+        y2 = (y2 + ctrly) / 2f;
+        ctrlx = (x1 + x2) / 2f;
+        ctrly = (y1 + y2) / 2f;
         if (left != null) {
             left[leftoff + 2] = x1;
             left[leftoff + 3] = y1;
@@ -489,10 +433,10 @@ final class Helpers implements PiscesConst {
         switch(size) {
         case 8:
             subdivideCubicAt(t, src, srcoff, left, leftoff, right, rightoff);
-            break;
+            return;
         case 6:
             subdivideQuadAt(t, src, srcoff, left, leftoff, right, rightoff);
-            break;
+            return;
         }
     }
 }
