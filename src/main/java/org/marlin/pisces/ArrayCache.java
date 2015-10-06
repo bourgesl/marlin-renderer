@@ -151,13 +151,23 @@ public final class ArrayCache implements MarlinConst {
     /**
      * Return the new array size (~ x2)
      * @param curSize current used size
+     * @param needSize needed size
      * @return new array size
      */
-    public static int getNewSize(final int curSize) {
-        if (curSize > THRESHOLD_ARRAY_SIZE) {
-            return ((curSize & MASK_CLR_1) * 3) >> 1;
+    public static int getNewSize(final int curSize, final int needSize) {
+        final int initial = (curSize & MASK_CLR_1);
+        int size;
+        if (initial > THRESHOLD_ARRAY_SIZE) {
+            // use 1.5x:
+            size = (initial * 3) >> 1;
+        } else {
+            // use x2:
+            size = (initial) << 1;
         }
-        // use next bucket giving array ~ x2:
-        return (curSize & MASK_CLR_1) << 1;
+        // ensure the new size is >= needed size:
+        if (size < needSize) {
+            size = needSize;
+        }
+        return size;
     }
 }

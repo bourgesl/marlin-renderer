@@ -900,7 +900,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                         }
                         this.edgePtrs = _edgePtrs
                             = rdrCtx.widenDirtyIntArray(_edgePtrs, numCrossings,
-                                                        ptrLen);
+                                                        ptrEnd);
 
                         edgePtrsLen = _edgePtrs.length;
                         // Get larger auxiliary storage:
@@ -914,8 +914,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                                 .add(ptrEnd);
                         }
                         this.aux_edgePtrs = _aux_edgePtrs
-                            = rdrCtx.getDirtyIntArray(ArrayCache.getNewSize(
-                                                        numCrossings));
+                            = rdrCtx.getDirtyIntArray(
+                                ArrayCache.getNewSize(numCrossings, ptrEnd)
+                            );
                     }
 
                     // cache edges[] address + offset
