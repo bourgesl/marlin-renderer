@@ -1492,9 +1492,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
          */
         void resize(final long len) {
             // TODO: handle OOME ?
-            
-            System.out.println("resize: "+len);
-            
             this.address = unsafe.reallocateMemory(address, len);
             this.length  = len;
             if (logUnsafeMalloc) {
