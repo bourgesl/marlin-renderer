@@ -166,7 +166,7 @@ public class GeneralCompositePipe implements CompositePipe {
             dstIn = dstOut;
         } else {
             dstIn = dstRaster.createChild(x, y, w, h, 0, 0, null);
-            
+
             // TODO: cache such raster as it is very costly (int[])
             dstOut = dstIn.createCompatibleWritableRaster();
 //            dstOut = context.getDirtyWritableRaster(dstIn);

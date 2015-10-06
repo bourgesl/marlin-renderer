@@ -303,7 +303,7 @@ public final class MarlinCache implements MarlinConst {
 
     private static byte[] buildAlphaMap(final int maxalpha) {
         // double size !
-        final byte[] alMap = new byte[maxalpha << 1]; 
+        final byte[] alMap = new byte[maxalpha << 1];
         final int halfmaxalpha = maxalpha >> 2;
         for (int i = 0; i <= maxalpha; i++) {
             alMap[i] = (byte) ((i * 255 + halfmaxalpha) / maxalpha);

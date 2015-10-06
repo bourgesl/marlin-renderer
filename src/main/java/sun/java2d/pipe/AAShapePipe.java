@@ -161,7 +161,7 @@ public class AAShapePipe
             for (int y = abox[1]; y < abox[3]; y += th) {
                 // TODO: try inline Math min/max to benefit from branch prediction ?
                 int h = Math.min(th, abox[3] - y);
-                
+
                 for (int x = abox[0]; x < abox[2]; x += tw) {
                     int w = Math.min(tw, abox[2] - x);
 
@@ -207,7 +207,7 @@ public class AAShapePipe
         static {
             System.out.println("INFO: AAShapePipe: overriding JDK implementation: marlin-renderer TILE patch enabled.");
         }
-        
+
         byte[] getAlphaTile(int len) {
             byte[] t = theTile;
             if (t.length < len) {

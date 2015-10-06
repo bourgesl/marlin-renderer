@@ -30,7 +30,7 @@ public final class BlendComposite implements Composite {
         }
         return "_gam_" + GAMMA;
     }
-    
+
     public static class GammaLUT {
 
         private final static int MAX_COLORS = 256;
@@ -403,7 +403,7 @@ public final class BlendComposite implements Composite {
                 // src & dst are gamma corrected
 
                 // TODO: use integer maths:
-/*                                
+/*
                  result[0] = (src[0] * src_alpha + dst[0] * comp_src_alpha) / 255;
                  result[1] = (src[1] * src_alpha + dst[1] * comp_src_alpha) / 255;
                  result[2] = (src[2] * src_alpha + dst[2] * comp_src_alpha) / 255;
@@ -558,7 +558,7 @@ public final class BlendComposite implements Composite {
         if (TRACE) {
             System.out.println("XYZ: " + Arrays.toString(XYZ));
         }
-        /*        
+        /*
          float r = 3.1338561f * XYZ[0] - 1.6168667f * XYZ[1] - 0.4906146f * XYZ[2];
          float g = -0.9787684f * XYZ[0] + 1.9161415f * XYZ[1] + 0.0334540f * XYZ[2];
          float b = 0.0719453f * XYZ[0] - 0.2289914f * XYZ[1] + 1.4052427f * XYZ[2];
