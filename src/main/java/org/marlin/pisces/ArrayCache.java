@@ -40,6 +40,9 @@ public final class ArrayCache implements MarlinConst {
     final static int MIN_DIRTY_BYTE_ARRAY_SIZE = 32 * 2048; // 32px x 2048px
     final static int MAX_DIRTY_BYTE_ARRAY_SIZE;
     final static int[] DIRTY_BYTE_ARRAY_SIZES = new int[BUCKETS];
+    // large array thresholds:
+    final static long THRESHOLD_LARGE_ARRAY_SIZE;
+    final static long THRESHOLD_HUGE_ARRAY_SIZE;
     // stats
     private static int resizeInt = 0;
     private static int resizeDirtyInt = 0;
@@ -74,7 +77,10 @@ public final class ArrayCache implements MarlinConst {
         MAX_DIRTY_BYTE_ARRAY_SIZE = arraySize >> 1;
 
         // threshold to grow arrays only by (3/2) instead of 2
-        THRESHOLD_ARRAY_SIZE = Math.max(2 * 1024 * 1024, MAX_ARRAY_SIZE);
+        THRESHOLD_ARRAY_SIZE = Math.max(2 * 1024 * 1024, MAX_ARRAY_SIZE); // 2M
+        
+        THRESHOLD_LARGE_ARRAY_SIZE = THRESHOLD_ARRAY_SIZE * 8; // 16M
+        THRESHOLD_HUGE_ARRAY_SIZE = THRESHOLD_LARGE_ARRAY_SIZE * 8; // 128M
 
         if (doStats || doMonitors) {
             logInfo("ArrayCache.BUCKETS        = " + BUCKETS);
@@ -90,6 +96,10 @@ public final class ArrayCache implements MarlinConst {
                     + Arrays.toString(DIRTY_BYTE_ARRAY_SIZES));
             logInfo("ArrayCache.THRESHOLD_ARRAY_SIZE = "
                     + THRESHOLD_ARRAY_SIZE);
+            logInfo("ArrayCache.THRESHOLD_LARGE_ARRAY_SIZE = "
+                    + THRESHOLD_LARGE_ARRAY_SIZE);
+            logInfo("ArrayCache.THRESHOLD_HUGE_ARRAY_SIZE = "
+                    + THRESHOLD_HUGE_ARRAY_SIZE);
         }
     }
 
@@ -158,16 +168,30 @@ public final class ArrayCache implements MarlinConst {
         final int initial = (curSize & MASK_CLR_1);
         int size;
         if (initial > THRESHOLD_ARRAY_SIZE) {
-            // use 1.5x:
-            size = (initial * 3) >> 1;
+            size = initial + (initial >> 1); // x (3/2)
         } else {
-            // use x2:
-            size = (initial) << 1;
+            size = (initial) << 1; // x2
         }
         // ensure the new size is >= needed size:
         if (size < needSize) {
-            size = needSize;
+            // align to 4096:
+            size = ((needSize >> 12) + 1) << 12;
         }
         return size;
+    }
+
+    /**
+     * Return the new array size (~ x2)
+     * @param curSize current used size
+     * @return new array size
+     */
+    public static long getNewLargeSize(final long curSize) {
+        if (curSize > THRESHOLD_HUGE_ARRAY_SIZE) {
+            return curSize + (curSize >> 2L); // x (5/4)
+        }
+        if (curSize > THRESHOLD_LARGE_ARRAY_SIZE) {
+            return curSize + (curSize >> 1L); // x (3/2)
+        }
+        return curSize << 1L; // x2
     }
 }

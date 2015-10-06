@@ -441,7 +441,15 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             // suppose _edges.length > _SIZEOF_EDGE_BYTES
             // so doubling size is enough to add needed bytes
             // double size:
-            final long edgeNewSize = (_edges.length) << 1;
+            final long edgeNewSize = ArrayCache.getNewLargeSize(_edges.length);
+            
+            if (edgeNewSize >= Integer.MAX_VALUE) {
+                // hard overflow failure - we can't even accommodate
+                // new items without overflowing
+                throw new ArrayIndexOutOfBoundsException(
+                              "edges exceeds maximum capacity !");
+            }
+            
             if (doStats) {
                 RendererContext.stats.stat_rdr_edges_resizes.add(edgeNewSize);
             }
@@ -1484,6 +1492,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
          */
         void resize(final long len) {
             // TODO: handle OOME ?
+            
+            System.out.println("resize: "+len);
+            
             this.address = unsafe.reallocateMemory(address, len);
             this.length  = len;
             if (logUnsafeMalloc) {
