@@ -109,7 +109,7 @@ public class MarlinRenderingEngine extends RenderingEngine
 
             // Use Path2D copy constructor (trim)
             return new Path2D.Float(p2d);
-            
+
         } finally {
             // recycle the RendererContext instance
             returnRendererContext(rdrCtx);
@@ -473,7 +473,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             this.src = src;
             return this; // fluent API
         }
-        
+
         /**
          * Disposes this path iterator:
          * clean up before reusing this instance
@@ -482,7 +482,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             // free source PathIterator:
             this.src = null;
         }
-        
+
         @Override
         public final int currentSegment(final float[] coords) {
             if (doMonitors) {
@@ -506,7 +506,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                     // we don't want to deal with this case later. We just exit now
                     curx_adjust = movx_adjust;
                     cury_adjust = movy_adjust;
-                    
+
                     if (doMonitors) {
                         RendererContext.stats.mon_npi_currentSegment.stop();
                     }
@@ -627,9 +627,9 @@ public class MarlinRenderingEngine extends RenderingEngine
     {
         // mark context as DIRTY:
         rdrCtx.dirty = true;
-        
+
         final float[] coords = rdrCtx.float6;
-        
+
         for (; !pi.isDone(); pi.next()) {
             switch (pi.currentSegment(coords)) {
                 case PathIterator.SEG_MOVETO:
@@ -725,7 +725,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                                         : null;
 
             final NormMode norm = (normalize) ? NormMode.ON_WITH_AA : NormMode.OFF;
-            
+
             if (bs == null) {
                 // fill shape:
                 final PathIterator pi = getNormalizingPathIterator(rdrCtx, norm,
@@ -742,7 +742,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                 r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                          clip.getWidth(), clip.getHeight(),
                                          PathIterator.WIND_NON_ZERO);
-                
+
                 strokeTo(rdrCtx, s, _at, bs, thin, norm, true, r);
             }
             if (r.endRendering()) {
@@ -1029,7 +1029,7 @@ public class MarlinRenderingEngine extends RenderingEngine
      */
     static void returnRendererContext(final RendererContext rdrCtx) {
         rdrCtx.dispose();
-        
+
         if (doMonitors) {
             RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
