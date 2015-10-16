@@ -549,7 +549,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                     coords[3] += y_adjust;
                     break;
                 case PathIterator.SEG_CLOSE:
-                    throw new InternalError("This should be handled earlier.");
+                    // handled earlier
                 default:
             }
             curx_adjust = x_adjust;
@@ -630,6 +630,15 @@ public class MarlinRenderingEngine extends RenderingEngine
 
         final float[] coords = rdrCtx.float6;
 
+        pathToLoop(coords, pi, pc2d);
+
+        // mark context as CLEAN:
+        rdrCtx.dirty = false;
+    }
+
+    private static void pathToLoop(final float[] coords, final PathIterator pi,
+                                   final PathConsumer2D pc2d)
+    {
         for (; !pi.isDone(); pi.next()) {
             switch (pi.currentSegment(coords)) {
                 case PathIterator.SEG_MOVETO:
@@ -654,9 +663,6 @@ public class MarlinRenderingEngine extends RenderingEngine
             }
         }
         pc2d.pathDone();
-
-        // mark context as CLEAN:
-        rdrCtx.dirty = false;
     }
 
     /**
@@ -960,6 +966,25 @@ public class MarlinRenderingEngine extends RenderingEngine
                 + MarlinConst.SUBPIXEL_LG_POSITIONS_Y);
         logInfo("sun.java2d.renderer.tileSize_log2    = "
                 + MarlinConst.TILE_SIZE_LG);
+
+        logInfo("sun.java2d.renderer.blockSize_log2   = "
+                + MarlinConst.BLOCK_SIZE_LG);
+
+        logInfo("sun.java2d.renderer.blockSize_log2   = "
+                + MarlinConst.BLOCK_SIZE_LG);
+
+        // RLE / blockFlags settings
+
+        logInfo("sun.java2d.renderer.forceRLE         = "
+                + MarlinProperties.isForceRLE());
+        logInfo("sun.java2d.renderer.forceNoRLE       = "
+                + MarlinProperties.isForceNoRLE());
+        logInfo("sun.java2d.renderer.useTileFlags     = "
+                + MarlinProperties.isUseTileFlags());
+        logInfo("sun.java2d.renderer.useTileFlags.useHeuristics = "
+                + MarlinProperties.isUseTileFlagsWithHeuristics());
+        logInfo("sun.java2d.renderer.rleMinWidth      = "
+                + MarlinCache.RLE_MIN_WIDTH);
 
         // optimisation parameters
         logInfo("sun.java2d.renderer.useSimplifier    = "

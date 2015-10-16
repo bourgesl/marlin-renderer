@@ -143,6 +143,14 @@ public final class RendererStats implements MarlinConst {
         = new Histogram("renderer.crossings.msorts.adds");
     final Histogram hist_tile_generator_alpha
         = new Histogram("tile_generator.alpha");
+    final Histogram hist_tile_generator_encoding
+        = new Histogram("tile_generator.encoding");
+    final Histogram hist_tile_generator_encoding_dist
+        = new Histogram("tile_generator.encoding.dist");
+    final Histogram hist_tile_generator_encoding_ratio
+        = new Histogram("tile_generator.encoding.ratio");
+    final Histogram hist_tile_generator_encoding_runLen
+        = new Histogram("tile_generator.encoding.runLen");
     // all stats
     final StatLong[] statistics = new StatLong[]{
         stat_cache_rowAA,
@@ -174,6 +182,10 @@ public final class RendererStats implements MarlinConst {
         hist_rdr_crossings_msorts,
         hist_rdr_crossings_msorts_adds,
         hist_tile_generator_alpha,
+        hist_tile_generator_encoding,
+        hist_tile_generator_encoding_dist,
+        hist_tile_generator_encoding_ratio,
+        hist_tile_generator_encoding_runLen,
         stat_array_dasher_firstSegmentsBuffer,
         stat_array_stroker_polystack_curves,
         stat_array_stroker_polystack_curveTypes,

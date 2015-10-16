@@ -78,9 +78,9 @@ public final class ArrayCache implements MarlinConst {
 
         // threshold to grow arrays only by (3/2) instead of 2
         THRESHOLD_ARRAY_SIZE = Math.max(2 * 1024 * 1024, MAX_ARRAY_SIZE); // 2M
-        
-        THRESHOLD_LARGE_ARRAY_SIZE = THRESHOLD_ARRAY_SIZE * 8; // 16M
-        THRESHOLD_HUGE_ARRAY_SIZE = THRESHOLD_LARGE_ARRAY_SIZE * 8; // 128M
+
+        THRESHOLD_LARGE_ARRAY_SIZE = 8L * THRESHOLD_ARRAY_SIZE; // 16M
+        THRESHOLD_HUGE_ARRAY_SIZE  = 8L * THRESHOLD_LARGE_ARRAY_SIZE; // 128M
 
         if (doStats || doMonitors) {
             logInfo("ArrayCache.BUCKETS        = " + BUCKETS);
@@ -168,7 +168,7 @@ public final class ArrayCache implements MarlinConst {
         final int initial = (curSize & MASK_CLR_1);
         int size;
         if (initial > THRESHOLD_ARRAY_SIZE) {
-            size = initial + (initial >> 1); // x (3/2)
+            size = initial + (initial >> 1); // x(3/2)
         } else {
             size = (initial) << 1; // x2
         }
@@ -183,15 +183,33 @@ public final class ArrayCache implements MarlinConst {
     /**
      * Return the new array size (~ x2)
      * @param curSize current used size
+     * @param needSize needed size
      * @return new array size
      */
-    public static long getNewLargeSize(final long curSize) {
+    public static long getNewLargeSize(final long curSize, final long needSize) {
+        long size;
         if (curSize > THRESHOLD_HUGE_ARRAY_SIZE) {
-            return curSize + (curSize >> 2L); // x (5/4)
+            size = curSize + (curSize >> 2L); // x(5/4)
+        } else  if (curSize > THRESHOLD_LARGE_ARRAY_SIZE) {
+            size = curSize + (curSize >> 1L); // x(3/2)
+        } else {
+            size = curSize << 1L; // x2
         }
-        if (curSize > THRESHOLD_LARGE_ARRAY_SIZE) {
-            return curSize + (curSize >> 1L); // x (3/2)
+        // ensure the new size is >= needed size:
+        if (size < needSize) {
+            // align to 4096:
+            size = ((needSize >> 12) + 1) << 12;
         }
-        return curSize << 1L; // x2
+        if (size >= Integer.MAX_VALUE) {
+            if (curSize >= Integer.MAX_VALUE) {
+                // hard overflow failure - we can't even accommodate
+                // new items without overflowing
+                throw new ArrayIndexOutOfBoundsException(
+                              "array exceeds maximum capacity !");
+            }
+            // resize to maximum capacity:
+            size = Integer.MAX_VALUE;
+        }
+        return size;
     }
 }

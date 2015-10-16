@@ -159,7 +159,6 @@ public class AAShapePipe
             byte[] atile;
 
             for (int y = abox[1]; y < abox[3]; y += th) {
-                // TODO: try inline Math min/max to benefit from branch prediction ?
                 int h = Math.min(th, abox[3] - y);
 
                 for (int x = abox[0]; x < abox[2]; x += tw) {

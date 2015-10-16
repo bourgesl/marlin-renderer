@@ -94,6 +94,8 @@ final class RendererContext implements MarlinConst {
     final Dasher dasher;
     final MarlinTileGenerator ptg;
     final MarlinCache cache;
+    // flag indicating the shape is stroked (1) or filled (0)
+    int stroking = 0;
 
     /**
      * Constructor
@@ -142,6 +144,7 @@ final class RendererContext implements MarlinConst {
      * clean up before reusing this context
      */
     void dispose() {
+        stroking = 0;
         // reset hard reference to array caches if needed:
         if (!USE_CACHE_HARD_REF) {
             hardRefArrayCaches = null;

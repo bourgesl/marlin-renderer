@@ -166,6 +166,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         this.prev = CLOSE;
 
+        rdrCtx.stroking = 1;
+
         return this; // fluent API
     }
 
