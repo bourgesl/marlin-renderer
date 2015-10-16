@@ -166,6 +166,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         this.prev = CLOSE;
 
+        rdrCtx.stroking = 1;
+
         return this; // fluent API
     }
 
@@ -173,8 +175,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
      * Disposes this stroker:
      * clean up before reusing this instance
      */
-    private void dispose() {
-        this.reverse.dispose();
+    void dispose() {
+        reverse.dispose();
 
         if (doCleanDirty) {
             // Force zero-fill dirty arrays:
@@ -1263,14 +1265,14 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         private void ensureSpace(final int n) {
-            if (end + n >= curves.length) {
+            if (end + n > curves.length) {
                 if (doStats) {
                     RendererContext.stats.stat_array_stroker_polystack_curves
                         .add(end + n);
                 }
                 curves = rdrCtx.widenDirtyFloatArray(curves, end, end + n);
             }
-            if (numCurves + 1 >= curveTypes.length) {
+            if (numCurves + 1 > curveTypes.length) {
                 if (doStats) {
                     RendererContext.stats.stat_array_stroker_polystack_curveTypes
                         .add(numCurves + 1);

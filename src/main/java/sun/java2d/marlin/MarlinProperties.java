@@ -38,7 +38,7 @@ public final class MarlinProperties {
     // marlin system properties
 
     public static boolean isUseThreadLocal() {
-        return getBoolean("sun.java2d.renderer.useThreadLocal", "false");
+        return getBoolean("sun.java2d.renderer.useThreadLocal", "true");
     }
 
     /**
@@ -79,6 +79,40 @@ public final class MarlinProperties {
      */
     public static int getTileSize_Log2() {
         return getInteger("sun.java2d.renderer.tileSize_log2", 5, 3, 8);
+    }
+
+    /**
+     * Return the log(2) corresponding to the block size in pixels
+     *
+     * @return 3 (8 pixels) < block size < 8 (256 pixels)
+     * (5 by default ie 32 pixels)
+     */
+    public static int getBlockSize_Log2() {
+        return getInteger("sun.java2d.renderer.blockSize_log2", 5, 3, 8);
+    }
+
+    // RLE / blockFlags settings
+
+    public static boolean isForceRLE() {
+        return getBoolean("sun.java2d.renderer.forceRLE", "false");
+    }
+
+    public static boolean isForceNoRLE() {
+        return getBoolean("sun.java2d.renderer.forceNoRLE", "false");
+    }
+
+    public static boolean isUseTileFlags() {
+        return getBoolean("sun.java2d.renderer.useTileFlags", "true");
+    }
+
+    public static boolean isUseTileFlagsWithHeuristics() {
+        return isUseTileFlags()
+        && getBoolean("sun.java2d.renderer.useTileFlags.useHeuristics", "true");
+    }
+
+    public static int getRLEMinWidth() {
+        // best jdk8: 48, jdk9: 40 ?
+        return getInteger("sun.java2d.renderer.rleMinWidth", 40, 0, Integer.MAX_VALUE);
     }
 
     // optimisation parameters

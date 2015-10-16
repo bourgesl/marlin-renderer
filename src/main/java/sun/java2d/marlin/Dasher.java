@@ -147,6 +147,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         // Return arrays:
         if (recycleDashes && dash != dashes_initial) {
             rdrCtx.putDirtyFloatArray(dash);
+            dash = null;
         }
 
         if (firstSegmentsBuffer != firstSegmentsBuffer_initial) {

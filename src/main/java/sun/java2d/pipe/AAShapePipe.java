@@ -151,18 +151,18 @@ public class AAShapePipe
                                             ts.computeDevBox(abox),
                                             abox);
 
-            int tw = aatg.getTileWidth();
-            int th = aatg.getTileHeight();
+            final int tw = aatg.getTileWidth();
+            final int th = aatg.getTileHeight();
 
             // get tile from thread local storage:
-            byte[] alpha = ts.getAlphaTile(tw * th);
-
+            final byte[] alpha = ts.getAlphaTile(tw * th);
             byte[] atile;
 
             for (int y = abox[1]; y < abox[3]; y += th) {
+                int h = Math.min(th, abox[3] - y);
+
                 for (int x = abox[0]; x < abox[2]; x += tw) {
                     int w = Math.min(tw, abox[2] - x);
-                    int h = Math.min(th, abox[3] - y);
 
                     int a = aatg.getTypicalAlpha();
                     if (a == 0x00 ||

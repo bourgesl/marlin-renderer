@@ -40,7 +40,9 @@ interface MarlinConst {
     // do statistics
     static final boolean doStats = MarlinProperties.isDoStats();
     // do monitors
-    static final boolean doMonitors = MarlinProperties.isDoMonitors();
+    // disabled to reduce byte-code size a bit...
+// TRY false to optimize code (javac)
+    static final boolean doMonitors = false; // MarlinProperties.isDoMonitors();
     // do checks
     static final boolean doChecks = MarlinProperties.isDoChecks();
 
@@ -110,4 +112,7 @@ interface MarlinConst {
 
     public static final int TILE_SIZE_LG = MarlinProperties.getTileSize_Log2();
     public static final int TILE_SIZE = 1 << TILE_SIZE_LG; // 32 by default
+
+    public static final int BLOCK_SIZE_LG = MarlinProperties.getBlockSize_Log2();
+    public static final int BLOCK_SIZE    = 1 << BLOCK_SIZE_LG;
 }

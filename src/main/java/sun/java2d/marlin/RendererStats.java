@@ -63,6 +63,8 @@ public final class RendererStats implements MarlinConst {
         = new StatLong("cache.rowAA");
     final StatLong stat_cache_rowAAChunk
         = new StatLong("cache.rowAAChunk");
+    final StatLong stat_cache_tiles
+        = new StatLong("cache.tiles");
     final StatLong stat_rdr_poly_stack_curves
         = new StatLong("renderer.poly.stack.curves");
     final StatLong stat_rdr_poly_stack_types
@@ -139,10 +141,21 @@ public final class RendererStats implements MarlinConst {
         = new Histogram("renderer.crossings.msorts");
     final Histogram hist_rdr_crossings_msorts_adds
         = new Histogram("renderer.crossings.msorts.adds");
+    final Histogram hist_tile_generator_alpha
+        = new Histogram("tile_generator.alpha");
+    final Histogram hist_tile_generator_encoding
+        = new Histogram("tile_generator.encoding");
+    final Histogram hist_tile_generator_encoding_dist
+        = new Histogram("tile_generator.encoding.dist");
+    final Histogram hist_tile_generator_encoding_ratio
+        = new Histogram("tile_generator.encoding.ratio");
+    final Histogram hist_tile_generator_encoding_runLen
+        = new Histogram("tile_generator.encoding.runLen");
     // all stats
     final StatLong[] statistics = new StatLong[]{
         stat_cache_rowAA,
         stat_cache_rowAAChunk,
+        stat_cache_tiles,
         stat_rdr_poly_stack_types,
         stat_rdr_poly_stack_curves,
         stat_rdr_addLine,
@@ -168,6 +181,11 @@ public final class RendererStats implements MarlinConst {
         hist_rdr_crossings_adds,
         hist_rdr_crossings_msorts,
         hist_rdr_crossings_msorts_adds,
+        hist_tile_generator_alpha,
+        hist_tile_generator_encoding,
+        hist_tile_generator_encoding_dist,
+        hist_tile_generator_encoding_ratio,
+        hist_tile_generator_encoding_runLen,
         stat_array_dasher_firstSegmentsBuffer,
         stat_array_stroker_polystack_curves,
         stat_array_stroker_polystack_curveTypes,
@@ -192,10 +210,14 @@ public final class RendererStats implements MarlinConst {
         = new Monitor("Renderer.endRendering()");
     final Monitor mon_rdr_endRendering_Y
         = new Monitor("Renderer._endRendering(Y)");
-    final Monitor mon_rdr_emitRow
-        = new Monitor("Renderer.emitRow()");
+    final Monitor mon_rdr_copyAARow
+        = new Monitor("Renderer.copyAARow()");
+    final Monitor mon_pipe_renderTiles
+        = new Monitor("AAShapePipe.renderTiles()");
     final Monitor mon_ptg_getAlpha
         = new Monitor("MarlinTileGenerator.getAlpha()");
+    final Monitor mon_debug
+        = new Monitor("DEBUG()");
     // all monitors
     final Monitor[] monitors = new Monitor[]{
         mon_pre_getAATileGenerator,
@@ -203,8 +225,10 @@ public final class RendererStats implements MarlinConst {
         mon_rdr_addLine,
         mon_rdr_endRendering,
         mon_rdr_endRendering_Y,
-        mon_rdr_emitRow,
-        mon_ptg_getAlpha
+        mon_rdr_copyAARow,
+        mon_pipe_renderTiles,
+        mon_ptg_getAlpha,
+        mon_debug
     };
 
     private RendererStats() {

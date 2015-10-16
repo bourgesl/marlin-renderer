@@ -70,6 +70,8 @@ final class RendererContext implements MarlinConst {
      * @see MarlinRenderingEngine#REF_TYPE
      */
     final Object reference;
+    // dirty flag indicating an exception occured during pipeline in pathTo()
+    boolean dirty = false;
     // dynamic array caches kept using weak reference (low memory footprint)
     WeakReference<ArrayCachesHolder> refArrayCaches = null;
     // hard reference to array caches (for statistics)
@@ -93,6 +95,8 @@ final class RendererContext implements MarlinConst {
     final Dasher dasher;
     final MarlinTileGenerator ptg;
     final MarlinCache cache;
+
+    int stroking = 0;
 
     /**
      * Constructor
@@ -136,6 +140,34 @@ final class RendererContext implements MarlinConst {
         }
     }
 
+    /**
+     * Disposes this renderer context:
+     * clean up before reusing this context
+     */
+    void dispose() {
+        stroking = 0;
+        // reset hard reference to array caches if needed:
+        if (!USE_CACHE_HARD_REF) {
+            hardRefArrayCaches = null;
+        }
+        // if context is maked as DIRTY:
+        if (dirty) {
+            // may happen if an exception if thrown in the pipeline processing:
+            // force cleanup of all possible pipelined blocks (except Renderer):
+
+            // NormalizingPathIterator instances:
+            this.nPCPathIterator.dispose();
+            this.nPQPathIterator.dispose();
+            // Dasher:
+            this.dasher.dispose();
+            // Stroker:
+            this.stroker.dispose();
+
+            // mark context as CLEAN:
+            dirty = false;
+        }
+    }
+
     // Array caches
     ArrayCachesHolder getArrayCachesHolder() {
         // Use hard reference first (cached resolved weak reference):
@@ -164,13 +196,6 @@ final class RendererContext implements MarlinConst {
             }
         }
         return holder;
-    }
-
-    void resetArrayCachesHolder() {
-        // keep hard reference:
-        if (!USE_CACHE_HARD_REF) {
-            hardRefArrayCaches = null;
-        }
     }
 
     // dirty byte array cache
@@ -206,10 +231,10 @@ final class RendererContext implements MarlinConst {
     }
 
     byte[] widenDirtyByteArray(final byte[] in,
-                               final int usedSize, final int newSize)
+                               final int usedSize, final int needSize)
     {
         final int length = in.length;
-        if (doChecks && length >= newSize) {
+        if (doChecks && length >= needSize) {
             return in;
         }
         if (doStats) {
@@ -218,7 +243,7 @@ final class RendererContext implements MarlinConst {
 
         // maybe change bucket:
         // ensure getNewSize() > newSize:
-        final byte[] res = getDirtyByteArray(getNewSize(usedSize));
+        final byte[] res = getDirtyByteArray(getNewSize(usedSize, needSize));
 
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
@@ -228,8 +253,8 @@ final class RendererContext implements MarlinConst {
 
         if (doLogWidenArray) {
             logInfo("widenDirtyByteArray[" + res.length + "]: usedSize=\t"
-                    + usedSize + "\tlength=\t" + length + "\tnew length=\t"
-                    + newSize + "\tfrom=\t" + getCallerInfo(className));
+                    + usedSize + "\tlength=\t" + length + "\tneeded length=\t"
+                    + needSize + "\tfrom=\t" + getCallerInfo(className));
         }
         return res;
     }
@@ -259,10 +284,10 @@ final class RendererContext implements MarlinConst {
 
     // unused
     int[] widenIntArray(final int[] in, final int usedSize,
-                        final int newSize, final int clearTo)
+                        final int needSize, final int clearTo)
     {
         final int length = in.length;
-        if (doChecks && length >= newSize) {
+        if (doChecks && length >= needSize) {
             return in;
         }
         if (doStats) {
@@ -271,7 +296,7 @@ final class RendererContext implements MarlinConst {
 
         // maybe change bucket:
         // ensure getNewSize() > newSize:
-        final int[] res = getIntArray(getNewSize(usedSize));
+        final int[] res = getIntArray(getNewSize(usedSize, needSize));
 
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
@@ -280,8 +305,8 @@ final class RendererContext implements MarlinConst {
 
         if (doLogWidenArray) {
             logInfo("widenIntArray[" + res.length + "]: usedSize=\t"
-                    + usedSize + "\tlength=\t" + length + "\tnew length=\t"
-                    + newSize + "\tfrom=\t" + getCallerInfo(className));
+                    + usedSize + "\tlength=\t" + length + "\tneeded length=\t"
+                    + needSize + "\tfrom=\t" + getCallerInfo(className));
         }
         return res;
     }
@@ -321,10 +346,10 @@ final class RendererContext implements MarlinConst {
     }
 
     int[] widenDirtyIntArray(final int[] in,
-                             final int usedSize, final int newSize)
+                             final int usedSize, final int needSize)
     {
         final int length = in.length;
-        if (doChecks && length >= newSize) {
+        if (doChecks && length >= needSize) {
             return in;
         }
         if (doStats) {
@@ -333,7 +358,7 @@ final class RendererContext implements MarlinConst {
 
         // maybe change bucket:
         // ensure getNewSize() > newSize:
-        final int[] res = getDirtyIntArray(getNewSize(usedSize));
+        final int[] res = getDirtyIntArray(getNewSize(usedSize, needSize));
 
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
@@ -343,8 +368,8 @@ final class RendererContext implements MarlinConst {
 
         if (doLogWidenArray) {
             logInfo("widenDirtyIntArray[" + res.length + "]: usedSize=\t"
-                    + usedSize + "\tlength=\t" + length + "\tnew length=\t"
-                    + newSize + "\tfrom=\t" + getCallerInfo(className));
+                    + usedSize + "\tlength=\t" + length + "\tneeded length=\t"
+                    + needSize + "\tfrom=\t" + getCallerInfo(className));
         }
         return res;
     }
@@ -382,10 +407,10 @@ final class RendererContext implements MarlinConst {
     }
 
     float[] widenDirtyFloatArray(final float[] in,
-                                 final int usedSize, final int newSize)
+                                 final int usedSize, final int needSize)
     {
         final int length = in.length;
-        if (doChecks && length >= newSize) {
+        if (doChecks && length >= needSize) {
             return in;
         }
         if (doStats) {
@@ -394,7 +419,7 @@ final class RendererContext implements MarlinConst {
 
         // maybe change bucket:
         // ensure getNewSize() > newSize:
-        final float[] res = getDirtyFloatArray(getNewSize(usedSize));
+        final float[] res = getDirtyFloatArray(getNewSize(usedSize, needSize));
 
         System.arraycopy(in, 0, res, 0, usedSize); // copy only used elements
 
@@ -404,8 +429,8 @@ final class RendererContext implements MarlinConst {
 
         if (doLogWidenArray) {
             logInfo("widenDirtyFloatArray[" + res.length + "]: usedSize=\t"
-                    + usedSize + "\tlength=\t" + length + "\tnew length=\t"
-                    + newSize + "\tfrom=\t" + getCallerInfo(className));
+                    + usedSize + "\tlength=\t" + length + "\tneeded length=\t"
+                    + needSize + "\tfrom=\t" + getCallerInfo(className));
         }
         return res;
     }

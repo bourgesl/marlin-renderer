@@ -40,6 +40,22 @@ public final class FloatMath implements MarlinConst {
         // utility class
     }
 
+    // faster inlined min/max functions in the branch prediction is high
+// TODO: inline methods
+    static float max(final float a, final float b) {
+        // no NaN handling
+        return (a >= b) ? a : b;
+    }
+
+// TODO: inline methods
+    static int max(final int a, final int b) {
+        return (a >= b) ? a : b;
+    }
+// TODO: inline methods
+    static int min(final int a, final int b) {
+        return (a <= b) ? a : b;
+    }
+
     /**
      * Returns the smallest (closest to negative infinity) {@code float} value
      * that is greater than or equal to the argument and is equal to a
