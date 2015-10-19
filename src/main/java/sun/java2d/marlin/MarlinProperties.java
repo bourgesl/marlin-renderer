@@ -111,7 +111,6 @@ public final class MarlinProperties {
     }
 
     public static int getRLEMinWidth() {
-        // best jdk8: 48, jdk9: 40 ?
         return getInteger("sun.java2d.renderer.rleMinWidth", 40, 0, Integer.MAX_VALUE);
     }
 

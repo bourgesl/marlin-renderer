@@ -185,9 +185,6 @@ public class MarlinRenderingEngine extends RenderingEngine
         } else {
             lw = bs.getLineWidth();
         }
-
-//        lw += MIN_PEN_SIZE * 0.5f; // Math.sqrt(0.5); // 1/8th pixel * SQRT(2) / 2
-
         strokeTo(rdrCtx,
                  src,
                  at,

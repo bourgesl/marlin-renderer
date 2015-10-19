@@ -26,6 +26,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -41,8 +42,8 @@ import sun.java2d.pipe.RenderingEngine;
 public class LineTests {
 
     public static void main(String[] args) {
-        final float lineStroke = 2f;
-        final int size = 600;
+        final float lineStroke = 4f;
+        final int size = 1000;
 
         System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
 
@@ -85,6 +86,14 @@ public class LineTests {
     }
 
     private static void paint(final Graphics2D g2d, final float size) {
+
+        final float half = size / 2f;
+        final float radius = 166f;
+        g2d.draw(new Ellipse2D.Float(half - radius, half - radius, 2f * radius, 2f * radius));
+
+        if (true) {
+            return;
+        }
 
         final Path2D.Float path = new Path2D.Float();
 

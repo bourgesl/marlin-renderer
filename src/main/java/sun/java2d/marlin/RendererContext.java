@@ -95,7 +95,7 @@ final class RendererContext implements MarlinConst {
     final Dasher dasher;
     final MarlinTileGenerator ptg;
     final MarlinCache cache;
-
+    // flag indicating the shape is stroked (1) or filled (0)
     int stroking = 0;
 
     /**

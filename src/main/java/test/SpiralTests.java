@@ -41,6 +41,9 @@ import sun.java2d.pipe.RenderingEngine;
 public class SpiralTests {
 
     public static void main(String[] args) {
+
+        StrokerTest.main(args);
+
         final boolean useDashes = false;
         final float lineStroke = 2f;
 
