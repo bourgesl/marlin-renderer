@@ -315,7 +315,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         }
     }
 
-// TODO: split that hot method in smaller onces to stay below 325 bytes-codes (inlining)
     private void addLine(float x1, float y1, float x2, float y2) {
         if (doMonitors) {
             RendererContext.stats.mon_rdr_addLine.start();
@@ -334,15 +333,13 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             x1 = tmp;
         }
 
-        final int _boundsMinY = boundsMinY;
-
         // convert subpixel coordinates (float) into pixel positions (int)
 
         // The index of the pixel that holds the next HPC is at ceil(trueY - 0.5)
         // Since y1 and y2 are biased by -0.5 in tosubpixy(), this is simply
         // ceil(y1) or ceil(y2)
         // upper integer (inclusive)
-        final int firstCrossing = FloatMath.max(FloatMath.ceil_int(y1), _boundsMinY);
+        final int firstCrossing = FloatMath.max(FloatMath.ceil_int(y1), boundsMinY);
 
         // note: use boundsMaxY (last Y exclusive) to compute correct coverage
         // upper integer (exclusive)
@@ -388,11 +385,22 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             }
         }
 
+        addEdge(or, firstCrossing, lastCrossing, x1d, y1d, slope);
 
+        if (doMonitors) {
+            RendererContext.stats.mon_rdr_addLine.stop();
+        }
+    }
+
+    private void addEdge(final int or,
+                         final int firstCrossing, final int lastCrossing,
+                         final double x1d, final double y1d, final double slope)
+    {
         // local variables for performance:
         final int _SIZEOF_EDGE_BYTES = SIZEOF_EDGE_BYTES;
 
         final OffHeapArray _edges = edges;
+
         // get free pointer (ie length in bytes)
         final int edgePtr = _edges.used;
 
@@ -411,7 +419,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
 
         final Unsafe _unsafe = OffHeapArray.unsafe;
-        final long    addr   = _edges.address + edgePtr;
+        final long SIZE_INT = 4L;
+        long addr   = _edges.address + edgePtr;
 
         // The x value must be bumped up to its position at the next HPC we will evaluate.
         // "firstcrossing" is the (sub)pixel number where the next crossing occurs
@@ -441,28 +450,34 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                                      + 0x7fffffffL;
         // curx:
         // last bit corresponds to the orientation
-        _unsafe.putInt(addr,                (((int) (x1_fixed_biased >> 31L)) & ALL_BUT_LSB) | or);
-        _unsafe.putInt(addr + OFF_ERROR,     ((int)  x1_fixed_biased) >>> 1);
+        _unsafe.putInt(addr, (((int) (x1_fixed_biased >> 31L)) & ALL_BUT_LSB) | or);
+        addr += SIZE_INT;
+        _unsafe.putInt(addr,  ((int)  x1_fixed_biased) >>> 1);
+        addr += SIZE_INT;
 
         // inlined scalb(slope, 32):
         final long slope_fixed = (long) (POWER_2_TO_32 * slope);
 
         // last bit set to 0 to keep orientation:
-        _unsafe.putInt(addr + OFF_BUMP_X,   (((int) (slope_fixed >> 31L)) & ALL_BUT_LSB));
-        _unsafe.putInt(addr + OFF_BUMP_ERR,  ((int)  slope_fixed) >>> 1);
+        _unsafe.putInt(addr, (((int) (slope_fixed >> 31L)) & ALL_BUT_LSB));
+        addr += SIZE_INT;
+        _unsafe.putInt(addr,  ((int)  slope_fixed) >>> 1);
+        addr += SIZE_INT;
 
-        // copy members:
         final int[] _edgeBuckets      = edgeBuckets;
         final int[] _edgeBucketCounts = edgeBucketCounts;
+
+        final int _boundsMinY = boundsMinY;
 
         // each bucket is a linked list. this method adds ptr to the
         // start of the "bucket"th linked list.
         final int bucketIdx = firstCrossing - _boundsMinY;
 
         // pointer from bucket
-        _unsafe.putInt(addr + OFF_NEXT,    _edgeBuckets[bucketIdx]);
+        _unsafe.putInt(addr, _edgeBuckets[bucketIdx]);
+        addr += SIZE_INT;
         // y max (inclusive)
-        _unsafe.putInt(addr + OFF_YMAX, lastCrossing);
+        _unsafe.putInt(addr,  lastCrossing);
 
         // Update buckets:
         // directly the edge struct "pointer"
@@ -476,10 +491,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
         // update free pointer (ie length in bytes)
         _edges.used += _SIZEOF_EDGE_BYTES;
-
-        if (doMonitors) {
-            RendererContext.stats.mon_rdr_addLine.stop();
-        }
     }
 
 // END EDGE LIST

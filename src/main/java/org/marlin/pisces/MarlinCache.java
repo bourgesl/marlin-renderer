@@ -317,7 +317,7 @@ public final class MarlinCache implements MarlinConst {
         final int to   = px_bbox1 - bboxX0; //  last pixel exclusive
 
         final Unsafe _unsafe = OffHeapArray.unsafe;
-        final long SIZE = 1L;
+        final long SIZE_BYTE = 1L;
         final long addr_alpha = ALPHA_MAP_UNSAFE.address;
         long addr_off = _rowAAChunk.address + pos;
 
@@ -347,7 +347,7 @@ public final class MarlinCache implements MarlinConst {
                 // update touchedTile
                 _touchedTile[x >> _TILE_SIZE_LG] += val;
             }
-            addr_off += SIZE;
+            addr_off += SIZE_BYTE;
         }
 
         // update tile used marks:
@@ -410,7 +410,7 @@ public final class MarlinCache implements MarlinConst {
         }
 
         final Unsafe _unsafe = OffHeapArray.unsafe;
-        final long SIZE = 4L;
+        final long SIZE_INT = 4L;
         final long addr_alpha = ALPHA_MAP_UNSAFE.address;
         long addr_off = _rowAAChunk.address + initialPos;
 
@@ -467,7 +467,7 @@ public final class MarlinCache implements MarlinConst {
 //                                | Byte.toUnsignedInt(
 //                                    _unsafe.getByte(addr_alpha + val)) // [0..255]
                             );
-                            addr_off += SIZE;
+                            addr_off += SIZE_INT;
 
                             if (val != 0) {
                                 if (runLen == 1) {
@@ -519,7 +519,7 @@ public final class MarlinCache implements MarlinConst {
 //            | Byte.toUnsignedInt(
 //                _unsafe.getByte(addr_alpha + val)) // [0..255]
         );
-        addr_off += SIZE;
+        addr_off += SIZE_INT;
 
         if (val != 0) {
             if (runLen == 1) {
