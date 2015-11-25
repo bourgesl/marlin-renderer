@@ -137,7 +137,7 @@ public final class MarlinProperties {
     // logging parameters
     
     public static boolean isEnableLogs() {
-        return getBoolean("sun.java2d.renderer.log", "false");
+        return getBoolean("sun.java2d.renderer.log", "true");
     }
 
     public static boolean isUseLogger() {
