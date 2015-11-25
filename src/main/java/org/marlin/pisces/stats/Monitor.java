@@ -29,7 +29,7 @@ package org.marlin.pisces.stats;
  */
 public final class Monitor extends StatLong {
 
-    private final static long INVALID = -1L;
+    private static final long INVALID = -1L;
 
     private long start = INVALID;
 
@@ -49,3 +49,4 @@ public final class Monitor extends StatLong {
         start = INVALID;
     }
 }
+

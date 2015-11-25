@@ -28,9 +28,9 @@ import sun.awt.geom.PathConsumer2D;
 
 final class CollinearSimplifier implements PathConsumer2D {
 
-    private final static int STATE_PREV_LINE = 0;
-    private final static int STATE_PREV_POINT = 1;
-    private final static int STATE_EMPTY = 2;
+    private static final int STATE_PREV_LINE = 0;
+    private static final int STATE_PREV_POINT = 1;
+    private static final int STATE_EMPTY = 2;
 
     // slope precision threshold
     static final float EPS = 1e-4f; // aaime proposed 1e-3f

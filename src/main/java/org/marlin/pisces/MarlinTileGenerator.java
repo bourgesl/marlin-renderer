@@ -29,7 +29,7 @@ import sun.misc.Unsafe;
 
 final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
 
-    private final static int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE
+    private static final int MAX_TILE_ALPHA_SUM = TILE_SIZE * TILE_SIZE
                                                       * MAX_AA_ALPHA;
 
     private final Renderer rdr;

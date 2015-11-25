@@ -32,14 +32,14 @@ package org.marlin.pisces;
 final class MergeSort {
 
     /** collect array data at each mergeSortNoCopy() invocation */
-//    private final static boolean ENABLE_COLLECT_ARRAY_DATA = false; /* Boolean.getBoolean("MergeSort.collect.data"); */
+//    private static final boolean ENABLE_COLLECT_ARRAY_DATA = false; /* Boolean.getBoolean("MergeSort.collect.data"); */
     /** true to enable array data collection and serialization */
-    public final static boolean DO_COLLECT_ARRAY_DATA = (false) && MarlinConst.doStats;
+    public static final boolean DO_COLLECT_ARRAY_DATA = (false) && MarlinConst.doStats;
 
     // 14 MapBench better results
     // 20 MapSortTest better average results on 9000 arrays !
     // insertion sort threshold
-    public final static int INSERTION_SORT_THRESHOLD = 14;
+    public static final int INSERTION_SORT_THRESHOLD = 14;
 
     /**
      * Modified merge sort:

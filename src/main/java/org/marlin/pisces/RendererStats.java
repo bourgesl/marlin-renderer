@@ -106,6 +106,8 @@ public final class RendererStats implements MarlinConst {
     final StatLong stat_rdr_crossings_msorts
         = new StatLong("renderer.crossings.msorts");
     // growable arrays
+    final StatLong stat_array_dasher_dasher
+        = new StatLong("array.dasher.dasher.d_float");
     final StatLong stat_array_dasher_firstSegmentsBuffer
         = new StatLong("array.dasher.firstSegmentsBuffer.d_float");
     final StatLong stat_array_stroker_polystack_curves
@@ -186,6 +188,7 @@ public final class RendererStats implements MarlinConst {
         hist_tile_generator_encoding_dist,
         hist_tile_generator_encoding_ratio,
         hist_tile_generator_encoding_runLen,
+        stat_array_dasher_dasher,
         stat_array_dasher_firstSegmentsBuffer,
         stat_array_stroker_polystack_curves,
         stat_array_stroker_polystack_curveTypes,

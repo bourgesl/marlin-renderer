@@ -72,7 +72,9 @@ final class IntArrayCache implements MarlinConst {
 
     void putDirtyArray(final int[] array, final int length) {
         if (length != arraySize) {
-            System.out.println("bad length = " + length);
+            if (doChecks) {
+                System.out.println("ArrayCache: bad length = " + length);
+            }
             return;
         }
         if (doStats) {
@@ -94,7 +96,9 @@ final class IntArrayCache implements MarlinConst {
                   final int fromIndex, final int toIndex)
     {
         if (length != arraySize) {
-            System.out.println("bad length = " + length);
+            if (doChecks) {
+                System.out.println("ArrayCache: bad length = " + length);
+            }
             return;
         }
         if (doStats) {

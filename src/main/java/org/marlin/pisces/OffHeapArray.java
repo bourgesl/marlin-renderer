@@ -41,15 +41,15 @@ import sun.misc.Unsafe;
 final class OffHeapArray  {
 
     // unsafe reference
-    final static Unsafe unsafe;
+    static final Unsafe unsafe;
     // size of int / float
-    final static int SIZE_INT;
+    static final int SIZE_INT;
 
     // RendererContext reference queue
-    private final static ReferenceQueue<Object> rdrQueue
+    private static final ReferenceQueue<Object> rdrQueue
         = new ReferenceQueue<Object>();
     // reference list
-    private final static Vector<OffHeapReference> refList
+    private static final Vector<OffHeapReference> refList
         = new Vector<OffHeapReference>(32);
 
     static {

@@ -444,7 +444,7 @@ final class RendererContext implements MarlinConst {
     }
 
     /* class holding all array cache instances */
-    final static class ArrayCachesHolder {
+    static final class ArrayCachesHolder {
         // zero-filled int array cache:
         final IntArrayCache[] intArrayCaches;
         // dirty array caches:

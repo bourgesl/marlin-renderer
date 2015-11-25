@@ -111,7 +111,7 @@ public final class MarlinProperties {
     }
 
     public static int getRLEMinWidth() {
-        return getInteger("sun.java2d.renderer.rleMinWidth", 40, 0, Integer.MAX_VALUE);
+        return getInteger("sun.java2d.renderer.rleMinWidth", 64, 0, Integer.MAX_VALUE);
     }
 
     // optimisation parameters
@@ -135,6 +135,10 @@ public final class MarlinProperties {
     }
 
     // logging parameters
+    
+    public static boolean isEnableLogs() {
+        return getBoolean("sun.java2d.renderer.log", "false");
+    }
 
     public static boolean isUseLogger() {
         return getBoolean("sun.java2d.renderer.useLogger", "false");

@@ -29,8 +29,6 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.acos;
-import static org.marlin.pisces.MarlinUtils.getCallerInfo;
-import static org.marlin.pisces.MarlinUtils.logInfo;
 
 final class Helpers implements MarlinConst {
 
