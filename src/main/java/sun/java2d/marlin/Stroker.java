@@ -77,7 +77,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     // it to floating point, so that's why the divisions by 2^16 are there.
     private static final float ROUND_JOIN_THRESHOLD = 1000/65536f;
 
-    private final static float C = 0.5522847498307933f;
+    private static final float C = 0.5522847498307933f;
 
     private static final int MAX_N_CURVES = 11;
 
@@ -1193,7 +1193,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
     // a stack of polynomial curves where each curve shares endpoints with
     // adjacent ones.
-    final static class PolyStack {
+    static final class PolyStack {
         private static final byte TYPE_LINETO  = (byte) 0;
         private static final byte TYPE_QUADTO  = (byte) 1;
         private static final byte TYPE_CUBICTO = (byte) 2;

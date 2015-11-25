@@ -25,6 +25,7 @@
 
 package sun.java2d.marlin;
 
+//import jdk.internal.misc.Unsafe;
 import sun.misc.Unsafe;
 
 /**
@@ -34,10 +35,14 @@ import sun.misc.Unsafe;
  */
 public final class MarlinCache implements MarlinConst {
 
-    final static boolean FORCE_RLE = MarlinProperties.isForceRLE();
-    final static boolean FORCE_NO_RLE = MarlinProperties.isForceNoRLE();
-    final static int RLE_MIN_WIDTH
+    static final boolean FORCE_RLE = MarlinProperties.isForceRLE();
+    static final boolean FORCE_NO_RLE = MarlinProperties.isForceNoRLE();
+    // minimum width to try using RLE encoding:
+    static final int RLE_MIN_WIDTH
         = Math.max(BLOCK_SIZE, MarlinProperties.getRLEMinWidth());
+    // maximum width for RLE encoding:
+    // values are stored as int [x|alpha] where alpha is 8 bits
+    static final int RLE_MAX_WIDTH = 1 << (24 - 1);
 
     // 2048 (pixelSize) alpha values (width) x 32 rows (tile) = 64K bytes
     // x1 instead of 4 bytes (RLE) ie 1/4 capacity or average good RLE compression
@@ -46,9 +51,9 @@ public final class MarlinCache implements MarlinConst {
     // The alpha map used by this object (taken out of our map cache) to convert
     // pixel coverage counts gotten from MarlinCache (which are in the range
     // [0, maxalpha]) into alpha values, which are in [0,256).
-    final static byte[] ALPHA_MAP;
+    static final byte[] ALPHA_MAP;
 
-    final static OffHeapArray ALPHA_MAP_UNSAFE;
+    static final OffHeapArray ALPHA_MAP_UNSAFE;
 
     static {
         final byte[] _ALPHA_MAP = buildAlphaMap(MAX_AA_ALPHA);
@@ -123,8 +128,6 @@ public final class MarlinCache implements MarlinConst {
         bboxX1 = maxx;
         bboxY1 = maxy;
 
-        // TODO: check maxx < 23bits (RLE encoding) !
-
         final int width = (maxx - minx);
 
         if (FORCE_NO_RLE) {
@@ -135,27 +138,24 @@ public final class MarlinCache implements MarlinConst {
             // heuristics: use both bbox area and complexity
             // ie number of primitives:
 
-            // fast check width:
-            if (width <= RLE_MIN_WIDTH) {
+            // fast check min and max width (maxx < 23bits):
+            if (width <= RLE_MIN_WIDTH || width >= RLE_MAX_WIDTH) {
                 useRLE = false;
             } else {
                 // perimeter approach: how fit the total length into given height:
 
                 // if stroking: meanCrossings /= 2 => divide edgeSumDeltaY by 2
                 final int heightSubPixel
-                    = (((maxy - miny) << SUBPIXEL_LG_POSITIONS_Y) >> rdrCtx.stroking);
+                    = (((maxy - miny) << SUBPIXEL_LG_POSITIONS_Y) << rdrCtx.stroking);
 
-                    // check meanDist > block size:
-                    // check width / (meanCrossings - 1) >= BLOCK_SIZE
-
-//                    final int meanCrossingsInt = edgeSumDeltaY / heightSubPixel;
-//                    useRLE = (width << 1) >= ((meanCrossingsInt - 1) << BLOCK_SIZE_LG);
+                // check meanDist > block size:
+                // check width / (meanCrossings - 1) >= RLE_THRESHOLD
 
                 // fast case: (meanCrossingPerPixel <= 2) means 1 span only
                 useRLE = (edgeSumDeltaY <= (heightSubPixel << 1))
                     // note: already checked (meanCrossingPerPixel <= 2)
                     // rewritten to avoid division:
-                    || (width * heightSubPixel) >=
+                    || (width * heightSubPixel) >
                             ((edgeSumDeltaY - heightSubPixel) << BLOCK_SIZE_LG);
 
                 if (doTrace && !useRLE) {
@@ -171,7 +171,7 @@ public final class MarlinCache implements MarlinConst {
                         + " meanCrossings = "+ meanCrossings
                         + " meanDist = " + meanDist
                         + " width =  " + (width * heightSubPixel)
-                        + " < criteria:  " + ((edgeSumDeltaY - heightSubPixel) << BLOCK_SIZE_LG)
+                        + " <= criteria:  " + ((edgeSumDeltaY - heightSubPixel) << BLOCK_SIZE_LG)
                     );
                 }
             }
@@ -273,7 +273,7 @@ public final class MarlinCache implements MarlinConst {
         }
 
         // skip useless pixels above boundary
-        final int px_bbox1 = FloatMath.max(px1, bboxX1);
+        final int px_bbox1 = FloatMath.min(px1, bboxX1);
 
         if (doLogBounds) {
             MarlinUtils.logInfo("row = [" + px0 + " ... " + px_bbox1
@@ -386,6 +386,7 @@ public final class MarlinCache implements MarlinConst {
         final int row  = y - bboxY0;
         final int from = px0 - _bboxX0; // first pixel inclusive
 
+        // skip useless pixels above boundary
         final int px_bbox1 = FloatMath.min(px1, bboxX1);
         final int to       = px_bbox1 - _bboxX0; //  last pixel exclusive
 
@@ -399,7 +400,7 @@ public final class MarlinCache implements MarlinConst {
 
         // determine need array size:
         // pessimistic: max needed size = deltaX x 4 (1 int)
-        final long needSize = initialPos + ((px_bbox1 - px0) << 2);
+        final long needSize = initialPos + ((to - from) << 2);
 
         // update row data:
         OffHeapArray _rowAAChunk = rowAAChunk;
@@ -433,6 +434,8 @@ public final class MarlinCache implements MarlinConst {
 
         for (int t = blkW, blk_x0, blk_x1, cx, delta; t <= blkE; t++) {
             if (blkFlags[t] != 0) {
+                blkFlags[t] = 0;
+
                 if (last_t0 == _MAX_VALUE) {
                     last_t0 = t;
                 }
@@ -448,6 +451,7 @@ public final class MarlinCache implements MarlinConst {
 
                 for (cx = blk_x0; cx < blk_x1; cx++) {
                     if ((delta = alphaRow[cx]) != 0) {
+                        alphaRow[cx] = 0;
 
                         // not first rle entry:
                         if (cx != cx0) {
@@ -460,21 +464,24 @@ public final class MarlinCache implements MarlinConst {
                             // note: it should check X is smaller than 23bits (overflow)!
 
                             // special case to encode entries into a single int:
-                            _unsafe.putInt(addr_off,
-                                ((_bboxX0 + cx) << 8)
-                                | (((int) _unsafe.getByte(addr_alpha + val)) & 0xFF) // [0..255]
-//                                | Byte.toUnsignedInt(
-//                                    _unsafe.getByte(addr_alpha + val)) // [0..255]
-                            );
-                            addr_off += SIZE_INT;
+                            if (val == 0) {
+                                _unsafe.putInt(addr_off,
+                                    ((_bboxX0 + cx) << 8)
+                                );
+                            } else {
+                                _unsafe.putInt(addr_off,
+                                    ((_bboxX0 + cx) << 8)
+                                    | (((int) _unsafe.getByte(addr_alpha + val)) & 0xFF) // [0..255]
+                                );
 
-                            if (val != 0) {
                                 if (runLen == 1) {
                                     _touchedTile[cx0 >> _TILE_SIZE_LG] += val;
                                 } else {
                                     touchTile(cx0, val, cx, runLen, _touchedTile);
                                 }
                             }
+                            addr_off += SIZE_INT;
+
                             if (doStats) {
                                 RendererContext.stats.hist_tile_generator_encoding_runLen
                                     .add(runLen);
@@ -503,6 +510,7 @@ public final class MarlinCache implements MarlinConst {
             }
         }
 
+        // Process remaining RLE run:
         runLen = to - cx0;
 
         // store alpha coverage (ensure within bounds):
@@ -512,21 +520,24 @@ public final class MarlinCache implements MarlinConst {
         // note: it should check X is smaller than 23bits (overflow)!
 
         // special case to encode entries into a single int:
-        _unsafe.putInt(addr_off,
-            ((_bboxX0 + to) << 8)
-            | (((int) _unsafe.getByte(addr_alpha + val)) & 0xFF) // [0..255]
-//            | Byte.toUnsignedInt(
-//                _unsafe.getByte(addr_alpha + val)) // [0..255]
-        );
-        addr_off += SIZE_INT;
+        if (val == 0) {
+            _unsafe.putInt(addr_off,
+                ((_bboxX0 + to) << 8)
+            );
+        } else {
+            _unsafe.putInt(addr_off,
+                ((_bboxX0 + to) << 8)
+                | (((int) _unsafe.getByte(addr_alpha + val)) & 0xFF) // [0..255]
+            );
 
-        if (val != 0) {
             if (runLen == 1) {
                 _touchedTile[cx0 >> _TILE_SIZE_LG] += val;
             } else {
                 touchTile(cx0, val, to, runLen, _touchedTile);
             }
         }
+        addr_off += SIZE_INT;
+
         if (doStats) {
             RendererContext.stats.hist_tile_generator_encoding_runLen
                 .add(runLen);
@@ -559,11 +570,14 @@ public final class MarlinCache implements MarlinConst {
         }
 
         // Clear alpha row for reuse:
-        int pos = px1 - _bboxX0;
-        IntArrayCache.fill(alphaRow, from, pos, 0);
-
-        // Clear blkFlags:
-        IntArrayCache.fill(blkFlags, blkW, (pos >> _BLK_SIZE_LG) + 1, 0);
+        if (px1 > bboxX1) {
+            alphaRow[to    ] = 0;
+            alphaRow[to + 1] = 0;
+        }
+        if (doChecks) {
+            IntArrayCache.check(blkFlags, 0, blkFlags.length, 0);
+            IntArrayCache.check(alphaRow, 0, alphaRow.length, 0);
+        }
 
         if (doMonitors) {
             RendererContext.stats.mon_rdr_copyAARow.stop();

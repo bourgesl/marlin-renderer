@@ -306,6 +306,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             final double c = at.getShearY();
             final double d = at.getScaleY();
             final double det = a * d - c * b;
+
             if (Math.abs(det) <= (2f * Float.MIN_VALUE)) {
                 // this rendering engine takes one dimensional curves and turns
                 // them into 2D shapes by giving them width.
@@ -329,7 +330,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             // the scaled width. This condition is satisfied if
             // a*b == -c*d && a*a+c*c == b*b+d*d. In the actual check below, we
             // leave a bit of room for error.
-            if (nearZero(a*b + c*d) && nearZero(a*a+c*c - (b*b+d*d))) {
+            if (nearZero(a*b + c*d) && nearZero(a*a + c*c - (b*b + d*d))) {
                 final float scale = (float) Math.sqrt(a*a + c*c);
                 if (dashes != null) {
                     recycleDashes = true;
@@ -339,7 +340,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                         newDashes = rdrCtx.dasher.dashes_initial;
                     } else {
                         if (doStats) {
-                            RendererContext.stats.stat_array_dasher_firstSegmentsBuffer
+                            RendererContext.stats.stat_array_dasher_dasher
                                 .add(dashLen);
                         }
                         newDashes = rdrCtx.getDirtyFloatArray(dashLen);
@@ -455,7 +456,7 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
     }
 
-    static abstract class NormalizingPathIterator implements PathIterator {
+    abstract static class NormalizingPathIterator implements PathIterator {
 
         private PathIterator src;
 
@@ -882,11 +883,11 @@ public class MarlinRenderingEngine extends RenderingEngine
     private static final boolean useThreadLocal;
 
     // hard reference
-    final static int REF_HARD = 0;
+    static final int REF_HARD = 0;
     // soft reference
-    final static int REF_SOFT = 1;
+    static final int REF_SOFT = 1;
     // weak reference
-    final static int REF_WEAK = 2;
+    static final int REF_WEAK = 2;
 
     // reference type stored in either TL or CLQ
     static final int REF_TYPE;
@@ -923,7 +924,7 @@ public class MarlinRenderingEngine extends RenderingEngine
         }
     }
 
-    private static boolean settingsLogged = false;
+    private static boolean settingsLogged = !enableLogs;
 
     private static void logSettings(final String reClass) {
         // log information at startup

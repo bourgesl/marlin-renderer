@@ -1,10 +1,5 @@
-package marlin;
-
-
-import sun.java2d.marlin.FloatMath;
-
 /*
- * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,12 +21,13 @@ import sun.java2d.marlin.FloatMath;
  * questions.
  */
 
+import sun.java2d.marlin.FloatMath;
+
 /*
  * @test
  * @summary Check for correct implementation of FloatMath.ceil/floor
  * @run main CeilAndFloorTests
  */
-
 public class CeilAndFloorTests {
 
     public static String toHexString(float f) {

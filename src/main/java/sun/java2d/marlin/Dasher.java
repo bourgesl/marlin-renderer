@@ -41,9 +41,9 @@ import sun.awt.geom.PathConsumer2D;
  */
 final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
-    final static int recLimit = 4;
-    final static float ERR = 0.01f;
-    final static float minTincrement = 1f / (1 << recLimit);
+    static final int recLimit = 4;
+    static final float ERR = 0.01f;
+    static final float minTincrement = 1f / (1 << recLimit);
 
     private PathConsumer2D out;
     private float[] dash;
@@ -374,7 +374,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     // NOTE: the way we do things here is not enough to traverse a general
     // tree; however, the trees we are interested in have the property that
     // every non leaf node has exactly 2 children
-    final static class LengthIterator {
+    static final class LengthIterator {
         private enum Side {LEFT, RIGHT};
         // Holds the curves at various levels of the recursion. The root
         // (i.e. the original curve) is at recCurveStack[0] (but then it

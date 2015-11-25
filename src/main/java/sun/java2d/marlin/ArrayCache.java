@@ -30,20 +30,20 @@ import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 public final class ArrayCache implements MarlinConst {
 
-    final static int BUCKETS = 4;
-    final static int MIN_ARRAY_SIZE = 4096;
-    final static int MAX_ARRAY_SIZE;
-    final static int MASK_CLR_1 = ~1;
+    static final int BUCKETS = 4;
+    static final int MIN_ARRAY_SIZE = 4096;
+    static final int MAX_ARRAY_SIZE;
+    static final int MASK_CLR_1 = ~1;
     // threshold to grow arrays only by (3/2) instead of 2
-    final static int THRESHOLD_ARRAY_SIZE;
-    final static int[] ARRAY_SIZES = new int[BUCKETS];
+    static final int THRESHOLD_ARRAY_SIZE;
+    static final int[] ARRAY_SIZES = new int[BUCKETS];
     // dirty byte array sizes
-    final static int MIN_DIRTY_BYTE_ARRAY_SIZE = 32 * 2048; // 32px x 2048px
-    final static int MAX_DIRTY_BYTE_ARRAY_SIZE;
-    final static int[] DIRTY_BYTE_ARRAY_SIZES = new int[BUCKETS];
+    static final int MIN_DIRTY_BYTE_ARRAY_SIZE = 32 * 2048; // 32px x 2048px
+    static final int MAX_DIRTY_BYTE_ARRAY_SIZE;
+    static final int[] DIRTY_BYTE_ARRAY_SIZES = new int[BUCKETS];
     // large array thresholds:
-    final static long THRESHOLD_LARGE_ARRAY_SIZE;
-    final static long THRESHOLD_HUGE_ARRAY_SIZE;
+    static final long THRESHOLD_LARGE_ARRAY_SIZE;
+    static final long THRESHOLD_HUGE_ARRAY_SIZE;
     // stats
     private static int resizeInt = 0;
     private static int resizeDirtyInt = 0;

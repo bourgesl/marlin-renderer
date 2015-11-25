@@ -28,27 +28,28 @@ package sun.java2d.marlin;
 import java.util.Arrays;
 import sun.awt.geom.PathConsumer2D;
 import static sun.java2d.marlin.OffHeapArray.SIZE_INT;
+//import jdk.internal.misc.Unsafe;
 import sun.misc.Unsafe;
 
 final class Renderer implements PathConsumer2D, MarlinConst {
 
-    final static boolean DISABLE_RENDER = false;
+    static final boolean DISABLE_RENDER = false;
 
-    final static boolean ENABLE_BLOCK_FLAGS = MarlinProperties.isUseTileFlags();
-    final static boolean ENABLE_BLOCK_FLAGS_HEURISTICS = MarlinProperties.isUseTileFlagsWithHeuristics();
+    static final boolean ENABLE_BLOCK_FLAGS = MarlinProperties.isUseTileFlags();
+    static final boolean ENABLE_BLOCK_FLAGS_HEURISTICS = MarlinProperties.isUseTileFlagsWithHeuristics();
 
-    private final static int ALL_BUT_LSB = 0xfffffffe;
-    private final static int ERR_STEP_MAX = 0x7fffffff; // = 2^31 - 1
+    private static final int ALL_BUT_LSB = 0xfffffffe;
+    private static final int ERR_STEP_MAX = 0x7fffffff; // = 2^31 - 1
 
-    private final static double POWER_2_TO_32 = FloatMath.powerOfTwoD(32);
+    private static final double POWER_2_TO_32 = FloatMath.powerOfTwoD(32);
 
     // use float to make tosubpix methods faster (no int to float conversion)
-    public final static float f_SUBPIXEL_POSITIONS_X
+    public static final float f_SUBPIXEL_POSITIONS_X
         = (float) SUBPIXEL_POSITIONS_X;
-    public final static float f_SUBPIXEL_POSITIONS_Y
+    public static final float f_SUBPIXEL_POSITIONS_Y
         = (float) SUBPIXEL_POSITIONS_Y;
-    public final static int SUBPIXEL_MASK_X = SUBPIXEL_POSITIONS_X - 1;
-    public final static int SUBPIXEL_MASK_Y = SUBPIXEL_POSITIONS_Y - 1;
+    public static final int SUBPIXEL_MASK_X = SUBPIXEL_POSITIONS_X - 1;
+    public static final int SUBPIXEL_MASK_Y = SUBPIXEL_POSITIONS_Y - 1;
 
     // number of subpixels corresponding to a tile line
     private static final int SUBPIXEL_TILE
@@ -386,17 +387,6 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             }
         }
 
-        addEdge(or, firstCrossing, lastCrossing, x1d, y1d, slope);
-
-        if (doMonitors) {
-            RendererContext.stats.mon_rdr_addLine.stop();
-        }
-    }
-
-    private void addEdge(final int or,
-                         final int firstCrossing, final int lastCrossing,
-                         final double x1d, final double y1d, final double slope)
-    {
         // local variables for performance:
         final int _SIZEOF_EDGE_BYTES = SIZEOF_EDGE_BYTES;
 
@@ -405,7 +395,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // get free pointer (ie length in bytes)
         final int edgePtr = _edges.used;
 
-        if (_edges.length < edgePtr + _SIZEOF_EDGE_BYTES) {
+        // use substraction to avoid integer overflow:
+        if (_edges.length - edgePtr < _SIZEOF_EDGE_BYTES) {
             // suppose _edges.length > _SIZEOF_EDGE_BYTES
             // so doubling size is enough to add needed bytes
             // note: throw IOOB if neededSize > 2Gb:
@@ -492,6 +483,10 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
         // update free pointer (ie length in bytes)
         _edges.used += _SIZEOF_EDGE_BYTES;
+
+        if (doMonitors) {
+            RendererContext.stats.mon_rdr_addLine.stop();
+        }
     }
 
 // END EDGE LIST
@@ -660,6 +655,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             rdrCtx.putIntArray(edgeBucketCounts, 0, 0);
             edgeBucketCounts = edgeBucketCounts_initial;
         }
+
         // At last: resize back off-heap edges to initial size
         if (edges.length != INITIAL_EDGES_CAPACITY) {
             // note: may throw OOME:
@@ -1452,7 +1448,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
             if (enableBlkFlags) {
                 // ensure blockFlags array is large enough:
-                final int nxTiles = ((pmaxX - pminX) + TILE_SIZE) >> TILE_SIZE_LG;
+                // note: +2 to ensure enough space left at end
+                final int nxTiles = ((pmaxX - pminX) >> TILE_SIZE_LG) + 2;
                 if (nxTiles > INITIAL_ARRAY) {
                     blkFlags = rdrCtx.getIntArray(nxTiles);
                 }

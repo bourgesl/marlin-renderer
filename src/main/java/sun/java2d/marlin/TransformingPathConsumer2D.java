@@ -138,7 +138,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    final static class TranslateFilter implements PathConsumer2D {
+    static final class TranslateFilter implements PathConsumer2D {
         private PathConsumer2D out;
         private float tx, ty;
 
@@ -197,7 +197,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    final static class ScaleFilter implements PathConsumer2D {
+    static final class ScaleFilter implements PathConsumer2D {
         private PathConsumer2D out;
         private float sx, sy, tx, ty;
 
@@ -259,7 +259,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    final static class TransformFilter implements PathConsumer2D {
+    static final class TransformFilter implements PathConsumer2D {
         private PathConsumer2D out;
         private float mxx, mxy, mxt, myx, myy, myt;
 
@@ -330,7 +330,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    final static class DeltaScaleFilter implements PathConsumer2D {
+    static final class DeltaScaleFilter implements PathConsumer2D {
         private PathConsumer2D out;
         private float sx, sy;
 
@@ -389,7 +389,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    final static class DeltaTransformFilter implements PathConsumer2D {
+    static final class DeltaTransformFilter implements PathConsumer2D {
         private PathConsumer2D out;
         private float mxx, mxy, myx, myy;
 
@@ -458,7 +458,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    final static class Path2DWrapper implements PathConsumer2D {
+    static final class Path2DWrapper implements PathConsumer2D {
         private Path2D.Float p2d;
 
         Path2DWrapper() {}

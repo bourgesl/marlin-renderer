@@ -29,31 +29,35 @@ package sun.java2d.marlin;
  * Marlin constant holder using System properties
  */
 interface MarlinConst {
+    // enable Logs (logger or stdout)
+    static final boolean enableLogs = MarlinProperties.isEnableLogs();
     // enable Logger
-    static final boolean useLogger = MarlinProperties.isUseLogger();
+    static final boolean useLogger = enableLogs && MarlinProperties.isUseLogger();
 
     // log new RendererContext
-    static final boolean logCreateContext = MarlinProperties.isLogCreateContext();
+    static final boolean logCreateContext = enableLogs
+        && MarlinProperties.isLogCreateContext();
     // log misc.Unsafe alloc/realloc/free
-    static final boolean logUnsafeMalloc = MarlinProperties.isLogUnsafeMalloc();
+    static final boolean logUnsafeMalloc = enableLogs
+        && MarlinProperties.isLogUnsafeMalloc();
 
     // do statistics
-    static final boolean doStats = MarlinProperties.isDoStats();
+    static final boolean doStats = enableLogs && MarlinProperties.isDoStats();
     // do monitors
     // disabled to reduce byte-code size a bit...
-    static final boolean doMonitors = false; // MarlinProperties.isDoMonitors();
+    static final boolean doMonitors = enableLogs && false; // MarlinProperties.isDoMonitors();
     // do checks
-    static final boolean doChecks = MarlinProperties.isDoChecks();
+    static final boolean doChecks = false; // MarlinProperties.isDoChecks();
 
     // do AA range checks: disable when algorithm / code is stable
     static final boolean DO_AA_RANGE_CHECK = false;
 
     // enable logs
-    static final boolean doLogWidenArray = false;
+    static final boolean doLogWidenArray = enableLogs && false;
     // enable oversize logs
-    static final boolean doLogOverSize = false;
+    static final boolean doLogOverSize = enableLogs && false;
     // enable traces
-    static final boolean doTrace = false;
+    static final boolean doTrace = enableLogs && false;
     // do flush monitors
     static final boolean doFlushMonitors = true;
     // use one polling thread to dump statistics/monitors
@@ -68,7 +72,7 @@ interface MarlinConst {
     static final boolean useSimplifier = MarlinProperties.isUseSimplifier();
 
     // flag to enable logs related bounds checks
-    static final boolean doLogBounds = false;
+    static final boolean doLogBounds = enableLogs && false;
 
     // Initial Array sizing (initial context capacity) ~ 512K
 
@@ -93,20 +97,20 @@ interface MarlinConst {
     static final byte BYTE_0 = (byte) 0;
 
     // subpixels expressed as log2
-    public final static int SUBPIXEL_LG_POSITIONS_X
+    public static final int SUBPIXEL_LG_POSITIONS_X
         = MarlinProperties.getSubPixel_Log2_X();
-    public final static int SUBPIXEL_LG_POSITIONS_Y
+    public static final int SUBPIXEL_LG_POSITIONS_Y
         = MarlinProperties.getSubPixel_Log2_Y();
 
     // number of subpixels
-    public final static int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
-    public final static int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
+    public static final int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
+    public static final int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
 
-    public final static float NORM_SUBPIXELS
+    public static final float NORM_SUBPIXELS
         = (float)Math.sqrt(( SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_X
                            + SUBPIXEL_POSITIONS_Y * SUBPIXEL_POSITIONS_Y)/2.0);
 
-    public final static int MAX_AA_ALPHA
+    public static final int MAX_AA_ALPHA
         = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;
 
     public static final int TILE_SIZE_LG = MarlinProperties.getTileSize_Log2();

@@ -30,8 +30,6 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.acos;
-import static sun.java2d.marlin.MarlinUtils.getCallerInfo;
-import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 final class Helpers implements MarlinConst {
 
