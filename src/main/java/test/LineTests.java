@@ -45,7 +45,7 @@ public class LineTests {
     public static void main(String[] args) {
         final float lineStroke = 2f;
         final int size = 2600;
-        
+
         System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
 
         System.out.println("LineTests: size = " + size);
@@ -56,7 +56,7 @@ public class LineTests {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
-        
+
         g2d.setClip(0, 0, size, size);
         g2d.setStroke(new BasicStroke(lineStroke));
 

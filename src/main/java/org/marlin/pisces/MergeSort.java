@@ -31,8 +31,6 @@ package org.marlin.pisces;
  */
 final class MergeSort {
 
-    /** collect array data at each mergeSortNoCopy() invocation */
-//    private static final boolean ENABLE_COLLECT_ARRAY_DATA = false; /* Boolean.getBoolean("MergeSort.collect.data"); */
     /** true to enable array data collection and serialization */
     public static final boolean DO_COLLECT_ARRAY_DATA = (false) && MarlinConst.doStats;
 
