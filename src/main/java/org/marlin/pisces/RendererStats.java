@@ -32,6 +32,7 @@ import org.marlin.pisces.stats.ArraySortDataCollection;
 import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.Monitor;
 import org.marlin.pisces.stats.StatLong;
+import sun.misc.ThreadGroupUtils;
 
 /**
  * This class gathers global rendering statistics for debugging purposes only
@@ -239,14 +240,23 @@ public final class RendererStats implements MarlinConst {
     private RendererStats() {
         super();
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                dump();
-                // dump array data:
-                ArraySortDataCollection.save("/tmp/ArraySortDataCollection.ser", adc);
-            }
-        });
+        final Thread hook = new Thread(
+            ThreadGroupUtils.getRootThreadGroup(),
+            new Runnable() {
+                @Override
+                public void run() {
+                    dump();
+
+                    if (MergeSort.DO_COLLECT_ARRAY_DATA) {
+                        // dump array data:
+                        ArraySortDataCollection.save("/tmp/ArraySortDataCollection.ser", adc);
+                    }
+                }
+            }, 
+            "MarlinStatsHook"
+        );
+        hook.setContextClassLoader(null);
+        Runtime.getRuntime().addShutdownHook(hook);
 
         if (useDumpThread) {
             final Timer statTimer = new Timer("RendererStats");

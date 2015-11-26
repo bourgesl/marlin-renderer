@@ -33,6 +33,7 @@ import java.security.PrivilegedAction;
 import java.util.Vector;
 import static org.marlin.pisces.MarlinConst.logUnsafeMalloc;
 import sun.misc.Unsafe;
+import sun.misc.ThreadGroupUtils;
 
 /**
  *
@@ -71,8 +72,16 @@ final class OffHeapArray  {
 
             @Override
             public Void run() {
-                final Thread t = new Thread(new OffHeapDisposer(),
+                /*
+                 * The thread must be a member of a thread group
+                 * which will not get GCed before VM exit.
+                 * Make its parent the top-level thread group.
+                 */
+                final ThreadGroup rootTG
+                    = ThreadGroupUtils.getRootThreadGroup();
+                final Thread t = new Thread(rootTG, new OffHeapDisposer(),
                     "MarlinRenderer Disposer");
+                t.setContextClassLoader(null);
                 t.setDaemon(true);
                 t.setPriority(Thread.MAX_PRIORITY);
                 t.start();
