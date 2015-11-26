@@ -24,6 +24,8 @@
  */
 package org.marlin.pisces;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -240,33 +242,41 @@ public final class RendererStats implements MarlinConst {
     private RendererStats() {
         super();
 
-        final Thread hook = new Thread(
-            ThreadGroupUtils.getRootThreadGroup(),
-            new Runnable() {
-                @Override
-                public void run() {
-                    dump();
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
-                    if (MergeSort.DO_COLLECT_ARRAY_DATA) {
-                        // dump array data:
-                        ArraySortDataCollection.save("/tmp/ArraySortDataCollection.ser", adc);
-                    }
-                }
-            }, 
-            "MarlinStatsHook"
-        );
-        hook.setContextClassLoader(null);
-        Runtime.getRuntime().addShutdownHook(hook);
+            @Override
+            public Void run() {
+                final Thread hook = new Thread(
+                    ThreadGroupUtils.getRootThreadGroup(),
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            dump();
 
-        if (useDumpThread) {
-            final Timer statTimer = new Timer("RendererStats");
-            statTimer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    dump();
+                            if (MergeSort.DO_COLLECT_ARRAY_DATA) {
+                                // dump array data:
+                                ArraySortDataCollection.save(
+                                    "/tmp/ArraySortDataCollection.ser", adc);
+                            }
+                        }
+                    },
+                    "MarlinStatsHook"
+                );
+                hook.setContextClassLoader(null);
+                Runtime.getRuntime().addShutdownHook(hook);
+
+                if (useDumpThread) {
+                    final Timer statTimer = new Timer("RendererStats");
+                    statTimer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            dump();
+                        }
+                    }, statDump, statDump);
                 }
-            }, statDump, statDump);
-        }
+                return null;
+            }
+        });
     }
 
     void dump() {
