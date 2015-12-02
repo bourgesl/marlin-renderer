@@ -5,6 +5,14 @@ Marlin is an open source (GPL2+CP) Java2D RenderingEngine optimized for performa
 
 Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 
+Build status
+============
+Continuous integration by Travis CI (build + tests):
+
+   * Branch use_Unsafe: 
+<img src="https://travis-ci.org/bourgesl/marlin-renderer.svg?branch=use_Unsafe" alt="build status"/>
+
+
 License
 =======
 
@@ -18,6 +26,7 @@ The GNU General Public License (GPL)
 Version 2, June 1991
 
 See License.md
+
 
 Performance
 ===========
@@ -34,6 +43,7 @@ Getting in touch
 ================
 
 Users and developers interested in the Marlin-renderer are kindly invited to join the [marlin-renderer](https://groups.google.com/forum/#!forum/marlin-renderer) Google Group.
+
 
 Contributing
 ============
