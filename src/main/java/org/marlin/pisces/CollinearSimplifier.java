@@ -33,7 +33,7 @@ final class CollinearSimplifier implements PathConsumer2D {
     private static final int STATE_EMPTY = 2;
 
     // slope precision threshold
-    static final float EPS = 1e-4f; // aaime proposed 1e-3f
+    static final float EPS = 1e-3f; // aaime proposed 1e-3f
 
     PathConsumer2D delegate;
     int state;

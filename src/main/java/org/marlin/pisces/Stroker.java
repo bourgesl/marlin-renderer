@@ -25,7 +25,6 @@
 package org.marlin.pisces;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import static java.lang.Math.ulp;
 import static java.lang.Math.sqrt;
 
@@ -87,6 +86,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     private int joinStyle;
 
     private float lineWidth2;
+    private float invHalfLineWidth2Sq;
 
     private final float[] offset0 = new float[2];
     private final float[] offset1 = new float[2];
@@ -157,7 +157,13 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     {
         this.out = pc2d;
 
-        this.lineWidth2 = lineWidth / 2f;
+        if (false) {
+            // TRY GAMMA-CORRECTION: inv_gamma(0.5): (0.7297400528407231f / 2f)
+            this.lineWidth2 = (lineWidth + (0.5f / 2f)) / 2f;
+        } else {
+            this.lineWidth2 = lineWidth / 2f;
+        }
+        this.invHalfLineWidth2Sq = 1f / (2f * lineWidth2 * lineWidth2);
         this.capStyle = capStyle;
         this.joinStyle = joinStyle;
 
@@ -252,11 +258,11 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // The sign of the dot product of mx,my and omx,omy is equal to the
         // the sign of the cosine of ext
         // (ext is the angle between omx,omy and mx,my).
-        double cosext = omx * mx + omy * my;
+        float cosext = omx * mx + omy * my;
         // If it is >=0, we know that abs(ext) is <= 90 degrees, so we only
         // need 1 curve to approximate the circle section that joins omx,omy
         // and mx,my.
-        final int numCurves = cosext >= 0 ? 1 : 2;
+        final int numCurves = (cosext >= 0f) ? 1 : 2;
 
         switch (numCurves) {
         case 1:
@@ -302,14 +308,21 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                                      final float mx, final float my,
                                      boolean rev)
     {
-        float cosext2 = (omx * mx + omy * my) / (2f * lineWidth2 * lineWidth2);
+        float cosext2 = (omx * mx + omy * my) * invHalfLineWidth2Sq;
+        // clamp value within [-0.5, 0.5] range:
+        if (cosext2 < -0.5f) {
+            cosext2 = -0.5f;
+        } else if (cosext2 > 0.5f) {
+            cosext2 = 0.5f;
+        }
+        
         // cv is the length of P1-P0 and P2-P3 divided by the radius of the arc
         // (so, cv assumes the arc has radius 1). P0, P1, P2, P3 are the points that
         // define the bezier curve we're computing.
         // It is computed using the constraints that P1-P0 and P3-P2 are parallel
         // to the arc tangents at the endpoints, and that |P1-P0|=|P3-P2|.
-        float cv = (float) ((4.0 / 3.0) * sqrt(0.5-cosext2) /
-                            (1.0 + sqrt(cosext2+0.5)));
+        float cv = (float) ((4.0 / 3.0) * sqrt(0.5 - cosext2) /
+                            (1.0 + sqrt(cosext2 + 0.5)));
         // if clockwise, we need to negate cv.
         if (rev) { // rev is equivalent to isCW(omx, omy, mx, my)
             cv = -cv;
@@ -1265,14 +1278,15 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         private void ensureSpace(final int n) {
-            if (end + n > curves.length) {
+            // use substraction to avoid integer overflow:
+            if (curves.length - end < n) {
                 if (doStats) {
                     RendererContext.stats.stat_array_stroker_polystack_curves
                         .add(end + n);
                 }
                 curves = rdrCtx.widenDirtyFloatArray(curves, end, end + n);
             }
-            if (numCurves + 1 > curveTypes.length) {
+            if (curveTypes.length - numCurves < 1) {
                 if (doStats) {
                     RendererContext.stats.stat_array_stroker_polystack_curveTypes
                         .add(numCurves + 1);

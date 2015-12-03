@@ -46,7 +46,7 @@ interface MarlinConst {
     // disabled to reduce byte-code size a bit...
     static final boolean doMonitors = enableLogs && MarlinProperties.isDoMonitors();
     // do checks
-    static final boolean doChecks = MarlinProperties.isDoChecks();
+    static final boolean doChecks = enableLogs && MarlinProperties.isDoChecks();
 
     // do AA range checks: disable when algorithm / code is stable
     static final boolean DO_AA_RANGE_CHECK = false;

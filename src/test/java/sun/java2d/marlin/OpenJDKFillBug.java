@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package test;
+package sun.java2d.marlin;
 
 import java.awt.Color;
 import java.awt.Composite;
@@ -38,7 +38,6 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import org.marlin.pisces.MarlinRenderingEngine;
 import sun.java2d.pipe.RenderingEngine;
 
 /**

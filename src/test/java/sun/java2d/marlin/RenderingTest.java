@@ -21,53 +21,19 @@
  * questions.
  */
 
-import org.junit.Test;
-import sun.java2d.marlin.BoundsTest;
-import sun.java2d.marlin.OpenJDKFillBug;
-import sun.java2d.marlin.RenderingTest;
-import sun.java2d.marlin.TextTransformTest;
+package sun.java2d.marlin;
 
-/**
- * Simple wrapper on Marlin tests
- * @author bourgesl
- */
-public class RunJUnitTest {
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
-    private final static String[] NO_ARGS = new String[0];
+public class RenderingTest {
 
-    @Test
-    public void fillBugTest() {
-        OpenJDKFillBug.main(NO_ARGS);
+    public static void main(String[] args) {
+        BufferedImage bi = new BufferedImage(1024, 1024, BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D g = bi.createGraphics();
+        g.draw(new Rectangle2D.Float(10, 10, 100, 100));
+        g.fill(new Rectangle2D.Float(10, 10, 100, 100));
+        g.dispose();
     }
-
-    @Test
-    public void boundsTest() {
-        BoundsTest.main(NO_ARGS);
-    }
-
-    @Test
-    public void renderingTest() {
-        RenderingTest.main(NO_ARGS);
-    }
-
-    @Test
-    public void arrayCacheSizeTest() {
-        ArrayCacheSizeTest.main(NO_ARGS);
-    }
-
-    @Test
-    public void textClipErrorTest() {
-        TextClipErrorTest.main(NO_ARGS);
-    }
-
-    @Test
-    public void textTransformTest() {
-        TextTransformTest.main(NO_ARGS);
-    }
-
-    @Test
-    public void crashTest() {
-        CrashTest.main(NO_ARGS);
-    }
-
 }

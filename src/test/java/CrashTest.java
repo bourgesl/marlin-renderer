@@ -34,10 +34,9 @@ import javax.imageio.ImageIO;
 import sun.java2d.pipe.RenderingEngine;
 
 /**
- * Simple crash rendering test using huge GeneralPaths with marlin renderer
- *
- * run it with large heap (2g):
- * java -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine marlin.CrashTest
+ * @test
+ * @summary Simple crash rendering test using huge GeneralPaths with the Marlin renderer
+ * @run main/othervm -mx512m CrashTest
  */
 public class CrashTest {
 
@@ -48,7 +47,13 @@ public class CrashTest {
         // try insane image sizes:
 
         // subpixel coords may overflow:
-//        testHugeImage((Integer.MAX_VALUE >> 3) + 1, 6);
+        // check MAX_VALUE / (8 * 2); overflow may happen due to orientation flag
+        // But as it is impossible to allocate an image larger than 2Gb (byte) then
+        // it is also impossible to have rowAAChunk larger than 2Gb !
+
+        // Disabled test as it consumes 4GB heap + offheap (2Gb) ie > 6Gb !
+//        testHugeImage((Integer.MAX_VALUE >> 4) - 100, 16);
+
         // larger than 23 bits: (RLE)
         testHugeImage(8388608 + 1, 10);
 
@@ -65,11 +70,9 @@ public class CrashTest {
             if (th instanceof ArrayIndexOutOfBoundsException) {
                 System.out.println("ArrayIndexOutOfBoundsException expected.");
             } else {
-                System.out.println("Exception occured:");
-                th.printStackTrace();
+                throw new RuntimeException("Unexpected exception", th);
             }
         }
-
     }
 
     private static void test(final float lineStroke,
