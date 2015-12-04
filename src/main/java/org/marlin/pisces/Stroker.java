@@ -258,7 +258,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // The sign of the dot product of mx,my and omx,omy is equal to the
         // the sign of the cosine of ext
         // (ext is the angle between omx,omy and mx,my).
-        float cosext = omx * mx + omy * my;
+        final float cosext = omx * mx + omy * my;
         // If it is >=0, we know that abs(ext) is <= 90 degrees, so we only
         // need 1 curve to approximate the circle section that joins omx,omy
         // and mx,my.
@@ -308,14 +308,14 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                                      final float mx, final float my,
                                      boolean rev)
     {
-        float cosext2 = (omx * mx + omy * my) * invHalfLineWidth2Sq;
-        // clamp value within [-0.5, 0.5] range:
-        if (cosext2 < -0.5f) {
-            cosext2 = -0.5f;
-        } else if (cosext2 > 0.5f) {
-            cosext2 = 0.5f;
+        final float cosext2 = (omx * mx + omy * my) * invHalfLineWidth2Sq;
+
+        // check cos(ext) <= 1 to avoid cv = NaN:
+        if (cosext2 > 0.5f) {
+            // just return to avoid generating a flat curve:
+            return;
         }
-        
+
         // cv is the length of P1-P0 and P2-P3 divided by the radius of the arc
         // (so, cv assumes the arc has radius 1). P0, P1, P2, P3 are the points that
         // define the bezier curve we're computing.

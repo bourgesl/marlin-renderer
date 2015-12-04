@@ -24,17 +24,15 @@
  */
 package org.marlin.pisces;
 
-//import jdk.internal.misc.JavaLangAccess;
-//import jdk.internal.misc.SharedSecrets;
-import sun.misc.JavaLangAccess;
-import sun.misc.SharedSecrets;
 
 public final class MarlinUtils {
-    // TODO: use sun.util.logging.PlatformLogger once in JDK9
+    // Marlin logger
+//    private static final sun.util.logging.PlatformLogger log;
     private static final java.util.logging.Logger log;
 
     static {
         if (MarlinConst.useLogger) {
+//            log = sun.util.logging.PlatformLogger.getLogger("sun.java2d.marlin");
             log = java.util.logging.Logger.getLogger("sun.java2d.marlin");
         } else {
             log = null;
@@ -62,44 +60,6 @@ public final class MarlinUtils {
             System.out.print("WARNING: ");
             System.out.println(msg);
             th.printStackTrace(System.err);
-        }
-    }
-
-    // Returns the caller's class and method's name; best effort
-    // if cannot infer, return the logger's name.
-    static String getCallerInfo(String className) {
-        String sourceClassName = null;
-        String sourceMethodName = null;
-
-        JavaLangAccess access = SharedSecrets.getJavaLangAccess();
-        Throwable throwable = new Throwable();
-        int depth = access.getStackTraceDepth(throwable);
-
-        boolean lookingForClassName = true;
-        for (int ix = 0; ix < depth; ix++) {
-            // Calling getStackTraceElement directly prevents the VM
-            // from paying the cost of building the entire stack frame.
-            StackTraceElement frame = access.getStackTraceElement(throwable, ix);
-            String cname = frame.getClassName();
-            if (lookingForClassName) {
-                // Skip all frames until we have found the first frame having the class name.
-                if (cname.equals(className)) {
-                    lookingForClassName = false;
-                }
-            } else {
-                if (!cname.equals(className)) {
-                    // We've found the relevant frame.
-                    sourceClassName = cname;
-                    sourceMethodName = frame.getMethodName();
-                    break;
-                }
-            }
-        }
-
-        if (sourceClassName != null) {
-            return sourceClassName + " " + sourceMethodName;
-        } else {
-            return "unknown";
         }
     }
 }

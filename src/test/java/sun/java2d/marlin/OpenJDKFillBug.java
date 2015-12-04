@@ -38,7 +38,6 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import sun.java2d.pipe.RenderingEngine;
 
 /**
  * Test program that demonstrates a bug in OpenJDK 1.7.0.60 (and
@@ -111,7 +110,7 @@ public class OpenJDKFillBug {
 
     public static void main(String args[]) {
 
-        System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
+        System.out.println("Testing renderer = " + sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName());
 
         BufferedImage bi = new BufferedImage(801, 1202, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = bi.createGraphics();
@@ -154,7 +153,7 @@ public class OpenJDKFillBug {
         try {
             final File file = new File("OpenJDKFillBugTest.png");
 
-            System.out.println("Writing file: " + file.getAbsolutePath());;
+            System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(bi, "PNG", file);
         } catch (IOException ex) {
             ex.printStackTrace();

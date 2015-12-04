@@ -22,6 +22,7 @@
  */
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -29,20 +30,26 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 /**
  * @test
- * @summary Check the Stroker.drawBezApproxForArc() bug: 
+ * @summary Check the Stroker.drawBezApproxForArc() bug (stoke with round joins):
  * abs(cosext2) > 0.5 generates curves with NaN coordinates
  * @run main TextClipErrorTest
+ * 
+ * @author Martin JANDA
  */
 public class TextClipErrorTest {
 
     public static void main(String[] args) {
-        BufferedImage bi = new BufferedImage(256, 256,
+        BufferedImage image = new BufferedImage(256, 256,
                 BufferedImage.TYPE_INT_ARGB);
 
-        Graphics2D g2d = bi.createGraphics();
+        Graphics2D g2d = image.createGraphics();
+        g2d.setColor(Color.red);
         try {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
@@ -63,10 +70,20 @@ public class TextClipErrorTest {
             GlyphVector gv2 = font.createGlyphVector(frc, "Test 2");
 
             AffineTransform at2 = AffineTransform.getTranslateInstance(
-                    -218.1810476789251, 85.12774919422463);
+//                    -218.1810476789251, 85.12774919422463);
+                    10, 50);            
             g2d.draw(at2.createTransformedShape(gv2.getOutline()));
-        } finally {
-            g2d.dispose();
+            
+
+            final File file = new File("TextClipErrorTest.png");
+            System.out.println("Writing file: " + file.getAbsolutePath());
+            ImageIO.write(image, "PNG", file);
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
+        finally {
+            g2d.dispose();
+        }            
     }
 }

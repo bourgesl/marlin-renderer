@@ -339,9 +339,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // Since y1 and y2 are biased by -0.5 in tosubpixy(), this is simply
         // ceil(y1) or ceil(y2)
         // upper integer (inclusive)
-        
+
         // TODO: handle NaN BEFORE as ceil(NaN) = 0 => bad range for buckets !
-        
+
         final int firstCrossing = FloatMath.max(FloatMath.ceil_int(y1), boundsMinY);
 
         // note: use boundsMaxY (last Y exclusive) to compute correct coverage

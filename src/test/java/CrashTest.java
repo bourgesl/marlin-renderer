@@ -31,7 +31,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import sun.java2d.pipe.RenderingEngine;
 
 /**
  * @test
@@ -44,6 +43,9 @@ public class CrashTest {
     static boolean USE_ROUND_CAPS_AND_JOINS = true;
 
     public static void main(String[] args) {
+        // First display which renderer is tested:
+        System.out.println("Testing renderer = " + sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName());
+
         // try insane image sizes:
 
         // subpixel coords may overflow:
@@ -78,16 +80,13 @@ public class CrashTest {
     private static void test(final float lineStroke,
                              final boolean useDashes,
                              final float dashMinLen)
-    throws ArrayIndexOutOfBoundsException
+        throws ArrayIndexOutOfBoundsException
     {
         System.out.println("---\n" + "test: "
             + "lineStroke=" + lineStroke
             + ", useDashes=" + useDashes
             +", dashMinLen=" + dashMinLen
         );
-
-        final String renderer = RenderingEngine.getInstance().getClass().getSimpleName();
-        System.out.println("Testing renderer = " + renderer);
 
         final BasicStroke stroke = createStroke(lineStroke, useDashes, dashMinLen);
 
@@ -136,7 +135,7 @@ public class CrashTest {
 
             if (SAVE_IMAGE) {
                 try {
-                    final File file = new File("CrashTest-" + renderer + "-dash-" + useDashes + ".bmp");
+                    final File file = new File("CrashTest-dash-" + useDashes + ".bmp");
 
                     System.out.println("Writing file: " + file.getAbsolutePath());
                     ImageIO.write(image, "BMP", file);
@@ -151,15 +150,10 @@ public class CrashTest {
     }
 
     private static void testHugeImage(final int width, final int height)
-    throws ArrayIndexOutOfBoundsException
+        throws ArrayIndexOutOfBoundsException
     {
         System.out.println("---\n" + "testHugeImage: "
-            + "width=" + width
-            + ", height=" + height
-        );
-
-        final String renderer = RenderingEngine.getInstance().getClass().getSimpleName();
-        System.out.println("Testing renderer = " + renderer);
+            + "width=" + width + ", height=" + height);
 
         final BasicStroke stroke = createStroke(2.5f, false, 0);
 
@@ -196,8 +190,8 @@ public class CrashTest {
 
             if (SAVE_IMAGE) {
                 try {
-                    final File file = new File("CrashTest-" + renderer +
-                                               "-huge-" + width + "x" +height + ".bmp");
+                    final File file = new File("CrashTest-huge-"
+                        + width + "x" +height + ".bmp");
 
                     System.out.println("Writing file: " + file.getAbsolutePath());
                     ImageIO.write(image, "BMP", file);
