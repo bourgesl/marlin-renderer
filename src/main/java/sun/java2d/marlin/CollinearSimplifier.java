@@ -34,12 +34,13 @@ final class CollinearSimplifier implements PathConsumer2D {
     private static final int STATE_EMPTY = 2;
 
     // slope precision threshold
-    static final float EPS = 1e-4f; // aaime proposed 1e-3f
+    static final float EPS = 1e-3f; // aaime proposed 1e-3f
 
     PathConsumer2D delegate;
     int state;
     float px1, py1, px2, py2;
     float pslope;
+    float pdx, pdy;
 
     CollinearSimplifier() {
     }
@@ -100,8 +101,7 @@ final class CollinearSimplifier implements PathConsumer2D {
         py1 = y;
     }
 
-    @Override
-    public void lineTo(final float x, final float y) {
+    public void lineToOLD(final float x, final float y) {
         // most probable case first:
         if (state == STATE_PREV_LINE) {
             final float slope = getSlope(px2, py2, x, y);
@@ -128,6 +128,56 @@ final class CollinearSimplifier implements PathConsumer2D {
             px2 = x;
             py2 = y;
             pslope = getSlope(px1, py1, x, y);
+            return;
+        }
+        if (state == STATE_EMPTY) {
+            delegate.lineTo(x, y);
+            state = STATE_PREV_POINT;
+            px1 = x;
+            py1 = y;
+        }
+    }
+
+    @Override
+    public void lineTo(final float x, final float y) {
+        // most probable case first:
+        if (state == STATE_PREV_LINE) {
+//            final float slope = getSlope(px2, py2, x, y);
+            // test for collinearity
+
+            // Try dot or cross vector product ?
+
+            // check if minimum move ~ 1/16th point ?
+
+            final float dx = (x - px2);
+            final float dy = (y - py2);
+
+            if ((dy == 0f && pdy == 0f && (pdx * dx) >= 0f)
+                || (Math.abs(pdx * dy - pdy * dx) < EPS * Math.abs(pdy * dy))) {
+                // same horizontal orientation or same slope:
+                // TODO: store cumulated error on slope ?
+                // merge segments
+                px2 = x;
+                py2 = y;
+                return;
+            }
+            // emit previous segment
+            delegate.lineTo(px2, py2);
+            px1 = px2;
+            py1 = py2;
+            px2 = x;
+            py2 = y;
+            pdx = dx;
+            pdy = dy;
+            return;
+        }
+        if (state == STATE_PREV_POINT) {
+            state = STATE_PREV_LINE;
+            px2 = x;
+            py2 = y;
+            pdx = (x - px1);
+            pdy = (y - py1);
+//            pslope = getSlope(px1, py1, x, y);
             return;
         }
         if (state == STATE_EMPTY) {

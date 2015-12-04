@@ -175,8 +175,18 @@ public final class ArrayCache implements MarlinConst {
         }
         // ensure the new size is >= needed size:
         if (size < needSize) {
-            // align to 4096:
+            // align to 4096 (may overflow):
             size = ((needSize >> 12) + 1) << 12;
+            if (size < 0) {
+                // resize to maximum capacity:
+                size = Integer.MAX_VALUE;
+            }
+        }
+        if (needSize < 0 || size < 0) {
+            // hard overflow failure - we can't even accommodate
+            // new items without overflowing
+            throw new ArrayIndexOutOfBoundsException(
+                          "array exceeds maximum capacity !");
         }
         return size;
     }
@@ -199,10 +209,10 @@ public final class ArrayCache implements MarlinConst {
         // ensure the new size is >= needed size:
         if (size < needSize) {
             // align to 4096:
-            size = ((needSize >> 12) + 1) << 12;
+            size = ((needSize >> 12L) + 1L) << 12L;
         }
-        if (size >= Integer.MAX_VALUE) {
-            if (curSize >= Integer.MAX_VALUE) {
+        if (needSize < 0L || size > Integer.MAX_VALUE) {
+            if (needSize < 0L || needSize > Integer.MAX_VALUE) {
                 // hard overflow failure - we can't even accommodate
                 // new items without overflowing
                 throw new ArrayIndexOutOfBoundsException(

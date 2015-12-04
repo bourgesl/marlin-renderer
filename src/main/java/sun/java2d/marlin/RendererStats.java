@@ -266,7 +266,8 @@ public final class RendererStats implements MarlinConst {
                     }, statDump, statDump);
                 }
                 return null;
-            });
+            }
+        );
     }
 
     void dump() {
