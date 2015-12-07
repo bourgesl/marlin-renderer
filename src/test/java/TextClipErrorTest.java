@@ -40,11 +40,11 @@ import javax.imageio.ImageIO;
  * @summary Check the Stroker.drawBezApproxForArc() bug (stoke with round joins):
  * if cosext2 > 0.5, it generates curves with NaN coordinates
  * @run main TextClipErrorTest
- * 
+ *
  * @author Martin JANDA
  */
 public class TextClipErrorTest {
-    
+
     static final boolean SAVE_IMAGE = false;
 
     public static void main(String[] args) {
@@ -74,19 +74,19 @@ public class TextClipErrorTest {
 
             AffineTransform at2 = AffineTransform.getTranslateInstance(
 //                    -218.1810476789251, 85.12774919422463);
-                    10, 50);            
+                    10, 50);
             g2d.draw(at2.createTransformedShape(gv2.getOutline()));
-            
+
             if (SAVE_IMAGE) {
                 final File file = new File("TextClipErrorTest.png");
                 System.out.println("Writing file: " + file.getAbsolutePath());
                 ImageIO.write(image, "PNG", file);
             }
-            
+
         } catch (IOException ex) {
             ex.printStackTrace();
         } finally {
             g2d.dispose();
-        }            
+        }
     }
 }
