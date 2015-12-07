@@ -70,8 +70,8 @@ public class ArrayCacheSizeTest {
         if (fail) {
             throw new RuntimeException("Missing ArrayIndexOutOfBoundsException");
         }
-    }    
-    
+    }
+
     private static void testNewSize(final int curSize,
                                     final int needSize) {
 
@@ -120,7 +120,7 @@ public class ArrayCacheSizeTest {
         if (fail) {
             throw new RuntimeException("Missing ArrayIndexOutOfBoundsException");
         }
-    }    
+    }
 
     private static void testNewLargeSize(final long curSize,
                                          final long needSize) {
