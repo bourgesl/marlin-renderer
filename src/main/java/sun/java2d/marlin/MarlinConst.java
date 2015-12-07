@@ -30,8 +30,8 @@ package sun.java2d.marlin;
  */
 interface MarlinConst {
     // enable Logs (logger or stdout)
-    static final boolean enableLogs = MarlinProperties.isEnableLogs();
-    // enable Logger
+    static final boolean enableLogs = MarlinProperties.isLoggingEnabled();
+    // use Logger instead of stdout
     static final boolean useLogger = enableLogs && MarlinProperties.isUseLogger();
 
     // log new RendererContext
@@ -45,7 +45,8 @@ interface MarlinConst {
     static final boolean doStats = enableLogs && MarlinProperties.isDoStats();
     // do monitors
     // disabled to reduce byte-code size a bit...
-    static final boolean doMonitors = enableLogs && MarlinProperties.isDoMonitors();
+    static final boolean doMonitors = false;
+//    static final boolean doMonitors = enableLogs && MarlinProperties.isDoMonitors();
     // do checks
     static final boolean doChecks = enableLogs && MarlinProperties.isDoChecks();
 

@@ -306,8 +306,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     {
         final float cosext2 = (omx * mx + omy * my) * invHalfLineWidth2Sq;
 
-        // check cos(ext) <= 1 to avoid cv = NaN:
-        if (cosext2 > 0.5f) {
+        // check round off errors producing cos(ext) > 1 and a NaN below
+        // cos(ext) == 1 implies colinear segments and an empty join anyway
+        if (cosext2 >= 0.5f) {
             // just return to avoid generating a flat curve:
             return;
         }
@@ -1282,7 +1283,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 }
                 curves = rdrCtx.widenDirtyFloatArray(curves, end, end + n);
             }
-            if (curveTypes.length - numCurves < 1) {
+            if (curveTypes.length <= numCurves) {
                 if (doStats) {
                     RendererContext.stats.stat_array_stroker_polystack_curveTypes
                         .add(numCurves + 1);

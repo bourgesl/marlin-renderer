@@ -25,6 +25,7 @@ import sun.java2d.marlin.ArrayCache;
 
 /**
  * @test
+ * @bug 8144445
  * @summary Check the ArrayCache getNewLargeSize() method
  * @run main ArrayCacheSizeTest
  */
@@ -48,40 +49,31 @@ public class ArrayCacheSizeTest {
 
         testNewSize(Integer.MAX_VALUE - 1000, Integer.MAX_VALUE);
 
-        try {
-            testNewSize(Integer.MAX_VALUE - 1000, Integer.MAX_VALUE + 1);
-        }
-        catch (Throwable th) {
-            if (th instanceof ArrayIndexOutOfBoundsException) {
-                System.out.println("ArrayIndexOutOfBoundsException expected.");
-            } else {
-                throw new RuntimeException("Unexpected exception", th);
-            }
-        }
-        try {
-            testNewSize(1, -1);
-        }
-        catch (Throwable th) {
-            if (th instanceof ArrayIndexOutOfBoundsException) {
-                System.out.println("ArrayIndexOutOfBoundsException expected.");
-            } else {
-                throw new RuntimeException("Unexpected exception", th);
-            }
-        }
-        try {
-            testNewSize(Integer.MAX_VALUE, -1);
-        }
-        catch (Throwable th) {
-            if (th instanceof ArrayIndexOutOfBoundsException) {
-                System.out.println("ArrayIndexOutOfBoundsException expected.");
-            } else {
-                throw new RuntimeException("Unexpected exception", th);
-            }
-        }
+        testNewSizeExpectAIOB(Integer.MAX_VALUE - 1000, Integer.MAX_VALUE + 1);
+        testNewSizeExpectAIOB(1, -1);
+        testNewSizeExpectAIOB(Integer.MAX_VALUE, -1);
     }
 
+    private static void testNewSizeExpectAIOB(final int curSize,
+                                              final int needSize) {
+        boolean fail = true;
+        try {
+            testNewSize(curSize, needSize);
+        } catch (Throwable th) {
+            if (th instanceof ArrayIndexOutOfBoundsException) {
+                fail = false;
+                System.out.println("ArrayIndexOutOfBoundsException expected.");
+            } else {
+                throw new RuntimeException("Unexpected exception", th);
+            }
+        }
+        if (fail) {
+            throw new RuntimeException("Missing ArrayIndexOutOfBoundsException");
+        }
+    }    
+    
     private static void testNewSize(final int curSize,
-                                         final int needSize) {
+                                    final int needSize) {
 
         int size = ArrayCache.getNewSize(curSize, needSize);
 
@@ -107,37 +99,28 @@ public class ArrayCacheSizeTest {
 
         testNewLargeSize(Integer.MAX_VALUE - 1000, Integer.MAX_VALUE);
 
-        try {
-            testNewLargeSize(Integer.MAX_VALUE - 1000, Integer.MAX_VALUE + 1L);
-        }
-        catch (Throwable th) {
-            if (th instanceof ArrayIndexOutOfBoundsException) {
-                System.out.println("ArrayIndexOutOfBoundsException expected.");
-            } else {
-                throw new RuntimeException("Unexpected exception", th);
-            }
-        }
-        try {
-            testNewLargeSize(1, -1L);
-        }
-        catch (Throwable th) {
-            if (th instanceof ArrayIndexOutOfBoundsException) {
-                System.out.println("ArrayIndexOutOfBoundsException expected.");
-            } else {
-                throw new RuntimeException("Unexpected exception", th);
-            }
-        }
-        try {
-            testNewLargeSize(Integer.MAX_VALUE, -1L);
-        }
-        catch (Throwable th) {
-            if (th instanceof ArrayIndexOutOfBoundsException) {
-                System.out.println("ArrayIndexOutOfBoundsException expected.");
-            } else {
-                throw new RuntimeException("Unexpected exception", th);
-            }
-        }
+        testNewLargeSizeExpectAIOB(Integer.MAX_VALUE - 1000, Integer.MAX_VALUE + 1L);
+        testNewLargeSizeExpectAIOB(1, -1L);
+        testNewLargeSizeExpectAIOB(Integer.MAX_VALUE, -1L);
     }
+
+    private static void testNewLargeSizeExpectAIOB(final long curSize,
+                                                   final long needSize) {
+        boolean fail = true;
+        try {
+            testNewLargeSize(curSize, needSize);
+        } catch (Throwable th) {
+            if (th instanceof ArrayIndexOutOfBoundsException) {
+                fail = false;
+                System.out.println("ArrayIndexOutOfBoundsException expected.");
+            } else {
+                throw new RuntimeException("Unexpected exception", th);
+            }
+        }
+        if (fail) {
+            throw new RuntimeException("Missing ArrayIndexOutOfBoundsException");
+        }
+    }    
 
     private static void testNewLargeSize(final long curSize,
                                          final long needSize) {
