@@ -84,4 +84,9 @@ public class RunJUnitTest {
     public void path2DCopyConstructorTest() {
         Path2DCopyConstructor.main(NO_ARGS);
     }
+
+    @Test
+    public void pngCompressionTest() {
+        PNGWriterCompressionTest.main(NO_ARGS);
+    }
 }
