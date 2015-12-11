@@ -36,13 +36,17 @@ import javax.imageio.ImageIO;
  * @test
  * @summary Simple crash rendering test using huge GeneralPaths with the Marlin renderer
  * @run main/othervm -mx512m CrashTest
- */
+ * @ignore tests that take a long time
+ * @run main/othervm -ms4g -mx4g CrashTest -slow
+*/
 public class CrashTest {
 
     static final boolean SAVE_IMAGE = false;
     static boolean USE_ROUND_CAPS_AND_JOINS = true;
 
     public static void main(String[] args) {
+        boolean runSlowTests = (args.length != 0 && "-slow".equals(args[0]));
+
         // First display which renderer is tested:
         System.setProperty("sun.java2d.renderer.verbose", "true");
 
@@ -54,13 +58,17 @@ public class CrashTest {
         // it is also impossible to have rowAAChunk larger than 2Gb !
 
         // Disabled test as it consumes 4GB heap + offheap (2Gb) ie > 6Gb !
-//        testHugeImage((Integer.MAX_VALUE >> 4) - 100, 16);
+        if (runSlowTests) {
+            testHugeImage((Integer.MAX_VALUE >> 4) - 100, 16);
+        }
 
         // larger than 23 bits: (RLE)
         testHugeImage(8388608 + 1, 10);
 
-        test(0.1f, false, 0);
-        test(0.1f, true, 7f);
+        if (runSlowTests) {
+            test(0.1f, false, 0);
+            test(0.1f, true, 7f);
+        }
 
         // Exceed 2Gb OffHeap buffer for edges:
         try {

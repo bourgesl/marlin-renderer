@@ -286,12 +286,12 @@ final class IDATOutputStream extends ImageOutputStreamImpl {
 }
 
 
-class PNGImageWriteParam extends ImageWriteParam {
+final class PNGImageWriteParam extends ImageWriteParam {
 
     /** Default quality level = 0.5 ie medium compression */
     private static final float DEFAULT_QUALITY = 0.5f;
 
-    private static final String[] compressionNames = {"PNG lossless deflater"};
+    private static final String[] compressionNames = {"Deflate"};
     private static final float[] qualityVals = { 0.00F, 0.30F, 0.75F, 1.00F };
     private static final String[] qualityDescs = {
         "High compression",   // 0.00 -> 0.30
@@ -306,6 +306,7 @@ class PNGImageWriteParam extends ImageWriteParam {
         this.canWriteCompressed = true;
         this.compressionTypes = compressionNames;
         this.compressionType = compressionTypes[0];
+        this.compressionMode = MODE_DEFAULT;
         this.compressionQuality = DEFAULT_QUALITY;
     }
 
@@ -320,10 +321,8 @@ class PNGImageWriteParam extends ImageWriteParam {
      */
     @Override
     public void unsetCompression() {
-        if (getCompressionMode() != MODE_EXPLICIT) {
-            throw new IllegalStateException
-                ("Compression mode not MODE_EXPLICIT!");
-        }
+        super.unsetCompression();
+        this.compressionType = compressionTypes[0];
         this.compressionQuality = DEFAULT_QUALITY;
     }
 
@@ -340,27 +339,13 @@ class PNGImageWriteParam extends ImageWriteParam {
 
     @Override
     public String[] getCompressionQualityDescriptions() {
-        if (getCompressionMode() != MODE_EXPLICIT) {
-            throw new IllegalStateException
-                ("Compression mode not MODE_EXPLICIT!");
-        }
-        if ((getCompressionTypes() != null) &&
-            (getCompressionType() == null)) {
-            throw new IllegalStateException("No compression type set!");
-        }
+        super.getCompressionQualityDescriptions();
         return qualityDescs.clone();
     }
 
     @Override
     public float[] getCompressionQualityValues() {
-        if (getCompressionMode() != MODE_EXPLICIT) {
-            throw new IllegalStateException
-                ("Compression mode not MODE_EXPLICIT!");
-        }
-        if ((getCompressionTypes() != null) &&
-            (getCompressionType() == null)) {
-            throw new IllegalStateException("No compression type set!");
-        }
+        super.getCompressionQualityValues();
         return qualityVals.clone();
     }
 }

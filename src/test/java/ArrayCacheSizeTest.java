@@ -56,19 +56,15 @@ public class ArrayCacheSizeTest {
 
     private static void testNewSizeExpectAIOB(final int curSize,
                                               final int needSize) {
-        boolean fail = true;
         try {
             testNewSize(curSize, needSize);
+            throw new RuntimeException("ArrayIndexOutOfBoundsException not thrown");
+        } catch (ArrayIndexOutOfBoundsException aiobe) {
+            System.out.println("ArrayIndexOutOfBoundsException expected.");
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Throwable th) {
-            if (th instanceof ArrayIndexOutOfBoundsException) {
-                fail = false;
-                System.out.println("ArrayIndexOutOfBoundsException expected.");
-            } else {
-                throw new RuntimeException("Unexpected exception", th);
-            }
-        }
-        if (fail) {
-            throw new RuntimeException("Missing ArrayIndexOutOfBoundsException");
+            throw new RuntimeException("Unexpected exception", th);
         }
     }
 
@@ -106,19 +102,15 @@ public class ArrayCacheSizeTest {
 
     private static void testNewLargeSizeExpectAIOB(final long curSize,
                                                    final long needSize) {
-        boolean fail = true;
         try {
             testNewLargeSize(curSize, needSize);
+            throw new RuntimeException("ArrayIndexOutOfBoundsException not thrown");
+        } catch (ArrayIndexOutOfBoundsException aiobe) {
+            System.out.println("ArrayIndexOutOfBoundsException expected.");
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Throwable th) {
-            if (th instanceof ArrayIndexOutOfBoundsException) {
-                fail = false;
-                System.out.println("ArrayIndexOutOfBoundsException expected.");
-            } else {
-                throw new RuntimeException("Unexpected exception", th);
-            }
-        }
-        if (fail) {
-            throw new RuntimeException("Missing ArrayIndexOutOfBoundsException");
+            throw new RuntimeException("Unexpected exception", th);
         }
     }
 
