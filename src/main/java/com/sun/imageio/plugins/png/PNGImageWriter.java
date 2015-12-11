@@ -360,7 +360,7 @@ public final class PNGImageWriter extends ImageWriter {
     ImageOutputStream stream = null;
 
     // compression level
-    int deflaterLevel = DEFAULT_COMPRESSION_LEVEL;
+    private int deflaterLevel;
 
     PNGMetadata metadata = null;
 
@@ -1189,6 +1189,9 @@ public final class PNGImageWriter extends ImageWriter {
             metadata = new PNGMetadata();
         }
 
+        // reset compression level to default:
+        deflaterLevel = DEFAULT_COMPRESSION_LEVEL;
+
         if (param != null) {
             switch(param.getCompressionMode()) {
             case ImageWriteParam.MODE_DISABLED:
@@ -1198,12 +1201,7 @@ public final class PNGImageWriter extends ImageWriter {
                 float quality = param.getCompressionQuality();
                 if (quality >= 0f && quality <= 1f) {
                     deflaterLevel = 9 - Math.round(9f * quality);
-                } else {
-                    deflaterLevel = DEFAULT_COMPRESSION_LEVEL;
                 }
-                break;
-            case ImageWriteParam.MODE_DEFAULT:
-                deflaterLevel = DEFAULT_COMPRESSION_LEVEL;
                 break;
             default:
             }
