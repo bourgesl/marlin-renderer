@@ -359,9 +359,6 @@ public final class PNGImageWriter extends ImageWriter {
 
     ImageOutputStream stream = null;
 
-    // compression level
-    private int deflaterLevel;
-
     PNGMetadata metadata = null;
 
     // Factors from the ImageWriteParam
@@ -1011,7 +1008,9 @@ public final class PNGImageWriter extends ImageWriter {
     }
 
     // Use sourceXOffset, etc.
-    private void write_IDAT(RenderedImage image) throws IOException {
+    private void write_IDAT(RenderedImage image, int deflaterLevel) 
+        throws IOException
+    {
         IDATOutputStream ios = new IDATOutputStream(stream, 32768,
                                                     deflaterLevel);
         try {
@@ -1190,7 +1189,7 @@ public final class PNGImageWriter extends ImageWriter {
         }
 
         // reset compression level to default:
-        deflaterLevel = DEFAULT_COMPRESSION_LEVEL;
+        int deflaterLevel = DEFAULT_COMPRESSION_LEVEL;
 
         if (param != null) {
             switch(param.getCompressionMode()) {
@@ -1261,7 +1260,7 @@ public final class PNGImageWriter extends ImageWriter {
 
             writeUnknownChunks();
 
-            write_IDAT(im);
+            write_IDAT(im, deflaterLevel);
 
             if (abortRequested()) {
                 processWriteAborted();
