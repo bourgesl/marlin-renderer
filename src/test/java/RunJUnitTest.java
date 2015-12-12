@@ -86,11 +86,6 @@ public class RunJUnitTest {
     }
 
     @Test
-    public void pngCompressionTest() {
-        PNGWriterCompressionTest.main(NO_ARGS);
-    }
-
-    @Test
     public void imageWriterCompressionTest() {
         ImageWriterCompressionTest.main(NO_ARGS);
     }
