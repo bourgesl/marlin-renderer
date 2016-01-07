@@ -1008,7 +1008,7 @@ public final class PNGImageWriter extends ImageWriter {
     }
 
     // Use sourceXOffset, etc.
-    private void write_IDAT(RenderedImage image, int deflaterLevel) 
+    private void write_IDAT(RenderedImage image, int deflaterLevel)
         throws IOException
     {
         IDATOutputStream ios = new IDATOutputStream(stream, 32768,

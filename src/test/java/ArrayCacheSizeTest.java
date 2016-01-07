@@ -23,11 +23,12 @@
 
 import org.marlin.pisces.ArrayCache;
 
-/**
+/*
  * @test
  * @bug 8144445
  * @summary Check the ArrayCache getNewLargeSize() method
  * @run main ArrayCacheSizeTest
+ * @modules java.desktop/sun.java2d.marlin
  */
 public class ArrayCacheSizeTest {
 
