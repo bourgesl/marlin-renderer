@@ -52,8 +52,8 @@ public class ImageWriterCompressionTest {
     // Caused by: javax.imageio.IIOException: Invalid argument to native writeImage
     private static final Set<String> IGNORE_FILE_SUFFIXES
         = new HashSet<String>(Arrays.asList(new String[] {
-            "bmp", "gif", 
-            "jpg", "jpeg", 
+            "bmp", "gif",
+            "jpg", "jpeg",
 //            "tif", "tiff"
         } ));
 
@@ -110,7 +110,6 @@ public class ImageWriterCompressionTest {
                     }
                 }
             }
-
         } catch (IOException ioe) {
             throw new RuntimeException("IO failure", ioe);
         }
@@ -144,12 +143,12 @@ public class ImageWriterCompressionTest {
         }
 
         writerParams.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        writerParams.setCompressionType(selectCompressionType(suffix, 
+        writerParams.setCompressionType(selectCompressionType(suffix,
                         writerParams.getCompressionTypes()));
-        
-        System.out.println("Selected Compression type: " 
+
+        System.out.println("Selected Compression type: "
             + writerParams.getCompressionType());
-        
+
         long prev = Long.MAX_VALUE;
         for (int i = 10; i >= 0; i--) {
             float quality = 0.1f * i;
@@ -167,8 +166,8 @@ public class ImageWriterCompressionTest {
             prev = len;
         }
     }
-    
-    private static String selectCompressionType(final String suffix, 
+
+    private static String selectCompressionType(final String suffix,
                                                 final String[] types)
     {
         switch (suffix) {
