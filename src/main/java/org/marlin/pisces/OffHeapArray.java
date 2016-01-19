@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -83,7 +83,7 @@ final class OffHeapArray  {
                     "MarlinRenderer Disposer");
                 t.setContextClassLoader(null);
                 t.setDaemon(true);
-                t.setPriority(Thread.MAX_PRIORITY);
+                t.setPriority(Thread.MAX_PRIORITY - 2);
                 t.start();
                 return null;
             }
@@ -102,7 +102,7 @@ final class OffHeapArray  {
         this.used    = 0;
         if (logUnsafeMalloc) {
             MarlinUtils.logInfo(System.currentTimeMillis()
-                                + ": OffHeapArray.allocateMemory = "
+                                + ": OffHeapArray.allocateMemory =   "
                                 + len + " to addr = " + this.address);
         }
 
@@ -130,7 +130,7 @@ final class OffHeapArray  {
         unsafe.freeMemory(this.address);
         if (logUnsafeMalloc) {
             MarlinUtils.logInfo(System.currentTimeMillis()
-                                + ": OffHeapEdgeArray.free = "
+                                + ": OffHeapArray.freeMemory =       "
                                 + this.length
                                 + " at addr = " + this.address);
         }
