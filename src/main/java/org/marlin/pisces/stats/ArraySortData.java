@@ -73,12 +73,15 @@ public class ArraySortData implements Serializable, Comparable<ArraySortData> {
 
     @Override
     public int compareTo(ArraySortData o) {
-        int res = Integer.compare(getUnsortedRatio(), o.getUnsortedRatio());
+        int res = compare(getUnsortedRatio(), o.getUnsortedRatio());
         if (res == 0) {
-            return Integer.compare(toIndex, o.toIndex);
+            return compare(toIndex, o.toIndex);
         }
         return res;
     }
 
-
+    // Missing Integer.compare(int, int) in JDK 1.6:
+    private static int compare(int x, int y) {
+        return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    }
 }

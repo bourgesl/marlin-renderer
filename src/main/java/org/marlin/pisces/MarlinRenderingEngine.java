@@ -909,17 +909,13 @@ public class MarlinRenderingEngine extends RenderingEngine
         String refType = AccessController.doPrivileged(
                             new GetPropertyAction("sun.java2d.renderer.useRef",
                             "soft"));
-        switch (refType) {
-            default:
-            case "soft":
-                REF_TYPE = REF_SOFT;
-                break;
-            case "weak":
-                REF_TYPE = REF_WEAK;
-                break;
-            case "hard":
-                REF_TYPE = REF_HARD;
-                break;
+        // Java 1.6 does not support strings in switch:
+        if ("hard".equals(refType)) {
+            REF_TYPE = REF_HARD;
+        } else if ("soft".equals(refType)) {
+            REF_TYPE = REF_SOFT;
+        } else {
+            REF_TYPE = REF_WEAK;
         }
     }
 

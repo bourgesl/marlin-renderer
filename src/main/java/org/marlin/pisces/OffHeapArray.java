@@ -43,8 +43,8 @@ final class OffHeapArray  {
 
     // unsafe reference
     static final Unsafe unsafe;
-    // size of int / float
-    static final int SIZE_INT;
+    // [int / float] byte length:
+    static final int SIZE_INT = 4;
 
     // RendererContext reference queue
     private static final ReferenceQueue<Object> rdrQueue
@@ -64,8 +64,6 @@ final class OffHeapArray  {
             System.exit(1);
         }
         unsafe = ref;
-
-        SIZE_INT = Unsafe.ARRAY_INT_INDEX_SCALE;
 
         // Mimics Java2D Disposer:
         AccessController.doPrivileged(new PrivilegedAction<Void>() {

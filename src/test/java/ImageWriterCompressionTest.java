@@ -170,13 +170,11 @@ public class ImageWriterCompressionTest {
     private static String selectCompressionType(final String suffix,
                                                 final String[] types)
     {
-        switch (suffix) {
-            case "tif":
-            case "tiff":
-                return "LZW";
-            default:
-                return types[0];
+        // Java 1.6 does not support strings in switch:
+        if ("tif".equals(suffix) || "tiff".equals(suffix)) {
+            return "LZW";
         }
+        return types[0];
     }
 
     private static long saveImage(final BufferedImage image,
