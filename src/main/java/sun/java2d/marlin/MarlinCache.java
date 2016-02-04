@@ -591,8 +591,8 @@ public final class MarlinCache implements MarlinConst {
             alphaRow[to + 1] = 0;
         }
         if (doChecks) {
-            IntArrayCache.check(blkFlags, 0, blkFlags.length, 0);
-            IntArrayCache.check(alphaRow, 0, alphaRow.length, 0);
+            IntArrayCache.check(blkFlags, blkW, blkE, 0);
+            IntArrayCache.check(alphaRow, from, px1 - bboxX0, 0);
         }
 
         if (doMonitors) {

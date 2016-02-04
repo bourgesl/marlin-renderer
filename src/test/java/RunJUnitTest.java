@@ -71,6 +71,11 @@ public class RunJUnitTest {
     }
 
     @Test
+    public void crashPaintTest() {
+        CrashPaintTest.main(NO_ARGS);
+    }
+
+    @Test
     public void CeilAndFloorTest() {
         CeilAndFloorTests.main(NO_ARGS);
     }

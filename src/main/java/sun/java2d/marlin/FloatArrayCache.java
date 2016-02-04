@@ -127,7 +127,7 @@ final class FloatArrayCache implements MarlinConst {
         }
 
         if (doChecks) {
-            check(array, 0, array.length, value);
+            check(array, fromIndex, toIndex, value);
         }
     }
 
@@ -136,9 +136,10 @@ final class FloatArrayCache implements MarlinConst {
     {
         if (doChecks) {
             // check zero on full array:
-            for (int i = fromIndex; i < toIndex; i++) {
+            for (int i = 0; i < array.length; i++) {
                 if (array[i] != value) {
-                    logException("Invalid array value at " + i + "\n"
+                    logException("Invalid value at: " + i + " = " + array[i]
+                            + " from: " + fromIndex + " to: " + toIndex + "\n"
                             + Arrays.toString(array), new Throwable());
 
                     // ensure array is correctly filled:

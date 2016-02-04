@@ -50,11 +50,15 @@ final class RendererContext implements MarlinConst {
     /**
      * Create a new renderer context
      *
+     * @param storageQueue true = queue storage; false = thread-Local storage
      * @return new RendererContext instance
      */
-    static RendererContext createContext() {
+    static RendererContext createContext(final boolean storageQueue) {
         final RendererContext newCtx = new RendererContext("ctx"
-                    + Integer.toString(contextCount.getAndIncrement()));
+                    + Integer.toString(contextCount.getAndIncrement()),
+                    storageQueue);
+
+        // TODO: only keep reference on stats (not RendererContext)
         if (RendererContext.stats != null) {
             RendererContext.stats.allContexts.add(newCtx);
         }
@@ -63,6 +67,13 @@ final class RendererContext implements MarlinConst {
 
     // context name (debugging purposes)
     final String name;
+    // true = queue storage; false = thread-Local storage
+    final boolean storageQueue;
+    /*
+     * Used flag indicating this thread-Local context is already used
+     * (used to detect reentrance)
+     */
+    boolean usedTL = false;
     /*
      * Reference to this instance (hard, soft or weak).
      * @see MarlinRenderingEngine#REF_TYPE
@@ -101,14 +112,16 @@ final class RendererContext implements MarlinConst {
     /**
      * Constructor
      *
-     * @param name
+     * @param name context name (debugging)
+     * @param storageQueue true = queue storage; false = thread-Local storage
      */
-    RendererContext(final String name) {
+    RendererContext(final String name, final boolean storageQueue) {
         if (logCreateContext) {
             MarlinUtils.logInfo("new RendererContext = " + name);
         }
 
         this.name = name;
+        this.storageQueue = storageQueue;
 
         // NormalizingPathIterator instances:
         nPCPathIterator = new NormalizingPathIterator.NearestPixelCenter(float6);

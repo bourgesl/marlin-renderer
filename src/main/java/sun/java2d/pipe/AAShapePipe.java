@@ -143,10 +143,18 @@ public class AAShapePipe
     }
 
     public void renderTiles(SunGraphics2D sg, Shape s,
-                            AATileGenerator aatg, int abox[], TileState ts)
+                            final AATileGenerator aatg,
+                            final int[] abox, final TileState ts)
     {
         Object context = null;
         try {
+            // defensive copy of int[] abox as local variables:
+            final int bx = abox[0];
+            final int by = abox[1];
+            final int bw = abox[2];
+            final int bh = abox[3];
+
+            // reentrance: outpipe may also use AAShapePipe:
             context = outpipe.startSequence(sg, s,
                                             ts.computeDevBox(abox),
                                             abox);
@@ -158,16 +166,15 @@ public class AAShapePipe
             final byte[] alpha = ts.getAlphaTile(tw * th);
             byte[] atile;
 
-            for (int y = abox[1]; y < abox[3]; y += th) {
-                int h = Math.min(th, abox[3] - y);
+            for (int y = by; y < bh; y += th) {
+                final int h = Math.min(th, bh - y);
 
-                for (int x = abox[0]; x < abox[2]; x += tw) {
-                    int w = Math.min(tw, abox[2] - x);
+                for (int x = bx; x < bw; x += tw) {
+                    final int w = Math.min(tw, bw - x);
 
-                    int a = aatg.getTypicalAlpha();
-                    if (a == 0x00 ||
-                        outpipe.needTile(context, x, y, w, h) == false)
-                    {
+                    final int a = aatg.getTypicalAlpha();
+
+                    if (a == 0x00 || !outpipe.needTile(context, x, y, w, h)) {
                         aatg.nextTile();
                         outpipe.skipTile(context, x, y);
                         continue;
@@ -180,8 +187,8 @@ public class AAShapePipe
                         aatg.getAlpha(alpha, 0, tw);
                     }
 
-                    outpipe.renderPathTile(context, atile, 0, tw,
-                                           x, y, w, h);
+                    // TODO: check reentrance issue ? on byte[] alpha ?
+                    outpipe.renderPathTile(context, atile, 0, tw, x, y, w, h);
                 }
             }
         } finally {

@@ -894,17 +894,16 @@ public class MarlinRenderingEngine extends RenderingEngine
 
     // Per-thread RendererContext
     private static final ThreadLocal<Object> rdrCtxThreadLocal;
-    // RendererContext queue when ThreadLocal is disabled
-    private static final ConcurrentLinkedQueue<Object> rdrCtxQueue;
+    // RendererContext queue when
+    // ThreadLocal is disabled or for child contexts (reentrance)
+    private static final ConcurrentLinkedQueue<Object> rdrCtxQueue
+        = new ConcurrentLinkedQueue<Object>();
 
     // Static initializer to use TL or CLQ mode
     static {
-        // CLQ mode by default:
         useThreadLocal = MarlinProperties.isUseThreadLocal();
         rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<Object>()
                                              : null;
-        rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>()
-                                        : null;
 
         // Soft reference by default:
         String refType = AccessController.doPrivileged(
@@ -1026,23 +1025,46 @@ public class MarlinRenderingEngine extends RenderingEngine
     @SuppressWarnings({"unchecked"})
     static RendererContext getRendererContext() {
         RendererContext rdrCtx = null;
-        final Object ref = (useThreadLocal) ? rdrCtxThreadLocal.get()
-                           : rdrCtxQueue.poll();
-        if (ref != null) {
-            // resolve reference:
-            rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref)
-                     : ((Reference<RendererContext>) ref).get();
-        }
-        // create a new RendererContext if none is available
-        if (rdrCtx == null) {
-            rdrCtx = RendererContext.createContext();
-            if (useThreadLocal) {
+        if (useThreadLocal) {
+            final Object ref = rdrCtxThreadLocal.get();
+            if (ref != null) {
+                rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref)
+                    : ((Reference<RendererContext>) ref).get();
+            }
+            if (rdrCtx == null) {
+                // create a new RendererContext (TL) if none is available
+                rdrCtx = RendererContext.createContext(false);
                 // update thread local reference:
                 rdrCtxThreadLocal.set(rdrCtx.reference);
             }
+            // Check reentrance:
+            if (rdrCtx.usedTL) {
+                // get or create another RendererContext:
+                rdrCtx = getOrCreateContextFromQueue();
+            } else {
+                // TL mode: set used flag:
+                rdrCtx.usedTL = true;
+            }
+        } else {
+            rdrCtx = getOrCreateContextFromQueue();
         }
         if (doMonitors) {
             RendererContext.stats.mon_pre_getAATileGenerator.start();
+        }
+        return rdrCtx;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private static RendererContext getOrCreateContextFromQueue() {
+        RendererContext rdrCtx = null;
+        final Object ref = rdrCtxQueue.poll();
+        if (ref != null) {
+            rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref)
+                        : ((Reference<RendererContext>) ref).get();
+        }
+        if (rdrCtx == null) {
+            // create a new RendererContext (QUEUE) if none is available
+            rdrCtx = RendererContext.createContext(true);
         }
         return rdrCtx;
     }
@@ -1057,8 +1079,11 @@ public class MarlinRenderingEngine extends RenderingEngine
         if (doMonitors) {
             RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
-        if (!useThreadLocal) {
+        if (!useThreadLocal || rdrCtx.storageQueue) {
             rdrCtxQueue.offer(rdrCtx.reference);
+        } else {
+            // TL mode: unset used flag:
+            rdrCtx.usedTL = false;
         }
     }
 }
