@@ -34,7 +34,7 @@ import org.marlin.pisces.stats.ArraySortDataCollection;
 import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.Monitor;
 import org.marlin.pisces.stats.StatLong;
-import sun.misc.ThreadGroupUtils;
+// import sun.misc.ThreadGroupUtils;
 
 /**
  * This class gathers global rendering statistics for debugging purposes only
@@ -247,7 +247,8 @@ public final class RendererStats implements MarlinConst {
             @Override
             public Void run() {
                 final Thread hook = new Thread(
-                    ThreadGroupUtils.getRootThreadGroup(),
+//                    ThreadGroupUtils.getRootThreadGroup(),
+                    MarlinUtils.getRootThreadGroup(),
                     new Runnable() {
                         @Override
                         public void run() {

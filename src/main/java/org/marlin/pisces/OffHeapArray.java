@@ -33,7 +33,7 @@ import java.security.PrivilegedAction;
 import java.util.Vector;
 import static org.marlin.pisces.MarlinConst.logUnsafeMalloc;
 import sun.misc.Unsafe;
-import sun.misc.ThreadGroupUtils;
+// import sun.misc.ThreadGroupUtils;
 
 /**
  *
@@ -76,7 +76,8 @@ final class OffHeapArray  {
                  * Make its parent the top-level thread group.
                  */
                 final ThreadGroup rootTG
-                    = ThreadGroupUtils.getRootThreadGroup();
+//                    = ThreadGroupUtils.getRootThreadGroup();
+                    = MarlinUtils.getRootThreadGroup();
                 final Thread t = new Thread(rootTG, new OffHeapDisposer(),
                     "MarlinRenderer Disposer");
                 t.setContextClassLoader(null);
