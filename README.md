@@ -5,6 +5,10 @@ Marlin is an open source (GPL2+CP) Java2D RenderingEngine optimized for performa
 
 Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 
+News:
+* My slides at FOSDEM 2016 about 'Marlin renderer, a successful fork and join the OpenJDK 9 project': [fosdem-2016-Marlin.pdf](https://bourgesl.github.io/fosdem-2016/slides/fosdem-2016-Marlin.pdf)
+
+
 Build status
 ============
 Continuous integration by Travis CI (build + tests):
