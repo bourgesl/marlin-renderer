@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -881,6 +881,10 @@ public class MarlinRenderingEngine extends RenderingEngine
     // use ThreadLocal or ConcurrentLinkedQueue to get one RendererContext
     private static final boolean useThreadLocal;
 
+    final static int DEPTH_UNDEFINED = 0;
+    final static int DEPTH_TL = 1;
+    final static int DEPTH_CLQ = 2;
+
     // hard reference
     static final int REF_HARD = 0;
     // soft reference
@@ -1031,18 +1035,17 @@ public class MarlinRenderingEngine extends RenderingEngine
                     : ((Reference<RendererContext>) ref).get();
             }
             if (rdrCtx == null) {
-                // create a new RendererContext (TL) if none is available
-                rdrCtx = RendererContext.createContext(false);
+                // create a new RendererContext if none is available
+                rdrCtx = RendererContext.createContext();
                 // update thread local reference:
                 rdrCtxThreadLocal.set(rdrCtx.reference);
             }
             // Check reentrance:
-            if (rdrCtx.usedTL) {
+            if (rdrCtx.depth == DEPTH_UNDEFINED) {
+                rdrCtx.depth = DEPTH_TL;
+            } else {
                 // get or create another RendererContext:
                 rdrCtx = getOrCreateContextFromQueue();
-            } else {
-                // TL mode: set used flag:
-                rdrCtx.usedTL = true;
             }
         } else {
             rdrCtx = getOrCreateContextFromQueue();
@@ -1062,8 +1065,9 @@ public class MarlinRenderingEngine extends RenderingEngine
                         : ((Reference<RendererContext>) ref).get();
         }
         if (rdrCtx == null) {
-            // create a new RendererContext (QUEUE) if none is available
-            rdrCtx = RendererContext.createContext(true);
+            // create a new RendererContext if none is available
+            rdrCtx = RendererContext.createContext();
+            rdrCtx.depth = DEPTH_CLQ;
         }
         return rdrCtx;
     }
@@ -1078,11 +1082,10 @@ public class MarlinRenderingEngine extends RenderingEngine
         if (doMonitors) {
             RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
-        if (!useThreadLocal || rdrCtx.storageQueue) {
-            rdrCtxQueue.offer(rdrCtx.reference);
+        if (useThreadLocal && (rdrCtx.depth == DEPTH_TL)) {
+            rdrCtx.depth = DEPTH_UNDEFINED;
         } else {
-            // TL mode: unset used flag:
-            rdrCtx.usedTL = false;
+            rdrCtxQueue.offer(rdrCtx.reference);
         }
     }
 }

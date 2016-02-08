@@ -76,6 +76,11 @@ public class RunJUnitTest {
     }
 
     @Test
+    public void crashNaNTest() {
+        CrashNaNTest.main(NO_ARGS);
+    }
+
+    @Test
     public void imageWriterCompressionTest() {
         ImageWriterCompressionTest.main(NO_ARGS);
     }
