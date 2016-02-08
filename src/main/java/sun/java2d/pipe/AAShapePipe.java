@@ -161,10 +161,10 @@ public final class AAShapePipe
                                             abox);
 
             // copy of int[] abox as local variables for performance:
-            final int bx = abox[0];
-            final int by = abox[1];
-            final int bw = abox[2];
-            final int bh = abox[3];
+            final int x0 = abox[0];
+            final int y0 = abox[1];
+            final int x1 = abox[2];
+            final int y1 = abox[3];
 
             final int tw = aatg.getTileWidth();
             final int th = aatg.getTileHeight();
@@ -173,11 +173,11 @@ public final class AAShapePipe
             final byte[] alpha = ts.getAlphaTile(tw * th);
             byte[] atile;
 
-            for (int y = by; y < bh; y += th) {
-                final int h = Math.min(th, bh - y);
+            for (int y = y0; y < y1; y += th) {
+                final int h = Math.min(th, y1 - y);
 
-                for (int x = bx; x < bw; x += tw) {
-                    final int w = Math.min(tw, bw - x);
+                for (int x = x0; x < x1; x += tw) {
+                    final int w = Math.min(tw, x1 - x);
 
                     final int a = aatg.getTypicalAlpha();
 
@@ -273,15 +273,15 @@ public final class AAShapePipe
         public final K get() {
             K ctx = super.get();
             // Check reentrance:
-            if (ctx.depth == ReentrantThreadLocal.DEPTH_UNDEFINED) {
-                ctx.depth = ReentrantThreadLocal.DEPTH_TL;
+            if (ctx.depth == DEPTH_UNDEFINED) {
+                ctx.depth = DEPTH_TL;
             } else {
                 // get or create another ReentrantContext from queue:
                 ctx = ctxQueue.poll();
                 if (ctx == null) {
                     // create a new ReentrantContext if none is available
                     ctx = initialValue();
-                    ctx.depth = ReentrantThreadLocal.DEPTH_CLQ;
+                    ctx.depth = DEPTH_CLQ;
                 }
             }
             return ctx;
@@ -292,8 +292,8 @@ public final class AAShapePipe
          * @param ctx ReentrantContext instance
          */
         public final void restore(final K ctx) {
-            if (ctx.depth == ReentrantThreadLocal.DEPTH_TL) {
-                ctx.depth = ReentrantThreadLocal.DEPTH_UNDEFINED;
+            if (ctx.depth == DEPTH_TL) {
+                ctx.depth = DEPTH_UNDEFINED;
             } else {
                 ctxQueue.offer(ctx);
             }
