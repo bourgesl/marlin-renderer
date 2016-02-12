@@ -30,6 +30,9 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import sun.awt.SunHints;
+import sun.java2d.ReentrantContext;
+import sun.java2d.ReentrantContextProvider;
+import sun.java2d.ReentrantContextProviderTL;
 import sun.java2d.SunGraphics2D;
 
 /**
@@ -45,13 +48,15 @@ public final class AAShapePipe
     static final RenderingEngine renderengine = RenderingEngine.getInstance();
 
     // Per-thread TileState (~1K very small so do not use any Weak Reference)
-    private static final ReentrantThreadLocal<TileState> tileStateThreadLocal =
-            new ReentrantThreadLocal<TileState>() {
-        @Override
-        protected TileState initialValue() {
-            return new TileState();
-        }
-    };
+    private static final ReentrantContextProvider<TileState> tileStateProvider =
+            new ReentrantContextProviderTL<TileState>(
+                    ReentrantContextProvider.REF_HARD)
+            {
+                @Override
+                protected TileState newContext() {
+                    return new TileState();
+                }
+            };
 
     final CompositePipe outpipe;
 
@@ -86,7 +91,7 @@ public final class AAShapePipe
                                   double dx1, double dy1,
                                   double dx2, double dy2)
     {
-        final TileState ts = tileStateThreadLocal.get();
+        final TileState ts = tileStateProvider.acquire();
         try {
             final int[] abox = ts.abox;
 
@@ -98,7 +103,7 @@ public final class AAShapePipe
                             aatg, abox, ts);
             }
         } finally {
-            tileStateThreadLocal.restore(ts);
+            tileStateProvider.release(ts);
         }
     }
 
@@ -111,7 +116,7 @@ public final class AAShapePipe
                                   double dx2, double dy2,
                                   double lw1, double lw2)
     {
-        final TileState ts = tileStateThreadLocal.get();
+        final TileState ts = tileStateProvider.acquire();
         try {
             final int[] abox = ts.abox;
 
@@ -125,7 +130,7 @@ public final class AAShapePipe
                             aatg, abox, ts);
             }
         } finally {
-            tileStateThreadLocal.restore(ts);
+            tileStateProvider.release(ts);
         }
     }
 
@@ -134,7 +139,7 @@ public final class AAShapePipe
                           sg.strokeHint != SunHints.INTVAL_STROKE_PURE);
         final boolean thin = (sg.strokeState <= SunGraphics2D.STROKE_THINDASHED);
 
-        final TileState ts = tileStateThreadLocal.get();
+        final TileState ts = tileStateProvider.acquire();
         try {
             final int[] abox = ts.abox;
 
@@ -145,7 +150,7 @@ public final class AAShapePipe
                 renderTiles(sg, s, aatg, abox, ts);
             }
         } finally {
-            tileStateThreadLocal.restore(ts);
+            tileStateProvider.release(ts);
         }
     }
 
@@ -256,55 +261,5 @@ public final class AAShapePipe
             box.height = uy2;
             return box;
         }
-    }
-
-    static class ReentrantThreadLocal<K extends ReentrantContext>
-        extends ThreadLocal<K>
-    {
-        final static int DEPTH_UNDEFINED = 0;
-        final static int DEPTH_TL = 1;
-        final static int DEPTH_CLQ = 2;
-
-        // ReentrantContext queue for child contexts
-        private final ConcurrentLinkedQueue<K> ctxQueue
-            = new ConcurrentLinkedQueue<K>();
-
-        /**
-         * Give a ReentrantContext instance from thread-local or CLQ storage
-         * @return ReentrantContext instance
-         */
-        @Override
-        public final K get() {
-            K ctx = super.get();
-            // Check reentrance:
-            if (ctx.depth == DEPTH_UNDEFINED) {
-                ctx.depth = DEPTH_TL;
-            } else {
-                // get or create another ReentrantContext from queue:
-                ctx = ctxQueue.poll();
-                if (ctx == null) {
-                    // create a new ReentrantContext if none is available
-                    ctx = initialValue();
-                    ctx.depth = DEPTH_CLQ;
-                }
-            }
-            return ctx;
-        }
-
-        /**
-         * Restore the given ReentrantContext instance for reuse
-         * @param ctx ReentrantContext instance
-         */
-        public final void restore(final K ctx) {
-            if (ctx.depth == DEPTH_TL) {
-                ctx.depth = DEPTH_UNDEFINED;
-            } else {
-                ctxQueue.offer(ctx);
-            }
-        }
-    }
-
-    static class ReentrantContext {
-        int depth = ReentrantThreadLocal.DEPTH_UNDEFINED;
     }
 }

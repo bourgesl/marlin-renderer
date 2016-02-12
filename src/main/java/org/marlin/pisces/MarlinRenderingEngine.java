@@ -28,12 +28,13 @@ import java.awt.BasicStroke;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
-import java.lang.ref.Reference;
 import java.security.AccessController;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.marlin.geom.Path2D;
 import static org.marlin.pisces.MarlinUtils.logInfo;
 import sun.awt.geom.PathConsumer2D;
+import sun.java2d.ReentrantContextProvider;
+import sun.java2d.ReentrantContextProviderCLQ;
+import sun.java2d.ReentrantContextProviderTL;
 import sun.java2d.pipe.AATileGenerator;
 import sun.java2d.pipe.Region;
 import sun.java2d.pipe.RenderingEngine;
@@ -881,45 +882,46 @@ public class MarlinRenderingEngine extends RenderingEngine
     // use ThreadLocal or ConcurrentLinkedQueue to get one RendererContext
     private static final boolean useThreadLocal;
 
-    final static int DEPTH_UNDEFINED = 0;
-    final static int DEPTH_TL = 1;
-    final static int DEPTH_CLQ = 2;
-
-    // hard reference
-    static final int REF_HARD = 0;
-    // soft reference
-    static final int REF_SOFT = 1;
-    // weak reference
-    static final int REF_WEAK = 2;
-
     // reference type stored in either TL or CLQ
     static final int REF_TYPE;
 
     // Per-thread RendererContext
-    private static final ThreadLocal<Object> rdrCtxThreadLocal;
-    // RendererContext queue when
-    // ThreadLocal is disabled or for child contexts (reentrance)
-    private static final ConcurrentLinkedQueue<Object> rdrCtxQueue
-        = new ConcurrentLinkedQueue<Object>();
+    private static final ReentrantContextProvider<RendererContext> rdrCtxProvider;
 
     // Static initializer to use TL or CLQ mode
     static {
         useThreadLocal = MarlinProperties.isUseThreadLocal();
-        rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<Object>()
-                                             : null;
 
         // Soft reference by default:
-        String refType = AccessController.doPrivileged(
+        final String refType = AccessController.doPrivileged(
                             new GetPropertyAction("sun.java2d.renderer.useRef",
                             "soft"));
 
         // Java 1.6 does not support strings in switch:
         if ("hard".equalsIgnoreCase(refType)) {
-            REF_TYPE = REF_HARD;
+            REF_TYPE = ReentrantContextProvider.REF_HARD;
         } else if ("weak".equalsIgnoreCase(refType)) {
-            REF_TYPE = REF_WEAK;
+            REF_TYPE = ReentrantContextProvider.REF_WEAK;
         } else {
-            REF_TYPE = REF_SOFT;
+            REF_TYPE = ReentrantContextProvider.REF_SOFT;
+        }
+
+        if (useThreadLocal) {
+            rdrCtxProvider = new ReentrantContextProviderTL<RendererContext>(REF_TYPE)
+                {
+                    @Override
+                    protected RendererContext newContext() {
+                        return RendererContext.createContext();
+                    }
+                };
+        } else {
+            rdrCtxProvider = new ReentrantContextProviderCLQ<RendererContext>(REF_TYPE)
+                {
+                    @Override
+                    protected RendererContext newContext() {
+                        return RendererContext.createContext();
+                    }
+                };
         }
     }
 
@@ -935,13 +937,13 @@ public class MarlinRenderingEngine extends RenderingEngine
         String refType;
         switch (REF_TYPE) {
             default:
-            case REF_HARD:
+            case ReentrantContextProvider.REF_HARD:
                 refType = "hard";
                 break;
-            case REF_SOFT:
+            case ReentrantContextProvider.REF_SOFT:
                 refType = "soft";
                 break;
-            case REF_WEAK:
+            case ReentrantContextProvider.REF_WEAK:
                 refType = "weak";
                 break;
         }
@@ -1027,47 +1029,9 @@ public class MarlinRenderingEngine extends RenderingEngine
      */
     @SuppressWarnings({"unchecked"})
     static RendererContext getRendererContext() {
-        RendererContext rdrCtx = null;
-        if (useThreadLocal) {
-            final Object ref = rdrCtxThreadLocal.get();
-            if (ref != null) {
-                rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref)
-                    : ((Reference<RendererContext>) ref).get();
-            }
-            if (rdrCtx == null) {
-                // create a new RendererContext if none is available
-                rdrCtx = RendererContext.createContext();
-                // update thread local reference:
-                rdrCtxThreadLocal.set(rdrCtx.reference);
-            }
-            // Check reentrance:
-            if (rdrCtx.depth == DEPTH_UNDEFINED) {
-                rdrCtx.depth = DEPTH_TL;
-            } else {
-                // get or create another RendererContext:
-                rdrCtx = getOrCreateContextFromQueue();
-            }
-        } else {
-            rdrCtx = getOrCreateContextFromQueue();
-        }
+        final RendererContext rdrCtx = rdrCtxProvider.acquire();
         if (doMonitors) {
             RendererContext.stats.mon_pre_getAATileGenerator.start();
-        }
-        return rdrCtx;
-    }
-
-    @SuppressWarnings({"unchecked"})
-    private static RendererContext getOrCreateContextFromQueue() {
-        RendererContext rdrCtx = null;
-        final Object ref = rdrCtxQueue.poll();
-        if (ref != null) {
-            rdrCtx = (REF_TYPE == REF_HARD) ? ((RendererContext) ref)
-                        : ((Reference<RendererContext>) ref).get();
-        }
-        if (rdrCtx == null) {
-            // create a new RendererContext if none is available
-            rdrCtx = RendererContext.createContext();
-            rdrCtx.depth = DEPTH_CLQ;
         }
         return rdrCtx;
     }
@@ -1082,10 +1046,6 @@ public class MarlinRenderingEngine extends RenderingEngine
         if (doMonitors) {
             RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
-        if (useThreadLocal && (rdrCtx.depth == DEPTH_TL)) {
-            rdrCtx.depth = DEPTH_UNDEFINED;
-        } else {
-            rdrCtxQueue.offer(rdrCtx.reference);
-        }
+        rdrCtxProvider.release(rdrCtx);
     }
 }

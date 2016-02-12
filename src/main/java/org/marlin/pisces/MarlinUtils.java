@@ -63,7 +63,7 @@ public final class MarlinUtils {
         }
     }
 
-    // ThreadGroupUtils
+    // From sun.awt.util.ThreadGroupUtils
 
     /**
      * Returns a root thread group.
