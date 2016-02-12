@@ -71,6 +71,7 @@
                         </goals>
                         <configuration>
                             <includes>
+                                <include>sun/java2d/ReentrantContext*</include>
                                 <include>sun/java2d/marlin/**</include>
                                 <include>META-INF/services/*</include>
                             </includes>

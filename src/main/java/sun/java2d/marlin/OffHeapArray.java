@@ -33,7 +33,6 @@ import java.util.Vector;
 import static sun.java2d.marlin.MarlinConst.logUnsafeMalloc;
 //import sun.awt.util.ThreadGroupUtils;
 //import jdk.internal.misc.Unsafe;
-import sun.misc.ThreadGroupUtils;
 import sun.misc.Unsafe;
 
 /**
@@ -67,7 +66,8 @@ final class OffHeapArray  {
                  * Make its parent the top-level thread group.
                  */
                 final ThreadGroup rootTG
-                    = ThreadGroupUtils.getRootThreadGroup();
+//                    = ThreadGroupUtils.getRootThreadGroup();
+                    = MarlinUtils.getRootThreadGroup();
                 final Thread t = new Thread(rootTG, new OffHeapDisposer(),
                     "MarlinRenderer Disposer");
                 t.setContextClassLoader(null);

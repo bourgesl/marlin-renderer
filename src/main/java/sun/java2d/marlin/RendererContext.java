@@ -26,9 +26,10 @@
 package sun.java2d.marlin;
 
 import java.awt.geom.Path2D;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
+import sun.java2d.ReentrantContext;
+import sun.java2d.ReentrantContextProvider;
 import static sun.java2d.marlin.ArrayCache.*;
 import sun.java2d.marlin.MarlinRenderingEngine.NormalizingPathIterator;
 import static sun.java2d.marlin.MarlinUtils.logInfo;
@@ -36,7 +37,7 @@ import static sun.java2d.marlin.MarlinUtils.logInfo;
 /**
  * This class is a renderer context dedicated to a single thread
  */
-final class RendererContext implements MarlinConst {
+final class RendererContext extends ReentrantContext implements MarlinConst {
 
     // RendererContext creation counter
     private static final AtomicInteger contextCount = new AtomicInteger(1);
@@ -45,7 +46,7 @@ final class RendererContext implements MarlinConst {
                                        ? RendererStats.getInstance(): null;
 
     private static final boolean USE_CACHE_HARD_REF = doStats
-        || (MarlinRenderingEngine.REF_TYPE == MarlinRenderingEngine.REF_WEAK);
+        || (MarlinRenderingEngine.REF_TYPE == ReentrantContextProvider.REF_WEAK);
 
     /**
      * Create a new renderer context
@@ -65,13 +66,6 @@ final class RendererContext implements MarlinConst {
 
     // context name (debugging purposes)
     final String name;
-    // reentrance depth:
-    int depth = MarlinRenderingEngine.DEPTH_UNDEFINED;
-    /*
-     * Reference to this instance (hard, soft or weak).
-     * @see MarlinRenderingEngine#REF_TYPE
-     */
-    final Object reference;
     // Smallest object used as Cleaner's parent reference
     final Object cleanerObj = new Object();
     // dirty flag indicating an exception occured during pipeline in pathTo()
@@ -128,20 +122,6 @@ final class RendererContext implements MarlinConst {
 
         stroker = new Stroker(this);
         dasher = new Dasher(this);
-
-        // Create the reference to this instance (hard, soft or weak):
-        switch (MarlinRenderingEngine.REF_TYPE) {
-            default:
-            case MarlinRenderingEngine.REF_HARD:
-                reference = this;
-                break;
-            case MarlinRenderingEngine.REF_SOFT:
-                reference = new SoftReference<RendererContext>(this);
-                break;
-            case MarlinRenderingEngine.REF_WEAK:
-                reference = new WeakReference<RendererContext>(this);
-                break;
-        }
     }
 
     /**
