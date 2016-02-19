@@ -71,6 +71,7 @@
                         </goals>
                         <configuration>
                             <includes>
+                                <include>sun/java2d/ReentrantContext*</include>
                                 <include>org/**</include>
                                 <include>META-INF/services/*</include>
                             </includes>
@@ -86,7 +87,7 @@
                             <classifier>sun-java2d</classifier>
                             <includes>
                                 <include>com/sun/imageio/**</include>
-                                <include>sun/java2d/**</include>
+                                <include>sun/java2d/pipe/**</include>
                             </includes>
                         </configuration>
                     </execution>

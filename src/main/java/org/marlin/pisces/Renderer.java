@@ -39,7 +39,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     private static final int ALL_BUT_LSB = 0xfffffffe;
     private static final int ERR_STEP_MAX = 0x7fffffff; // = 2^31 - 1
 
-    private static final double POWER_2_TO_32 = FloatMath.powerOfTwoD(32);
+    private static final double POWER_2_TO_32 = 0x1.0p32;
 
     // use float to make tosubpix methods faster (no int to float conversion)
     public static final float f_SUBPIXEL_POSITIONS_X
