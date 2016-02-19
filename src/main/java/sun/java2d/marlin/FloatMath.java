@@ -24,7 +24,6 @@
  */
 package sun.java2d.marlin;
 
-import sun.misc.DoubleConsts;
 import sun.misc.FloatConsts;
 
 /**
@@ -209,15 +208,5 @@ public final class FloatMath implements MarlinConst {
             return intpart;
         }
         return intpart - 1;
-    }
-
-    /**
-     * Returns a floating-point power of two in the normal range.
-     */
-    static double powerOfTwoD(int n) {
-        assert (n >= DoubleConsts.MIN_EXPONENT && n <= DoubleConsts.MAX_EXPONENT);
-        return Double.longBitsToDouble((((long) n + (long) DoubleConsts.EXP_BIAS)
-                << (DoubleConsts.SIGNIFICAND_WIDTH - 1))
-                & DoubleConsts.EXP_BIT_MASK);
     }
 }
