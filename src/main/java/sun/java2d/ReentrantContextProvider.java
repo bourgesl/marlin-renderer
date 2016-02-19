@@ -49,7 +49,12 @@ import java.lang.ref.WeakReference;
  * with the appropriate contextual data in it.
  *
  * Sample Usage:
- * - create a subclass ReentrantContextImpl to hold the thread state
+ * - create a subclass ReentrantContextImpl to hold the thread state:
+ *
+ * static final class ReentrantContextImpl extends ReentrantContext {
+ *     // specific cached data
+ * }
+ *
  * - create the appropriate ReentrantContextProvider:
  *
  * private static final ReentrantContextProvider<ReentrantContextImpl> contextProvider =
@@ -57,7 +62,7 @@ import java.lang.ref.WeakReference;
  *     {
  *         @Override
  *         protected ReentrantContextImpl newContext() {
- *             return new TileState();
+ *             return new ReentrantContextImpl();
  *         }
  *     };
  * ...
@@ -152,7 +157,7 @@ public abstract class ReentrantContextProvider<K extends ReentrantContext>
 
         HardReference(final V referent) {
             // no referent needed for the parent WeakReference:
-            super(null); 
+            super(null);
             this.strongRef = referent;
         }
 
