@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.7.3.2-Unsafe-OpenJDK</version>
+    <version>0.7.3.3-Unsafe-OpenJDK</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -102,12 +102,12 @@
                     <forkCount>1</forkCount>
                     <threadCount>1</threadCount>
                     <!--
-                    Marlin: -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine
+                    Marlin: -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                     Pisces: -Dsun.java2d.renderer=sun.java2d.pisces.PiscesRenderingEngine
                     -->
                     <argLine>
                         -Xms512m -Xmx512m
-                        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine
+                        -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                         -Dsun.java2d.renderer.log=true
                         -Dsun.java2d.renderer.doChecks=true
                         -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
