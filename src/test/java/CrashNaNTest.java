@@ -89,6 +89,8 @@ public class CrashNaNTest {
         testFillDefaultAt();
         testDrawComplexAt();
 
+        testPathClosed();
+
         testStrokedShapes();
     }
 
@@ -248,6 +250,69 @@ public class CrashNaNTest {
             checkPixelNotWhite(raster, 89, 219);
             checkPixelNotWhite(raster, 28, 399);
             checkPixelNotWhite(raster, 134, 329);
+
+        } finally {
+            g2d.dispose();
+        }
+    }
+    private static void testPathClosed() {
+        final int width = 100;
+        final int height = 100;
+
+        final BufferedImage image = new BufferedImage(width, height,
+                                            BufferedImage.TYPE_INT_ARGB);
+
+        final Graphics2D g2d = (Graphics2D) image.getGraphics();
+        try {
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                 RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2d.setBackground(Color.WHITE);
+            g2d.clearRect(0, 0, width, height);
+
+            final Path2D.Double path = new Path2D.Double();
+            path.moveTo(40, 40);
+            path.lineTo(0,   0);
+            path.lineTo(80, 0);
+            path.closePath();
+            path.lineTo(80, 80);
+            path.lineTo(0, 80);
+            path.closePath();
+
+            for (int i = 0; i < 1; i++) {
+                final long start = System.nanoTime();
+                g2d.setColor(Color.BLUE);
+                g2d.fill(path);
+
+                g2d.setColor(Color.BLACK);
+                g2d.draw(path);
+
+                final long time = System.nanoTime() - start;
+                System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
+            }
+
+            if (SAVE_IMAGE) {
+                try {
+                    final File file = new File("CrashNaNTest-path-closed.png");
+                    System.out.println("Writing file: "
+                                       + file.getAbsolutePath());
+                    ImageIO.write(image, "PNG", file);
+                } catch (IOException ex) {
+                    System.out.println("Writing file failure:");
+                    ex.printStackTrace();
+                }
+            }
+
+            // Check image on few pixels:
+            final Raster raster = image.getData();
+
+            checkPixel(raster, 10, 05, Color.BLUE.getRGB());
+            checkPixel(raster, 70, 05, Color.BLUE.getRGB());
+            checkPixel(raster, 40, 35, Color.BLUE.getRGB());
+
+            checkPixel(raster, 10, 75, Color.BLUE.getRGB());
+            checkPixel(raster, 70, 75, Color.BLUE.getRGB());
+            checkPixel(raster, 40, 45, Color.BLUE.getRGB());
 
         } finally {
             g2d.dispose();

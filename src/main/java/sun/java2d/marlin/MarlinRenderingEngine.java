@@ -630,12 +630,22 @@ public class MarlinRenderingEngine extends RenderingEngine
     {
         // ported from DuctusRenderingEngine.feedConsumer() but simplified:
         // - removed skip flag = !subpathStarted
-        // - removed pathClosed flag because the new approach always calls
-        //     moveTo() if !subpathStarted
+        boolean pathClosed = false;
         boolean subpathStarted = false;
+        float mx = 0.0f;
+        float my = 0.0f;
 
         for (; !pi.isDone(); pi.next()) {
-            switch (pi.currentSegment(coords)) {
+            final int type = pi.currentSegment(coords);
+            if (pathClosed) {
+                pathClosed = false;
+                if (type != PathIterator.SEG_MOVETO) {
+                    // Force current point back to last moveto point
+                    pc2d.moveTo(mx, my);
+                    subpathStarted = true;
+                }
+            }
+            switch (type) {
             case PathIterator.SEG_MOVETO:
                 /* Checking SEG_MOVETO coordinates if they are out of the
                  * [LOWER_BND, UPPER_BND] range. This check also handles NaN
@@ -645,7 +655,9 @@ public class MarlinRenderingEngine extends RenderingEngine
                 if (coords[0] < UPPER_BND && coords[0] > LOWER_BND &&
                     coords[1] < UPPER_BND && coords[1] > LOWER_BND)
                 {
-                    pc2d.moveTo(coords[0], coords[1]);
+                    mx = coords[0];
+                    my = coords[1];
+                    pc2d.moveTo(mx, my);
                     subpathStarted = true;
                 }
                 break;
@@ -728,6 +740,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                 if (subpathStarted) {
                     pc2d.closePath();
                     subpathStarted = false;
+                    pathClosed = true;
                 }
                 break;
             default:
