@@ -226,7 +226,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                                boolean rev,
                                float threshold)
     {
-        if ((omx == 0 && omy == 0) || (mx == 0 && my == 0)) {
+        if ((omx == 0f && omy == 0f) || (mx == 0f && my == 0f)) {
             return;
         }
 
@@ -338,17 +338,14 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     }
 
     private void drawRoundCap(float cx, float cy, float mx, float my) {
-        // the first and second arguments of the following two calls
-        // are really will be ignored by emitCurveTo (because of the false),
-        // but we put them in anyway, as opposed to just giving it 4 zeroes,
-        // because it's just 4 additions and it's not good to rely on this
-        // sort of assumption (right now it's true, but that may change).
-        emitCurveTo(cx+mx-C*my, cy+my+C*mx,
-                    cx-my+C*mx, cy+mx+C*my,
-                    cx-my,      cy+mx);
-        emitCurveTo(cx-my-C*mx, cy+mx-C*my,
-                    cx-mx-C*my, cy-my+C*mx,
-                    cx-mx,      cy-my);
+        final float Cmx = C * mx;
+        final float Cmy = C * my;
+        emitCurveTo(cx + mx - Cmy, cy + my + Cmx,
+                    cx - my + Cmx, cy + mx + Cmy,
+                    cx - my,       cy + mx);
+        emitCurveTo(cx - my - Cmx, cy + mx - Cmy,
+                    cx - mx - Cmy, cy - my + Cmx,
+                    cx - mx,       cy - my);
     }
 
     // Put the intersection point of the lines (x0, y0) -> (x1, y1)
@@ -417,8 +414,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
         this.sx0 = this.cx0 = x0;
         this.sy0 = this.cy0 = y0;
-        this.cdx = this.sdx = 1;
-        this.cdy = this.sdy = 0;
+        this.cdx = this.sdx = 1f;
+        this.cdy = this.sdy = 0f;
         this.prev = MOVE_TO;
     }
 
@@ -457,10 +454,10 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 return;
             }
             emitMoveTo(cx0, cy0 - lineWidth2);
-            this.cmx = this.smx = 0;
+            this.cmx = this.smx = 0f;
             this.cmy = this.smy = -lineWidth2;
-            this.cdx = this.sdx = 1;
-            this.cdy = this.sdy = 0;
+            this.cdx = this.sdx = 1f;
+            this.cdy = this.sdy = 0f;
             finish();
             return;
         }
