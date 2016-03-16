@@ -33,17 +33,19 @@ final class CollinearSimplifier implements PathConsumer2D {
     private static final int STATE_EMPTY = 2;
 
     // slope precision threshold
-    static final float EPS = 1e-3f; // aaime proposed 1e-3f
+    private static final float EPS = 1e-3f; // aaime proposed 1e-3f
 
-    PathConsumer2D delegate;
-    int state;
-    float px1, py1, px2, py2;
-    float pslope;
+    // members:
+    private PathConsumer2D delegate;
+    private int state;
+    private float px1, py1;
+    private float pdx, pdy;
+    private float px2, py2;
 
     CollinearSimplifier() {
     }
 
-    public CollinearSimplifier init(PathConsumer2D delegate) {
+    public CollinearSimplifier init(final PathConsumer2D delegate) {
         this.delegate = delegate;
         this.state = STATE_EMPTY;
 
@@ -53,15 +55,15 @@ final class CollinearSimplifier implements PathConsumer2D {
     @Override
     public void pathDone() {
         emitStashedLine();
-        state = STATE_EMPTY;
         delegate.pathDone();
+        state = STATE_EMPTY;
     }
 
     @Override
     public void closePath() {
         emitStashedLine();
-        state = STATE_EMPTY;
         delegate.closePath();
+        state = STATE_EMPTY;
     }
 
     @Override
@@ -70,70 +72,76 @@ final class CollinearSimplifier implements PathConsumer2D {
     }
 
     @Override
-    public void quadTo(float x1, float y1, float x2, float y2) {
+    public void quadTo(final float x1, final float y1,
+                       final float xe, final float ye)
+    {
         emitStashedLine();
-        delegate.quadTo(x1, y1, x2, y2);
+        delegate.quadTo(x1, y1, xe, ye);
         // final end point:
         state = STATE_PREV_POINT;
-        px1 = x2;
-        py1 = y2;
+        px1 = xe;
+        py1 = ye;
     }
 
     @Override
-    public void curveTo(float x1, float y1, float x2, float y2,
-                        float x3, float y3) {
+    public void curveTo(final float x1, final float y1,
+                        final float x2, final float y2,
+                        final float xe, final float ye)
+    {
         emitStashedLine();
-        delegate.curveTo(x1, y1, x2, y2, x3, y3);
+        delegate.curveTo(x1, y1, x2, y2, xe, ye);
         // final end point:
         state = STATE_PREV_POINT;
-        px1 = x3;
-        py1 = y3;
+        px1 = xe;
+        py1 = ye;
     }
 
     @Override
-    public void moveTo(float x, float y) {
+    public void moveTo(final float xe, final float ye) {
         emitStashedLine();
-        delegate.moveTo(x, y);
+        delegate.moveTo(xe, ye);
         state = STATE_PREV_POINT;
-        px1 = x;
-        py1 = y;
+        px1 = xe;
+        py1 = ye;
     }
 
     @Override
-    public void lineTo(final float x, final float y) {
+    public void lineTo(final float xe, final float ye) {
         // most probable case first:
         if (state == STATE_PREV_LINE) {
-            final float slope = getSlope(px2, py2, x, y);
             // test for collinearity
-            // note: the equality test is used to check Infinty slopes
-            if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
+            final float dx = (xe - px2);
+            final float dy = (ye - py2);
+
+            // perf: avoid slope computation (fdiv) replaced by 3 fmul
+            if ((dy == 0f && pdy == 0f && (pdx * dx) >= 0f)
+                || (Math.abs(pdx * dy - pdy * dx) < EPS * Math.abs(pdy * dy))) {
+                // same horizontal orientation or same slope:
                 // TODO: store cumulated error on slope ?
                 // merge segments
-                px2 = x;
-                py2 = y;
-                return;
+                px2 = xe;
+                py2 = ye;
+            } else {
+                // emit previous segment
+                delegate.lineTo(px2, py2);
+                px1 = px2;
+                py1 = py2;
+                pdx = dx;
+                pdy = dy;
+                px2 = xe;
+                py2 = ye;
             }
-            // emit previous segment
-            delegate.lineTo(px2, py2);
-            px1 = px2;
-            py1 = py2;
-            px2 = x;
-            py2 = y;
-            pslope = slope;
-            return;
-        }
-        if (state == STATE_PREV_POINT) {
+        } else if (state == STATE_PREV_POINT) {
             state = STATE_PREV_LINE;
-            px2 = x;
-            py2 = y;
-            pslope = getSlope(px1, py1, x, y);
-            return;
-        }
-        if (state == STATE_EMPTY) {
-            delegate.lineTo(x, y);
+            pdx = (xe - px1);
+            pdy = (ye - py1);
+            px2 = xe;
+            py2 = ye;
+        } else if (state == STATE_EMPTY) {
+            delegate.lineTo(xe, ye);
             state = STATE_PREV_POINT;
-            px1 = x;
-            py1 = y;
+            px1 = xe;
+            py1 = ye;
         }
     }
 
@@ -141,14 +149,5 @@ final class CollinearSimplifier implements PathConsumer2D {
         if (state == STATE_PREV_LINE) {
             delegate.lineTo(px2, py2);
         }
-    }
-
-    private static float getSlope(float x1, float y1, float x2, float y2) {
-        float dy = y2 - y1;
-        if (dy == 0f) {
-            return (x2 > x1) ? Float.POSITIVE_INFINITY
-                   : Float.NEGATIVE_INFINITY;
-        }
-        return (x2 - x1) / dy;
     }
 }
