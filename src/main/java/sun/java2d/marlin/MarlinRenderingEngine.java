@@ -630,22 +630,11 @@ public class MarlinRenderingEngine extends RenderingEngine
     {
         // ported from DuctusRenderingEngine.feedConsumer() but simplified:
         // - removed skip flag = !subpathStarted
-        boolean pathClosed = false;
+        // - removed pathClosed (ie subpathStarted not set to false)
         boolean subpathStarted = false;
-        float mx = 0.0f;
-        float my = 0.0f;
 
         for (; !pi.isDone(); pi.next()) {
-            final int type = pi.currentSegment(coords);
-            if (pathClosed) {
-                pathClosed = false;
-                if (type != PathIterator.SEG_MOVETO) {
-                    // Force current point back to last moveto point
-                    pc2d.moveTo(mx, my);
-                    subpathStarted = true;
-                }
-            }
-            switch (type) {
+            switch (pi.currentSegment(coords)) {
             case PathIterator.SEG_MOVETO:
                 /* Checking SEG_MOVETO coordinates if they are out of the
                  * [LOWER_BND, UPPER_BND] range. This check also handles NaN
@@ -655,9 +644,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                 if (coords[0] < UPPER_BND && coords[0] > LOWER_BND &&
                     coords[1] < UPPER_BND && coords[1] > LOWER_BND)
                 {
-                    mx = coords[0];
-                    my = coords[1];
-                    pc2d.moveTo(mx, my);
+                    pc2d.moveTo(coords[0], coords[1]);
                     subpathStarted = true;
                 }
                 break;
@@ -739,8 +726,8 @@ public class MarlinRenderingEngine extends RenderingEngine
             case PathIterator.SEG_CLOSE:
                 if (subpathStarted) {
                     pc2d.closePath();
-                    subpathStarted = false;
-                    pathClosed = true;
+                    // do not set subpathStarted to false
+                    // in case of missing moveTo() after close()
                 }
                 break;
             default:
@@ -1078,6 +1065,8 @@ public class MarlinRenderingEngine extends RenderingEngine
         // optimisation parameters
         logInfo("sun.java2d.renderer.useSimplifier    = "
                 + MarlinConst.useSimplifier);
+        logInfo("sun.java2d.renderer.clip.curves      = "
+                + MarlinProperties.isDoClipCurves());
 
         // debugging parameters
         logInfo("sun.java2d.renderer.doStats          = "
