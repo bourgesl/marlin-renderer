@@ -43,24 +43,27 @@ import sun.java2d.pipe.RenderingEngine;
  */
 public class StrokerTest {
 
-    static final boolean SHOW_OUTLINE = false;
-    static final boolean SHOW_POINTS = false;
+    static final boolean SHOW_OUTLINE = true;
+    static final boolean SHOW_POINTS = true;
 
     static final Stroke OUTLINE_STROKE = new BasicStroke(1f);
-    static final Color COLOR_MOVETO = new Color(255, 0, 0, 128);
-    static final Color COLOR_LINETO_ODD = new Color(0, 0, 255, 128);
-    static final Color COLOR_LINETO_EVEN = new Color(0, 255, 0, 128);
+    static final Color COLOR_MOVETO = new Color(255, 0, 0, 160);
+    static final Color COLOR_LINETO_ODD = new Color(0, 0, 255, 160);
+    static final Color COLOR_LINETO_EVEN = new Color(0, 255, 0, 160);
 
     public static void main(String[] args) {
-        final int nSteps = 29;
-        final float lineStroke = 5f;
+        final int nSteps = 7;
+
+        final float lineStroke = 20f;
         final float miterLimit = 5f;
+        final float[] dashes = null; //new float[] {30, 45};
         final int height = 300;
+
         final float margin = 10f + lineStroke;
         final int width = height * nSteps;
 
-        final int cap = BasicStroke.CAP_BUTT; // No cap
-//        final int cap = BasicStroke.CAP_SQUARE; // No cap
+//        final int cap = BasicStroke.CAP_BUTT; // No cap
+        final int cap = BasicStroke.CAP_SQUARE; // No cap
         final int join = BasicStroke.JOIN_MITER; // mitter
 //        final int join = BasicStroke.JOIN_ROUND; // round
 //        final int join = BasicStroke.JOIN_BEVEL; // bevel
@@ -83,7 +86,7 @@ public class StrokerTest {
         g2d.setBackground(Color.WHITE);
         g2d.clearRect(0, 0, width, height);
 
-        final Stroke stroke = new BasicStroke(lineStroke, cap, join, miterLimit, null, 0.0f);
+        final Stroke stroke = new BasicStroke(lineStroke, cap, join, miterLimit, dashes, 0.0f);
 
         g2d.translate(margin, margin);
 

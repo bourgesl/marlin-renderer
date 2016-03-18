@@ -120,6 +120,10 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.useSimplifier", "false");
     }
 
+    public static boolean isDoClipCurves() {
+        return getBoolean("sun.java2d.renderer.clip.curves", "false");
+    }
+
     // debugging parameters
 
     public static boolean isDoStats() {
