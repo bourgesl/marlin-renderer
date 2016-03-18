@@ -131,20 +131,14 @@ public class CrashNaNTest {
             path2.lineTo(0, 200);
             path2.closePath();
 
-            for (int i = 0; i < 1; i++) {
-                final long start = System.nanoTime();
-                g2d.setColor(Color.BLUE);
-                g2d.fill(path);
-                g2d.setColor(Color.GREEN);
-                g2d.fill(path2);
+            g2d.setColor(Color.BLUE);
+            g2d.fill(path);
+            g2d.setColor(Color.GREEN);
+            g2d.fill(path2);
 
-                g2d.setColor(Color.BLACK);
-                g2d.draw(path);
-                g2d.draw(path2);
-
-                final long time = System.nanoTime() - start;
-                System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
-            }
+            g2d.setColor(Color.BLACK);
+            g2d.draw(path);
+            g2d.draw(path2);
 
             if (SAVE_IMAGE) {
                 try {
@@ -218,16 +212,9 @@ public class CrashNaNTest {
             g2d.scale(0.5, 1.0);
             g2d.rotate(Math.PI / 31);
 
-            for (int i = 0; i < 1; i++) {
-                final long start = System.nanoTime();
-
-                g2d.setColor(Color.BLACK);
-                g2d.draw(path);
-                g2d.draw(path2);
-
-                final long time = System.nanoTime() - start;
-                System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
-            }
+            g2d.setColor(Color.BLACK);
+            g2d.draw(path);
+            g2d.draw(path2);
 
             if (SAVE_IMAGE) {
                 try {
@@ -279,17 +266,11 @@ public class CrashNaNTest {
             path.lineTo(0, 80);
             path.closePath();
 
-            for (int i = 0; i < 1; i++) {
-                final long start = System.nanoTime();
-                g2d.setColor(Color.BLUE);
-                g2d.fill(path);
+            g2d.setColor(Color.BLUE);
+            g2d.fill(path);
 
-                g2d.setColor(Color.BLACK);
-                g2d.draw(path);
-
-                final long time = System.nanoTime() - start;
-                System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
-            }
+            g2d.setColor(Color.BLACK);
+            g2d.draw(path);
 
             if (SAVE_IMAGE) {
                 try {
