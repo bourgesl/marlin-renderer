@@ -54,7 +54,7 @@ public final class ArrayCache implements MarlinConst {
         for (int i = 0; i < BUCKETS; i++, arraySize <<= 2) {
             ARRAY_SIZES[i] = arraySize;
 
-            if (doTrace) {
+            if (DO_TRACE) {
                 logInfo("arraySize[" + i + "]: " + arraySize);
             }
         }
@@ -67,7 +67,7 @@ public final class ArrayCache implements MarlinConst {
         for (int i = 0; i < BUCKETS; i++, arraySize <<= 1) {
             DIRTY_BYTE_ARRAY_SIZES[i] = arraySize;
 
-            if (doTrace) {
+            if (DO_TRACE) {
                 logInfo("dirty arraySize[" + i + "]: " + arraySize);
             }
         }
@@ -76,7 +76,7 @@ public final class ArrayCache implements MarlinConst {
         // threshold to grow arrays only by (3/2) instead of 2
         THRESHOLD_ARRAY_SIZE = Math.max(2 * 1024 * 1024, MAX_ARRAY_SIZE);
 
-        if (doStats || doMonitors) {
+        if (DO_STATS || DO_MONITORS) {
             logInfo("ArrayCache.BUCKETS        = " + BUCKETS);
             logInfo("ArrayCache.MIN_ARRAY_SIZE = " + MIN_ARRAY_SIZE);
             logInfo("ArrayCache.MAX_ARRAY_SIZE = " + MAX_ARRAY_SIZE);

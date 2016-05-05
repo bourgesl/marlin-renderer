@@ -25,7 +25,7 @@
 package org.marlin.pisces;
 
 import java.util.Arrays;
-import java.util.Iterator;
+
 import static java.lang.Math.ulp;
 import static java.lang.Math.sqrt;
 
@@ -176,7 +176,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     void dispose() {
         reverse.dispose();
 
-        if (doCleanDirty) {
+        if (DO_CLEAN_DIRTY) {
             // Force zero-fill dirty arrays:
             Arrays.fill(offset0, 0f);
             Arrays.fill(offset1, 0f);
@@ -1225,7 +1225,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             end = 0;
             numCurves = 0;
 
-            if (doStats) {
+            if (DO_STATS) {
                 curveTypesUseMark = 0;
                 curvesUseMark = 0;
             }
@@ -1239,7 +1239,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             end = 0;
             numCurves = 0;
 
-            if (doStats) {
+            if (DO_STATS) {
                 RendererContext.stats.stat_rdr_poly_stack_types
                     .add(curveTypesUseMark);
                 RendererContext.stats.stat_rdr_poly_stack_curves
@@ -1264,14 +1264,14 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         private void ensureSpace(final int n) {
             if (end + n > curves.length) {
-                if (doStats) {
+                if (DO_STATS) {
                     RendererContext.stats.stat_array_stroker_polystack_curves
                         .add(end + n);
                 }
                 curves = rdrCtx.widenDirtyFloatArray(curves, end, end + n);
             }
             if (numCurves + 1 > curveTypes.length) {
-                if (doStats) {
+                if (DO_STATS) {
                     RendererContext.stats.stat_array_stroker_polystack_curveTypes
                         .add(numCurves + 1);
                 }
@@ -1315,7 +1315,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         void popAll(PathConsumer2D io) {
-            if (doStats) {
+            if (DO_STATS) {
                 // update used marks:
                 if (numCurves > curveTypesUseMark) {
                     curveTypesUseMark = numCurves;

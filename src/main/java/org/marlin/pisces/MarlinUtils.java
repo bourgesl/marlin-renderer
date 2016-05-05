@@ -32,7 +32,7 @@ public final class MarlinUtils {
     private static final java.util.logging.Logger log;
 
     static {
-        if (MarlinConst.useLogger) {
+        if (MarlinConst.USE_LOGGER) {
             log =java.util.logging.Logger.getLogger("sun.java2d.marlin");
         } else {
             log = null;
@@ -44,7 +44,7 @@ public final class MarlinUtils {
     }
 
     public static void logInfo(final String msg) {
-        if (MarlinConst.useLogger) {
+        if (MarlinConst.USE_LOGGER) {
             log.info(msg);
         } else {
             System.out.print("INFO: ");
@@ -53,7 +53,7 @@ public final class MarlinUtils {
     }
 
     public static void logException(final String msg, final Throwable th) {
-        if (MarlinConst.useLogger) {
+        if (MarlinConst.USE_LOGGER) {
 //            log.warning(msg, th);
             log.log(java.util.logging.Level.WARNING, msg, th);
         } else {

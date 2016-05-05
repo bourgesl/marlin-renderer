@@ -228,19 +228,19 @@ public final class RendererStats implements MarlinConst {
             }
         });
 
-        if (useDumpThread) {
+        if (USE_DUMP_THREAD) {
             final Timer statTimer = new Timer("RendererStats");
             statTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     dump();
                 }
-            }, statDump, statDump);
+            }, STAT_DUMP, STAT_DUMP);
         }
     }
 
     void dump() {
-        if (doStats) {
+        if (DO_STATS) {
             ArrayCache.dumpStats();
         }
         final RendererContext[] all = allContexts.toArray(
@@ -248,7 +248,7 @@ public final class RendererStats implements MarlinConst {
         for (RendererContext rdrCtx : all) {
             logInfo("RendererContext: " + rdrCtx.name);
 
-            if (doMonitors) {
+            if (DO_MONITORS) {
                 for (Monitor monitor : monitors) {
                     if (monitor.count != 0) {
                         logInfo(monitor.toString());
@@ -262,14 +262,14 @@ public final class RendererStats implements MarlinConst {
                                 + ((100d * monitor.sum) / total) + " %");
                     }
                 }
-                if (doFlushMonitors) {
+                if (DO_FLUSH_MONITORS) {
                     for (Monitor m : monitors) {
                         m.reset();
                     }
                 }
             }
 
-            if (doStats) {
+            if (DO_STATS) {
                 for (StatLong stat : statistics) {
                     if (stat.count != 0) {
                         logInfo(stat.toString());

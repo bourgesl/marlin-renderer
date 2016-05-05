@@ -30,44 +30,44 @@ package org.marlin.pisces;
 interface MarlinConst {
 
     // enable Logger
-    static final boolean useLogger = MarlinProperties.isUseLogger();
+    static final boolean USE_LOGGER = MarlinProperties.isUseLogger();
 
     // log new RendererContext
-    static final boolean logCreateContext = MarlinProperties.isLogCreateContext();
+    static final boolean LOG_CREATE_CONTEXT = MarlinProperties.isLogCreateContext();
     // log misc.Unsafe alloc/realloc/free
-    static final boolean logUnsafeMalloc = MarlinProperties.isLogUnsafeMalloc();
+    static final boolean LOG_UNSAFE_MALLOC = MarlinProperties.isLogUnsafeMalloc();
 
     // do statistics
-    static final boolean doStats = MarlinProperties.isDoStats();
+    static final boolean DO_STATS = MarlinProperties.isDoStats();
     // do monitors
-    static final boolean doMonitors = MarlinProperties.isDoMonitors();
+    static final boolean DO_MONITORS = MarlinProperties.isDoMonitors();
     // do checks
-    static final boolean doChecks = MarlinProperties.isDoChecks();
+    static final boolean DO_CHECKS = MarlinProperties.isDoChecks();
 
     // do AA range checks: disable when algorithm / code is stable
     static final boolean DO_AA_RANGE_CHECK = false;
 
     // enable logs
-    static final boolean doLogWidenArray = false;
+    static final boolean DO_LOG_WIDEN_ARRAY = false;
     // enable oversize logs
-    static final boolean doLogOverSize = false;
+    static final boolean DO_LOG_OVER_SIZE = false;
     // enable traces
-    static final boolean doTrace = false;
+    static final boolean DO_TRACE = false;
     // do flush monitors
-    static final boolean doFlushMonitors = true;
+    static final boolean DO_FLUSH_MONITORS = true;
     // use one polling thread to dump statistics/monitors
-    static final boolean useDumpThread = false;
+    static final boolean USE_DUMP_THREAD = false;
     // thread dump interval (ms)
-    static final long statDump = 5000L;
+    static final long STAT_DUMP = 5000L;
 
     // do clean dirty array
-    static final boolean doCleanDirty = false;
+    static final boolean DO_CLEAN_DIRTY = false;
 
     // flag to use line simplifier
-    static final boolean useSimplifier = MarlinProperties.isUseSimplifier();
+    static final boolean USE_SIMPLIFIER = MarlinProperties.isUseSimplifier();
 
     // flag to enable logs related bounds checks
-    static final boolean doLogBounds = false;
+    static final boolean DO_LOG_BOUNDS = false;
 
     // Initial Array sizing (initial context capacity) ~ 512K
 
