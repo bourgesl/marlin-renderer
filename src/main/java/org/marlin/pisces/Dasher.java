@@ -40,9 +40,9 @@ import sun.awt.geom.PathConsumer2D;
  */
 final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
-    final static int recLimit = 4;
+    final static int REC_LIMIT = 4;
     final static float ERR = 0.01f;
-    final static float minTincrement = 1f / (1 << recLimit);
+    final static float MIN_TINCREMENT = 1f / (1 << REC_LIMIT);
 
     private PathConsumer2D out;
     private float[] dash;
@@ -138,7 +138,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
      * clean up before reusing this instance
      */
     void dispose() {
-        if (doCleanDirty) {
+        if (DO_CLEAN_DIRTY) {
             // Force zero-fill dirty arrays:
             Arrays.fill(curCurvepts, 0f);
             Arrays.fill(firstSegmentsBuffer, 0f);
@@ -216,7 +216,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
                 int segIdx = firstSegidx;
                 float[] buf = firstSegmentsBuffer;
                 if (segIdx + len  > buf.length) {
-                    if (doStats) {
+                    if (DO_STATS) {
                         RendererContext.stats.stat_array_dasher_firstSegmentsBuffer
                             .add(segIdx + len);
                     }
@@ -402,8 +402,8 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         private final float[] curLeafCtrlPolyLengths = new float[3];
 
         LengthIterator() {
-            this.recCurveStack = new float[recLimit + 1][8];
-            this.sides = new Side[recLimit];
+            this.recCurveStack = new float[REC_LIMIT + 1][8];
+            this.sides = new Side[REC_LIMIT];
             // if any methods are called without first initializing this object
             // on a curve, we want it to fail ASAP.
             this.nextT = Float.MAX_VALUE;
@@ -420,7 +420,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         void reset() {
             // keep data dirty
             // as it appears not useful to reset data:
-            if (doCleanDirty) {
+            if (DO_CLEAN_DIRTY) {
                 final int recLimit = recCurveStack.length - 1;
                 for (int i = recLimit; i >= 0; i--) {
                     Arrays.fill(recCurveStack[i], 0f);
@@ -606,7 +606,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             if (len >= 0f) {
                 lastT = nextT;
                 lenAtLastT = lenAtNextT;
-                nextT += (1 << (recLimit - recLevel)) * minTincrement;
+                nextT += (1 << (REC_LIMIT - recLevel)) * MIN_TINCREMENT;
                 lenAtNextT += len;
                 // invalidate caches
                 flatLeafCoefCache[2] = -1f;
@@ -640,7 +640,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             final float lineLen = Helpers.linelen(curve[0], curve[1],
                                                   curve[curveType-2],
                                                   curve[curveType-1]);
-            if ((polyLen - lineLen) < ERR || recLevel == recLimit) {
+            if ((polyLen - lineLen) < ERR || recLevel == REC_LIMIT) {
                 return (polyLen + lineLen) / 2f;
             }
             return -1f;

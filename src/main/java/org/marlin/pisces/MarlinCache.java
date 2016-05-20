@@ -96,7 +96,7 @@ public final class MarlinCache implements MarlinConst {
         final int nxTiles = (maxx - minx + TILE_SIZE) >> TILE_SIZE_LG;
 
         if (nxTiles > INITIAL_ARRAY) {
-            if (doStats) {
+            if (DO_STATS) {
                 RendererContext.stats.stat_array_marlincache_touchedTile
                     .add(nxTiles);
             }
@@ -128,14 +128,14 @@ public final class MarlinCache implements MarlinConst {
         bboxY0 = pminY;
 
         // reset current pos
-        if (doStats) {
+        if (DO_STATS) {
             RendererContext.stats.stat_cache_rowAAChunk.add(rowAAChunkPos);
         }
         rowAAChunkPos = 0;
 
         // Reset touchedTile:
         if (tileMin != Integer.MAX_VALUE) {
-            if (doStats) {
+            if (DO_STATS) {
                 RendererContext.stats.stat_cache_tiles.add(tileMax - tileMin);
             }
             // clean only dirty touchedTile:
@@ -149,7 +149,7 @@ public final class MarlinCache implements MarlinConst {
             tileMax = Integer.MIN_VALUE;
         }
 
-        if (doCleanDirty) {
+        if (DO_CLEAN_DIRTY) {
             // Force zero-fill dirty arrays:
             Arrays.fill(rowAAChunk, BYTE_0);
         }
@@ -176,14 +176,14 @@ public final class MarlinCache implements MarlinConst {
     void copyAARow(final int[] alphaRow, final int y,
                    final int px0, final int px1)
     {
-        if (doMonitors) {
+        if (DO_MONITORS) {
             RendererContext.stats.mon_rdr_copyAARow.start();
         }
 
         // skip useless pixels above boundary
         final int px_bbox1 = Math.min(px1, bboxX1);
 
-        if (doLogBounds) {
+        if (DO_LOG_BOUNDS) {
             MarlinUtils.logInfo("row = [" + px0 + " ... " + px_bbox1
                                 + " (" + px1 + ") [ for y=" + y);
         }
@@ -204,14 +204,14 @@ public final class MarlinCache implements MarlinConst {
         byte[] _rowAAChunk = rowAAChunk;
         // ensure rowAAChunk capacity:
         if (_rowAAChunk.length < pos + len) {
-            if (doStats) {
+            if (DO_STATS) {
                 RendererContext.stats.stat_array_marlincache_rowAAChunk
                     .add(pos + len);
             }
             rowAAChunk = _rowAAChunk
                 = rdrCtx.widenDirtyByteArray(_rowAAChunk, pos, pos + len);
         }
-        if (doStats) {
+        if (DO_STATS) {
             RendererContext.stats.stat_cache_rowAA.add(len);
         }
 
@@ -269,14 +269,14 @@ public final class MarlinCache implements MarlinConst {
             tileMax = tx;
         }
 
-        if (doLogBounds) {
+        if (DO_LOG_BOUNDS) {
             MarlinUtils.logInfo("clear = [" + from + " ... " + to + "[");
         }
 
         // Clear alpha row for reuse:
         IntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
 
-        if (doMonitors) {
+        if (DO_MONITORS) {
             RendererContext.stats.mon_rdr_copyAARow.stop();
         }
     }

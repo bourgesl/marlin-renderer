@@ -53,7 +53,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
      */
     @Override
     public void dispose() {
-        if (doMonitors) {
+        if (DO_MONITORS) {
             // called from AAShapePipe.renderTiles() (render tiles end):
             RendererContext.stats.mon_pipe_renderTiles.stop();
         }
@@ -78,7 +78,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
      */
     @Override
     public int getTileWidth() {
-        if (doMonitors) {
+        if (DO_MONITORS) {
             // called from AAShapePipe.renderTiles() (render tiles start):
             RendererContext.stats.mon_pipe_renderTiles.start();
         }
@@ -124,7 +124,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         // values anyway.
         final int alpha = (al == 0x00 ? 0x00
                               : (al == MAX_TILE_ALPHA_SUM ? 0xff : 0x80));
-        if (doStats) {
+        if (DO_STATS) {
             RendererContext.stats.hist_tile_generator_alpha.add(alpha);
         }
         return alpha;
@@ -158,7 +158,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
     public void getAlpha(final byte tile[], final int offset,
                                             final int rowstride)
     {
-        if (doMonitors) {
+        if (DO_MONITORS) {
             RendererContext.stats.mon_ptg_getAlpha.start();
         }
 
@@ -179,7 +179,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
             y1 = cache.bboxY1;
         }
 
-        if (doLogBounds) {
+        if (DO_LOG_BOUNDS) {
             MarlinUtils.logInfo("getAlpha = [" + x0 + " ... " + x1
                                 + "[ [" + y0 + " ... " + y1 + "[");
         }
@@ -239,7 +239,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
                 tile[idx] = 0;
             }
 
-            if (doTrace) {
+            if (DO_TRACE) {
                 for (int i = idx - (x1 - x0); i < idx; i++) {
                     System.out.print(hex(tile[i], 2));
                 }
@@ -251,7 +251,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
 
         nextTile();
 
-        if (doMonitors) {
+        if (DO_MONITORS) {
             RendererContext.stats.mon_ptg_getAlpha.stop();
         }
     }

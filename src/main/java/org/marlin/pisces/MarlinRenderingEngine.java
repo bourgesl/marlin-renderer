@@ -337,7 +337,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                     if (dashLen <= INITIAL_ARRAY) {
                         newDashes = rdrCtx.dasher.dashes_initial;
                     } else {
-                        if (doStats) {
+                        if (DO_STATS) {
                             RendererContext.stats.stat_array_dasher_firstSegmentsBuffer
                                 .add(dashLen);
                         }
@@ -390,7 +390,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                                             src.getPathIterator(null));
         }
 
-        if (useSimplifier) {
+        if (USE_SIMPLIFIER) {
             // Use simplifier after stroker before Renderer
             // to remove collinear segments (notably due to cap square)
             pc2d = rdrCtx.simplifier.init(pc2d);
@@ -485,7 +485,7 @@ public class MarlinRenderingEngine extends RenderingEngine
 
         @Override
         public final int currentSegment(final float[] coords) {
-            if (doMonitors) {
+            if (DO_MONITORS) {
                 RendererContext.stats.mon_npi_currentSegment.start();
             }
             int lastCoord;
@@ -507,7 +507,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                     curx_adjust = movx_adjust;
                     cury_adjust = movy_adjust;
 
-                    if (doMonitors) {
+                    if (DO_MONITORS) {
                         RendererContext.stats.mon_npi_currentSegment.stop();
                     }
                     return type;
@@ -555,7 +555,7 @@ public class MarlinRenderingEngine extends RenderingEngine
             curx_adjust = x_adjust;
             cury_adjust = y_adjust;
 
-            if (doMonitors) {
+            if (DO_MONITORS) {
                 RendererContext.stats.mon_npi_currentSegment.stop();
             }
             return type;
@@ -872,7 +872,7 @@ public class MarlinRenderingEngine extends RenderingEngine
 
     // --- RendererContext handling ---
     // use ThreadLocal or ConcurrentLinkedQueue to get one RendererContext
-    private static final boolean useThreadLocal;
+    private static final boolean USE_THREAD_LOCAL;
 
     // hard reference
     final static int REF_HARD = 0;
@@ -892,10 +892,10 @@ public class MarlinRenderingEngine extends RenderingEngine
     // Static initializer to use TL or CLQ mode
     static {
         // CLQ mode by default:
-        useThreadLocal = MarlinProperties.isUseThreadLocal();
-        rdrCtxThreadLocal = (useThreadLocal) ? new ThreadLocal<Object>()
+        USE_THREAD_LOCAL = MarlinProperties.isUseThreadLocal();
+        rdrCtxThreadLocal = (USE_THREAD_LOCAL) ? new ThreadLocal<Object>()
                                              : null;
-        rdrCtxQueue = (!useThreadLocal) ? new ConcurrentLinkedQueue<Object>()
+        rdrCtxQueue = (!USE_THREAD_LOCAL) ? new ConcurrentLinkedQueue<Object>()
                                         : null;
 
         // Soft reference by default:
@@ -948,7 +948,7 @@ public class MarlinRenderingEngine extends RenderingEngine
         logInfo("sun.java2d.renderer                  = "
                 + reClass);
         logInfo("sun.java2d.renderer.useThreadLocal   = "
-                + useThreadLocal);
+                + USE_THREAD_LOCAL);
         logInfo("sun.java2d.renderer.useRef           = "
                 + refType);
 
@@ -963,23 +963,23 @@ public class MarlinRenderingEngine extends RenderingEngine
 
         // optimisation parameters
         logInfo("sun.java2d.renderer.useSimplifier    = "
-                + MarlinConst.useSimplifier);
+                + MarlinConst.USE_SIMPLIFIER);
 
         // debugging parameters
         logInfo("sun.java2d.renderer.doStats          = "
-                + MarlinConst.doStats);
+                + MarlinConst.DO_STATS);
         logInfo("sun.java2d.renderer.doMonitors       = "
-                + MarlinConst.doMonitors);
+                + MarlinConst.DO_MONITORS);
         logInfo("sun.java2d.renderer.doChecks         = "
-                + MarlinConst.doChecks);
+                + MarlinConst.DO_CHECKS);
 
         // logging parameters
         logInfo("sun.java2d.renderer.useLogger        = "
-                + MarlinConst.useLogger);
+                + MarlinConst.USE_LOGGER);
         logInfo("sun.java2d.renderer.logCreateContext = "
-                + MarlinConst.logCreateContext);
+                + MarlinConst.LOG_CREATE_CONTEXT);
         logInfo("sun.java2d.renderer.logUnsafeMalloc  = "
-                + MarlinConst.logUnsafeMalloc);
+                + MarlinConst.LOG_UNSAFE_MALLOC);
 
         // quality settings
         logInfo("Renderer settings:");
@@ -1002,7 +1002,7 @@ public class MarlinRenderingEngine extends RenderingEngine
     @SuppressWarnings({"unchecked"})
     static RendererContext getRendererContext() {
         RendererContext rdrCtx = null;
-        final Object ref = (useThreadLocal) ? rdrCtxThreadLocal.get()
+        final Object ref = (USE_THREAD_LOCAL) ? rdrCtxThreadLocal.get()
                            : rdrCtxQueue.poll();
         if (ref != null) {
             // resolve reference:
@@ -1012,12 +1012,12 @@ public class MarlinRenderingEngine extends RenderingEngine
         // create a new RendererContext if none is available
         if (rdrCtx == null) {
             rdrCtx = RendererContext.createContext();
-            if (useThreadLocal) {
+            if (USE_THREAD_LOCAL) {
                 // update thread local reference:
                 rdrCtxThreadLocal.set(rdrCtx.reference);
             }
         }
-        if (doMonitors) {
+        if (DO_MONITORS) {
             RendererContext.stats.mon_pre_getAATileGenerator.start();
         }
         return rdrCtx;
@@ -1030,10 +1030,10 @@ public class MarlinRenderingEngine extends RenderingEngine
     static void returnRendererContext(final RendererContext rdrCtx) {
         rdrCtx.dispose();
 
-        if (doMonitors) {
+        if (DO_MONITORS) {
             RendererContext.stats.mon_pre_getAATileGenerator.stop();
         }
-        if (!useThreadLocal) {
+        if (!USE_THREAD_LOCAL) {
             rdrCtxQueue.offer(rdrCtx.reference);
         }
     }

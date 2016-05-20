@@ -20,13 +20,13 @@ public final class BlendComposite implements Composite {
 
     private static boolean DEBUG = false;
     private static boolean TRACE = false;
-    private final static boolean use_Colorspace = false;
-    private final static boolean use_Lab = false;
-    private final static boolean use_mix_L = true;
+    private final static boolean USE_COLORSPACE = false;
+    private final static boolean USE_LAB = false;
+    private final static boolean USE_MIX_L = true;
 
     public static String getBlendingMode() {
-        if (use_Colorspace) {
-            return "_CIE_" + ((use_Lab) ? "Lab" : "Lch") + ((use_mix_L) ? "_mixL" : "_mixY");
+        if (USE_COLORSPACE) {
+            return "_CIE_" + ((USE_LAB) ? "Lab" : "Lch") + ((USE_MIX_L) ? "_mixL" : "_mixY");
         }
         return "_gam_" + GAMMA;
     }
@@ -76,8 +76,8 @@ public final class BlendComposite implements Composite {
              System.out.println("src: " + Arrays.toString(src2) + " = " + Arrays.toString(rgb));
 
              */
-            src = (use_Lab) ? sRGB_to_Lab(rgba_1, src) : sRGB_to_LCH(rgba_1, src);
-            dst = (use_Lab) ? sRGB_to_Lab(rgba_2, dst) : sRGB_to_LCH(rgba_2, dst);
+            src = (USE_LAB) ? sRGB_to_Lab(rgba_1, src) : sRGB_to_LCH(rgba_1, src);
+            dst = (USE_LAB) ? sRGB_to_Lab(rgba_2, dst) : sRGB_to_LCH(rgba_2, dst);
 
             System.out.println("src: " + Arrays.toString(src) + " = " + Arrays.toString(sRGB_to_f(rgba_1, rgb)));
             System.out.println("dst: " + Arrays.toString(dst) + " = " + Arrays.toString(sRGB_to_f(rgba_2, rgb)));
@@ -89,7 +89,7 @@ public final class BlendComposite implements Composite {
                 float src_alpha = (i / 255f);
 
                 // src & dst are Lab or LCH:
-                if (use_mix_L) {
+                if (USE_MIX_L) {
                     mix[0] = (dst[0] + src_alpha * (src[0] - dst[0]));
                 } else {
                     // L is luminance, use Y (brightness) instead:
@@ -101,7 +101,7 @@ public final class BlendComposite implements Composite {
                 // a(Lab) or C(LCH):
                 mix[1] = (dst[1] + src_alpha * (src[1] - dst[1]));
 
-                if (use_Lab) {
+                if (USE_LAB) {
                     // b(Lab)
                     mix[2] = (dst[2] + src_alpha * (src[2] - dst[2]));
                 } else {
@@ -122,7 +122,7 @@ public final class BlendComposite implements Composite {
 
                 System.out.println("alpha[ " + i + "] = " + Arrays.toString(mix));
 
-                int rgba = (use_Lab) ? Lab_to_sRGB(mix) : LCH_to_sRGB(mix);
+                int rgba = (USE_LAB) ? Lab_to_sRGB(mix) : LCH_to_sRGB(mix);
 
                 System.out.println("alpha[ " + i + "] RGB = " + Arrays.toString(sRGB_to_f(rgba, rgb)));
             }
@@ -289,9 +289,9 @@ public final class BlendComposite implements Composite {
                     } else if (alpha != 0) {
 //                        System.out.println("alpha = " + alpha);
 
-                        if (use_Colorspace) {
-                            src = (use_Lab) ? sRGB_to_Lab(srcPixels[x], src) : sRGB_to_LCH(srcPixels[x], src);
-                            dst = (use_Lab) ? sRGB_to_Lab(dstPixels[x], dst) : sRGB_to_LCH(dstPixels[x], dst);
+                        if (USE_COLORSPACE) {
+                            src = (USE_LAB) ? sRGB_to_Lab(srcPixels[x], src) : sRGB_to_LCH(srcPixels[x], src);
+                            dst = (USE_LAB) ? sRGB_to_Lab(dstPixels[x], dst) : sRGB_to_LCH(dstPixels[x], dst);
 
                             if (TRACE) {
                                 System.out.println("src: " + Arrays.toString(src));
@@ -301,7 +301,7 @@ public final class BlendComposite implements Composite {
                             src_alpha = (alpha / 255f);
 
                             // src & dst are Lab or LCH:
-                            if (use_mix_L) {
+                            if (USE_MIX_L) {
                                 mix[0] = (dst[0] + src_alpha * (src[0] - dst[0]));
                             } else {
                                 // L is luminance, use Y (brightness) instead:
@@ -313,7 +313,7 @@ public final class BlendComposite implements Composite {
                             // a(Lab) or C(LCH):
                             mix[1] = (dst[1] + src_alpha * (src[1] - dst[1]));
 
-                            if (use_Lab) {
+                            if (USE_LAB) {
                                 // b(Lab)
                                 mix[2] = (dst[2] + src_alpha * (src[2] - dst[2]));
                             } else {
@@ -332,7 +332,7 @@ public final class BlendComposite implements Composite {
                                 System.out.println("mixLCH: " + Arrays.toString(mix));
                             }
 
-                            dstPixels[x] = (use_Lab) ? Lab_to_sRGB(mix) : LCH_to_sRGB(mix);
+                            dstPixels[x] = (USE_LAB) ? Lab_to_sRGB(mix) : LCH_to_sRGB(mix);
 
                         } else {
 
@@ -383,11 +383,11 @@ public final class BlendComposite implements Composite {
 
     private final static class BlenderSrcOver extends BlendComposite.Blender {
 
-        private static final boolean use_floats = false;
+        private static final boolean USE_FLOATS = false;
 
         @Override
         public void blend(final int[] src, final int[] dst, final int alpha, final int[] result) {
-            if (use_floats) {
+            if (USE_FLOATS) {
                 final float src_alpha = alpha / 255f;
                 final float comp_src_alpha = 1f - src_alpha;
                 // src & dst are gamma corrected
@@ -516,11 +516,11 @@ public final class BlendComposite implements Composite {
         //xyz = (xyz > (float4) 0.008856f) ? native_powr(xyz, (float4) 1.0f / 3.0f) : 7.787f * xyz + (float4) (16.0f / 116.0f);
         return (v > 0.008856f) ? (float) Math.cbrt(v) : 7.787037f * v + (16.0f / 116.0f);
     }
-    private final static float epsilon = 0.206896551f;
-    private final static float kappa = (24389.0f / 27.0f);
+    private final static float EPSILON = 0.206896551f;
+    private final static float KAPPA = (24389.0f / 27.0f);
 
     private static float lab_f_inv(float x) {
-        return (x > epsilon) ? x * x * x : (116.0f * x - 16.0f) / kappa;
+        return (x > EPSILON) ? x * x * x : (116.0f * x - 16.0f) / KAPPA;
     }
 
     static float L_to_Y(float L) {
