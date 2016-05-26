@@ -65,7 +65,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         MarlinRenderingEngine.returnRendererContext(rdr.rdrCtx);
     }
 
-    void getBbox(int bbox[]) {
+    void getBbox(int[] bbox) {
         bbox[0] = cache.bboxX0;
         bbox[1] = cache.bboxY0;
         bbox[2] = cache.bboxX1;
@@ -155,8 +155,8 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
      * once per tile, but not both.
      */
     @Override
-    public void getAlpha(final byte tile[], final int offset,
-                                            final int rowstride)
+    public void getAlpha(final byte[] tile, final int offset,
+                         final int rowstride)
     {
         if (DO_MONITORS) {
             RendererContext.stats.mon_ptg_getAlpha.start();
