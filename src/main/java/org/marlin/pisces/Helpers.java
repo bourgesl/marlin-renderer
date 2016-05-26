@@ -249,9 +249,9 @@ final class Helpers implements MarlinConst {
      * the 6 right coordinates
      * @since 1.7
      */
-    static void subdivideCubic(float src[], int srcoff,
-                               float left[], int leftoff,
-                               float right[], int rightoff)
+    static void subdivideCubic(float[] src, int srcoff,
+                               float[] left, int leftoff,
+                               float[] right, int rightoff)
     {
         float x1 = src[srcoff + 0];
         float y1 = src[srcoff + 1];
@@ -300,9 +300,9 @@ final class Helpers implements MarlinConst {
     }
 
 
-    static void subdivideCubicAt(float t, float src[], int srcoff,
-                                 float left[], int leftoff,
-                                 float right[], int rightoff)
+    static void subdivideCubicAt(float t, float[] src, int srcoff,
+                                 float[] left, int leftoff,
+                                 float[] right, int rightoff)
     {
         float x1 = src[srcoff + 0];
         float y1 = src[srcoff + 1];
@@ -350,9 +350,9 @@ final class Helpers implements MarlinConst {
         }
     }
 
-    static void subdivideQuad(float src[], int srcoff,
-                              float left[], int leftoff,
-                              float right[], int rightoff)
+    static void subdivideQuad(float[] src, int srcoff,
+                              float[] left, int leftoff,
+                              float[] right, int rightoff)
     {
         float x1 = src[srcoff + 0];
         float y1 = src[srcoff + 1];
@@ -388,9 +388,9 @@ final class Helpers implements MarlinConst {
         }
     }
 
-    static void subdivideQuadAt(float t, float src[], int srcoff,
-                                float left[], int leftoff,
-                                float right[], int rightoff)
+    static void subdivideQuadAt(float t, float[] src, int srcoff,
+                                float[] left, int leftoff,
+                                float[] right, int rightoff)
     {
         float x1 = src[srcoff + 0];
         float y1 = src[srcoff + 1];
@@ -426,9 +426,9 @@ final class Helpers implements MarlinConst {
         }
     }
 
-    static void subdivideAt(float t, float src[], int srcoff,
-                            float left[], int leftoff,
-                            float right[], int rightoff, int size)
+    static void subdivideAt(float t, float[] src, int srcoff,
+                            float[] left, int leftoff,
+                            float[] right, int rightoff, int size)
     {
         switch(size) {
         case 8:

@@ -143,7 +143,7 @@ public class AAShapePipe
     }
 
     public void renderTiles(SunGraphics2D sg, Shape s,
-                            AATileGenerator aatg, int abox[], TileState ts)
+                            AATileGenerator aatg, int[] abox, TileState ts)
     {
         Object context = null;
         try {

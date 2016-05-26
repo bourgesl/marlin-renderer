@@ -80,7 +80,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                                     int caps,
                                     int join,
                                     float miterlimit,
-                                    float dashes[],
+                                    float[] dashes,
                                     float dashphase)
     {
         final RendererContext rdrCtx = getRendererContext();
@@ -273,7 +273,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                         int caps,
                         int join,
                         float miterlimit,
-                        float dashes[],
+                        float[] dashes,
                         float dashphase,
                         PathConsumer2D pc2d)
     {
@@ -713,7 +713,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                                               BasicStroke bs,
                                               boolean thin,
                                               boolean normalize,
-                                              int bbox[])
+                                              int[] bbox)
     {
         MarlinTileGenerator ptg = null;
         Renderer r = null;
@@ -771,7 +771,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                                                     double dx2, double dy2,
                                                     double lw1, double lw2,
                                                     Region clip,
-                                                    int bbox[])
+                                                    int[] bbox)
     {
         // REMIND: Deal with large coordinates!
         double ldx1, ldy1, ldx2, ldy2;
