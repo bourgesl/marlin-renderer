@@ -56,15 +56,15 @@ public class GeneralCompositePipe implements CompositePipe {
 
     final static class TileContext {
 
-        SunGraphics2D sunG2D;
-        PaintContext paintCtxt;
-        CompositeContext compCtxt;
-        ColorModel compModel;
-        Object pipeState;
+        private SunGraphics2D sunG2D;
+        private PaintContext paintCtxt;
+        private CompositeContext compCtxt;
+        private ColorModel compModel;
+        private Object pipeState;
         // LBO: cached values
-        boolean isBlendComposite;
-        int[] maskStride = new int[32];
-        WritableRaster raster = null;
+        private boolean isBlendComposite;
+        private int[] maskStride = new int[32];
+        private WritableRaster raster = null;
 
         TileContext() {
             // ThreadLocal constructor

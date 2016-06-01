@@ -40,9 +40,9 @@ import sun.awt.geom.PathConsumer2D;
  */
 final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
 
-    final static int REC_LIMIT = 4;
-    final static float ERR = 0.01f;
-    final static float MIN_TINCREMENT = 1f / (1 << REC_LIMIT);
+    private final static int REC_LIMIT = 4;
+    private final static float ERR = 0.01f;
+    private final static float MIN_TINCREMENT = 1f / (1 << REC_LIMIT);
 
     private PathConsumer2D out;
     private float[] dash;
@@ -65,13 +65,13 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     private final float[] curCurvepts;
 
     // per-thread renderer context
-    final RendererContext rdrCtx;
+    private final RendererContext rdrCtx;
 
     // dashes array (dirty)
-    final float[] dashes_initial = new float[INITIAL_ARRAY];
+    protected final float[] dashes_initial = new float[INITIAL_ARRAY];
 
     // flag to recycle dash array copy
-    boolean recycleDashes;
+    private boolean recycleDashes;
 
     // per-thread initial arrays (large enough to satisfy most usages
     // +1 to avoid recycling in Helpers.widenArray()

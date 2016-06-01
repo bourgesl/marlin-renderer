@@ -30,7 +30,7 @@ import sun.awt.geom.PathConsumer2D;
 
 final class Renderer implements PathConsumer2D, MarlinConst {
 
-    final static boolean DISABLE_RENDER = false;
+    private final static boolean DISABLE_RENDER = false;
 
     private final static int ERR_STEP_MAX = 0x7fffffff; // = 2^31 - 1
 
@@ -49,7 +49,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         = TILE_SIZE << SUBPIXEL_LG_POSITIONS_Y;
 
     // 2048 (pixelSize) pixels (height) x 8 subpixels = 64K
-    static final int INITIAL_BUCKET_ARRAY
+    private static final int INITIAL_BUCKET_ARRAY
         = INITIAL_PIXEL_DIM * SUBPIXEL_POSITIONS_Y;
 
     public static final int WIND_EVEN_ODD = 0;
@@ -475,7 +475,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 //////////////////////////////////////////////////////////////////////////////
 
     // Cache to store RLE-encoded coverage mask of the current primitive
-    final MarlinCache cache;
+    protected final MarlinCache cache;
 
     // Bounds of the drawing region, at subpixel precision.
     private int boundsMinX, boundsMinY, boundsMaxX, boundsMaxY;
@@ -490,7 +490,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     private float pix_sx0, pix_sy0;
 
     // per-thread renderer context
-    final RendererContext rdrCtx;
+    protected final RendererContext rdrCtx;
     // dirty curve
     private final Curve curve;
 

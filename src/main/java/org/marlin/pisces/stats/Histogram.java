@@ -31,10 +31,10 @@ import java.util.Arrays;
  */
 public final class Histogram extends StatLong {
 
-    static final int BUCKET = 2;
-    static final int MAX = 20;
-    static final int LAST = MAX - 1;
-    static final int[] STEPS = new int[MAX];
+    private static final int BUCKET = 2;
+    private static final int MAX = 20;
+    private static final int LAST = MAX - 1;
+    private static final int[] STEPS = new int[MAX];
 
     static {
             STEPS[0] = 0;

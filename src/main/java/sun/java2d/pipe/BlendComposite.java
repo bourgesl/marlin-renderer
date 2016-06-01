@@ -34,8 +34,8 @@ public final class BlendComposite implements Composite {
     public static class GammaLUT {
 
         private final static int MAX_COLORS = 256;
-        final int[] dir = new int[MAX_COLORS];
-        final int[] inv = new int[MAX_COLORS];
+        private final int[] dir = new int[MAX_COLORS];
+        private final int[] inv = new int[MAX_COLORS];
 
         GammaLUT(final double gamma) {
             final double max = (double) (MAX_COLORS - 1);
@@ -188,12 +188,12 @@ public final class BlendComposite implements Composite {
 
         private BlendComposite.Blender _blender;
         // recycled arrays into context (shared):
-        final int[] _srcPixel = new int[4];
-        final int[] _dstPixel = new int[4];
-        final int[] _result = new int[4];
-        int[] _srcPixels = new int[32];
-        int[] _dstPixels = new int[32];
-        int[] _maskPixels = new int[32];
+        private final int[] _srcPixel = new int[4];
+        private final int[] _dstPixel = new int[4];
+        private final int[] _result = new int[4];
+        private int[] _srcPixels = new int[32];
+        private int[] _dstPixels = new int[32];
+        private int[] _maskPixels = new int[32];
 
         BlendingContext() {
             // ThreadLocal constructor

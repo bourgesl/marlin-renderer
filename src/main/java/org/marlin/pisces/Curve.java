@@ -28,8 +28,8 @@ import java.util.Iterator;
 
 final class Curve {
 
-    float ax, ay, bx, by, cx, cy, dx, dy;
-    float dax, day, dbx, dby;
+    protected float ax, ay, bx, by, cx, cy, dx, dy;
+    protected float dax, day, dbx, dby;
     // shared iterator instance
     private final BreakPtrIterator iterator = new BreakPtrIterator();
 

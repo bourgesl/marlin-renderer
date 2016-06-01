@@ -101,15 +101,15 @@ public abstract class Path2D implements Shape, Cloneable {
     private static final byte SEG_CUBICTO = (byte) PathIterator.SEG_CUBICTO;
     private static final byte SEG_CLOSE   = (byte) PathIterator.SEG_CLOSE;
 
-    transient byte[] pointTypes;
-    transient int numTypes;
-    transient int numCoords;
-    transient int windingRule;
+    protected transient byte[] pointTypes;
+    protected transient int numTypes;
+    protected transient int numCoords;
+    protected transient int windingRule;
 
-    static final int INIT_SIZE = 20;
-    static final int EXPAND_MAX = 500;
-    static final int EXPAND_MAX_COORDS = EXPAND_MAX * 2;
-    static final int EXPAND_MIN = 10; // ensure > 6 (cubics)
+    private static final int INIT_SIZE = 20;
+    private static final int EXPAND_MAX = 500;
+    private static final int EXPAND_MAX_COORDS = EXPAND_MAX * 2;
+    private static final int EXPAND_MIN = 10; // ensure > 6 (cubics)
 
     /**
      * Constructs a new empty {@code Path2D} object.
@@ -193,7 +193,7 @@ public abstract class Path2D implements Shape, Cloneable {
      * @since 1.6
      */
     public static class Float extends Path2D implements Serializable {
-        transient float[] floatCoords;
+        private transient float[] floatCoords;
 
         /**
          * Constructs a new empty single precision {@code Path2D} object
@@ -650,7 +650,6 @@ public abstract class Path2D implements Shape, Cloneable {
                                                        movx, movy);
                     }
                     // Count should always be a multiple of 2 here.
-                    // assert((crossings & 1) != 0);
                     movx = curx = coords[ci++];
                     movy = cury = coords[ci++];
                     break;
@@ -707,7 +706,6 @@ public abstract class Path2D implements Shape, Cloneable {
                     curx = movx;
                     cury = movy;
                     // Count should always be a multiple of 2 here.
-                    // assert((crossings & 1) != 0);
                     break;
                 }
             }
@@ -996,7 +994,7 @@ public abstract class Path2D implements Shape, Cloneable {
         }
 
         static class CopyIterator extends Path2D.Iterator {
-            float[] floatCoords;
+            private float[] floatCoords;
 
             CopyIterator(Path2D.Float p2df) {
                 super(p2df);
@@ -1026,8 +1024,8 @@ public abstract class Path2D implements Shape, Cloneable {
         }
 
         static class TxIterator extends Path2D.Iterator {
-            float[] floatCoords;
-            AffineTransform affine;
+            private float[] floatCoords;
+            private AffineTransform affine;
 
             TxIterator(Path2D.Float p2df, AffineTransform at) {
                 super(p2df);
@@ -1065,7 +1063,7 @@ public abstract class Path2D implements Shape, Cloneable {
      * @since 1.6
      */
     public static class Double extends Path2D implements Serializable {
-        transient double[] doubleCoords;
+        private transient double[] doubleCoords;
 
         /**
          * Constructs a new empty double precision {@code Path2D} object
@@ -1755,7 +1753,7 @@ public abstract class Path2D implements Shape, Cloneable {
         }
 
         static class CopyIterator extends Path2D.Iterator {
-            double[] doubleCoords;
+            private double[] doubleCoords;
 
             CopyIterator(Path2D.Double p2dd) {
                 super(p2dd);
@@ -1785,8 +1783,8 @@ public abstract class Path2D implements Shape, Cloneable {
         }
 
         static class TxIterator extends Path2D.Iterator {
-            double[] doubleCoords;
-            AffineTransform affine;
+            private double[] doubleCoords;
+            private AffineTransform affine;
 
             TxIterator(Path2D.Double p2dd, AffineTransform at) {
                 super(p2dd);
@@ -2686,11 +2684,11 @@ public abstract class Path2D implements Shape, Cloneable {
     }
 
     static abstract class Iterator implements PathIterator {
-        int typeIdx;
-        int pointIdx;
-        Path2D path;
+        protected static final int[] curvecoords = {2, 2, 4, 6, 0};
 
-        static final int[] curvecoords = {2, 2, 4, 6, 0};
+        protected int typeIdx;
+        protected int pointIdx;
+        protected Path2D path;
 
         Iterator(Path2D path) {
             this.path = path;

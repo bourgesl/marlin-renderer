@@ -42,7 +42,7 @@ final class RendererContext implements MarlinConst {
     // RendererContext creation counter
     private static final AtomicInteger contextCount = new AtomicInteger(1);
     // RendererContext statistics
-    static final RendererStats stats = (DO_STATS || DO_MONITORS)
+    protected static final RendererStats stats = (DO_STATS || DO_MONITORS)
                                        ? RendererStats.getInstance(): null;
 
     private static final boolean USE_CACHE_HARD_REF = DO_STATS
@@ -63,37 +63,37 @@ final class RendererContext implements MarlinConst {
     }
 
     // context name (debugging purposes)
-    final String name;
+    protected final String name;
     /*
      * Reference to this instance (hard, soft or weak).
      * @see MarlinRenderingEngine#REF_TYPE
      */
-    final Object reference;
+    protected final Object reference;
     // dirty flag indicating an exception occured during pipeline in pathTo()
-    boolean dirty = false;
+    protected boolean dirty = false;
     // dynamic array caches kept using weak reference (low memory footprint)
-    WeakReference<ArrayCachesHolder> refArrayCaches = null;
+    private WeakReference<ArrayCachesHolder> refArrayCaches = null;
     // hard reference to array caches (for statistics)
-    ArrayCachesHolder hardRefArrayCaches = null;
+    private ArrayCachesHolder hardRefArrayCaches = null;
     // shared data
-    final float[] float6 = new float[6];
+    protected final float[] float6 = new float[6];
     // shared curve (dirty) (Renderer / Stroker)
-    final Curve curve = new Curve();
+    protected final Curve curve = new Curve();
     // MarlinRenderingEngine NormalizingPathIterator NearestPixelCenter:
-    final NormalizingPathIterator nPCPathIterator;
+    protected final NormalizingPathIterator nPCPathIterator;
     // MarlinRenderingEngine NearestPixelQuarter NormalizingPathIterator:
-    final NormalizingPathIterator nPQPathIterator;
+    protected final NormalizingPathIterator nPQPathIterator;
     // MarlinRenderingEngine.TransformingPathConsumer2D
-    final TransformingPathConsumer2D transformerPC2D;
+    protected final TransformingPathConsumer2D transformerPC2D;
     // recycled Path2D instance
-    Path2D.Float p2d = null;
-    final Renderer renderer;
-    final Stroker stroker;
+    protected Path2D.Float p2d = null;
+    protected final Renderer renderer;
+    protected final Stroker stroker;
     // Simplifies out collinear lines
-    final CollinearSimplifier simplifier = new CollinearSimplifier();
-    final Dasher dasher;
-    final MarlinTileGenerator ptg;
-    final MarlinCache cache;
+    protected final CollinearSimplifier simplifier = new CollinearSimplifier();
+    protected final Dasher dasher;
+    protected final MarlinTileGenerator ptg;
+    protected final MarlinCache cache;
 
     /**
      * Constructor
@@ -443,11 +443,11 @@ final class RendererContext implements MarlinConst {
     /* class holding all array cache instances */
     final static class ArrayCachesHolder {
         // zero-filled int array cache:
-        final IntArrayCache[] intArrayCaches;
+        protected final IntArrayCache[] intArrayCaches;
         // dirty array caches:
-        final IntArrayCache[] dirtyIntArrayCaches;
-        final FloatArrayCache[] dirtyFloatArrayCaches;
-        final ByteArrayCache[] dirtyByteArrayCaches;
+        protected final IntArrayCache[] dirtyIntArrayCaches;
+        protected final FloatArrayCache[] dirtyFloatArrayCaches;
+        protected final ByteArrayCache[] dirtyByteArrayCaches;
 
         ArrayCachesHolder() {
             intArrayCaches = new IntArrayCache[BUCKETS];

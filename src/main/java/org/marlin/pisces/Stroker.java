@@ -119,10 +119,10 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     private final float[] subdivTs = new float[MAX_N_CURVES - 1];
 
     // per-thread renderer context
-    final RendererContext rdrCtx;
+    private final RendererContext rdrCtx;
 
     // dirty curve
-    final Curve curve;
+    private final Curve curve;
 
     /**
      * Constructs a <code>Stroker</code>.
@@ -1196,13 +1196,13 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         private static final byte TYPE_QUADTO  = (byte) 1;
         private static final byte TYPE_CUBICTO = (byte) 2;
 
-        float[] curves;
-        int end;
-        byte[] curveTypes;
-        int numCurves;
+        private float[] curves;
+        private int end;
+        private byte[] curveTypes;
+        private int numCurves;
 
         // per-thread renderer context
-        final RendererContext rdrCtx;
+        private final RendererContext rdrCtx;
 
         // per-thread initial arrays (large enough to satisfy most usages: 8192)
         // +1 to avoid recycling in Helpers.widenArray()
@@ -1210,8 +1210,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         private final byte[] curveTypes_initial = new byte[INITIAL_LARGE_ARRAY + 1]; // 8K
 
         // used marks (stats only)
-        int curveTypesUseMark;
-        int curvesUseMark;
+        private int curveTypesUseMark;
+        private int curvesUseMark;
 
         /**
          * Constructor

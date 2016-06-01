@@ -55,95 +55,95 @@ public final class RendererStats implements MarlinConst {
 
     /* RendererContext collection as hard references
        (only used for debugging purposes) */
-    final ConcurrentLinkedQueue<RendererContext> allContexts
+    protected final ConcurrentLinkedQueue<RendererContext> allContexts
         = new ConcurrentLinkedQueue<RendererContext>();
     // stats
-    final StatLong stat_cache_rowAA
+    protected final StatLong stat_cache_rowAA
         = new StatLong("cache.rowAA");
-    final StatLong stat_cache_rowAAChunk
+    protected final StatLong stat_cache_rowAAChunk
         = new StatLong("cache.rowAAChunk");
-    final StatLong stat_cache_tiles
+    protected final StatLong stat_cache_tiles
         = new StatLong("cache.tiles");
-    final StatLong stat_rdr_poly_stack_curves
+    protected final StatLong stat_rdr_poly_stack_curves
         = new StatLong("renderer.poly.stack.curves");
-    final StatLong stat_rdr_poly_stack_types
+    protected final StatLong stat_rdr_poly_stack_types
         = new StatLong("renderer.poly.stack.types");
-    final StatLong stat_rdr_addLine
+    protected final StatLong stat_rdr_addLine
         = new StatLong("renderer.addLine");
-    final StatLong stat_rdr_addLine_skip
+    protected final StatLong stat_rdr_addLine_skip
         = new StatLong("renderer.addLine.skip");
-    final StatLong stat_rdr_curveBreak
+    protected final StatLong stat_rdr_curveBreak
         = new StatLong("renderer.curveBreakIntoLinesAndAdd");
-    final StatLong stat_rdr_curveBreak_dec
+    protected final StatLong stat_rdr_curveBreak_dec
         = new StatLong("renderer.curveBreakIntoLinesAndAdd.dec");
-    final StatLong stat_rdr_curveBreak_inc
+    protected final StatLong stat_rdr_curveBreak_inc
         = new StatLong("renderer.curveBreakIntoLinesAndAdd.inc");
-    final StatLong stat_rdr_quadBreak
+    protected final StatLong stat_rdr_quadBreak
         = new StatLong("renderer.quadBreakIntoLinesAndAdd");
-    final StatLong stat_rdr_quadBreak_dec
+    protected final StatLong stat_rdr_quadBreak_dec
         = new StatLong("renderer.quadBreakIntoLinesAndAdd.dec");
-    final StatLong stat_rdr_edges
+    protected final StatLong stat_rdr_edges
         = new StatLong("renderer.edges");
-    final StatLong stat_rdr_edges_count
+    protected final StatLong stat_rdr_edges_count
         = new StatLong("renderer.edges.count");
-    final StatLong stat_rdr_edges_resizes
+    protected final StatLong stat_rdr_edges_resizes
         = new StatLong("renderer.edges.resize");
-    final StatLong stat_rdr_activeEdges
+    protected final StatLong stat_rdr_activeEdges
         = new StatLong("renderer.activeEdges");
-    final StatLong stat_rdr_activeEdges_updates
+    protected final StatLong stat_rdr_activeEdges_updates
         = new StatLong("renderer.activeEdges.updates");
-    final StatLong stat_rdr_activeEdges_adds
+    protected final StatLong stat_rdr_activeEdges_adds
         = new StatLong("renderer.activeEdges.adds");
-    final StatLong stat_rdr_activeEdges_adds_high
+    protected final StatLong stat_rdr_activeEdges_adds_high
         = new StatLong("renderer.activeEdges.adds_high");
-    final StatLong stat_rdr_crossings_updates
+    protected final StatLong stat_rdr_crossings_updates
         = new StatLong("renderer.crossings.updates");
-    final StatLong stat_rdr_crossings_sorts
+    protected final StatLong stat_rdr_crossings_sorts
         = new StatLong("renderer.crossings.sorts");
-    final StatLong stat_rdr_crossings_bsearch
+    protected final StatLong stat_rdr_crossings_bsearch
         = new StatLong("renderer.crossings.bsearch");
-    final StatLong stat_rdr_crossings_msorts
+    protected final StatLong stat_rdr_crossings_msorts
         = new StatLong("renderer.crossings.msorts");
     // growable arrays
-    final StatLong stat_array_dasher_firstSegmentsBuffer
+    protected final StatLong stat_array_dasher_firstSegmentsBuffer
         = new StatLong("array.dasher.firstSegmentsBuffer.d_float");
-    final StatLong stat_array_stroker_polystack_curves
+    protected final StatLong stat_array_stroker_polystack_curves
         = new StatLong("array.stroker.polystack.curves.d_float");
-    final StatLong stat_array_stroker_polystack_curveTypes
+    protected final StatLong stat_array_stroker_polystack_curveTypes
         = new StatLong("array.stroker.polystack.curveTypes.d_byte");
-    final StatLong stat_array_marlincache_rowAAChunk
+    protected final StatLong stat_array_marlincache_rowAAChunk
         = new StatLong("array.marlincache.rowAAChunk.d_byte");
-    final StatLong stat_array_marlincache_touchedTile
+    protected final StatLong stat_array_marlincache_touchedTile
         = new StatLong("array.marlincache.touchedTile.int");
-    final StatLong stat_array_renderer_alphaline
+    protected final StatLong stat_array_renderer_alphaline
         = new StatLong("array.renderer.alphaline.int");
-    final StatLong stat_array_renderer_crossings
+    protected final StatLong stat_array_renderer_crossings
         = new StatLong("array.renderer.crossings.int");
-    final StatLong stat_array_renderer_aux_crossings
+    protected final StatLong stat_array_renderer_aux_crossings
         = new StatLong("array.renderer.aux_crossings.int");
-    final StatLong stat_array_renderer_edgeBuckets
+    protected final StatLong stat_array_renderer_edgeBuckets
         = new StatLong("array.renderer.edgeBuckets.int");
-    final StatLong stat_array_renderer_edgeBucketCounts
+    protected final StatLong stat_array_renderer_edgeBucketCounts
         = new StatLong("array.renderer.edgeBucketCounts.int");
-    final StatLong stat_array_renderer_edgePtrs
+    protected final StatLong stat_array_renderer_edgePtrs
         = new StatLong("array.renderer.edgePtrs.int");
-    final StatLong stat_array_renderer_aux_edgePtrs
+    protected final StatLong stat_array_renderer_aux_edgePtrs
         = new StatLong("array.renderer.aux_edgePtrs.int");
     // histograms
-    final Histogram hist_rdr_crossings
+    protected final Histogram hist_rdr_crossings
         = new Histogram("renderer.crossings");
-    final Histogram hist_rdr_crossings_ratio
+    protected final Histogram hist_rdr_crossings_ratio
         = new Histogram("renderer.crossings.ratio");
-    final Histogram hist_rdr_crossings_adds
+    protected final Histogram hist_rdr_crossings_adds
         = new Histogram("renderer.crossings.adds");
-    final Histogram hist_rdr_crossings_msorts
+    protected final Histogram hist_rdr_crossings_msorts
         = new Histogram("renderer.crossings.msorts");
-    final Histogram hist_rdr_crossings_msorts_adds
+    protected final Histogram hist_rdr_crossings_msorts_adds
         = new Histogram("renderer.crossings.msorts.adds");
-    final Histogram hist_tile_generator_alpha
+    protected final Histogram hist_tile_generator_alpha
         = new Histogram("tile_generator.alpha");
     // all stats
-    final StatLong[] statistics = new StatLong[]{
+    protected final StatLong[] statistics = new StatLong[]{
         stat_cache_rowAA,
         stat_cache_rowAAChunk,
         stat_cache_tiles,
@@ -187,26 +187,26 @@ public final class RendererStats implements MarlinConst {
         stat_array_renderer_aux_edgePtrs
     };
     // monitors
-    final Monitor mon_pre_getAATileGenerator
+    protected final Monitor mon_pre_getAATileGenerator
         = new Monitor("MarlinRenderingEngine.getAATileGenerator()");
-    final Monitor mon_npi_currentSegment
+    protected final Monitor mon_npi_currentSegment
         = new Monitor("NormalizingPathIterator.currentSegment()");
-    final Monitor mon_rdr_addLine
+    protected final Monitor mon_rdr_addLine
         = new Monitor("Renderer.addLine()");
-    final Monitor mon_rdr_endRendering
+    protected final Monitor mon_rdr_endRendering
         = new Monitor("Renderer.endRendering()");
-    final Monitor mon_rdr_endRendering_Y
+    protected final Monitor mon_rdr_endRendering_Y
         = new Monitor("Renderer._endRendering(Y)");
-    final Monitor mon_rdr_copyAARow
+    protected final Monitor mon_rdr_copyAARow
         = new Monitor("Renderer.copyAARow()");
-    final Monitor mon_pipe_renderTiles
+    protected final Monitor mon_pipe_renderTiles
         = new Monitor("AAShapePipe.renderTiles()");
-    final Monitor mon_ptg_getAlpha
+    protected final Monitor mon_ptg_getAlpha
         = new Monitor("MarlinTileGenerator.getAlpha()");
-    final Monitor mon_debug
+    protected final Monitor mon_debug
         = new Monitor("DEBUG()");
     // all monitors
-    final Monitor[] monitors = new Monitor[]{
+    protected final Monitor[] monitors = new Monitor[]{
         mon_pre_getAATileGenerator,
         mon_npi_currentSegment,
         mon_rdr_addLine,
