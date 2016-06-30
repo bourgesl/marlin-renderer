@@ -176,7 +176,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     // edgeBucketCounts ref (clean)
     private final CleanIntArrayCache.Reference edgeBucketCounts_ref;
 
-    private final float[] minmax = new float[2];
+    private final float[] MIN_MAX = new float[2];
 
     // Flattens using adaptive forward differencing. This only carries out
     // one iteration of the AFD loop. All it does is update AFD variables (i.e.
@@ -776,10 +776,10 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             // Mimic ShapeSpanIterator.c:
 
             // check Y coordinates (top or bottom only):
-            min_max4(y0, cy1, cy2, ye, minmax);
+            min_max4(y0, cy1, cy2, ye, MIN_MAX);
 
             // clip curve out of y range [boundsMinY; boundsMaxY]
-            if (minmax[0] > fBoundsMaxY || minmax[1] < fBoundsMinY) {
+            if (MIN_MAX[0] > fBoundsMaxY || MIN_MAX[1] < fBoundsMinY) {
 //                System.out.println("curveTo: curve clipped: Y");
                 x0 = xe;
                 y0 = ye;
@@ -788,10 +788,10 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
             // At least 1 point is within Y bounds:
             // check X coordinates (left or right only):
-            min_max4(x0, cx1, cx2, xe, minmax);
+            min_max4(x0, cx1, cx2, xe, MIN_MAX);
 
             // clip curve out of X range [boundsMinX; boundsMaxX]
-            if (minmax[0] > fBoundsMaxX || minmax[1] < fBoundsMinX) {
+            if (MIN_MAX[0] > fBoundsMaxX || MIN_MAX[1] < fBoundsMinX) {
 //                System.out.println("curveTo: curve clipped: X");
                 // just add a straight line between P0 and P3:
                 addLine(x0, y0, xe, ye);
@@ -834,10 +834,10 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             // Mimic ShapeSpanIterator.c:
 
             // check Y coordinates (top or bottom only):
-            min_max3(y0, cy1, ye, minmax);
+            min_max3(y0, cy1, ye, MIN_MAX);
 
             // clip curve out of y range [boundsMinY; boundsMaxY]
-            if (minmax[0] > fBoundsMaxY || minmax[1] < fBoundsMinY) {
+            if (MIN_MAX[0] > fBoundsMaxY || MIN_MAX[1] < fBoundsMinY) {
 //                System.out.println("quadTo: curve clipped: Y");
                 x0 = xe;
                 y0 = ye;
@@ -846,10 +846,10 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
             // At least 1 point is within Y bounds:
             // check X coordinates (left or right only):
-            min_max3(x0, cx1, xe, minmax);
+            min_max3(x0, cx1, xe, MIN_MAX);
 
             // clip curve out of X range [boundsMinX; boundsMaxX]
-            if (minmax[0] > fBoundsMaxX || minmax[1] < fBoundsMinX) {
+            if (MIN_MAX[0] > fBoundsMaxX || MIN_MAX[1] < fBoundsMinX) {
 //                System.out.println("quadTo: curve clipped: X");
                 // just add a straight line between P0 and P3:
                 addLine(x0, y0, xe, ye);

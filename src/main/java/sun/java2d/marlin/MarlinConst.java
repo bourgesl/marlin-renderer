@@ -80,7 +80,7 @@ interface MarlinConst {
     // flag to enable logs related bounds checks
     static final boolean DO_LOG_BOUNDS = ENABLE_LOGS && false;
 
-    // Initial Array sizing (initial context capacity) ~ 350K
+    // Initial Array sizing (initial context capacity) ~ 450K
 
     // 2048 pixel (width x height) for initial capacity
     static final int INITIAL_PIXEL_DIM
