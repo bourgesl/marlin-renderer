@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,15 +28,15 @@ package sun.java2d.marlin;
 
 public final class MarlinUtils {
     // Marlin logger
-//    private static final sun.util.logging.PlatformLogger log;
-    private static final java.util.logging.Logger log;
+//    private static final sun.util.logging.PlatformLogger LOG;
+    private static final java.util.logging.Logger LOG;
 
     static {
-        if (MarlinConst.useLogger) {
+        if (MarlinConst.USE_LOGGER) {
 //            log = sun.util.logging.PlatformLogger.getLogger("sun.java2d.marlin");
-            log = java.util.logging.Logger.getLogger("sun.java2d.marlin");
+            LOG = java.util.logging.Logger.getLogger("sun.java2d.marlin");
         } else {
-            log = null;
+            LOG = null;
         }
     }
 
@@ -45,19 +45,19 @@ public final class MarlinUtils {
     }
 
     public static void logInfo(final String msg) {
-        if (MarlinConst.useLogger) {
-            log.info(msg);
-        } else if (MarlinConst.enableLogs) {
+        if (MarlinConst.USE_LOGGER) {
+            LOG.info(msg);
+        } else if (MarlinConst.ENABLE_LOGS) {
             System.out.print("INFO: ");
             System.out.println(msg);
         }
     }
 
     public static void logException(final String msg, final Throwable th) {
-        if (MarlinConst.useLogger) {
+        if (MarlinConst.USE_LOGGER) {
 //            log.warning(msg, th);
-            log.log(java.util.logging.Level.WARNING, msg, th);
-        } else if (MarlinConst.enableLogs) {
+            LOG.log(java.util.logging.Level.WARNING, msg, th);
+        } else if (MarlinConst.ENABLE_LOGS) {
             System.out.print("WARNING: ");
             System.out.println(msg);
             th.printStackTrace(System.err);

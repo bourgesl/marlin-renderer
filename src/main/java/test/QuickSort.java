@@ -30,7 +30,7 @@ final class QuickSort {
     /**
      * Sorts the specified sub-array of integers into ascending order.
      */
-    static void sort1(final int x[], final int y[], final int off, final int len) {
+    static void sort1(final int[] x, final int[] y, final int off, final int len) {
         int t;
         // Insertion sort on smallest arrays
         if (len < 20) { // 7 in jdk8 or 20 as benchmark ?
@@ -148,7 +148,7 @@ final class QuickSort {
     /**
      * Returns the index of the median of the three indexed integers.
      */
-    private static int med3(final int x[], final int a, final int b, final int c) {
+    private static int med3(final int[] x, final int a, final int b, final int c) {
         return (x[a] < x[b]
                 ? (x[b] < x[c] ? b : x[a] < x[c] ? c : a)
                 : (x[b] > x[c] ? b : x[a] > x[c] ? c : a));

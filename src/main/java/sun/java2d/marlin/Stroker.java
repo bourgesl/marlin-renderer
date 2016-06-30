@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -180,7 +180,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     void dispose() {
         reverse.dispose();
 
-        if (doCleanDirty) {
+        if (DO_CLEAN_DIRTY) {
             // Force zero-fill dirty arrays:
             Arrays.fill(offset0, 0f);
             Arrays.fill(offset1, 0f);
@@ -1205,6 +1205,12 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         private static final byte TYPE_QUADTO  = (byte) 1;
         private static final byte TYPE_CUBICTO = (byte) 2;
 
+        // curves capacity = edges count (4096) = half edges x 2 (coords)
+        private static final int INITIAL_CURVES_COUNT = INITIAL_EDGES_COUNT;
+
+        // types capacity = half edges count (2048)
+        private static final int INITIAL_TYPES_COUNT = INITIAL_EDGES_COUNT >> 1;
+
         float[] curves;
         int end;
         byte[] curveTypes;
@@ -1213,10 +1219,10 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // per-thread renderer context
         final RendererContext rdrCtx;
 
-        // per-thread initial arrays (large enough to satisfy most usages: 8192)
-        // +1 to avoid recycling in Helpers.widenArray()
-        private final float[] curves_initial = new float[INITIAL_LARGE_ARRAY + 1]; // 32K
-        private final byte[] curveTypes_initial = new byte[INITIAL_LARGE_ARRAY + 1]; // 8K
+        // curves ref (dirty)
+        final DirtyFloatArrayCache.Reference curves_ref;
+        // curveTypes ref (dirty)
+        final DirtyByteArrayCache.Reference curveTypes_ref;
 
         // used marks (stats only)
         int curveTypesUseMark;
@@ -1229,12 +1235,15 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         PolyStack(final RendererContext rdrCtx) {
             this.rdrCtx = rdrCtx;
 
-            curves = curves_initial;
-            curveTypes = curveTypes_initial;
-            end = 0;
-            numCurves = 0;
+            curves_ref = rdrCtx.newDirtyFloatArrayRef(INITIAL_CURVES_COUNT); // 16K
+            curves     = curves_ref.initial;
 
-            if (doStats) {
+            curveTypes_ref = rdrCtx.newDirtyByteArrayRef(INITIAL_TYPES_COUNT); // 2K
+            curveTypes     = curveTypes_ref.initial;
+            numCurves = 0;
+            end = 0;
+
+            if (DO_STATS) {
                 curveTypesUseMark = 0;
                 curvesUseMark = 0;
             }
@@ -1248,11 +1257,11 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             end = 0;
             numCurves = 0;
 
-            if (doStats) {
-                RendererContext.stats.stat_rdr_poly_stack_types
-                    .add(curveTypesUseMark);
-                RendererContext.stats.stat_rdr_poly_stack_curves
-                    .add(curvesUseMark);
+            if (DO_STATS) {
+                rdrCtx.stats.stat_rdr_poly_stack_types.add(curveTypesUseMark);
+                rdrCtx.stats.stat_rdr_poly_stack_curves.add(curvesUseMark);
+                rdrCtx.stats.hist_rdr_poly_stack_curves.add(curvesUseMark);
+
                 // reset marks
                 curveTypesUseMark = 0;
                 curvesUseMark = 0;
@@ -1260,34 +1269,32 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
             // Return arrays:
             // curves and curveTypes are kept dirty
-            if (curves != curves_initial) {
-                rdrCtx.putDirtyFloatArray(curves);
-                curves = curves_initial;
+            if (curves != curves_ref.initial) {
+                curves = curves_ref.putArray(curves);
             }
 
-            if (curveTypes != curveTypes_initial) {
-                rdrCtx.putDirtyByteArray(curveTypes);
-                curveTypes = curveTypes_initial;
+            if (curveTypes != curveTypes_ref.initial) {
+                curveTypes = curveTypes_ref.putArray(curveTypes);
             }
         }
 
         private void ensureSpace(final int n) {
             // use substraction to avoid integer overflow:
             if (curves.length - end < n) {
-                if (doStats) {
-                    RendererContext.stats.stat_array_stroker_polystack_curves
+                if (DO_STATS) {
+                    rdrCtx.stats.stat_array_stroker_polystack_curves
                         .add(end + n);
                 }
-                curves = rdrCtx.widenDirtyFloatArray(curves, end, end + n);
+                curves = curves_ref.widenArray(curves, end, end + n);
             }
             if (curveTypes.length <= numCurves) {
-                if (doStats) {
-                    RendererContext.stats.stat_array_stroker_polystack_curveTypes
+                if (DO_STATS) {
+                    rdrCtx.stats.stat_array_stroker_polystack_curveTypes
                         .add(numCurves + 1);
                 }
-                curveTypes = rdrCtx.widenDirtyByteArray(curveTypes,
-                                                        numCurves,
-                                                        numCurves + 1);
+                curveTypes = curveTypes_ref.widenArray(curveTypes,
+                                                       numCurves,
+                                                       numCurves + 1);
             }
         }
 
@@ -1325,7 +1332,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         void popAll(PathConsumer2D io) {
-            if (doStats) {
+            if (DO_STATS) {
                 // update used marks:
                 if (numCurves > curveTypesUseMark) {
                     curveTypesUseMark = numCurves;

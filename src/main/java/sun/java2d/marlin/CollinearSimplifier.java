@@ -116,7 +116,10 @@ final class CollinearSimplifier implements PathConsumer2D {
 
             // perf: avoid slope computation (fdiv) replaced by 3 fmul
             if ((dy == 0f && pdy == 0f && (pdx * dx) >= 0f)
-                || (Math.abs(pdx * dy - pdy * dx) < EPS * Math.abs(pdy * dy))) {
+// uncertainty on slope:
+//                || (Math.abs(pdx * dy - pdy * dx) < EPS * Math.abs(pdy * dy))) {
+// try 0
+                || ((pdy * dy) != 0f && (pdx * dy - pdy * dx) == 0f)) {
                 // same horizontal orientation or same slope:
                 // TODO: store cumulated error on slope ?
                 // merge segments
