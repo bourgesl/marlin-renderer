@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.7.3.3-Unsafe</version>
+    <version>0.7.4-Unsafe</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -102,6 +102,8 @@
                     <!--
                     Marlin: -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine
                     Pisces: -Dsun.java2d.renderer=sun.java2d.pisces.PiscesRenderingEngine
+
+                    CrashTest may need large heap: -Xms4g -Xmx4g
                     -->
                     <argLine>
                         -Xms512m -Xmx512m

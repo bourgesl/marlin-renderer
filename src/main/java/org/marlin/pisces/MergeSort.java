@@ -32,7 +32,7 @@ package org.marlin.pisces;
 final class MergeSort {
 
     /** true to enable array data collection and serialization */
-    public static final boolean DO_COLLECT_ARRAY_DATA = (false) && MarlinConst.doStats;
+    public static final boolean DO_COLLECT_ARRAY_DATA = (false) && MarlinConst.DO_STATS;
 
     // 14 MapBench better results
     // 20 MapSortTest better average results on 9000 arrays !
@@ -50,13 +50,6 @@ final class MergeSort {
                                 final int toIndex,
                                 final int insertionSortIndex)
     {
-        // Gather array data:
-        if (DO_COLLECT_ARRAY_DATA) {
-            // Copy presorted data from auxX/auxY to x/y:
-            System.arraycopy(auxX, 0, x, 0, insertionSortIndex);
-            RendererContext.stats.adc.addData(x, 0, toIndex, insertionSortIndex);
-        }
-
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
             // explicit check to avoid bound checks within hot loops (below):
