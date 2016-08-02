@@ -22,26 +22,25 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
 package org.marlin.pisces;
 
 import java.util.Arrays;
 import static org.marlin.pisces.MarlinUtils.logInfo;
 
-public final class ArrayCache implements MarlinConst {
+public final class ArrayCacheConst implements MarlinConst {
 
     static final int BUCKETS = 8;
     static final int MIN_ARRAY_SIZE = 4096;
+    // maximum array size
     static final int MAX_ARRAY_SIZE;
     // threshold below to grow arrays by 4
     static final int THRESHOLD_SMALL_ARRAY_SIZE = 4 * 1024 * 1024;
     // threshold to grow arrays only by (3/2) instead of 2
     static final int THRESHOLD_ARRAY_SIZE;
-    static final int[] ARRAY_SIZES = new int[BUCKETS];
-    // large array thresholds:
-    // threshold to grow arrays only by (3/2) instead of 2
-    static final long THRESHOLD_LARGE_ARRAY_SIZE;
-    // threshold to grow arrays only by (5/4) instead of 2
+    // threshold to grow arrays only by (5/4) instead of (3/2)
     static final long THRESHOLD_HUGE_ARRAY_SIZE;
+    static final int[] ARRAY_SIZES = new int[BUCKETS];
 
     static {
         // initialize buckets for int/float arrays
@@ -66,16 +65,8 @@ public final class ArrayCache implements MarlinConst {
             throw new IllegalStateException("Invalid max array size !");
         }
 
-        // threshold to grow arrays only by (3/2) instead of 2
-        THRESHOLD_ARRAY_SIZE = Math.max(THRESHOLD_SMALL_ARRAY_SIZE,
-                                        MAX_ARRAY_SIZE); // >4M
-
-        THRESHOLD_LARGE_ARRAY_SIZE =  16L * 1024 * 1024; // >12M
+        THRESHOLD_ARRAY_SIZE       =  16  * 1024 * 1024; // >16M
         THRESHOLD_HUGE_ARRAY_SIZE  =  48L * 1024 * 1024; // >48M
-
-        if (THRESHOLD_HUGE_ARRAY_SIZE <= 0) {
-            throw new IllegalStateException("Invalid huge array size !");
-        }
 
         if (DO_STATS || DO_MONITORS) {
             logInfo("ArrayCache.BUCKETS        = " + BUCKETS);
@@ -85,14 +76,12 @@ public final class ArrayCache implements MarlinConst {
                     + Arrays.toString(ARRAY_SIZES));
             logInfo("ArrayCache.THRESHOLD_ARRAY_SIZE = "
                     + THRESHOLD_ARRAY_SIZE);
-            logInfo("ArrayCache.THRESHOLD_LARGE_ARRAY_SIZE = "
-                    + THRESHOLD_LARGE_ARRAY_SIZE);
             logInfo("ArrayCache.THRESHOLD_HUGE_ARRAY_SIZE = "
                     + THRESHOLD_HUGE_ARRAY_SIZE);
         }
     }
 
-    private ArrayCache() {
+    private ArrayCacheConst() {
         // Utility class
     }
 
@@ -160,12 +149,12 @@ public final class ArrayCache implements MarlinConst {
         long size;
         if (curSize > THRESHOLD_HUGE_ARRAY_SIZE) {
             size = curSize + (curSize >> 2L); // x(5/4)
-        } else  if (curSize > THRESHOLD_LARGE_ARRAY_SIZE) {
+        } else if (curSize > THRESHOLD_ARRAY_SIZE) {
             size = curSize + (curSize >> 1L); // x(3/2)
-        } else  if (curSize < THRESHOLD_SMALL_ARRAY_SIZE) {
-            size = (curSize << 2L); // x4
-        } else {
+        } else if (curSize > THRESHOLD_SMALL_ARRAY_SIZE) {
             size = (curSize << 1L); // x2
+        } else {
+            size = (curSize << 2L); // x4
         }
         // ensure the new size is >= needed size:
         if (size < needSize) {
@@ -201,11 +190,7 @@ public final class ArrayCache implements MarlinConst {
             oversize = 0;
 
             for (int i = 0; i < BUCKETS; i++) {
-                final BucketStats s = bucketStats[i];
-                s.getOp = 0;
-                s.createOp = 0;
-                s.returnOp = 0;
-                s.maxSize = 0;
+                bucketStats[i].reset();
             }
         }
 
@@ -271,6 +256,13 @@ public final class ArrayCache implements MarlinConst {
         int createOp = 0;
         int returnOp = 0;
         int maxSize = 0;
+
+        void reset() {
+            getOp = 0;
+            createOp = 0;
+            returnOp = 0;
+            maxSize = 0;
+        }
 
         void updateMaxSize(final int size) {
             if (size > maxSize) {

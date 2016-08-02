@@ -141,14 +141,14 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     private int activeEdgeMaxUsed;
 
     // crossings ref (dirty)
-    private final DirtyIntArrayCache.Reference crossings_ref;
+    private final IntArrayCache.Reference crossings_ref;
     // edgePtrs ref (dirty)
-    private final DirtyIntArrayCache.Reference edgePtrs_ref;
+    private final IntArrayCache.Reference edgePtrs_ref;
     // merge sort initial arrays (large enough to satisfy most usages) (1024)
     // aux_crossings ref (dirty)
-    private final DirtyIntArrayCache.Reference aux_crossings_ref;
+    private final IntArrayCache.Reference aux_crossings_ref;
     // aux_edgePtrs ref (dirty)
-    private final DirtyIntArrayCache.Reference aux_edgePtrs_ref;
+    private final IntArrayCache.Reference aux_edgePtrs_ref;
 
 //////////////////////////////////////////////////////////////////////////////
 //  EDGE LIST
@@ -170,9 +170,9 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     private int edgeSumDeltaY;
 
     // edgeBuckets ref (clean)
-    private final CleanIntArrayCache.Reference edgeBuckets_ref;
+    private final IntArrayCache.Reference edgeBuckets_ref;
     // edgeBucketCounts ref (clean)
-    private final CleanIntArrayCache.Reference edgeBucketCounts_ref;
+    private final IntArrayCache.Reference edgeBucketCounts_ref;
 
     private final float[] MIN_MAX = new float[2];
 
@@ -408,7 +408,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             // suppose _edges.length > _SIZEOF_EDGE_BYTES
             // so doubling size is enough to add needed bytes
             // note: throw IOOB if neededSize > 2Gb:
-            final long edgeNewSize = ArrayCache.getNewLargeSize(_edges.length,
+            final long edgeNewSize = ArrayCacheConst.getNewLargeSize(
+                                        _edges.length,
                                         edgePtr + _SIZEOF_EDGE_BYTES);
 
             if (DO_STATS) {
@@ -526,7 +527,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     private int[] alphaLine;
 
     // alphaLine ref (clean)
-    private final CleanIntArrayCache.Reference alphaLine_ref;
+    private final IntArrayCache.Reference alphaLine_ref;
 
     private boolean enableBlkFlags = false;
     private boolean prevUseBlkFlags = false;
@@ -535,7 +536,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     private int[] blkFlags;
 
     // blkFlags ref (clean)
-    private final CleanIntArrayCache.Reference blkFlags_ref;
+    private final IntArrayCache.Reference blkFlags_ref;
 
     Renderer(final RendererContext rdrCtx) {
         this.rdrCtx = rdrCtx;
@@ -556,10 +557,10 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
         this.cache = rdrCtx.cache;
 
-        crossings_ref     = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 4K
-        aux_crossings_ref = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 4K
-        edgePtrs_ref      = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 4K
-        aux_edgePtrs_ref  = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 4K
+        crossings_ref     = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 2K
+        aux_crossings_ref = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 2K
+        edgePtrs_ref      = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 2K
+        aux_edgePtrs_ref  = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 2K
 
         crossings     = crossings_ref.initial;
         aux_crossings = aux_crossings_ref.initial;
@@ -636,32 +637,15 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             rdrCtx.stats.hist_rdr_edges_count.add(edges.used / SIZEOF_EDGE_BYTES);
             rdrCtx.stats.totalOffHeap += edges.length;
         }
-        if (DO_CLEAN_DIRTY) {
-            // Force zero-fill dirty arrays:
-            Arrays.fill(crossings,     0);
-            Arrays.fill(aux_crossings, 0);
-            Arrays.fill(edgePtrs,      0);
-            Arrays.fill(aux_edgePtrs,  0);
-        }
         // Return arrays:
-        if (crossings != crossings_ref.initial) {
-            crossings = crossings_ref.putArray(crossings);
-            if (aux_crossings != aux_crossings_ref.initial) {
-                aux_crossings = aux_crossings_ref.putArray(aux_crossings);
-            }
-        }
-        if (edgePtrs != edgePtrs_ref.initial) {
-            edgePtrs = edgePtrs_ref.putArray(edgePtrs);
-            if (aux_edgePtrs != aux_edgePtrs_ref.initial) {
-                aux_edgePtrs = aux_edgePtrs_ref.putArray(aux_edgePtrs);
-            }
-        }
-        if (alphaLine != alphaLine_ref.initial) {
-            alphaLine = alphaLine_ref.putArray(alphaLine, 0, 0); // already zero filled
-        }
-        if (blkFlags != blkFlags_ref.initial) {
-            blkFlags = blkFlags_ref.putArray(blkFlags, 0, 0); // already zero filled
-        }
+        crossings = crossings_ref.putArray(crossings);
+        aux_crossings = aux_crossings_ref.putArray(aux_crossings);
+
+        edgePtrs = edgePtrs_ref.putArray(edgePtrs);
+        aux_edgePtrs = aux_edgePtrs_ref.putArray(aux_edgePtrs);
+
+        alphaLine = alphaLine_ref.putArray(alphaLine, 0, 0); // already zero filled
+        blkFlags  = blkFlags_ref.putArray(blkFlags, 0, 0); // already zero filled
 
         if (edgeMinY != Integer.MAX_VALUE) {
             // if context is maked as DIRTY:
@@ -671,22 +655,13 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                 buckets_minY = 0;
                 buckets_maxY = boundsMaxY - boundsMinY;
             }
-            // clear used part
-            if (edgeBuckets == edgeBuckets_ref.initial) {
-                // fill only used part
-                CleanIntArrayCache.fill(edgeBuckets,      buckets_minY,
-                                                          buckets_maxY,     0);
-                CleanIntArrayCache.fill(edgeBucketCounts, buckets_minY,
-                                                          buckets_maxY + 1, 0);
-            } else {
-                // clear only used part
-                edgeBuckets = edgeBuckets_ref.putArray(edgeBuckets, buckets_minY,
-                                                                    buckets_maxY);
-                edgeBucketCounts = edgeBucketCounts_ref.putArray(edgeBucketCounts,
-                                                                 buckets_minY,
-                                                                 buckets_maxY + 1);
-            }
-        } else if (edgeBuckets != edgeBuckets_ref.initial) {
+            // clear only used part
+            edgeBuckets = edgeBuckets_ref.putArray(edgeBuckets, buckets_minY,
+                                                                buckets_maxY);
+            edgeBucketCounts = edgeBucketCounts_ref.putArray(edgeBucketCounts,
+                                                             buckets_minY,
+                                                             buckets_maxY + 1);
+        } else {
             // unused arrays
             edgeBuckets = edgeBuckets_ref.putArray(edgeBuckets, 0, 0);
             edgeBucketCounts = edgeBucketCounts_ref.putArray(edgeBucketCounts, 0, 0);
@@ -1055,9 +1030,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
                         edgePtrsLen = _edgePtrs.length;
                         // Get larger auxiliary storage:
-                        if (_aux_edgePtrs != aux_edgePtrs_ref.initial) {
-                            aux_edgePtrs_ref.putArray(_aux_edgePtrs);
-                        }
+                        aux_edgePtrs_ref.putArray(_aux_edgePtrs);
+
                         // use ArrayCache.getNewSize() to use the same growing
                         // factor than widenArray():
                         if (DO_STATS) {
@@ -1065,7 +1039,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                         }
                         this.aux_edgePtrs = _aux_edgePtrs
                             = aux_edgePtrs_ref.getArray(
-                                ArrayCache.getNewSize(numCrossings, ptrEnd)
+                                ArrayCacheConst.getNewSize(numCrossings, ptrEnd)
                             );
                     }
 
@@ -1084,9 +1058,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
                     if (crossingsLen < numCrossings) {
                         // Get larger array:
-                        if (_crossings != crossings_ref.initial) {
-                            crossings_ref.putArray(_crossings);
-                        }
+                        crossings_ref.putArray(_crossings);
+
                         if (DO_STATS) {
                             rdrCtx.stats.stat_array_renderer_crossings
                                 .add(numCrossings);
@@ -1095,9 +1068,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                             = crossings_ref.getArray(numCrossings);
 
                         // Get larger auxiliary storage:
-                        if (_aux_crossings != aux_crossings_ref.initial) {
-                            aux_crossings_ref.putArray(_aux_crossings);
-                        }
+                        aux_crossings_ref.putArray(_aux_crossings);
+
                         if (DO_STATS) {
                             rdrCtx.stats.stat_array_renderer_aux_crossings
                                 .add(numCrossings);

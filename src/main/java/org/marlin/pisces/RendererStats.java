@@ -32,7 +32,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.marlin.pisces.ArrayCache.CacheStats;
+import org.marlin.pisces.ArrayCacheConst.CacheStats;
 import static org.marlin.pisces.MarlinUtils.logInfo;
 import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.Monitor;

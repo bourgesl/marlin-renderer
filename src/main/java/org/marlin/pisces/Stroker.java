@@ -1224,9 +1224,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         final RendererContext rdrCtx;
 
         // curves ref (dirty)
-        final DirtyFloatArrayCache.Reference curves_ref;
+        final FloatArrayCache.Reference curves_ref;
         // curveTypes ref (dirty)
-        final DirtyByteArrayCache.Reference curveTypes_ref;
+        final ByteArrayCache.Reference curveTypes_ref;
 
         // used marks (stats only)
         int curveTypesUseMark;
@@ -1273,13 +1273,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
             // Return arrays:
             // curves and curveTypes are kept dirty
-            if (curves != curves_ref.initial) {
-                curves = curves_ref.putArray(curves);
-            }
-
-            if (curveTypes != curveTypes_ref.initial) {
-                curveTypes = curveTypes_ref.putArray(curveTypes);
-            }
+            curves     = curves_ref.putArray(curves);
+            curveTypes = curveTypes_ref.putArray(curveTypes);
         }
 
         private void ensureSpace(final int n) {

@@ -28,7 +28,7 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.marlin.geom.Path2D;
 import org.marlin.ReentrantContext;
-import static org.marlin.pisces.ArrayCache.*;
+import org.marlin.pisces.ArrayCacheConst.CacheStats;
 import org.marlin.pisces.MarlinRenderingEngine.NormalizingPathIterator;
 
 /**
@@ -77,13 +77,13 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
-    private final CleanIntArrayCache cleanIntCache = new CleanIntArrayCache(5);
+    private final IntArrayCache cleanIntCache = new IntArrayCache(true, 5);
     /* dirty int[] cache = 4 refs */
-    private final DirtyIntArrayCache dirtyIntCache = new DirtyIntArrayCache(4);
+    private final IntArrayCache dirtyIntCache = new IntArrayCache(false, 4);
     /* dirty float[] cache = 3 refs */
-    private final DirtyFloatArrayCache dirtyFloatCache = new DirtyFloatArrayCache(3);
+    private final FloatArrayCache dirtyFloatCache = new FloatArrayCache(false, 3);
     /* dirty byte[] cache = 1 ref */
-    private final DirtyByteArrayCache dirtyByteCache = new DirtyByteArrayCache(1);
+    private final ByteArrayCache dirtyByteCache = new ByteArrayCache(false, 1);
 
     // RendererContext statistics
     final RendererStats stats;
@@ -180,19 +180,19 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
         return new OffHeapArray(cleanerObj, initialSize);
     }
 
-    CleanIntArrayCache.Reference newCleanIntArrayRef(final int initialSize) {
-        return new CleanIntArrayCache.Reference(cleanIntCache, initialSize);
+    IntArrayCache.Reference newCleanIntArrayRef(final int initialSize) {
+        return cleanIntCache.createRef(initialSize);
     }
 
-    DirtyIntArrayCache.Reference newDirtyIntArrayRef(final int initialSize) {
-        return new DirtyIntArrayCache.Reference(dirtyIntCache, initialSize);
+    IntArrayCache.Reference newDirtyIntArrayRef(final int initialSize) {
+        return dirtyIntCache.createRef(initialSize);
     }
 
-    DirtyFloatArrayCache.Reference newDirtyFloatArrayRef(final int initialSize) {
-        return new DirtyFloatArrayCache.Reference(dirtyFloatCache, initialSize);
+    FloatArrayCache.Reference newDirtyFloatArrayRef(final int initialSize) {
+        return dirtyFloatCache.createRef(initialSize);
     }
 
-    DirtyByteArrayCache.Reference newDirtyByteArrayRef(final int initialSize) {
-        return new DirtyByteArrayCache.Reference(dirtyByteCache, initialSize);
+    ByteArrayCache.Reference newDirtyByteArrayRef(final int initialSize) {
+        return dirtyByteCache.createRef(initialSize);
     }
 }
