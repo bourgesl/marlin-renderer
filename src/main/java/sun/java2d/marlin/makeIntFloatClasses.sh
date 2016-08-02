@@ -1,4 +1,5 @@
 #!/bin/sh
+# Replicate changes from the ByteArrayCache classes to the [Int/Float]ArrayCache classes
 
 for file in *ByteArrayCache.java
 do

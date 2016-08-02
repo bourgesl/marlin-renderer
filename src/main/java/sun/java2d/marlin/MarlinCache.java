@@ -102,7 +102,7 @@ public final class MarlinCache implements MarlinConst {
     final RendererContext rdrCtx;
 
     // touchedTile ref (clean)
-    private final CleanIntArrayCache.Reference touchedTile_ref;
+    private final IntArrayCache.Reference touchedTile_ref;
 
     int tileMin, tileMax;
 
@@ -202,9 +202,8 @@ public final class MarlinCache implements MarlinConst {
         }
 
         // Return arrays:
-        if (touchedTile != touchedTile_ref.initial) {
-            touchedTile = touchedTile_ref.putArray(touchedTile, 0, 0); // already zero filled
-        }
+        touchedTile = touchedTile_ref.putArray(touchedTile, 0, 0); // already zero filled
+
         // At last: resize back off-heap rowAA to initial size
         if (rowAAChunk.length != INITIAL_CHUNK_ARRAY) {
             // note: may throw OOME:
@@ -235,7 +234,7 @@ public final class MarlinCache implements MarlinConst {
             if (tileMax == 1) {
                 touchedTile[0] = 0;
             } else {
-                CleanIntArrayCache.fill(touchedTile, tileMin, tileMax, 0);
+                IntArrayCache.fill(touchedTile, tileMin, tileMax, 0);
             }
             // reset tile used marks:
             tileMin = Integer.MAX_VALUE;
@@ -370,7 +369,7 @@ public final class MarlinCache implements MarlinConst {
         }
 
         // Clear alpha row for reuse:
-        CleanIntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
+        IntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
 
         if (DO_MONITORS) {
             rdrCtx.stats.mon_rdr_copyAARow.stop();
@@ -593,8 +592,8 @@ public final class MarlinCache implements MarlinConst {
             alphaRow[to + 1] = 0;
         }
         if (DO_CHECKS) {
-            CleanIntArrayCache.check(blkFlags, blkW, blkE, 0);
-            CleanIntArrayCache.check(alphaRow, from, px1 - bboxX0, 0);
+            IntArrayCache.check(blkFlags, blkW, blkE, 0);
+            IntArrayCache.check(alphaRow, from, px1 - bboxX0, 0);
         }
 
         if (DO_MONITORS) {
@@ -619,7 +618,8 @@ public final class MarlinCache implements MarlinConst {
         }
 
         // note: throw IOOB if neededSize > 2Gb:
-        final long newSize = ArrayCache.getNewLargeSize(rowAAChunk.length, needSize);
+        final long newSize = ArrayCacheConst.getNewLargeSize(rowAAChunk.length,
+                                                             needSize);
 
         rowAAChunk.resize(newSize);
     }
