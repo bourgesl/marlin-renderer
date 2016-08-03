@@ -36,6 +36,15 @@ import java.util.Arrays;
 import org.marlin.pisces.ArrayCacheConst.BucketStats;
 import org.marlin.pisces.ArrayCacheConst.CacheStats;
 
+/*
+ * Note that the [BYTE/INT/FLOAT]ArrayCache files are nearly identical except
+ * for a few type and name differences. Typically, the [BYTE]ArrayCache.java file
+ * is edited manually and then [INT]ArrayCache.java and [FLOAT]ArrayCache.java
+ * files are generated with the following command lines:
+ */
+// % sed -e 's/(b\yte)[ ]*//g' -e 's/b\yte/int/g' -e 's/B\yte/Int/g' < B\yteArrayCache.java > IntArrayCache.java
+// % sed -e 's/(b\yte)[ ]*/(float) /g' -e 's/b\yte/float/g' -e 's/B\yte/Float/g' < B\yteArrayCache.java > FloatArrayCache.java
+
 final class IntArrayCache implements MarlinConst {
 
     final boolean clean;
