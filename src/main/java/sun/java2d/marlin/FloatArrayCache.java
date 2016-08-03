@@ -39,7 +39,7 @@ import sun.java2d.marlin.ArrayCacheConst.CacheStats;
 /*
  * Note that the [BYTE/INT/FLOAT]ArrayCache files are nearly identical except
  * for a few type and name differences. Typically, the [BYTE]ArrayCache.java file
- * is edited manually and then [INT]ArrayCache.java and [FLOAT]ArrayCache.java 
+ * is edited manually and then [INT]ArrayCache.java and [FLOAT]ArrayCache.java
  * files are generated with the following command lines:
  */
 // % sed -e 's/(b\yte)[ ]*//g' -e 's/b\yte/int/g' -e 's/B\yte/Int/g' < B\yteArrayCache.java > IntArrayCache.java
