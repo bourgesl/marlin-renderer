@@ -56,7 +56,7 @@ final class OffHeapArray  {
             MarlinUtils.logInfo("Unable to get sun.misc.Unsafe; exit now.");
             System.exit(1);
         }
-        UNSAFE   = Unsafe.getUnsafe();
+        UNSAFE   = ref;
         SIZE_INT = 4; // jdk 1.6 (Unsafe.ARRAY_INT_INDEX_SCALE)
 
         // Mimics Java2D Disposer:
