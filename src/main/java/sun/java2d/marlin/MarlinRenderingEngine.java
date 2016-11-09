@@ -361,17 +361,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                 if (dashes != null) {
                     recycleDashes = true;
                     dashLen = dashes.length;
-                    final float[] newDashes;
-                    if (dashLen <= INITIAL_ARRAY) {
-                        newDashes = rdrCtx.dasher.dashes_ref.initial;
-                    } else {
-                        if (DO_STATS) {
-                            rdrCtx.stats.stat_array_dasher_dasher.add(dashLen);
-                        }
-                        newDashes = rdrCtx.dasher.dashes_ref.getArray(dashLen);
-                    }
-                    System.arraycopy(dashes, 0, newDashes, 0, dashLen);
-                    dashes = newDashes;
+                    dashes = rdrCtx.dasher.copyDashArray(dashes);
                     for (int i = 0; i < dashLen; i++) {
                         dashes[i] *= scale;
                     }
@@ -1035,8 +1025,11 @@ public class MarlinRenderingEngine extends RenderingEngine
                 + MarlinConst.SUBPIXEL_LG_POSITIONS_X);
         logInfo("sun.java2d.renderer.subPixel_log2_Y  = "
                 + MarlinConst.SUBPIXEL_LG_POSITIONS_Y);
+
         logInfo("sun.java2d.renderer.tileSize_log2    = "
-                + MarlinConst.TILE_SIZE_LG);
+                + MarlinConst.TILE_H_LG);
+        logInfo("sun.java2d.renderer.tileWidth_log2   = "
+                + MarlinConst.TILE_W_LG);
 
         logInfo("sun.java2d.renderer.blockSize_log2   = "
                 + MarlinConst.BLOCK_SIZE_LG);

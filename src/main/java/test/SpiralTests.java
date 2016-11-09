@@ -41,6 +41,22 @@ import sun.java2d.pipe.RenderingEngine;
 public class SpiralTests {
 
     public static void main(String[] args) {
+        // First display which renderer is tested:
+        // JDK9 only:
+        System.setProperty("sun.java2d.renderer.verbose", "true");
+        System.out.println("Testing renderer: ");
+        // Other JDK:
+        String renderer = "undefined";
+        try {
+            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
+            System.out.println(renderer);
+        } catch (Throwable th) {
+            // may fail with JDK9 jigsaw (jake)
+            if (false) {
+                System.err.println("Unable to get RenderingEngine.getInstance()");
+                th.printStackTrace();
+            }
+        }
 
         StrokerTest.main(args);
 
@@ -50,8 +66,6 @@ public class SpiralTests {
         BasicStroke stroke = createStroke(lineStroke, useDashes);
 
         final int size = 4096;
-
-        System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
 
         System.out.println("SpiralTests: size = " + size);
 
@@ -77,8 +91,6 @@ public class SpiralTests {
         System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
 
         try {
-            final String renderer = RenderingEngine.getInstance().getClass().getSimpleName();
-
             final File file = new File("SpiralTests-" + renderer + "-dash-" + useDashes + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());;

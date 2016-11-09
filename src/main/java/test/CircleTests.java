@@ -41,13 +41,28 @@ import sun.java2d.pipe.RenderingEngine;
 public class CircleTests {
 
     public static void main(String[] args) {
-        final float lineStroke = 1f;
-
-        BasicStroke stroke = createStroke(lineStroke);
+        // First display which renderer is tested:
+        // JDK9 only:
+        System.setProperty("sun.java2d.renderer.verbose", "true");
+        System.out.println("Testing renderer: ");
+        // Other JDK:
+        String renderer = "undefined";
+        try {
+            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
+            System.out.println(renderer);
+        } catch (Throwable th) {
+            // may fail with JDK9 jigsaw (jake)
+            if (false) {
+                System.err.println("Unable to get RenderingEngine.getInstance()");
+                th.printStackTrace();
+            }
+        }
 
         final int size = 2048;
 
-        System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
+        final float lineStroke = 1f;
+
+        BasicStroke stroke = createStroke(lineStroke);
 
         System.out.println("CircleTests: size = " + size);
 
@@ -78,8 +93,6 @@ public class CircleTests {
         System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
 
         try {
-            final String renderer = RenderingEngine.getInstance().getClass().getSimpleName();
-
             final File file = new File("CircleTests.png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());
