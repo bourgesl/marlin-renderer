@@ -344,7 +344,7 @@ public final class MarlinCache implements MarlinConst {
         final int _bboxX0 = bboxX0;
 
         // process tile line [0 - 32]
-        final int row  = y - bboxY0;
+        final int row  =   y -  bboxY0;
         final int from = px0 - _bboxX0; // first pixel inclusive
 
         // skip useless pixels above boundary
@@ -382,6 +382,8 @@ public final class MarlinCache implements MarlinConst {
         // traverse flagged blocks:
         final int blkW = (from >> _BLK_SIZE_LG);
         final int blkE = (to   >> _BLK_SIZE_LG) + 1;
+        // ensure last block flag = 0 to process final block:
+        blkFlags[blkE] = 0;
 
         // Perform run-length encoding and store results in the piscesCache
         int val = 0;

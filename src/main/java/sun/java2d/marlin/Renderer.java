@@ -39,8 +39,8 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     static final boolean ENABLE_BLOCK_FLAGS = MarlinProperties.isUseTileFlags();
     static final boolean ENABLE_BLOCK_FLAGS_HEURISTICS = MarlinProperties.isUseTileFlagsWithHeuristics();
 
-    private static final int ALL_BUT_LSB = 0xfffffffe;
-    private static final int ERR_STEP_MAX = 0x7fffffff; // = 2^31 - 1
+    private static final int ALL_BUT_LSB = 0xFFFFFFFe;
+    private static final int ERR_STEP_MAX = 0x7FFFFFFF; // = 2^31 - 1
 
     private static final double POWER_2_TO_32 = 0x1.0p32;
 
@@ -82,16 +82,17 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     // curve break into lines
     // cubic error in subpixels to decrement step
     private static final float CUB_DEC_ERR_SUBPIX
-        = 1f * (NORM_SUBPIXELS / 8f); // 1 subpixel for typical 8x8 subpixels
+        = 1f * (NORM_SUBPIXELS / 8f); // 1 pixel
     // cubic error in subpixels to increment step
     private static final float CUB_INC_ERR_SUBPIX
-        = 0.4f * (NORM_SUBPIXELS / 8f); // 0.4 subpixel for typical 8x8 subpixels
+        = 0.4f * (NORM_SUBPIXELS / 8f); // 0.4 pixel
 
-    // cubic bind length to decrement step = 8 * error in subpixels
-    // multiply by 8 = error scale factor:
+    // bad paths (59294/100000 == 59,29%, 94335 bad pixels (avg = 1,59), 3966 warnings (avg = 0,07)
+
+    // cubic bind length to decrement step
     public static final float CUB_DEC_BND
         = 8f * CUB_DEC_ERR_SUBPIX;
-    // cubic bind length to increment step = 8 * error in subpixels
+    // cubic bind length to increment step
     public static final float CUB_INC_BND
         = 8f * CUB_INC_ERR_SUBPIX;
 
@@ -113,9 +114,11 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     // quad break into lines
     // quadratic error in subpixels
     private static final float QUAD_DEC_ERR_SUBPIX
-        = 1f * (NORM_SUBPIXELS / 8f); // 1 subpixel for typical 8x8 subpixels
+        = 0.5f * (NORM_SUBPIXELS / 8f); // 0.5 pixel
 
-    // quadratic bind length to decrement step = 8 * error in subpixels
+    // bad paths (62916/100000 == 62,92%, 103818 bad pixels (avg = 1,65), 6514 warnings (avg = 0,10)
+
+    // quadratic bind length to decrement step
     public static final float QUAD_DEC_BND
         = 8f * QUAD_DEC_ERR_SUBPIX;
 
@@ -182,7 +185,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         int count = 1; // dt = 1 / count
 
         // maximum(ddX|Y) = norm(dbx, dby) * dt^2 (= 1)
-        float maxDD = FloatMath.max(Math.abs(c.dbx), Math.abs(c.dby));
+        float maxDD = Math.abs(c.dbx) + Math.abs(c.dby);
 
         final float _DEC_BND = QUAD_DEC_BND;
 
@@ -261,7 +264,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
         while (count > 0) {
             // divide step by half:
-            while (Math.abs(ddx) >= _DEC_BND || Math.abs(ddy) >= _DEC_BND) {
+            while (Math.abs(ddx) + Math.abs(ddy) >= _DEC_BND) {
                 dddx /= 8f;
                 dddy /= 8f;
                 ddx = ddx/4f - dddx;
@@ -281,7 +284,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
             // can only do this on even "count" values, because we must divide count by 2
             while (count % 2 == 0
-                   && Math.abs(dx) <= _INC_BND && Math.abs(dy) <= _INC_BND)
+                   && Math.abs(dx) + Math.abs(dy) <= _INC_BND)
             {
                 dx = 2f * dx + ddx;
                 dy = 2f * dy + ddy;
@@ -438,13 +441,13 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // long x1_fixed = x1_intercept * 2^32;  (fixed point 32.32 format)
         // curx = next VPC = fixed_floor(x1_fixed - 2^31 + 2^32 - 1)
         //                 = fixed_floor(x1_fixed + 2^31 - 1)
-        //                 = fixed_floor(x1_fixed + 0x7fffffff)
-        // and error       = fixed_fract(x1_fixed + 0x7fffffff)
+        //                 = fixed_floor(x1_fixed + 0x7FFFFFFF)
+        // and error       = fixed_fract(x1_fixed + 0x7FFFFFFF)
         final double x1_intercept = x1d + (firstCrossing - y1d) * slope;
 
         // inlined scalb(x1_intercept, 32):
         final long x1_fixed_biased = ((long) (POWER_2_TO_32 * x1_intercept))
-                                     + 0x7fffffffL;
+                                     + 0x7FFFFFFFL;
         // curx:
         // last bit corresponds to the orientation
         _unsafe.putInt(addr, (((int) (x1_fixed_biased >> 31L)) & ALL_BUT_LSB) | or);
@@ -683,10 +686,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
     @Override
     public void moveTo(float pix_x0, float pix_y0) {
-        // ignore pure horizontal line:
-//        if (y0 != sy0 /* || x0 != sx0 */) {
-            closePath();
-//        }
+        closePath();
         final float sx = tosubpixx(pix_x0);
         final float sy = tosubpixy(pix_y0);
         this.sx0 = sx;
@@ -1335,7 +1335,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
                                     if (useBlkFlags) {
                                         // flag used blocks:
-                                        _blkFlags[pix_x       >> _BLK_SIZE_LG] = 1;
+                                        _blkFlags[ pix_x      >> _BLK_SIZE_LG] = 1;
                                         _blkFlags[(pix_x + 1) >> _BLK_SIZE_LG] = 1;
                                     }
                                 } else {
@@ -1357,7 +1357,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                                         // flag used blocks:
                                         _blkFlags[ pix_x         >> _BLK_SIZE_LG] = 1;
                                         _blkFlags[(pix_x + 1)    >> _BLK_SIZE_LG] = 1;
-                                        _blkFlags[pix_xmax       >> _BLK_SIZE_LG] = 1;
+                                        _blkFlags[ pix_xmax      >> _BLK_SIZE_LG] = 1;
                                         _blkFlags[(pix_xmax + 1) >> _BLK_SIZE_LG] = 1;
                                     }
                                 }
@@ -1406,7 +1406,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
 
                                     if (useBlkFlags) {
                                         // flag used blocks:
-                                        _blkFlags[pix_x       >> _BLK_SIZE_LG] = 1;
+                                        _blkFlags[ pix_x      >> _BLK_SIZE_LG] = 1;
                                         _blkFlags[(pix_x + 1) >> _BLK_SIZE_LG] = 1;
                                     }
                                 } else {
@@ -1428,7 +1428,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
                                         // flag used blocks:
                                         _blkFlags[ pix_x         >> _BLK_SIZE_LG] = 1;
                                         _blkFlags[(pix_x + 1)    >> _BLK_SIZE_LG] = 1;
-                                        _blkFlags[pix_xmax       >> _BLK_SIZE_LG] = 1;
+                                        _blkFlags[ pix_xmax      >> _BLK_SIZE_LG] = 1;
                                         _blkFlags[(pix_xmax + 1) >> _BLK_SIZE_LG] = 1;
                                     }
                                 }
@@ -1539,33 +1539,33 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         final int _boundsMinY = boundsMinY;
         final int _boundsMaxY = boundsMaxY;
 
-        // bounds as inclusive intervals
+        // bounds as half-open intervals
         final int spminX = FloatMath.max(FloatMath.ceil_int(edgeMinX - 0.5f), boundsMinX);
-        final int spmaxX = FloatMath.min(FloatMath.ceil_int(edgeMaxX - 0.5f), boundsMaxX - 1);
+        final int spmaxX = FloatMath.min(FloatMath.ceil_int(edgeMaxX - 0.5f), boundsMaxX);
 
         // edge Min/Max Y are already rounded to subpixels within bounds:
         final int spminY = edgeMinY;
         final int spmaxY;
         int maxY = edgeMaxY;
 
-        if (maxY <= _boundsMaxY - 1) {
+        if (maxY <= _boundsMaxY) {
             spmaxY = maxY;
         } else {
-            spmaxY = _boundsMaxY - 1;
-            maxY   = _boundsMaxY;
+            spmaxY = _boundsMaxY;
+            maxY   = _boundsMaxY + 1;
         }
         buckets_minY = spminY - _boundsMinY;
         buckets_maxY = maxY   - _boundsMinY;
 
         if (DO_LOG_BOUNDS) {
             MarlinUtils.logInfo("edgesXY = [" + edgeMinX + " ... " + edgeMaxX
-                                + "][" + edgeMinY + " ... " + edgeMaxY + "]");
+                                + "[ [" + edgeMinY + " ... " + edgeMaxY + "[");
             MarlinUtils.logInfo("spXY    = [" + spminX + " ... " + spmaxX
-                                + "][" + spminY + " ... " + spmaxY + "]");
+                                + "[ [" + spminY + " ... " + spmaxY + "[");
         }
 
         // test clipping for shapes out of bounds
-        if ((spminX > spmaxX) || (spminY > spmaxY)) {
+        if ((spminX >= spmaxX) || (spminY >= spmaxY)) {
             return false;
         }
 
@@ -1607,7 +1607,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         // inclusive:
         bbox_spminY = spminY;
         // exclusive:
-        bbox_spmaxY = FloatMath.min(spmaxY + 1, pmaxY << SUBPIXEL_LG_POSITIONS_Y);
+        bbox_spmaxY = spmaxY;
 
         if (DO_LOG_BOUNDS) {
             MarlinUtils.logInfo("pXY       = [" + pminX + " ... " + pmaxX

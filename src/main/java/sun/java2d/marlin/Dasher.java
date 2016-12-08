@@ -190,12 +190,12 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final int len = dashes.length;
         final float[] newDashes;
         if (len <= MarlinConst.INITIAL_ARRAY) {
-            newDashes = rdrCtx.dasher.dashes_ref.initial;
+            newDashes = dashes_ref.initial;
         } else {
             if (DO_STATS) {
                 rdrCtx.stats.stat_array_dasher_dasher.add(len);
             }
-            newDashes = rdrCtx.dasher.dashes_ref.getArray(len);
+            newDashes = dashes_ref.getArray(len);
         }
         System.arraycopy(dashes, 0, newDashes, 0, len);
         return newDashes;

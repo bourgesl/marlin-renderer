@@ -36,7 +36,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
 
     private static final int TH_AA_ALPHA_00 = ((MAX_AA_ALPHA + 1) / 3); // 33%
     private static final int TH_AA_ALPHA_FF = ((MAX_AA_ALPHA + 1) * 2 / 3); // 66%
-    
+
     private static final int FILL_TILE_W = TILE_W >> 1; // half tile width
 
     static {
@@ -327,7 +327,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
             MarlinUtils.logInfo("getAlpha = [" + x0 + " ... " + x1
                                 + "[ [" + y0 + " ... " + y1 + "[");
         }
-        
+
         // avoid too small area: fill is not faster !
         final int clearTile;
         final byte refVal;

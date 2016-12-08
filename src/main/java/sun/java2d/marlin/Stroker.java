@@ -932,12 +932,12 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // if these vectors are too small, normalize them, to avoid future
         // precision problems.
         if (Math.abs(dxs) < 0.1f && Math.abs(dys) < 0.1f) {
-            float len = (float) sqrt(dxs*dxs + dys*dys);
+            float len = (float) Math.sqrt(dxs*dxs + dys*dys);
             dxs /= len;
             dys /= len;
         }
         if (Math.abs(dxf) < 0.1f && Math.abs(dyf) < 0.1f) {
-            float len = (float) sqrt(dxf*dxf + dyf*dyf);
+            float len = (float) Math.sqrt(dxf*dxf + dyf*dyf);
             dxf /= len;
             dyf /= len;
         }
