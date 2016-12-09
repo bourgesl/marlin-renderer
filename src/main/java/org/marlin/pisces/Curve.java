@@ -28,8 +28,6 @@ final class Curve {
 
     float ax, ay, bx, by, cx, cy, dx, dy;
     float dax, day, dbx, dby;
-    // shared iterator instance
-    private final BreakPtrIterator iterator = new BreakPtrIterator();
 
     Curve() {
     }
@@ -235,69 +233,4 @@ final class Curve {
         final float ddxdxddydy = ddx*dx + ddy*dy;
         return dx2dy2*((dx2dy2*dx2dy2) / (dx2dy2 * ddx2ddy2 - ddxdxddydy*ddxdxddydy));
     }
-
-    // curve to be broken should be in pts
-    // this will change the contents of pts but not Ts
-    // TODO: There's no reason for Ts to be an array. All we need is a sequence
-    // of t values at which to subdivide. An array statisfies this condition,
-    // but is unnecessarily restrictive. Ts should be an Iterator<Float> instead.
-    // Doing this will also make dashing easier, since we could easily make
-    // LengthIterator an Iterator<Float> and feed it to this function to simplify
-    // the loop in Dasher.somethingTo.
-    BreakPtrIterator breakPtsAtTs(final float[] pts, final int type,
-                                  final float[] Ts, final int numTs)
-    {
-        assert pts.length >= 2*type && numTs <= Ts.length;
-
-        // initialize shared iterator:
-        iterator.init(pts, type, Ts, numTs);
-
-        return iterator;
-    }
-
-    static final class BreakPtrIterator {
-        private int nextCurveIdx;
-        private int curCurveOff;
-        private float prevT;
-        private float[] pts;
-        private int type;
-        private float[] ts;
-        private int numTs;
-
-        void init(final float[] pts, final int type,
-                  final float[] ts, final int numTs) {
-            this.pts = pts;
-            this.type = type;
-            this.ts = ts;
-            this.numTs = numTs;
-
-            nextCurveIdx = 0;
-            curCurveOff = 0;
-            prevT = 0f;
-        }
-
-        public boolean hasNext() {
-            return nextCurveIdx <= numTs;
-        }
-
-        public int next() {
-            int ret;
-            if (nextCurveIdx < numTs) {
-                float curT = ts[nextCurveIdx];
-                float splitT = (curT - prevT) / (1f - prevT);
-                Helpers.subdivideAt(splitT,
-                                    pts, curCurveOff,
-                                    pts, 0,
-                                    pts, type, type);
-                prevT = curT;
-                ret = 0;
-                curCurveOff = type;
-            } else {
-                ret = curCurveOff;
-            }
-            nextCurveIdx++;
-            return ret;
-        }
-    }
 }
-

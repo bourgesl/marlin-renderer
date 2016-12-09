@@ -68,21 +68,21 @@ public final class MarlinProperties {
     /**
      * Return the log(2) corresponding to subpixel on x-axis (
      *
-     * @return 1 (2 subpixels) < initial pixel size < 4 (256 subpixels)
+     * @return 0 (1 subpixels) < initial pixel size < 4 (256 subpixels)
      * (3 by default ie 8 subpixels)
      */
     public static int getSubPixel_Log2_X() {
-        return getInteger("sun.java2d.renderer.subPixel_log2_X", 3, 1, 8);
+        return getInteger("sun.java2d.renderer.subPixel_log2_X", 3, 0, 8);
     }
 
     /**
      * Return the log(2) corresponding to subpixel on y-axis (
      *
-     * @return 1 (2 subpixels) < initial pixel size < 8 (256 subpixels)
+     * @return 0 (1 subpixels) < initial pixel size < 8 (256 subpixels)
      * (3 by default ie 8 subpixels)
      */
     public static int getSubPixel_Log2_Y() {
-        return getInteger("sun.java2d.renderer.subPixel_log2_Y", 3, 1, 8);
+        return getInteger("sun.java2d.renderer.subPixel_log2_Y", 3, 0, 8);
     }
 
     /**

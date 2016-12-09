@@ -44,6 +44,11 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     static final float ERR = 0.01f;
     static final float MIN_T_INC = 1f / (1 << REC_LIMIT);
 
+    // More than 24 bits of mantissa means we can no longer accurately
+    // measure the number of times cycled through the dash array so we
+    // punt and override the phase to just be 0 past that point.
+    static final float MAX_CYCLES = 16000000f;
+
     private PathConsumer2D out;
     private float[] dash;
     private int dashLen;
@@ -105,26 +110,56 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     Dasher init(final PathConsumer2D out, float[] dash, int dashLen,
                 float phase, boolean recycleDashes)
     {
-        if (phase < 0f) {
-            throw new IllegalArgumentException("phase < 0 !");
-        }
         this.out = out;
 
         // Normalize so 0 <= phase < dash[0]
-        int idx = 0;
+        int sidx = 0;
         dashOn = true;
-        float d;
-        while (phase >= (d = dash[idx])) {
-            phase -= d;
-            idx = (idx + 1) % dashLen;
-            dashOn = !dashOn;
+        float sum = 0f;
+        for (float d : dash) {
+            sum += d;
+        }
+        float cycles = phase / sum;
+        if (phase < 0f) {
+            if (-cycles >= MAX_CYCLES) {
+                phase = 0f;
+            } else {
+                int fullcycles = FloatMath.floor_int(-cycles);
+                if ((fullcycles & dash.length & 1) != 0) {
+                    dashOn = !dashOn;
+                }
+                phase += fullcycles * sum;
+                while (phase < 0f) {
+                    if (--sidx < 0) {
+                        sidx = dash.length - 1;
+                    }
+                    phase += dash[sidx];
+                    dashOn = !dashOn;
+                }
+            }
+        } else if (phase > 0) {
+            if (cycles >= MAX_CYCLES) {
+                phase = 0f;
+            } else {
+                int fullcycles = FloatMath.floor_int(cycles);
+                if ((fullcycles & dash.length & 1) != 0) {
+                    dashOn = !dashOn;
+                }
+                phase -= fullcycles * sum;
+                float d;
+                while (phase >= (d = dash[sidx])) {
+                    phase -= d;
+                    sidx = (sidx + 1) % dash.length;
+                    dashOn = !dashOn;
+                }
+            }
         }
 
         this.dash = dash;
         this.dashLen = dashLen;
         this.startPhase = this.phase = phase;
         this.startDashOn = dashOn;
-        this.startIdx = idx;
+        this.startIdx = sidx;
         this.starting = true;
         needsMoveTo = false;
         firstSegidx = 0;
@@ -148,6 +183,21 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
             dash = dashes_ref.putArray(dash);
         }
         firstSegmentsBuffer = firstSegmentsBuffer_ref.putArray(firstSegmentsBuffer);
+    }
+
+    float[] copyDashArray(final float[] dashes) {
+        final int len = dashes.length;
+        final float[] newDashes;
+        if (len <= MarlinConst.INITIAL_ARRAY) {
+            newDashes = dashes_ref.initial;
+        } else {
+            if (DO_STATS) {
+                rdrCtx.stats.stat_array_dasher_dasher.add(len);
+            }
+            newDashes = dashes_ref.getArray(len);
+        }
+        System.arraycopy(dashes, 0, newDashes, 0, len);
+        return newDashes;
     }
 
     @Override
@@ -207,7 +257,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
         float y = pts[off + type - 3];
         if (dashOn) {
             if (starting) {
-                int len = type - 2 + 1;
+                int len = type - 1; // - 2 + 1
                 int segIdx = firstSegidx;
                 float[] buf = firstSegmentsBuffer;
                 if (segIdx + len  > buf.length) {

@@ -127,6 +127,7 @@ final class OffHeapArray  {
                                 + this.length
                                 + " at addr = " + this.address);
         }
+        this.address = 0L;
     }
 
     void fill(final byte val) {

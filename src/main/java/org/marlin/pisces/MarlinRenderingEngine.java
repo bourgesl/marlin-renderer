@@ -360,17 +360,7 @@ public class MarlinRenderingEngine extends RenderingEngine
                 if (dashes != null) {
                     recycleDashes = true;
                     dashLen = dashes.length;
-                    final float[] newDashes;
-                    if (dashLen <= INITIAL_ARRAY) {
-                        newDashes = rdrCtx.dasher.dashes_ref.initial;
-                    } else {
-                        if (DO_STATS) {
-                            rdrCtx.stats.stat_array_dasher_dasher.add(dashLen);
-                        }
-                        newDashes = rdrCtx.dasher.dashes_ref.getArray(dashLen);
-                    }
-                    System.arraycopy(dashes, 0, newDashes, 0, dashLen);
-                    dashes = newDashes;
+                    dashes = rdrCtx.dasher.copyDashArray(dashes);
                     for (int i = 0; i < dashLen; i++) {
                         dashes[i] *= scale;
                     }

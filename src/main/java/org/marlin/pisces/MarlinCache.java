@@ -121,7 +121,7 @@ public final class MarlinCache implements MarlinConst {
         tileMax = Integer.MIN_VALUE;
     }
 
-    void init(int minx, int miny, int maxx, int maxy, int edgeSumDeltaY)
+    void init(int minx, int miny, int maxx, int maxy)
     {
         // assert maxy >= miny && maxx >= minx;
         bboxX0 = minx;
@@ -143,38 +143,7 @@ public final class MarlinCache implements MarlinConst {
             if (width <= RLE_MIN_WIDTH || width >= RLE_MAX_WIDTH) {
                 useRLE = false;
             } else {
-                // perimeter approach: how fit the total length into given height:
-
-                // if stroking: meanCrossings /= 2 => divide edgeSumDeltaY by 2
-                final int heightSubPixel
-                    = (((maxy - miny) << SUBPIXEL_LG_POSITIONS_Y) << rdrCtx.stroking);
-
-                // check meanDist > block size:
-                // check width / (meanCrossings - 1) >= RLE_THRESHOLD
-
-                // fast case: (meanCrossingPerPixel <= 2) means 1 span only
-                useRLE = (edgeSumDeltaY <= (heightSubPixel << 1))
-                    // note: already checked (meanCrossingPerPixel <= 2)
-                    // rewritten to avoid division:
-                    || (width * heightSubPixel) >
-                            ((edgeSumDeltaY - heightSubPixel) << BLOCK_SIZE_LG);
-
-                if (DO_TRACE && !useRLE) {
-                    final float meanCrossings
-                        = ((float) edgeSumDeltaY) / heightSubPixel;
-                    final float meanDist = width / (meanCrossings - 1);
-
-                    System.out.println("High complexity: "
-                        + " for bbox[width = " + width
-                        + " height = " + (maxy - miny)
-                        + "] edgeSumDeltaY = " + edgeSumDeltaY
-                        + " heightSubPixel = " + heightSubPixel
-                        + " meanCrossings = "+ meanCrossings
-                        + " meanDist = " + meanDist
-                        + " width =  " + (width * heightSubPixel)
-                        + " <= criteria:  " + ((edgeSumDeltaY - heightSubPixel) << BLOCK_SIZE_LG)
-                    );
-                }
+                useRLE = true;
             }
         }
 
@@ -270,10 +239,6 @@ public final class MarlinCache implements MarlinConst {
     void copyAARowNoRLE(final int[] alphaRow, final int y,
                    final int px0, final int px1)
     {
-        if (DO_MONITORS) {
-            rdrCtx.stats.mon_rdr_copyAARow.start();
-        }
-
         // skip useless pixels above boundary
         final int px_bbox1 = FloatMath.min(px1, bboxX1);
 
@@ -369,25 +334,17 @@ public final class MarlinCache implements MarlinConst {
         }
 
         // Clear alpha row for reuse:
-        IntArrayCache.fill(alphaRow, from, px1 - bboxX0, 0);
-
-        if (DO_MONITORS) {
-            rdrCtx.stats.mon_rdr_copyAARow.stop();
-        }
+        IntArrayCache.fill(alphaRow, from, px1 + 1 - bboxX0, 0);
     }
 
     void copyAARowRLE_WithBlockFlags(final int[] blkFlags, final int[] alphaRow,
                       final int y, final int px0, final int px1)
     {
-        if (DO_MONITORS) {
-            rdrCtx.stats.mon_rdr_copyAARow.start();
-        }
-
         // Copy rowAA data into the piscesCache if one is present
         final int _bboxX0 = bboxX0;
 
         // process tile line [0 - 32]
-        final int row  = y - bboxY0;
+        final int row  =   y -  bboxY0;
         final int from = px0 - _bboxX0; // first pixel inclusive
 
         // skip useless pixels above boundary
@@ -425,6 +382,8 @@ public final class MarlinCache implements MarlinConst {
         // traverse flagged blocks:
         final int blkW = (from >> _BLK_SIZE_LG);
         final int blkE = (to   >> _BLK_SIZE_LG) + 1;
+        // ensure last block flag = 0 to process final block:
+        blkFlags[blkE] = 0;
 
         // Perform run-length encoding and store results in the piscesCache
         int val = 0;
@@ -587,17 +546,10 @@ public final class MarlinCache implements MarlinConst {
         }
 
         // Clear alpha row for reuse:
-        if (px1 > bboxX1) {
-            alphaRow[to    ] = 0;
-            alphaRow[to + 1] = 0;
-        }
+        alphaRow[to] = 0;
         if (DO_CHECKS) {
             IntArrayCache.check(blkFlags, blkW, blkE, 0);
-            IntArrayCache.check(alphaRow, from, px1 - bboxX0, 0);
-        }
-
-        if (DO_MONITORS) {
-            rdrCtx.stats.mon_rdr_copyAARow.stop();
+            IntArrayCache.check(alphaRow, from, px1 + 1 - bboxX0, 0);
         }
     }
 

@@ -94,10 +94,10 @@ interface MarlinConst {
     // 4096 edges for initial capacity
     static final int INITIAL_EDGES_COUNT = MarlinProperties.getInitialEdges();
 
-    // initial edges = 3/4 * edges count (4096)
+    // initial edges = edges count (4096)
     // 6 ints per edges = 24 bytes
-    // edges capacity = 24 x initial edges = 18 * edges count (4096) = 72K
-    static final int INITIAL_EDGES_CAPACITY = INITIAL_EDGES_COUNT * 18;
+    // edges capacity = 24 x initial edges = 24 * edges count (4096) = 96K
+    static final int INITIAL_EDGES_CAPACITY = INITIAL_EDGES_COUNT * 24;
 
     // zero value as byte
     static final byte BYTE_0 = (byte) 0;
