@@ -186,7 +186,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         firstSegmentsBuffer = firstSegmentsBuffer_ref.putArray(firstSegmentsBuffer);
     }
 
-    public float[] copyDashArray(final float[] dashes) {
+    float[] copyDashArray(final float[] dashes) {
         final int len = dashes.length;
         final float[] newDashes;
         if (len <= MarlinConst.INITIAL_ARRAY) {
