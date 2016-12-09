@@ -159,7 +159,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
     private float edgeMinX = Float.POSITIVE_INFINITY;
     private float edgeMaxX = Float.NEGATIVE_INFINITY;
 
-    // edges [floats|ints] stored in off-heap memory
+    // edges [ints] stored in off-heap memory
     private final OffHeapArray edges;
 
     private int[] edgeBuckets;
@@ -339,7 +339,7 @@ final class Renderer implements PathConsumer2D, MarlinConst {
             x1 = tmp;
         }
 
-        // convert subpixel coordinates (float) into pixel positions [int]
+        // convert subpixel coordinates [float] into pixel positions [int]
 
         // The index of the pixel that holds the next HPC is at ceil(trueY - 0.5)
         // Since y1 and y2 are biased by -0.5 in tosubpixy(), this is simply
