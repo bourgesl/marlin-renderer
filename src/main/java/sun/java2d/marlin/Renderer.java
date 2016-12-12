@@ -581,10 +581,12 @@ final class Renderer implements PathConsumer2D, MarlinConst {
         this.boundsMaxY =
             (pix_boundsY + pix_boundsHeight) << SUBPIXEL_LG_POSITIONS_Y;
 
-        this.fBoundsMinX = boundsMinX - 0.5f;
-        this.fBoundsMinY = boundsMinY;
-        this.fBoundsMaxX = boundsMaxX - 0.5f;
-        this.fBoundsMaxY = boundsMaxY;
+        if (CLIP_CURVE) {
+            this.fBoundsMinX = boundsMinX - 0.5f;
+            this.fBoundsMinY = boundsMinY;
+            this.fBoundsMaxX = boundsMaxX - 0.5f;
+            this.fBoundsMaxY = boundsMaxY;
+        }
 
         if (DO_LOG_BOUNDS) {
             MarlinUtils.logInfo("boundsXY = [" + boundsMinX + " ... "
