@@ -251,7 +251,6 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
     private int firstSegidx;
 
     // precondition: pts must be in relative coordinates (relative to x0,y0)
-    // fullCurve is true iff the curve in pts has not been split.
     private void goTo(float[] pts, int off, final int type) {
         float x = pts[off + type - 4];
         float y = pts[off + type - 3];
@@ -569,7 +568,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
                 // gives us the desired length.
                 final float[] _flatLeafCoefCache = flatLeafCoefCache;
 
-                if (_flatLeafCoefCache[2] < 0) {
+                if (_flatLeafCoefCache[2] < 0f) {
                     float x = 0f + curLeafCtrlPolyLengths[0],
                           y = x  + curLeafCtrlPolyLengths[1];
                     if (curveType == 8) {
@@ -593,7 +592,7 @@ final class Dasher implements sun.awt.geom.PathConsumer2D, MarlinConst {
                 // we use cubicRootsInAB here, because we want only roots in 0, 1,
                 // and our quadratic root finder doesn't filter, so it's just a
                 // matter of convenience.
-                int n = Helpers.cubicRootsInAB(a, b, c, d, nextRoots, 0, 0, 1);
+                int n = Helpers.cubicRootsInAB(a, b, c, d, nextRoots, 0, 0f, 1f);
                 if (n == 1 && !Float.isNaN(nextRoots[0])) {
                     t = nextRoots[0];
                 }
