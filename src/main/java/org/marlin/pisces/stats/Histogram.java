@@ -22,8 +22,8 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces.stats;
 
+package org.marlin.pisces.stats;
 
 /**
  * Generic histogram based on long statistics
