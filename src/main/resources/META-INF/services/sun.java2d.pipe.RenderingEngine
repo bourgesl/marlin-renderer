@@ -1,3 +1,4 @@
 #  Pisces Rendering Engine module
 org.marlin.pisces.PiscesRenderingEngine
 org.marlin.pisces.MarlinRenderingEngine
+org.marlin.pisces.DMarlinRenderingEngine

@@ -46,18 +46,18 @@ import org.marlin.pisces.ArrayCacheConst.CacheStats;
 // % sed -e 's/(b\yte)[ ]*//g' -e 's/b\yte/int/g' -e 's/B\yte/Int/g' < B\yteArrayCache.java > IntArrayCache.java
 // % sed -e 's/(b\yte)[ ]*/(float) /g' -e 's/b\yte/float/g' -e 's/B\yte/Float/g' < B\yteArrayCache.java > FloatArrayCache.java
 
-final class ByteArrayCache implements MarlinConst {
+final class DoubleArrayCache implements MarlinConst {
 
     final boolean clean;
     private final int bucketCapacity;
     private WeakReference<Bucket[]> refBuckets = null;
     final CacheStats stats;
 
-    ByteArrayCache(final boolean clean, final int bucketCapacity) {
+    DoubleArrayCache(final boolean clean, final int bucketCapacity) {
         this.clean = clean;
         this.bucketCapacity = bucketCapacity;
         this.stats = (DO_STATS) ?
-            new CacheStats(getLogPrefix(clean) + "ByteArrayCache") : null;
+            new CacheStats(getLogPrefix(clean) + "DoubleArrayCache") : null;
     }
 
     Bucket getCacheBucket(final int length) {
@@ -91,11 +91,11 @@ final class ByteArrayCache implements MarlinConst {
     static final class Reference {
 
         // initial array reference (direct access)
-        final byte[] initial;
+        final double[] initial;
         private final boolean clean;
-        private final ByteArrayCache cache;
+        private final DoubleArrayCache cache;
 
-        Reference(final ByteArrayCache cache, final int initialSize) {
+        Reference(final DoubleArrayCache cache, final int initialSize) {
             this.cache = cache;
             this.clean = cache.clean;
             this.initial = createArray(initialSize, clean);
@@ -104,7 +104,7 @@ final class ByteArrayCache implements MarlinConst {
             }
         }
 
-        byte[] getArray(final int length) {
+        double[] getArray(final int length) {
             if (length <= MAX_ARRAY_SIZE) {
                 return cache.getCacheBucket(length).getArray();
             }
@@ -112,13 +112,13 @@ final class ByteArrayCache implements MarlinConst {
                 cache.stats.oversize++;
             }
             if (DO_LOG_OVERSIZE) {
-                logInfo(getLogPrefix(clean) + "ByteArrayCache: "
+                logInfo(getLogPrefix(clean) + "DoubleArrayCache: "
                         + "getArray[oversize]: length=\t" + length);
             }
             return createArray(length, clean);
         }
 
-        byte[] widenArray(final byte[] array, final int usedSize,
+        double[] widenArray(final double[] array, final int usedSize,
                           final int needSize)
         {
             final int length = array.length;
@@ -131,7 +131,7 @@ final class ByteArrayCache implements MarlinConst {
 
             // maybe change bucket:
             // ensure getNewSize() > newSize:
-            final byte[] res = getArray(ArrayCacheConst.getNewSize(usedSize, needSize));
+            final double[] res = getArray(ArrayCacheConst.getNewSize(usedSize, needSize));
 
             // use wrapper to ensure proper copy:
             System.arraycopy(array, 0, res, 0, usedSize); // copy only used elements
@@ -140,7 +140,7 @@ final class ByteArrayCache implements MarlinConst {
             putArray(array, 0, usedSize); // ensure array is cleared
 
             if (DO_LOG_WIDEN_ARRAY) {
-                logInfo(getLogPrefix(clean) + "ByteArrayCache: "
+                logInfo(getLogPrefix(clean) + "DoubleArrayCache: "
                         + "widenArray[" + res.length
                         + "]: usedSize=\t" + usedSize + "\tlength=\t" + length
                         + "\tneeded length=\t" + needSize);
@@ -148,19 +148,19 @@ final class ByteArrayCache implements MarlinConst {
             return res;
         }
 
-        byte[] putArray(final byte[] array)
+        double[] putArray(final double[] array)
         {
             // dirty array helper:
             return putArray(array, 0, array.length);
         }
 
-        byte[] putArray(final byte[] array, final int fromIndex,
+        double[] putArray(final double[] array, final int fromIndex,
                         final int toIndex)
         {
             if (array.length <= MAX_ARRAY_SIZE) {
                 if ((clean || DO_CLEAN_DIRTY) && (toIndex != 0)) {
                     // clean-up array of dirty part[fromIndex; toIndex[
-                    fill(array, fromIndex, toIndex, (byte)0);
+                    fill(array, fromIndex, toIndex, 0.0d);
                 }
                 // ensure to never store initial arrays in cache:
                 if (array != initial) {
@@ -176,7 +176,7 @@ final class ByteArrayCache implements MarlinConst {
         private int tail = 0;
         private final int arraySize;
         private final boolean clean;
-        private final byte[][] arrays;
+        private final double[][] arrays;
         private final BucketStats stats;
 
         Bucket(final boolean clean, final int arraySize,
@@ -185,16 +185,16 @@ final class ByteArrayCache implements MarlinConst {
             this.arraySize = arraySize;
             this.clean = clean;
             this.stats = stats;
-            this.arrays = new byte[capacity][];
+            this.arrays = new double[capacity][];
         }
 
-        byte[] getArray() {
+        double[] getArray() {
             if (DO_STATS) {
                 stats.getOp++;
             }
             // use cache:
             if (tail != 0) {
-                final byte[] array = arrays[--tail];
+                final double[] array = arrays[--tail];
                 arrays[tail] = null;
                 return array;
             }
@@ -204,10 +204,10 @@ final class ByteArrayCache implements MarlinConst {
             return createArray(arraySize, clean);
         }
 
-        void putArray(final byte[] array)
+        void putArray(final double[] array)
         {
             if (DO_CHECKS && (array.length != arraySize)) {
-                logInfo(getLogPrefix(clean) + "ByteArrayCache: "
+                logInfo(getLogPrefix(clean) + "DoubleArrayCache: "
                         + "bad length = " + array.length);
                 return;
             }
@@ -222,22 +222,22 @@ final class ByteArrayCache implements MarlinConst {
                     stats.updateMaxSize(tail);
                 }
             } else if (DO_CHECKS) {
-                logInfo(getLogPrefix(clean) + "ByteArrayCache: "
+                logInfo(getLogPrefix(clean) + "DoubleArrayCache: "
                         + "array capacity exceeded !");
             }
         }
     }
 
-    static byte[] createArray(final int length, final boolean clean) {
+    static double[] createArray(final int length, final boolean clean) {
 //        if (clean) {
-            return new byte[length];
+            return new double[length];
 //        }
         // use JDK9 Unsafe.allocateUninitializedArray(class, length):
-//        return (byte[]) OffHeapArray.UNSAFE.allocateUninitializedArray(byte.class, length);
+//        return (double[]) OffHeapArray.UNSAFE.allocateUninitializedArray(double.class, length);
     }
 
-    static void fill(final byte[] array, final int fromIndex,
-                     final int toIndex, final byte value)
+    static void fill(final double[] array, final int fromIndex,
+                     final int toIndex, final double value)
     {
         // clear array data:
         Arrays.fill(array, fromIndex, toIndex, value);
@@ -246,8 +246,8 @@ final class ByteArrayCache implements MarlinConst {
         }
     }
 
-    static void check(final byte[] array, final int fromIndex,
-                      final int toIndex, final byte value)
+    static void check(final double[] array, final int fromIndex,
+                      final int toIndex, final double value)
     {
         if (DO_CHECKS) {
             // check zero on full array:

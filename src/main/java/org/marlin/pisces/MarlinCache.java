@@ -43,11 +43,9 @@ public final class MarlinCache implements MarlinConst {
     // values are stored as int [x|alpha] where alpha is 8 bits
     static final int RLE_MAX_WIDTH = 1 << (24 - 1);
 
-    private final static double GAMMA = MarlinProperties.getGamma();
-
     // 2048 (pixelSize) alpha values (width) x 32 rows (tile) = 64K bytes
     // x1 instead of 4 bytes (RLE) ie 1/4 capacity or average good RLE compression
-    static final long INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM; // 64K
+    static final long INITIAL_CHUNK_ARRAY = TILE_H * INITIAL_PIXEL_DIM; // 64K
 
     // The alpha map used by this object (taken out of our map cache) to convert
     // pixel coverage counts gotten from MarlinCache (which are in the range
@@ -74,17 +72,17 @@ public final class MarlinCache implements MarlinConst {
 
     // 1D dirty arrays
     // row index in rowAAChunk[]
-    final long[] rowAAChunkIndex = new long[TILE_SIZE];
+    final long[] rowAAChunkIndex = new long[TILE_H];
     // first pixel (inclusive) for each row
-    final int[] rowAAx0 = new int[TILE_SIZE];
+    final int[] rowAAx0 = new int[TILE_H];
     // last pixel (exclusive) for each row
-    final int[] rowAAx1 = new int[TILE_SIZE];
+    final int[] rowAAx1 = new int[TILE_H];
     // encoding mode (0=raw, 1=RLE encoding) for each row
-    final int[] rowAAEnc = new int[TILE_SIZE];
+    final int[] rowAAEnc = new int[TILE_H];
     // coded length (RLE encoding) for each row
-    final long[] rowAALen = new long[TILE_SIZE];
+    final long[] rowAALen = new long[TILE_H];
     // last position in RLE decoding for each row (getAlpha):
-    final long[] rowAAPos = new long[TILE_SIZE];
+    final long[] rowAAPos = new long[TILE_H];
 
     // dirty off-heap array containing pixel coverages for (32) rows (packed)
     // if encoding=raw, it contains alpha coverage values (val) as integer
@@ -99,8 +97,8 @@ public final class MarlinCache implements MarlinConst {
     // x=j*TILE_SIZE+bboxX0.
     int[] touchedTile;
 
-    // per-thread renderer context
-    final RendererContext rdrCtx;
+    // per-thread renderer stats
+    final RendererStats rdrStats;
 
     // touchedTile ref (clean)
     private final IntArrayCache.Reference touchedTile_ref;
@@ -109,8 +107,8 @@ public final class MarlinCache implements MarlinConst {
 
     boolean useRLE = false;
 
-    MarlinCache(final RendererContext rdrCtx) {
-        this.rdrCtx = rdrCtx;
+    MarlinCache(final IRendererContext rdrCtx) {
+        this.rdrStats = rdrCtx.stats();
 
         rowAAChunk = rdrCtx.newOffHeapArray(INITIAL_CHUNK_ARRAY); // 64K
 
@@ -149,11 +147,11 @@ public final class MarlinCache implements MarlinConst {
         }
 
         // the ceiling of (maxy - miny + 1) / TILE_SIZE;
-        final int nxTiles = (width + TILE_SIZE) >> TILE_SIZE_LG;
+        final int nxTiles = (width + TILE_W) >> TILE_W_LG;
 
         if (nxTiles > INITIAL_ARRAY) {
             if (DO_STATS) {
-                rdrCtx.stats.stat_array_marlincache_touchedTile.add(nxTiles);
+                rdrStats.stat_array_marlincache_touchedTile.add(nxTiles);
             }
             touchedTile = touchedTile_ref.getArray(nxTiles);
         }
@@ -168,7 +166,7 @@ public final class MarlinCache implements MarlinConst {
         resetTileLine(0);
 
         if (DO_STATS) {
-            rdrCtx.stats.totalOffHeap += rowAAChunk.length;
+            rdrStats.totalOffHeap += rowAAChunk.length;
         }
 
         // Return arrays:
@@ -191,14 +189,14 @@ public final class MarlinCache implements MarlinConst {
 
         // reset current pos
         if (DO_STATS) {
-            rdrCtx.stats.stat_cache_rowAAChunk.add(rowAAChunkPos);
+            rdrStats.stat_cache_rowAAChunk.add(rowAAChunkPos);
         }
         rowAAChunkPos = 0L;
 
         // Reset touchedTile:
         if (tileMin != Integer.MAX_VALUE) {
             if (DO_STATS) {
-                rdrCtx.stats.stat_cache_tiles.add(tileMax - tileMin);
+                rdrStats.stat_cache_tiles.add(tileMax - tileMin);
             }
             // clean only dirty touchedTile:
             if (tileMax == 1) {
@@ -275,12 +273,12 @@ public final class MarlinCache implements MarlinConst {
             expandRowAAChunk(needSize);
         }
         if (DO_STATS) {
-            rdrCtx.stats.stat_cache_rowAA.add(px_bbox1 - px0);
+            rdrStats.stat_cache_rowAA.add(px_bbox1 - px0);
         }
 
         // rowAA contains only alpha values for range[x0; x1[
         final int[] _touchedTile = touchedTile;
-        final int _TILE_SIZE_LG = TILE_SIZE_LG;
+        final int _TILE_SIZE_LG = TILE_W_LG;
 
         final int from = px0      - bboxX0; // first pixel inclusive
         final int to   = px_bbox1 - bboxX0; //  last pixel exclusive
@@ -377,7 +375,7 @@ public final class MarlinCache implements MarlinConst {
         long addr_off = _rowAAChunk.address + initialPos;
 
         final int[] _touchedTile = touchedTile;
-        final int _TILE_SIZE_LG = TILE_SIZE_LG;
+        final int _TILE_SIZE_LG = TILE_W_LG;
         final int _BLK_SIZE_LG  = BLOCK_SIZE_LG;
 
         // traverse flagged blocks:
@@ -454,7 +452,7 @@ public final class MarlinCache implements MarlinConst {
                             addr_off += SIZE_INT;
 
                             if (DO_STATS) {
-                                rdrCtx.stats.hist_tile_generator_encoding_runLen
+                                rdrStats.hist_tile_generator_encoding_runLen
                                     .add(runLen);
                             }
                             cx0 = cx;
@@ -517,7 +515,7 @@ public final class MarlinCache implements MarlinConst {
         addr_off += SIZE_INT;
 
         if (DO_STATS) {
-            rdrCtx.stats.hist_tile_generator_encoding_runLen.add(runLen);
+            rdrStats.hist_tile_generator_encoding_runLen.add(runLen);
         }
 
         long len = (addr_off - _rowAAChunk.address);
@@ -529,8 +527,8 @@ public final class MarlinCache implements MarlinConst {
         rowAAChunkPos = len;
 
         if (DO_STATS) {
-            rdrCtx.stats.stat_cache_rowAA.add(rowAALen[row]);
-            rdrCtx.stats.hist_tile_generator_encoding_ratio.add(
+            rdrStats.stat_cache_rowAA.add(rowAALen[row]);
+            rdrStats.hist_tile_generator_encoding_ratio.add(
                 (100 * skip) / (blkE - blkW)
             );
         }
@@ -567,7 +565,7 @@ public final class MarlinCache implements MarlinConst {
 
     private void expandRowAAChunk(final long needSize) {
         if (DO_STATS) {
-            rdrCtx.stats.stat_array_marlincache_rowAAChunk.add(needSize);
+            rdrStats.stat_array_marlincache_rowAAChunk.add(needSize);
         }
 
         // note: throw IOOB if neededSize > 2Gb:
@@ -583,7 +581,7 @@ public final class MarlinCache implements MarlinConst {
     {
         // the x and y of the current row, minus bboxX0, bboxY0
         // process tile line [0 - 32]
-        final int _TILE_SIZE_LG = TILE_SIZE_LG;
+        final int _TILE_SIZE_LG = TILE_W_LG;
 
         // update touchedTile
         int tx = (x0 >> _TILE_SIZE_LG);
@@ -620,7 +618,7 @@ public final class MarlinCache implements MarlinConst {
     }
 
     int alphaSumInTile(final int x) {
-        return touchedTile[(x - bboxX0) >> TILE_SIZE_LG];
+        return touchedTile[(x - bboxX0) >> TILE_W_LG];
     }
 
     @Override
@@ -639,17 +637,6 @@ public final class MarlinCache implements MarlinConst {
 //            System.out.println("alphaMap[" + i + "] = "
 //                               + Byte.toUnsignedInt(alMap[i]));
         }
-        if (GAMMA != 1.0) {
-//            System.out.println("alphaMap[gamma = " + GAMMA + "]");
-            final double invGamma = 1.0 / GAMMA;
-            final double max = (double)maxalpha;
-
-            for (int i = 0; i <= maxalpha; i++) {
-                alMap[i] = (byte) (0xFF * Math.pow(i / max, invGamma));
-//                System.out.println("alphaMap[" + i + "] = " + PiscesUtils.toUnsignedInt(alMap[i]) + " :: "+Math.pow(i / (double)maxalpha, 1d / GAMMA));
-            }
-        }
-
         return alMap;
     }
 }

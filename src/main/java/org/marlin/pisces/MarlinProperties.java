@@ -95,6 +95,10 @@ public final class MarlinProperties {
         return getInteger("sun.java2d.renderer.tileSize_log2", 5, 3, 8);
     }
 
+    public static int getTileWidth_Log2() {
+        return getInteger("sun.java2d.renderer.tileWidth_log2", 5, 3, 10);
+    }
+
     /**
      * Return the log(2) corresponding to the block size in pixels
      *
@@ -172,8 +176,16 @@ public final class MarlinProperties {
 
     // quality settings
 
-    public static double getGamma() {
-        return getDouble("sun.java2d.renderer.gamma", 1.0, 0.5, 4.0);
+    public static float getCubicDecD2() {
+        return getFloat("sun.java2d.renderer.cubic_dec_d2", 1.0, 0.01, 4.0);
+    }
+
+    public static float getCubicIncD1() {
+        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.4, 0.01, 2.0);
+    }
+
+    public static float getQuadDecD2() {
+        return getFloat("sun.java2d.renderer.quad_dec_d2", 0.5, 0.01, 4.0);
     }
 
     // system property utilities
@@ -232,5 +244,11 @@ public final class MarlinProperties {
             value = def;
         }
         return value;
+    }
+
+    public static float getFloat(final String key, final double def,
+                                 final double min, final double max)
+    {
+        return (float)getDouble(key, def, min, max);
     }
 }
