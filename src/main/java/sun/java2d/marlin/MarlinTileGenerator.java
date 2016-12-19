@@ -43,23 +43,34 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         if (MAX_TILE_ALPHA_SUM <= 0) {
             throw new IllegalStateException("Invalid MAX_TILE_ALPHA_SUM: " + MAX_TILE_ALPHA_SUM);
         }
-        System.out.println("MAX_AA_ALPHA  : "+MAX_AA_ALPHA);
-        System.out.println("TH_AA_ALPHA_00: "+TH_AA_ALPHA_00);
-        System.out.println("TH_AA_ALPHA_FF: "+TH_AA_ALPHA_FF);
-        System.out.println("FILL_TILE_W: "+FILL_TILE_W);
+        if (DO_TRACE) {
+            System.out.println("MAX_AA_ALPHA   : " + MAX_AA_ALPHA);
+            System.out.println("TH_AA_ALPHA_00 : " + TH_AA_ALPHA_00);
+            System.out.println("TH_AA_ALPHA_FF : " + TH_AA_ALPHA_FF);
+            System.out.println("FILL_TILE_W    : " + FILL_TILE_W);
+        }
     }
 
-    private final Renderer rdr;
+    private final Renderer rdrF;
+    private final DRenderer rdrD;
     private final MarlinCache cache;
     private int x, y;
 
-    // per-thread renderer context
-    final RendererContext rdrCtx;
+    // per-thread renderer stats
+    final RendererStats rdrStats;
 
-    MarlinTileGenerator(Renderer r) {
-        this.rdr = r;
-        this.cache = r.cache;
-        this.rdrCtx = r.rdrCtx;
+    MarlinTileGenerator(final RendererStats stats, final MarlinRenderer r, 
+                        final MarlinCache cache)
+    {
+        this.rdrStats = stats;
+        if (r instanceof Renderer) {
+            this.rdrF = (Renderer)r;
+            this.rdrD = null;
+        } else {
+            this.rdrF = null;
+            this.rdrD = (DRenderer)r;
+        }
+        this.cache = cache;
     }
 
     MarlinTileGenerator init() {
@@ -77,14 +88,17 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
     public void dispose() {
         if (DO_MONITORS) {
             // called from AAShapePipe.renderTiles() (render tiles end):
-            rdrCtx.stats.mon_pipe_renderTiles.stop();
+            rdrStats.mon_pipe_renderTiles.stop();
         }
         // dispose cache:
         cache.dispose();
-        // dispose renderer:
-        rdr.dispose();
-        // recycle the RendererContext instance
-        MarlinRenderingEngine.returnRendererContext(rdrCtx);
+        // dispose renderer and recycle the RendererContext instance:
+        // bimorphic call optimization:
+        if (rdrF != null) {
+            rdrF.dispose();
+        } else if (rdrD != null) {
+            rdrD.dispose();
+        }
     }
 
     void getBbox(int[] bbox) {
@@ -102,7 +116,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
     public int getTileWidth() {
         if (DO_MONITORS) {
             // called from AAShapePipe.renderTiles() (render tiles start):
-            rdrCtx.stats.mon_pipe_renderTiles.start();
+            rdrStats.mon_pipe_renderTiles.start();
         }
         return TILE_W;
     }
@@ -147,7 +161,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         final int alpha = (al == 0x00 ? 0x00
                               : (al == MAX_TILE_ALPHA_SUM ? 0xff : 0x80));
         if (DO_STATS) {
-            rdrCtx.stats.hist_tile_generator_alpha.add(alpha);
+            rdrStats.hist_tile_generator_alpha.add(alpha);
         }
         return alpha;
     }
@@ -166,7 +180,12 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
             if (y < cache.bboxY1) {
                 // compute for the tile line
                 // [ y; max(y + TILE_SIZE, bboxY1) ]
-                this.rdr.endRendering(y);
+                // bimorphic call optimization:
+                if (rdrF != null) {
+                    rdrF.endRendering(y);
+                } else if (rdrD != null) {
+                    rdrD.endRendering(y);
+                }
             }
         }
     }
@@ -196,7 +215,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
                                final int rowstride)
     {
         if (DO_MONITORS) {
-            rdrCtx.stats.mon_ptg_getAlpha.start();
+            rdrStats.mon_ptg_getAlpha.start();
         }
 
         // local vars for performance:
@@ -285,7 +304,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         nextTile();
 
         if (DO_MONITORS) {
-            rdrCtx.stats.mon_ptg_getAlpha.stop();
+            rdrStats.mon_ptg_getAlpha.stop();
         }
     }
 
@@ -298,7 +317,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
                              final int rowstride)
     {
         if (DO_MONITORS) {
-            rdrCtx.stats.mon_ptg_getAlpha.start();
+            rdrStats.mon_ptg_getAlpha.start();
         }
 
         // Decode run-length encoded alpha mask data
@@ -774,7 +793,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
         nextTile();
 
         if (DO_MONITORS) {
-            rdrCtx.stats.mon_ptg_getAlpha.stop();
+            rdrStats.mon_ptg_getAlpha.stop();
         }
     }
 

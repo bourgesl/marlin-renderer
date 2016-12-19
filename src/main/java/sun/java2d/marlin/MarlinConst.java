@@ -114,8 +114,8 @@ interface MarlinConst {
     public static final int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
 
     public static final float NORM_SUBPIXELS
-        = (float)Math.sqrt(( SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_X
-                           + SUBPIXEL_POSITIONS_Y * SUBPIXEL_POSITIONS_Y)/2.0);
+        = (float) Math.sqrt(( SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_X
+                           + SUBPIXEL_POSITIONS_Y * SUBPIXEL_POSITIONS_Y) / 2.0d);
 
     public static final int MAX_AA_ALPHA
         = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;

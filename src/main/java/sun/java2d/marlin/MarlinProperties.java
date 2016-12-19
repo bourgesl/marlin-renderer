@@ -174,6 +174,20 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.logUnsafeMalloc", "false");
     }
 
+    // quality settings
+
+    public static float getCubicDecD2() {
+        return getFloat("sun.java2d.renderer.cubic_dec_d2", 1.0, 0.01, 4.0);
+    }
+
+    public static float getCubicIncD1() {
+        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.4, 0.01, 2.0);
+    }
+
+    public static float getQuadDecD2() {
+        return getFloat("sun.java2d.renderer.quad_dec_d2", 0.5, 0.01, 4.0);
+    }
+
     // system property utilities
     static boolean getBoolean(final String key, final String def) {
         return Boolean.valueOf(AccessController.doPrivileged(
@@ -207,5 +221,34 @@ public final class MarlinProperties {
     static int align(final int val, final int norm) {
         final int ceil = FloatMath.ceil_int( ((float)val) / norm);
         return ceil * norm;
+    }
+
+    public static double getDouble(final String key, final double def,
+                                   final double min, final double max)
+    {
+        double value = def;
+        final String property = AccessController.doPrivileged(
+                                    new GetPropertyAction(key));
+
+        if (property != null) {
+            try {
+                value = Double.parseDouble(property);
+            } catch (NumberFormatException nfe) {
+                logInfo("Invalid value for " + key + " = " + property + " !");
+            }
+        }
+        // check for invalid values
+        if (value < min || value > max) {
+            logInfo("Invalid value for " + key + " = " + value
+                    + "; expect value in range[" + min + ", " + max + "] !");
+            value = def;
+        }
+        return value;
+    }
+
+    public static float getFloat(final String key, final double def,
+                                 final double min, final double max)
+    {
+        return (float)getDouble(key, def, min, max);
     }
 }
