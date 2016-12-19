@@ -27,7 +27,6 @@ package org.marlin.pisces;
 
 import java.util.Arrays;
 
-
 /**
  * The <code>DDasher</code> class takes a series of linear commands
  * (<code>moveTo</code>, <code>lineTo</code>, <code>close</code> and

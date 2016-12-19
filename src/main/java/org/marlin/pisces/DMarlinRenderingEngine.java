@@ -32,7 +32,6 @@ import java.awt.geom.PathIterator;
 import java.security.AccessController;
 import org.marlin.geom.Path2D;
 import static org.marlin.pisces.MarlinUtils.logInfo;
-
 import org.marlin.ReentrantContextProvider;
 import org.marlin.ReentrantContextProviderCLQ;
 import org.marlin.ReentrantContextProviderTL;

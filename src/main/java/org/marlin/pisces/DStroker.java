@@ -27,8 +27,6 @@ package org.marlin.pisces;
 
 import java.util.Arrays;
 
-
-
 // TODO: some of the arithmetic here is too verbose and prone to hard to
 // debug typos. We should consider making a small Point/Vector class that
 // has methods like plus(Point), minus(Point), dot(Point), cross(Point)and such
