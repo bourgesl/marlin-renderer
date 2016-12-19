@@ -262,7 +262,6 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
         while (count > 0) {
             // divide step by half:
             while (Math.abs(ddx) + Math.abs(ddy) >= _DEC_BND) {
-//            while (Math.abs(ddx) >= _DEC_BND || Math.abs(ddy) >= _DEC_BND) {
                 dddx /= 8.0f;
                 dddy /= 8.0f;
                 ddx = ddx / 4.0f - dddx;
@@ -279,7 +278,6 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
             // double step:
             // can only do this on even "count" values, because we must divide count by 2
             while (count % 2 == 0
-//                    && Math.abs(dx) <= _INC_BND && Math.abs(dy) <= _INC_BND)
                    && Math.abs(dx) + Math.abs(dy) <= _INC_BND)
             {
                 dx = 2.0f * dx + ddx;
@@ -621,7 +619,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     /**
      * Disposes this renderer and recycle it clean up before reusing this instance
      */
-    public void dispose() {
+    void dispose() {
         if (DO_STATS) {
             rdrCtx.stats.stat_rdr_activeEdges.add(activeEdgeMaxUsed);
             rdrCtx.stats.stat_rdr_edges.add(edges.used);
