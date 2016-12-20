@@ -81,6 +81,11 @@ public class RunJUnitTest {
     }
 
     @Test
+    public void blockFlagTest() {
+        BlockFlagTest.main(NO_ARGS);
+    }
+
+    @Test
     public void CeilAndFloorTest() {
         CeilAndFloorTests.main(NO_ARGS);
     }
