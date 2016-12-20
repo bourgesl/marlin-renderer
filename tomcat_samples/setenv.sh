@@ -12,7 +12,7 @@ USE_TL=false
 SIZE=2048
 #SIZE=8192
 
-export CATALINA_OPTS="-Xbootclasspath/a:$MARLIN_PATH/marlin-0.5A-Unsafe.jar -Dsun.java2d.renderer.useThreadLocal=$USE_TL -Dsun.java2d.renderer.pixelsize=$SIZE -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine"
+export CATALINA_OPTS="-Xbootclasspath/a:$MARLIN_PATH/marlin-0.7.5-Unsafe.jar -Dsun.java2d.renderer.useThreadLocal=$USE_TL -Dsun.java2d.renderer.pixelsize=$SIZE -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine"
 
 # Display java version
 java -version

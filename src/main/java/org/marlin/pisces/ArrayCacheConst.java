@@ -242,6 +242,8 @@ public final class ArrayCacheConst implements MarlinConst {
             int factor = 1;
             if (name.contains("Int") || name.contains("Float")) {
                 factor = 4;
+            } else if (name.contains("Double")) {
+                factor = 8;
             }
             return factor;
         }

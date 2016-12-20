@@ -29,9 +29,9 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import sun.awt.SunHints;
-import sun.java2d.ReentrantContext;
-import sun.java2d.ReentrantContextProvider;
-import sun.java2d.ReentrantContextProviderTL;
+import org.marlin.ReentrantContext;
+import org.marlin.ReentrantContextProvider;
+import org.marlin.ReentrantContextProviderTL;
 import sun.java2d.SunGraphics2D;
 
 /**

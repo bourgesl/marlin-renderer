@@ -32,11 +32,6 @@ package org.marlin.pisces;
  */
 final class MergeSort {
 
-    /** true to enable array data collection and serialization */
-    public static final boolean DO_COLLECT_ARRAY_DATA = (false) && MarlinConst.DO_STATS;
-
-    // 14 MapBench better results
-    // 20 MapSortTest better average results on 9000 arrays !
     // insertion sort threshold
     public static final int INSERTION_SORT_THRESHOLD = 14;
 

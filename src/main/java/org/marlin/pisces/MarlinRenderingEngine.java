@@ -44,8 +44,8 @@ import sun.security.action.GetPropertyAction;
 /**
  * Marlin RendererEngine implementation (derived from Pisces)
  */
-public class MarlinRenderingEngine extends RenderingEngine
-                                   implements MarlinConst
+public final class MarlinRenderingEngine extends RenderingEngine
+                                         implements MarlinConst
 {
     private static enum NormMode {
         ON_WITH_AA {
