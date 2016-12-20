@@ -81,6 +81,11 @@ public class RunJUnitTest {
     }
 
     @Test
+    public void blockFlagTest() {
+        BlockFlagTest.main(NO_ARGS);
+    }
+
+    @Test
     public void imageWriterCompressionTest() {
         ImageWriterCompressionTest.main(NO_ARGS);
     }
