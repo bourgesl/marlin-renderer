@@ -104,7 +104,8 @@
                     <!-- Skip the default running of this plug-in -->
                     <skip>true</skip>
                     <!--
-                    Marlin: -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
+                    MarlinF: -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
+                    MarlinD: -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
                     Pisces: -Dsun.java2d.renderer=sun.java2d.pisces.PiscesRenderingEngine
 
                     CrashTest may need large heap: -Xms4g -Xmx4g
