@@ -875,14 +875,14 @@ public class MarlinRenderingEngine extends RenderingEngine
     private static final boolean USE_THREAD_LOCAL;
 
     // hard reference
-    final static int REF_HARD = 0;
+    protected final static int REF_HARD = 0;
     // soft reference
-    final static int REF_SOFT = 1;
+    protected final static int REF_SOFT = 1;
     // weak reference
-    final static int REF_WEAK = 2;
+    protected final static int REF_WEAK = 2;
 
     // reference type stored in either TL or CLQ
-    static final int REF_TYPE;
+    protected static final int REF_TYPE;
 
     // Per-thread RendererContext
     private static final ThreadLocal<Object> rdrCtxThreadLocal;

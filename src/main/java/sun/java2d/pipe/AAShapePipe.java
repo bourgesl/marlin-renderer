@@ -41,7 +41,7 @@ import sun.java2d.SunGraphics2D;
 public class AAShapePipe
     implements ShapeDrawPipe, ParallelogramPipe
 {
-    static RenderingEngine renderengine = RenderingEngine.getInstance();
+    private static RenderingEngine renderengine = RenderingEngine.getInstance();
 
     // Per-thread TileState (~1K very small so do not use any Weak Reference)
     private static final ThreadLocal<TileState> tileStateThreadLocal =
@@ -52,7 +52,7 @@ public class AAShapePipe
         }
     };
 
-    CompositePipe outpipe;
+    private CompositePipe outpipe;
 
     public AAShapePipe(CompositePipe pipe) {
         outpipe = pipe;
@@ -198,7 +198,7 @@ public class AAShapePipe
         // cached tile (32 x 32 tile by default)
         private byte[] theTile = new byte[32 * 32];
         // dirty aabox array
-        final int[] abox = new int[4];
+        private final int[] abox = new int[4];
         // dirty bbox rectangle
         private final Rectangle dev = new Rectangle();
         // dirty bbox rectangle2D.Double

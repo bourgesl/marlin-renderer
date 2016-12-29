@@ -36,43 +36,43 @@ public final class MarlinCache implements MarlinConst {
     private final static double GAMMA = MarlinProperties.getGamma();
 
     // 2048 (pixelSize) alpha values (width) x 32 rows (tile) = 64K
-    static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
+    private static final int INITIAL_CHUNK_ARRAY = TILE_SIZE * INITIAL_PIXEL_DIM;
 
     // The alpha map used by this object (taken out of our map cache) to convert
     // pixel coverage counts gotten from MarlinCache (which are in the range
     // [0, maxalpha]) into alpha values, which are in [0,256).
-    final static byte[] ALPHA_MAP = buildAlphaMap(MAX_AA_ALPHA);
+    private final static byte[] ALPHA_MAP = buildAlphaMap(MAX_AA_ALPHA);
 
-    int bboxX0, bboxY0, bboxX1, bboxY1;
+    protected int bboxX0, bboxY0, bboxX1, bboxY1;
 
     // 1D dirty arrays
     // row index in rowAAChunk[]
-    final int[] rowAAChunkIndex = new int[TILE_SIZE];
+    protected final int[] rowAAChunkIndex = new int[TILE_SIZE];
     // first pixel (inclusive) for each row
-    final int[] rowAAx0 = new int[TILE_SIZE];
+    protected final int[] rowAAx0 = new int[TILE_SIZE];
     // last pixel (exclusive) for each row
-    final int[] rowAAx1 = new int[TILE_SIZE];
+    protected final int[] rowAAx1 = new int[TILE_SIZE];
 
     // 1D dirty array containing pixel coverages for (32) rows (packed)
     // use rowAAx0/rowAAx1 to get row indices within this byte chunk
-    byte[] rowAAChunk;
+    protected byte[] rowAAChunk;
     // current position in rowAAChunk array
-    int rowAAChunkPos;
+    private int rowAAChunkPos;
 
     // touchedTile[i] is the sum of all the alphas in the tile with
     // x=j*TILE_SIZE+bboxX0.
     private int[] touchedTile;
 
     // per-thread renderer context
-    final RendererContext rdrCtx;
+    private final RendererContext rdrCtx;
 
     // large cached rowAAChunk (dirty)
     // +1 to avoid recycling in widenDirtyIntArray()
-    final byte[] rowAAChunk_initial = new byte[INITIAL_CHUNK_ARRAY + 1]; // 64K
+    private final byte[] rowAAChunk_initial = new byte[INITIAL_CHUNK_ARRAY + 1]; // 64K
     // large cached touchedTile (dirty)
-    final int[] touchedTile_initial = new int[INITIAL_ARRAY]; // 1 tile line
+    private final int[] touchedTile_initial = new int[INITIAL_ARRAY]; // 1 tile line
 
-    int tileMin, tileMax;
+    private int tileMin, tileMax;
 
     MarlinCache(final RendererContext rdrCtx) {
         this.rdrCtx = rdrCtx;

@@ -29,17 +29,17 @@ import static org.marlin.pisces.MarlinUtils.logInfo;
 
 public final class ArrayCache implements MarlinConst {
 
-    final static int BUCKETS = 4;
-    final static int MIN_ARRAY_SIZE = 4096;
-    final static int MAX_ARRAY_SIZE;
-    final static int MASK_CLR_1 = ~1;
+    protected final static int BUCKETS = 4;
+    private final static int MIN_ARRAY_SIZE = 4096;
+    protected final static int MAX_ARRAY_SIZE;
+    private final static int MASK_CLR_1 = ~1;
     // threshold to grow arrays only by (3/2) instead of 2
-    final static int THRESHOLD_ARRAY_SIZE;
-    final static int[] ARRAY_SIZES = new int[BUCKETS];
+    private final static int THRESHOLD_ARRAY_SIZE;
+    protected final static int[] ARRAY_SIZES = new int[BUCKETS];
     // dirty byte array sizes
-    final static int MIN_DIRTY_BYTE_ARRAY_SIZE = 32 * 2048; // 32px x 2048px
-    final static int MAX_DIRTY_BYTE_ARRAY_SIZE;
-    final static int[] DIRTY_BYTE_ARRAY_SIZES = new int[BUCKETS];
+    private final static int MIN_DIRTY_BYTE_ARRAY_SIZE = 32 * 2048; // 32px x 2048px
+    protected final static int MAX_DIRTY_BYTE_ARRAY_SIZE;
+    protected final static int[] DIRTY_BYTE_ARRAY_SIZES = new int[BUCKETS];
     // stats
     private static int resizeInt = 0;
     private static int resizeDirtyInt = 0;

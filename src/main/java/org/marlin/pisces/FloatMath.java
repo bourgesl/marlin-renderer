@@ -33,8 +33,8 @@ import sun.misc.FloatConsts;
 public final class FloatMath implements MarlinConst {
 
     // overflow / NaN handling enabled:
-    static final boolean CHECK_OVERFLOW = true;
-    static final boolean CHECK_NAN = true;
+    private static final boolean CHECK_OVERFLOW = true;
+    private static final boolean CHECK_NAN = true;
 
     private FloatMath() {
         // utility class
