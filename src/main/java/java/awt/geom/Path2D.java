@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -272,6 +272,17 @@ public abstract class Path2D implements Shape, Cloneable {
                 this.pointTypes = new byte[INIT_SIZE];
                 this.floatCoords = new float[INIT_SIZE * 2];
                 append(pi, false);
+            }
+        }
+
+        @Override
+        public final void trimToSize() {
+            // trim arrays:
+            if (numTypes < pointTypes.length) {
+                this.pointTypes = Arrays.copyOf(pointTypes, numTypes);
+            }
+            if (numCoords < floatCoords.length) {
+                this.floatCoords = Arrays.copyOf(floatCoords, numCoords);
             }
         }
 
@@ -1141,6 +1152,17 @@ public abstract class Path2D implements Shape, Cloneable {
                 this.pointTypes = new byte[INIT_SIZE];
                 this.doubleCoords = new double[INIT_SIZE * 2];
                 append(pi, false);
+            }
+        }
+
+        @Override
+        public final void trimToSize() {
+            // trim arrays:
+            if (numTypes < pointTypes.length) {
+                this.pointTypes = Arrays.copyOf(pointTypes, numTypes);
+            }
+            if (numCoords < doubleCoords.length) {
+                this.doubleCoords = Arrays.copyOf(doubleCoords, numCoords);
             }
         }
 
@@ -2470,6 +2492,15 @@ public abstract class Path2D implements Shape, Cloneable {
         // compatibility so we cannot restrict it further.
         // REMIND: Can we do both somehow?
 
+    /**
+     * Trims the capacity of this Path2D instance to its current
+     * size. An application can use this operation to minimize the
+     * storage of a path.
+     *
+     * @since 10
+     */
+    public abstract void trimToSize();
+
     /*
      * Support fields and methods for serializing the subclasses.
      */
@@ -2675,7 +2706,7 @@ public abstract class Path2D implements Shape, Cloneable {
         }
     }
 
-    static abstract class Iterator implements PathIterator {
+    abstract static class Iterator implements PathIterator {
         int typeIdx;
         int pointIdx;
         Path2D path;
