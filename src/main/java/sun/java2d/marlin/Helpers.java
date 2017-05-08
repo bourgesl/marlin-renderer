@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -135,7 +135,7 @@ final class Helpers implements MarlinConst {
             pts[ off ] = (float) (u + v);
             num = 1;
 
-            if (within(D, 0.0, 1e-8d)) {
+            if (within(D, 0.0d, 1e-8d)) {
                 pts[off+1] = -(pts[off] / 2.0f);
                 num = 2;
             }

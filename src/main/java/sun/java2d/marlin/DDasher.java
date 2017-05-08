@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -510,7 +510,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                 // the test below is equivalent to !within(len1/len2, 1, err).
                 // It is using a multiplication instead of a division, so it
                 // should be a bit faster.
-                if (!DHelpers.within(len1, len2, err*len2)) {
+                if (!DHelpers.within(len1, len2, err * len2)) {
                     cachedHaveLowAcceleration = 0;
                     return false;
                 }
