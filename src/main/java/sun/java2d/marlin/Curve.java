@@ -235,4 +235,3 @@ final class Curve {
         return dx2dy2*((dx2dy2*dx2dy2) / (dx2dy2 * ddx2ddy2 - ddxdxddydy*ddxdxddydy));
     }
 }
-
