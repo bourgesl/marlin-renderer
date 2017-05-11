@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -118,20 +118,20 @@ final class DHelpers implements MarlinConst {
             final double phi = (1.0d/3.0d) * acos(-q / sqrt(-cb_p));
             final double t = 2.0d * sqrt(-p);
 
-            pts[ off+0 ] = ( t * cos(phi));
-            pts[ off+1 ] = (-t * cos(phi + (PI / 3.0d)));
-            pts[ off+2 ] = (-t * cos(phi - (PI / 3.0d)));
+            pts[off + 0] = ( t * cos(phi));
+            pts[off + 1] = (-t * cos(phi + (PI / 3.0d)));
+            pts[off + 2] = (-t * cos(phi - (PI / 3.0d)));
             num = 3;
         } else {
             final double sqrt_D = sqrt(D);
             final double u = cbrt(sqrt_D - q);
             final double v = - cbrt(sqrt_D + q);
 
-            pts[ off ] = (u + v);
+            pts[off    ] = (u + v);
             num = 1;
 
-            if (within(D, 0.0, 1e-8d)) {
-                pts[off+1] = -(pts[off] / 2.0d);
+            if (within(D, 0.0d, 1e-8d)) {
+                pts[off + 1] = -(pts[off] / 2.0d);
                 num = 2;
             }
         }
@@ -139,7 +139,7 @@ final class DHelpers implements MarlinConst {
         final double sub = (1.0d/3.0d) * a;
 
         for (int i = 0; i < num; ++i) {
-            pts[ off+i ] -= sub;
+            pts[off + i] -= sub;
         }
 
         return filterOutNotInAB(pts, off, num, A, B) - off;
@@ -213,8 +213,8 @@ final class DHelpers implements MarlinConst {
     }
 
     // Most of these are copied from classes in java.awt.geom because we need
-    // double versions of these functions, and Line2D, CubicCurve2D,
-    // QuadCurve2D don't provide them.
+    // both single and double precision variants of these functions, and Line2D, 
+    // CubicCurve2D, QuadCurve2D don't provide them.
     /**
      * Subdivides the cubic curve specified by the coordinates
      * stored in the <code>src</code> array at indices <code>srcoff</code>

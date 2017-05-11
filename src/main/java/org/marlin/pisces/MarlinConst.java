@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -115,7 +115,7 @@ interface MarlinConst {
 
     public static final float NORM_SUBPIXELS
         = (float) Math.sqrt(( SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_X
-                           + SUBPIXEL_POSITIONS_Y * SUBPIXEL_POSITIONS_Y) / 2.0d);
+                            + SUBPIXEL_POSITIONS_Y * SUBPIXEL_POSITIONS_Y) / 2.0d);
 
     public static final int MAX_AA_ALPHA
         = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;

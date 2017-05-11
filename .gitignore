@@ -1,4 +1,6 @@
 /*.png
+.idea/
+marlin.iml
 /target/
 /nbactions.xml
 /nb-configuration.xml

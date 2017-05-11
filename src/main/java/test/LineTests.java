@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import org.marlin.pisces.MarlinProperties;
-import org.marlin.pisces.MarlinRenderingEngine;
 import sun.java2d.pipe.RenderingEngine;
 
 /**
@@ -77,7 +76,7 @@ public class LineTests {
             final File file = new File("LinesTest-norm-subpix_lg_" + MarlinProperties.getSubPixel_Log2_X()
                     + "x" + MarlinProperties.getSubPixel_Log2_Y() + ".png");
 
-            System.out.println("Writing file: " + file.getAbsolutePath());;
+            System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
         } catch (IOException ex) {
             ex.printStackTrace();

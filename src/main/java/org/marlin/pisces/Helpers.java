@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -123,20 +123,20 @@ final class Helpers implements MarlinConst {
             final double phi = (1.0d/3.0d) * acos(-q / sqrt(-cb_p));
             final double t = 2.0d * sqrt(-p);
 
-            pts[ off+0 ] = (float) ( t * cos(phi));
-            pts[ off+1 ] = (float) (-t * cos(phi + (PI / 3.0d)));
-            pts[ off+2 ] = (float) (-t * cos(phi - (PI / 3.0d)));
+            pts[off + 0] = (float) ( t * cos(phi));
+            pts[off + 1] = (float) (-t * cos(phi + (PI / 3.0d)));
+            pts[off + 2] = (float) (-t * cos(phi - (PI / 3.0d)));
             num = 3;
         } else {
             final double sqrt_D = sqrt(D);
             final double u = cbrt(sqrt_D - q);
             final double v = - cbrt(sqrt_D + q);
 
-            pts[ off ] = (float) (u + v);
+            pts[off    ] = (float) (u + v);
             num = 1;
 
-            if (within(D, 0.0, 1e-8d)) {
-                pts[off+1] = -(pts[off] / 2.0f);
+            if (within(D, 0.0d, 1e-8d)) {
+                pts[off + 1] = -(pts[off] / 2.0f);
                 num = 2;
             }
         }
@@ -144,7 +144,7 @@ final class Helpers implements MarlinConst {
         final float sub = (1.0f/3.0f) * a;
 
         for (int i = 0; i < num; ++i) {
-            pts[ off+i ] -= sub;
+            pts[off + i] -= sub;
         }
 
         return filterOutNotInAB(pts, off, num, A, B) - off;

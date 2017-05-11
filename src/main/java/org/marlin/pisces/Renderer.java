@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,7 +41,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     private static final int ALL_BUT_LSB = 0xFFFFFFFE;
     private static final int ERR_STEP_MAX = 0x7FFFFFFF; // = 2^31 - 1
 
-    private static final double POWER_2_TO_32 = 0x1.0p32;
+    private static final double POWER_2_TO_32 = 0x1.0p32d;
 
     // use float to make tosubpix methods faster (no int to float conversion)
     static final float SUBPIXEL_SCALE_X = (float) SUBPIXEL_POSITIONS_X;
@@ -84,6 +84,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     private static final float CUB_INC_ERR_SUBPIX
         = MarlinProperties.getCubicIncD1() * (NORM_SUBPIXELS / 8.0f); // 0.4 pixel
 
+    // TestNonAARasterization (JDK-8170879): cubics
     // bad paths (59294/100000 == 59,29%, 94335 bad pixels (avg = 1,59), 3966 warnings (avg = 0,07)
 
     // cubic bind length to decrement step
@@ -113,6 +114,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     private static final float QUAD_DEC_ERR_SUBPIX
         = MarlinProperties.getQuadDecD2() * (NORM_SUBPIXELS / 8.0f); // 0.5 pixel
 
+    // TestNonAARasterization (JDK-8170879): quads
     // bad paths (62916/100000 == 62,92%, 103818 bad pixels (avg = 1,65), 6514 warnings (avg = 0,10)
 
     // quadratic bind length to decrement step
@@ -357,7 +359,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
             return;
         }
 
-        // edge min/max X/Y are in subpixel space (inclusive) within bounds:
+        // edge min/max X/Y are in subpixel space (half-open interval):
         // note: Use integer crossings to ensure consistent range within
         // edgeBuckets / edgeBucketCounts arrays in case of NaN values (int = 0)
         if (firstCrossing < edgeMinY) {
@@ -470,7 +472,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
         // pointer from bucket
         _unsafe.putInt(addr, _edgeBuckets[bucketIdx]);
         addr += SIZE_INT;
-        // y max (inclusive)
+        // y max (exclusive)
         _unsafe.putInt(addr,  lastCrossing);
 
         // Update buckets:

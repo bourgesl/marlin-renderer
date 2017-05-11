@@ -71,9 +71,7 @@ public class StatLong {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(128);
-        toString(sb);
-        return sb.toString();
+        return toString(new StringBuilder(128)).toString();
     }
 
     public final StringBuilder toString(final StringBuilder sb) {

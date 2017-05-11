@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -139,11 +139,7 @@ public final class MarlinCache implements MarlinConst {
             // ie number of primitives:
 
             // fast check min and max width (maxx < 23bits):
-            if (width <= RLE_MIN_WIDTH || width >= RLE_MAX_WIDTH) {
-                useRLE = false;
-            } else {
-                useRLE = true;
-            }
+            useRLE = (width > RLE_MIN_WIDTH && width < RLE_MAX_WIDTH);
         }
 
         // the ceiling of (maxy - miny + 1) / TILE_SIZE;
@@ -307,9 +303,9 @@ public final class MarlinCache implements MarlinConst {
 
             // store alpha sum (as byte):
             if (val == 0) {
-                _unsafe.putByte(addr_off, (byte)0); // [0..255]
+                _unsafe.putByte(addr_off, (byte)0); // [0-255]
             } else {
-                _unsafe.putByte(addr_off, _unsafe.getByte(addr_alpha + val)); // [0..255]
+                _unsafe.putByte(addr_off, _unsafe.getByte(addr_alpha + val)); // [0-255]
 
                 // update touchedTile
                 _touchedTile[x >> _TILE_SIZE_LG] += val;
@@ -440,7 +436,7 @@ public final class MarlinCache implements MarlinConst {
                             } else {
                                 _unsafe.putInt(addr_off,
                                     ((_bboxX0 + cx) << 8)
-                                    | (((int) _unsafe.getByte(addr_alpha + val)) & 0xFF) // [0..255]
+                                    | (((int) _unsafe.getByte(addr_alpha + val)) & 0xFF) // [0-255]
                                 );
 
                                 if (runLen == 1) {
@@ -503,7 +499,7 @@ public final class MarlinCache implements MarlinConst {
         } else {
             _unsafe.putInt(addr_off,
                 ((_bboxX0 + to) << 8)
-                | (((int) _unsafe.getByte(addr_alpha + val)) & 0xFF) // [0..255]
+                | (((int) _unsafe.getByte(addr_alpha + val)) & 0xFF) // [0-255]
             );
 
             if (runLen == 1) {

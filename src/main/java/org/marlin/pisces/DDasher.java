@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -419,7 +419,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     // tree; however, the trees we are interested in have the property that
     // every non leaf node has exactly 2 children
     static final class LengthIterator {
-        private enum Side {LEFT, RIGHT};
+        private enum Side {LEFT, RIGHT}
         // Holds the curves at various levels of the recursion. The root
         // (i.e. the original curve) is at recCurveStack[0] (but then it
         // gets subdivided, the left half is put at 1, so most of the time
@@ -510,7 +510,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                 // the test below is equivalent to !within(len1/len2, 1, err).
                 // It is using a multiplication instead of a division, so it
                 // should be a bit faster.
-                if (!DHelpers.within(len1, len2, err*len2)) {
+                if (!DHelpers.within(len1, len2, err * len2)) {
                     cachedHaveLowAcceleration = 0;
                     return false;
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -107,7 +107,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
     // This is where the curve to be processed is put. We give it
     // enough room to store all curves.
-    private final double[] middle = new double[MAX_N_CURVES * 8];
+    private final double[] middle = new double[MAX_N_CURVES * 6 + 2];
     private final double[] lp = new double[8];
     private final double[] rp = new double[8];
     private final double[] subdivTs = new double[MAX_N_CURVES - 1];
@@ -342,7 +342,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     }
 
     // Return the intersection point of the lines (x0, y0) -> (x1, y1)
-    // and (x0p, y0p) -> (x1p, y1p) in m[0] and m[1]
+    // and (x0p, y0p) -> (x1p, y1p) in m[off] and m[off+1]
     private static void computeMiter(final double x0, final double y0,
                                      final double x1, final double y1,
                                      final double x0p, final double y0p,
@@ -371,8 +371,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     }
 
     // Return the intersection point of the lines (x0, y0) -> (x1, y1)
-    // and (x0p, y0p) -> (x1p, y1p) in m[0] and m[1]
-    private static void safecomputeMiter(final double x0, final double y0,
+    // and (x0p, y0p) -> (x1p, y1p) in m[off] and m[off+1]
+    private static void safeComputeMiter(final double x0, final double y0,
                                          final double x1, final double y1,
                                          final double x0p, final double y0p,
                                          final double x1p, final double y1p,
@@ -675,7 +675,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     {
         // if p1=p2 or p3=p4 it means that the derivative at the endpoint
         // vanishes, which creates problems with computeOffset. Usually
-        // this happens when this stroker object is trying to winden
+        // this happens when this stroker object is trying to widen
         // a curve with a cusp. What happens is that curveTo splits
         // the input curve at the cusp, and passes it to this function.
         // because of inaccuracies in the splitting, we consider points
@@ -692,8 +692,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
         // in which case ignore if p1 == p2
-        final boolean p1eqp2 = within(x1,y1,x2,y2, 6.0d * Math.ulp(y2));
-        final boolean p3eqp4 = within(x3,y3,x4,y4, 6.0d * Math.ulp(y4));
+        final boolean p1eqp2 = within(x1, y1, x2, y2, 6.0d * Math.ulp(y2));
+        final boolean p3eqp4 = within(x3, y3, x4, y4, 6.0d * Math.ulp(y4));
         if (p1eqp2 && p3eqp4) {
             getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
             return 4;
@@ -836,7 +836,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         // if p1=p2 or p3=p4 it means that the derivative at the endpoint
         // vanishes, which creates problems with computeOffset. Usually
-        // this happens when this stroker object is trying to winden
+        // this happens when this stroker object is trying to widen
         // a curve with a cusp. What happens is that curveTo splits
         // the input curve at the cusp, and passes it to this function.
         // because of inaccuracies in the splitting, we consider points
@@ -844,8 +844,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
         // in which case ignore.
-        final boolean p1eqp2 = within(x1,y1,x2,y2, 6.0d * Math.ulp(y2));
-        final boolean p2eqp3 = within(x2,y2,x3,y3, 6.0d * Math.ulp(y3));
+        final boolean p1eqp2 = within(x1, y1, x2, y2, 6.0d * Math.ulp(y2));
+        final boolean p2eqp3 = within(x2, y2, x3, y3, 6.0d * Math.ulp(y3));
         if (p1eqp2 || p2eqp3) {
             getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
             return 4;
@@ -870,13 +870,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         double y1p = y1 + offset0[1]; // point
         double x3p = x3 + offset1[0]; // end
         double y3p = y3 + offset1[1]; // point
-        safecomputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, leftOff, 2);
+        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, leftOff, 2);
         leftOff[0] = x1p; leftOff[1] = y1p;
         leftOff[4] = x3p; leftOff[5] = y3p;
 
         x1p = x1 - offset0[0]; y1p = y1 - offset0[1];
         x3p = x3 - offset1[0]; y3p = y3 - offset1[1];
-        safecomputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, rightOff, 2);
+        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, rightOff, 2);
         rightOff[0] = x1p; rightOff[1] = y1p;
         rightOff[4] = x3p; rightOff[5] = y3p;
         return 6;
