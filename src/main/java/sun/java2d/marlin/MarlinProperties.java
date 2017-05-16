@@ -226,7 +226,7 @@ public final class MarlinProperties {
     }
 
     static int align(final int val, final int norm) {
-        final int ceil = FloatMath.ceil_int( ((float)val) / norm);
+        final int ceil = FloatMath.ceil_int( ((float) val) / norm);
         return ceil * norm;
     }
 

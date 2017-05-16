@@ -123,20 +123,20 @@ final class Helpers implements MarlinConst {
             final double phi = (1.0d/3.0d) * acos(-q / sqrt(-cb_p));
             final double t = 2.0d * sqrt(-p);
 
-            pts[off + 0] = (float) ( t * cos(phi));
-            pts[off + 1] = (float) (-t * cos(phi + (PI / 3.0d)));
-            pts[off + 2] = (float) (-t * cos(phi - (PI / 3.0d)));
+            pts[ off+0 ] = (float) ( t * cos(phi));
+            pts[ off+1 ] = (float) (-t * cos(phi + (PI / 3.0d)));
+            pts[ off+2 ] = (float) (-t * cos(phi - (PI / 3.0d)));
             num = 3;
         } else {
             final double sqrt_D = sqrt(D);
             final double u = cbrt(sqrt_D - q);
             final double v = - cbrt(sqrt_D + q);
 
-            pts[off    ] = (float) (u + v);
+            pts[ off ] = (float) (u + v);
             num = 1;
 
             if (within(D, 0.0d, 1e-8d)) {
-                pts[off + 1] = -(pts[off] / 2.0f);
+                pts[off+1] = -(pts[off] / 2.0f);
                 num = 2;
             }
         }
@@ -144,7 +144,7 @@ final class Helpers implements MarlinConst {
         final float sub = (1.0f/3.0f) * a;
 
         for (int i = 0; i < num; ++i) {
-            pts[off + i] -= sub;
+            pts[ off+i ] -= sub;
         }
 
         return filterOutNotInAB(pts, off, num, A, B) - off;
@@ -218,8 +218,8 @@ final class Helpers implements MarlinConst {
     }
 
     // Most of these are copied from classes in java.awt.geom because we need
-    // both float and double versions of these functions, and Line2D, CubicCurve2D,
-    // QuadCurve2D don't provide the float version.
+    // both single and double precision variants of these functions, and Line2D,
+    // CubicCurve2D, QuadCurve2D don't provide them.
     /**
      * Subdivides the cubic curve specified by the coordinates
      * stored in the <code>src</code> array at indices <code>srcoff</code>
