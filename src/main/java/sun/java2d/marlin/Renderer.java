@@ -49,6 +49,10 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     static final float SUBPIXEL_SCALE_Y = (float) SUBPIXEL_POSITIONS_Y;
     static final int SUBPIXEL_MASK_X = SUBPIXEL_POSITIONS_X - 1;
     static final int SUBPIXEL_MASK_Y = SUBPIXEL_POSITIONS_Y - 1;
+    
+    static final float RDR_OFFSET_X = 0.501f / SUBPIXEL_POSITIONS_X;
+    static final float RDR_OFFSET_Y = 0.501f / SUBPIXEL_POSITIONS_Y;
+    
 
     // number of subpixels corresponding to a tile line
     private static final int SUBPIXEL_TILE
@@ -231,6 +235,8 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
         }
     }
 
+    private final static boolean USE_NAIVE_SUM = false;
+    
     // x0, y0 and x3,y3 are the endpoints of the curve. We could compute these
     // using c.xat(0),c.yat(0) and c.xat(1),c.yat(1), but this might introduce
     // numerical errors, and our callers already have the exact values.
@@ -262,6 +268,9 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
         final float _DEC_BND = CUB_DEC_BND;
         final float _INC_BND = CUB_INC_BND;
 
+        float z, t;
+        float ex = 0.0f, ey = 0.0f;
+        
         while (count > 0) {
             // divide step by half:
             while (Math.abs(ddx) + Math.abs(ddy) >= _DEC_BND) {
@@ -296,12 +305,31 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
                 }
             }
             if (--count > 0) {
+if (USE_NAIVE_SUM) {
                 x1 += dx;
                 dx += ddx;
                 ddx += dddx;
                 y1 += dy;
                 dy += ddy;
                 ddy += dddy;
+} else {
+                // kahan sum:
+                z = dx - ex;
+                t = x1 + z;
+                ex = (t - x1) - z;
+                x1 = t;
+                // error are small enough:
+                dx += ddx;
+                ddx += dddx;
+                // kahan sum:
+                z = dy - ey;
+                t = y1 + z;
+                ey = (t - y1) - z;
+                y1 = t;
+                // error are small enough:
+                dy += ddy;
+                ddy += dddy;
+}                
             } else {
                 x1 = x3;
                 y1 = y3;
@@ -313,6 +341,10 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
             x0 = x1;
             y0 = y1;
         }
+/*        
+        System.out.println("Iterations : "+n);
+        System.out.println("Errors x/y    : "+ex+" , "+ey);
+*/        
         if (DO_STATS) {
             rdrCtx.stats.stat_rdr_curveBreak.add(nL);
         }
@@ -862,9 +894,12 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
 
     @Override
     public void closePath() {
-        addLine(x0, y0, sx0, sy0);
-        x0 = sx0;
-        y0 = sy0;
+        if (x0 != sx0 || y0 != sy0) {
+//            System.out.println("Renderer.closePath: from ("+x0+","+y0+") to ("+sx0+","+sy0+")");
+            addLine(x0, y0, sx0, sy0);
+            x0 = sx0;
+            y0 = sy0;
+        }
     }
 
     @Override

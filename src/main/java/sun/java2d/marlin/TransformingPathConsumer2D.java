@@ -28,24 +28,58 @@ package sun.java2d.marlin;
 import sun.awt.geom.PathConsumer2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import sun.java2d.marlin.Helpers.PolyStack;
 
 final class TransformingPathConsumer2D {
 
-    TransformingPathConsumer2D() {
-        // used by RendererContext
-    }
+    private final RendererContext rdrCtx;
+    
+    // recycled ClosedPathDetector instance from detectClosedPath()
+    private final ClosedPathDetector cpDetector;
 
     // recycled PathConsumer2D instance from wrapPath2d()
-    private final Path2DWrapper        wp_Path2DWrapper        = new Path2DWrapper();
+    private final Path2DWrapper wp_Path2DWrapper = new Path2DWrapper();
+
+    // recycled PathConsumer2D instances from deltaTransformConsumer()
+    private final DeltaScaleFilter     dt_DeltaScaleFilter     = new DeltaScaleFilter();
+    private final DeltaTransformFilter dt_DeltaTransformFilter = new DeltaTransformFilter();
+
+    // recycled PathConsumer2D instances from inverseDeltaTransformConsumer()
+    private final DeltaScaleFilter     iv_DeltaScaleFilter     = new DeltaScaleFilter();
+    private final DeltaTransformFilter iv_DeltaTransformFilter = new DeltaTransformFilter();
+
+    // recycled PathTracer instances from tracer...() methods
+    private final PathTracer tracerInput      = new PathTracer("[Input]");
+    private final PathTracer tracerCPDetector = new PathTracer("ClosedPathDetector");
+    private final PathTracer tracerStroker    = new PathTracer("Stroker");
+
+    TransformingPathConsumer2D(final RendererContext rdrCtx) {
+        // used by RendererContext
+        this.rdrCtx = rdrCtx;
+        this.cpDetector = new ClosedPathDetector(rdrCtx);
+    }
 
     PathConsumer2D wrapPath2d(Path2D.Float p2d)
     {
         return wp_Path2DWrapper.init(p2d);
     }
 
-    // recycled PathConsumer2D instances from deltaTransformConsumer()
-    private final DeltaScaleFilter     dt_DeltaScaleFilter     = new DeltaScaleFilter();
-    private final DeltaTransformFilter dt_DeltaTransformFilter = new DeltaTransformFilter();
+    PathConsumer2D traceInput(PathConsumer2D out) {
+        return tracerInput.init(out);
+    }
+
+    PathConsumer2D traceClosedPathDetector(PathConsumer2D out) {
+        return tracerCPDetector.init(out);
+    }
+
+    PathConsumer2D traceStroker(PathConsumer2D out) {
+        return tracerStroker.init(out);
+    }
+
+    PathConsumer2D detectClosedPath(PathConsumer2D out)
+    {
+        return cpDetector.init(out);
+    }
 
     PathConsumer2D deltaTransformConsumer(PathConsumer2D out,
                                           AffineTransform at)
@@ -62,16 +96,81 @@ final class TransformingPathConsumer2D {
             if (mxx == 1.0f && myy == 1.0f) {
                 return out;
             } else {
+                // Scale only
+                if (rdrCtx.doClip == 1) {
+                    // adjust clip rectangle (ymin, ymax, xmin, xmax):
+                    final float[] _clipRect = rdrCtx.clipRect;
+                    _clipRect[0] += Renderer.RDR_OFFSET_Y;
+                    _clipRect[1] += Renderer.RDR_OFFSET_Y;
+                    _clipRect[2] += Renderer.RDR_OFFSET_X;
+                    _clipRect[3] += Renderer.RDR_OFFSET_X;
+                    
+//                    System.out.println("deltaTransformConsumer: scale clip ie transformed points are scaled back to normal device");
+                    // Adjust the clipping rectangle (inverseDeltaTransform):
+                    _clipRect[0] /= myy;
+                    _clipRect[1] /= myy;
+                    _clipRect[2] /= mxx;
+                    _clipRect[3] /= mxx;
+                }
                 return dt_DeltaScaleFilter.init(out, mxx, myy);
             }
         } else {
+            if (rdrCtx.doClip == 1) {
+                // adjust clip rectangle (ymin, ymax, xmin, xmax):
+                final float[] _clipRect = rdrCtx.clipRect;
+                _clipRect[0] += Renderer.RDR_OFFSET_Y;
+                _clipRect[1] += Renderer.RDR_OFFSET_Y;
+                _clipRect[2] += Renderer.RDR_OFFSET_X;
+                _clipRect[3] += Renderer.RDR_OFFSET_X;
+
+//                System.out.println("deltaTransformConsumer: scale clip ie transformed points are scaled back to normal device");
+                // Adjust the clipping rectangle (inverseDeltaTransform):
+                final float det = mxx * myy - mxy * myx;
+                final float imxx = myy / det;
+                final float imxy = -mxy / det;
+                final float imyx = -myx / det;
+                final float imyy = mxx / det;
+
+                float xmin, xmax, ymin, ymax;
+                float x, y;
+                // xmin, ymin:
+                x = _clipRect[2] * imxx + _clipRect[0] * imxy;
+                y = _clipRect[2] * imyx + _clipRect[0] * imyy;
+                
+                xmin = xmax = x;
+                ymin = ymax = y;
+
+                // xmax, ymin:
+                x = _clipRect[3] * imxx + _clipRect[0] * imxy;
+                y = _clipRect[3] * imyx + _clipRect[0] * imyy;
+                
+                if (x < xmin) { xmin = x; } else if (x > xmax) { xmax = x; }
+                if (y < ymin) { ymin = y; } else if (y > ymax) { ymax = y; }
+
+                // xmin, ymax:
+                x = _clipRect[2] * imxx + _clipRect[1] * imxy;
+                y = _clipRect[2] * imyx + _clipRect[1] * imyy;
+                
+                if (x < xmin) { xmin = x; } else if (x > xmax) { xmax = x; }
+                if (y < ymin) { ymin = y; } else if (y > ymax) { ymax = y; }
+
+                // xmax, ymax:
+                x = _clipRect[3] * imxx + _clipRect[1] * imxy;
+                y = _clipRect[3] * imyx + _clipRect[1] * imyy;
+                
+                if (x < xmin) { xmin = x; } else if (x > xmax) { xmax = x; }
+                if (y < ymin) { ymin = y; } else if (y > ymax) { ymax = y; }
+                
+                _clipRect[0] = ymin;
+                _clipRect[1] = ymax;
+                _clipRect[2] = xmin;
+                _clipRect[3] = xmax;
+                
+//                System.out.println("clip: "+java.util.Arrays.toString(_clipRect));                
+            }
             return dt_DeltaTransformFilter.init(out, mxx, mxy, myx, myy);
         }
     }
-
-    // recycled PathConsumer2D instances from inverseDeltaTransformConsumer()
-    private final DeltaScaleFilter     iv_DeltaScaleFilter     = new DeltaScaleFilter();
-    private final DeltaTransformFilter iv_DeltaTransformFilter = new DeltaTransformFilter();
 
     PathConsumer2D inverseDeltaTransformConsumer(PathConsumer2D out,
                                                  AffineTransform at)
@@ -91,7 +190,7 @@ final class TransformingPathConsumer2D {
                 return iv_DeltaScaleFilter.init(out, 1.0f/mxx, 1.0f/myy);
             }
         } else {
-            float det = mxx * myy - mxy * myx;
+            final float det = mxx * myy - mxy * myx;
             return iv_DeltaTransformFilter.init(out,
                                                 myy / det,
                                                -mxy / det,
@@ -99,7 +198,6 @@ final class TransformingPathConsumer2D {
                                                 mxx / det);
         }
     }
-
 
     static final class DeltaScaleFilter implements PathConsumer2D {
         private PathConsumer2D out;
@@ -268,6 +366,150 @@ final class TransformingPathConsumer2D {
         @Override
         public void quadTo(float x1, float y1, float x2, float y2) {
             p2d.quadTo(x1, y1, x2, y2);
+        }
+
+        @Override
+        public long getNativeConsumer() {
+            throw new InternalError("Not using a native peer");
+        }
+    }
+
+    static final class ClosedPathDetector implements PathConsumer2D {
+        
+        private final RendererContext rdrCtx;
+        private final PolyStack stack;
+        
+        private PathConsumer2D out;
+
+        ClosedPathDetector(final RendererContext rdrCtx) {
+            this.rdrCtx = rdrCtx;
+            this.stack = new PolyStack(rdrCtx);
+        }
+
+        ClosedPathDetector init(PathConsumer2D out) {
+            this.out = out;
+            return this; // fluent API
+        }
+
+        /**
+         * Disposes this instance:
+         * clean up before reusing this instance
+         */
+        void dispose() {
+            stack.dispose();
+        }
+
+        @Override
+        public void pathDone() {
+            // previous path is not closed:
+            finish(0);
+            out.pathDone();
+            
+            // TODO: fix possible leak if exception happened
+            // Dispose this instance:
+            dispose();
+        }
+
+        @Override
+        public void closePath() {
+            // path is closed
+            finish(1);
+            out.closePath();
+        }
+
+        @Override
+        public void moveTo(float x0, float y0) {
+            // previous path is not closed:
+            finish(0);
+            out.moveTo(x0, y0);
+        }
+        
+        private void finish(int closed) {
+            rdrCtx.closedPath = closed;
+            
+            if (!stack.isEmpty()) {
+                stack.pullAll(out);
+            }
+        }
+
+        @Override
+        public void lineTo(float x1, float y1) {
+            stack.pushLine(x1, y1);
+        }
+
+        @Override
+        public void curveTo(float x3, float y3,
+                            float x2, float y2,
+                            float x1, float y1)
+        {
+            stack.pushCubic(x1, y1, x2, y2, x3, y3);
+        }
+
+        @Override
+        public void quadTo(float x2, float y2, float x1, float y1) {
+            stack.pushQuad(x1, y1, x2, y2);
+        }
+
+        @Override
+        public long getNativeConsumer() {
+            throw new InternalError("Not using a native peer");
+        }
+    }
+    
+    static final class PathTracer implements PathConsumer2D {
+        private final String prefix;
+        private PathConsumer2D out;
+
+        PathTracer(String name) {
+            this.prefix = name + ": ";
+        }
+
+        PathTracer init(PathConsumer2D out) {
+            this.out = out;
+            return this; // fluent API
+        }
+
+        @Override
+        public void moveTo(float x0, float y0) {
+            log("moveTo (" + x0 + ", " + y0 + ')');
+            out.moveTo(x0, y0);
+        }
+
+        @Override
+        public void lineTo(float x1, float y1) {
+            log("lineTo (" + x1 + ", " + y1 + ')');
+            out.lineTo(x1, y1);
+        }
+
+        @Override
+        public void curveTo(float x1, float y1,
+                            float x2, float y2,
+                            float x3, float y3)
+        {
+            log("curveTo P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2  + ") P3(" + x3 + ", " + y3 + ')');
+            out.curveTo(x1, y1, x2, y2, x3, y3);
+        }
+
+        @Override
+        public void quadTo(float x1, float y1, float x2, float y2) {
+            log("quadTo P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2  + ')');
+            out.quadTo(x1, y1, x2, y2);
+        }
+
+        @Override
+        public void closePath() {
+            log("closePath");
+            out.closePath();
+        }
+
+        @Override
+        public void pathDone() {
+            log("pathDone");
+            out.pathDone();
+        }
+        
+        private void log(final String message) {
+            System.out.println(prefix + message);
         }
 
         @Override

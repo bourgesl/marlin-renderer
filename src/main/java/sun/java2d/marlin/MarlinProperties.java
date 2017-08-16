@@ -145,6 +145,11 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.useSimplifier", "false");
     }
 
+    public static boolean isDoClip() {
+        return getBoolean("sun.java2d.renderer.clip", "true");
+    }
+
+    // TODO: remove
     public static boolean isDoClipCurves() {
         return getBoolean("sun.java2d.renderer.clip.curves", "false");
     }

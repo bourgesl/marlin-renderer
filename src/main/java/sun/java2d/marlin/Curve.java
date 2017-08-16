@@ -56,10 +56,10 @@ final class Curve {
              float x3, float y3,
              float x4, float y4)
     {
-        ax = 3.0f * (x2 - x3) + x4 - x1;
-        ay = 3.0f * (y2 - y3) + y4 - y1;
-        bx = 3.0f * (x1 - 2.0f * x2 + x3);
-        by = 3.0f * (y1 - 2.0f * y2 + y3);
+        ax = 3.0f * (x2 - x3) + (x4 - x1);
+        ay = 3.0f * (y2 - y3) + (y4 - y1);
+        bx = 3.0f * ((x1 - x2) + (x3 - x2));
+        by = 3.0f * ((y1 - y2) + (y3 - y2));
         cx = 3.0f * (x2 - x1);
         cy = 3.0f * (y2 - y1);
         dx = x1;

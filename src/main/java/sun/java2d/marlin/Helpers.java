@@ -30,6 +30,9 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.acos;
+import java.util.Arrays;
+import sun.awt.geom.PathConsumer2D;
+import static sun.java2d.marlin.MarlinConst.INITIAL_EDGES_COUNT;
 
 final class Helpers implements MarlinConst {
 
@@ -174,15 +177,6 @@ final class Helpers implements MarlinConst {
             }
         }
         return ret;
-    }
-
-    static float polyLineLength(float[] poly, final int off, final int nCoords) {
-        assert nCoords % 2 == 0 && poly.length >= off + nCoords : "";
-        float acc = 0.0f;
-        for (int i = off + 2; i < off + nCoords; i += 2) {
-            acc += linelen(poly[i], poly[i+1], poly[i-2], poly[i-1]);
-        }
-        return acc;
     }
 
     static float linelen(float x1, float y1, float x2, float y2) {
@@ -436,6 +430,273 @@ final class Helpers implements MarlinConst {
         case 6:
             subdivideQuadAt(t, src, srcoff, left, leftoff, right, rightoff);
             return;
+        }
+    }
+
+    // From sun.java2d.loops.GeneralRenderer:
+    
+    static final int OUTCODE_TOP     = 1;
+    static final int OUTCODE_BOTTOM  = 2;
+    static final int OUTCODE_LEFT    = 4;
+    static final int OUTCODE_RIGHT   = 8;
+    
+    static int outcode(final float x, final float y, 
+                       final float[] clipRect)
+    {
+        int code;
+        if (y < clipRect[0]) {
+            code = OUTCODE_TOP;
+        } else if (y >= clipRect[1]) {
+            code = OUTCODE_BOTTOM;
+        } else {
+            code = 0;
+        }
+        if (x < clipRect[2]) {
+            code |= OUTCODE_LEFT;
+        } else if (x >= clipRect[3]) {
+            code |= OUTCODE_RIGHT;
+        }
+        return code;
+    }
+
+    // a stack of polynomial curves where each curve shares endpoints with
+    // adjacent ones.
+    static final class PolyStack {
+        private static final byte TYPE_LINETO  = (byte) 0;
+        private static final byte TYPE_QUADTO  = (byte) 1;
+        private static final byte TYPE_CUBICTO = (byte) 2;
+
+        // curves capacity = edges count (8192) = edges x 2 (coords)
+        private static final int INITIAL_CURVES_COUNT = INITIAL_EDGES_COUNT << 1;
+
+        // types capacity = edges count (4096)
+        private static final int INITIAL_TYPES_COUNT = INITIAL_EDGES_COUNT;
+
+        float[] curves;
+        int end;
+        byte[] curveTypes;
+        int numCurves;
+
+        // per-thread renderer context
+        final RendererContext rdrCtx;
+
+        // curves ref (dirty)
+        final FloatArrayCache.Reference curves_ref;
+        // curveTypes ref (dirty)
+        final ByteArrayCache.Reference curveTypes_ref;
+
+        // used marks (stats only)
+        int curveTypesUseMark;
+        int curvesUseMark;
+
+        /**
+         * Constructor
+         * @param rdrCtx per-thread renderer context
+         */
+        PolyStack(final RendererContext rdrCtx) {
+            this.rdrCtx = rdrCtx;
+
+            curves_ref = rdrCtx.newDirtyFloatArrayRef(INITIAL_CURVES_COUNT); // 32K
+            curves     = curves_ref.initial;
+
+            curveTypes_ref = rdrCtx.newDirtyByteArrayRef(INITIAL_TYPES_COUNT); // 4K
+            curveTypes     = curveTypes_ref.initial;
+            numCurves = 0;
+            end = 0;
+
+            if (DO_STATS) {
+                curveTypesUseMark = 0;
+                curvesUseMark = 0;
+            }
+        }
+
+        /**
+         * Disposes this PolyStack:
+         * clean up before reusing this instance
+         */
+        void dispose() {
+            end = 0;
+            numCurves = 0;
+
+            if (DO_STATS) {
+                rdrCtx.stats.stat_rdr_poly_stack_types.add(curveTypesUseMark);
+                rdrCtx.stats.stat_rdr_poly_stack_curves.add(curvesUseMark);
+                rdrCtx.stats.hist_rdr_poly_stack_curves.add(curvesUseMark);
+
+                // reset marks
+                curveTypesUseMark = 0;
+                curvesUseMark = 0;
+            }
+
+            // Return arrays:
+            // curves and curveTypes are kept dirty
+            curves     = curves_ref.putArray(curves);
+            curveTypes = curveTypes_ref.putArray(curveTypes);
+        }
+        
+        boolean isEmpty() {
+            return (numCurves == 0);
+        }
+
+        private void ensureSpace(final int n) {
+            // use substraction to avoid integer overflow:
+            if (curves.length - end < n) {
+                if (DO_STATS) {
+                    rdrCtx.stats.stat_array_stroker_polystack_curves
+                        .add(end + n);
+                }
+                curves = curves_ref.widenArray(curves, end, end + n);
+            }
+            if (curveTypes.length <= numCurves) {
+                if (DO_STATS) {
+                    rdrCtx.stats.stat_array_stroker_polystack_curveTypes
+                        .add(numCurves + 1);
+                }
+                curveTypes = curveTypes_ref.widenArray(curveTypes,
+                                                       numCurves,
+                                                       numCurves + 1);
+            }
+        }
+
+        void pushCubic(float x0, float y0,
+                       float x1, float y1,
+                       float x2, float y2)
+        {
+            ensureSpace(6);
+            curveTypes[numCurves++] = TYPE_CUBICTO;
+            // we reverse the coordinate order to make popping easier
+            final float[] _curves = curves;
+            int e = end;
+            _curves[e++] = x2;    _curves[e++] = y2;
+            _curves[e++] = x1;    _curves[e++] = y1;
+            _curves[e++] = x0;    _curves[e++] = y0;
+            end = e;
+        }
+
+        void pushQuad(float x0, float y0,
+                      float x1, float y1)
+        {
+            ensureSpace(4);
+            curveTypes[numCurves++] = TYPE_QUADTO;
+            final float[] _curves = curves;
+            int e = end;
+            _curves[e++] = x1;    _curves[e++] = y1;
+            _curves[e++] = x0;    _curves[e++] = y0;
+            end = e;
+        }
+
+        void pushLine(float x, float y) {
+            ensureSpace(2);
+            curveTypes[numCurves++] = TYPE_LINETO;
+            curves[end++] = x;    curves[end++] = y;
+        }
+
+        void pullAll(PathConsumer2D io) {
+            if (DO_STATS) {
+                // update used marks:
+                if (numCurves > curveTypesUseMark) {
+                    curveTypesUseMark = numCurves;
+                }
+                if (end > curvesUseMark) {
+                    curvesUseMark = end;
+                }
+            }
+            final byte[]  _curveTypes = curveTypes;
+            final float[] _curves = curves;
+            final int nc = numCurves;
+            int e = 0;
+
+            for (int i = 0; i < nc; i++) {
+                switch(_curveTypes[i]) {
+                case TYPE_LINETO:
+                    io.lineTo(_curves[e], _curves[e+1]);
+                    e += 2;
+                    continue;
+                case TYPE_QUADTO:
+                    io.quadTo(_curves[e+0], _curves[e+1],
+                              _curves[e+2], _curves[e+3]);
+                    e += 4;
+                    continue;
+                case TYPE_CUBICTO:
+                    io.curveTo(_curves[e+0], _curves[e+1],
+                               _curves[e+2], _curves[e+3],
+                               _curves[e+4], _curves[e+5]);
+                    e += 6;
+                    continue;
+                default:
+                }
+            }
+            numCurves = 0;
+            end = 0;
+        }
+
+        void popAll(PathConsumer2D io) {
+            if (DO_STATS) {
+                // update used marks:
+                if (numCurves > curveTypesUseMark) {
+                    curveTypesUseMark = numCurves;
+                }
+                if (end > curvesUseMark) {
+                    curvesUseMark = end;
+                }
+            }
+            final byte[]  _curveTypes = curveTypes;
+            final float[] _curves = curves;
+            int nc = numCurves;
+            int e  = end;
+
+            while (nc != 0) {
+                switch(_curveTypes[--nc]) {
+                case TYPE_LINETO:
+                    e -= 2;
+                    io.lineTo(_curves[e], _curves[e+1]);
+                    continue;
+                case TYPE_QUADTO:
+                    e -= 4;
+                    io.quadTo(_curves[e+0], _curves[e+1],
+                              _curves[e+2], _curves[e+3]);
+                    continue;
+                case TYPE_CUBICTO:
+                    e -= 6;
+                    io.curveTo(_curves[e+0], _curves[e+1],
+                               _curves[e+2], _curves[e+3],
+                               _curves[e+4], _curves[e+5]);
+                    continue;
+                default:
+                }
+            }
+            numCurves = 0;
+            end = 0;
+        }
+
+        @Override
+        public String toString() {
+            String ret = "";
+            int nc = numCurves;
+            int last = end;
+            int len;
+            while (nc != 0) {
+                switch(curveTypes[--nc]) {
+                case TYPE_LINETO:
+                    len = 2;
+                    ret += "line: ";
+                    break;
+                case TYPE_QUADTO:
+                    len = 4;
+                    ret += "quad: ";
+                    break;
+                case TYPE_CUBICTO:
+                    len = 6;
+                    ret += "cubic: ";
+                    break;
+                default:
+                    len = 0;
+                }
+                last -= len;
+                ret += Arrays.toString(Arrays.copyOfRange(curves, last, last+len))
+                                       + "\n";
+            }
+            return ret;
         }
     }
 }

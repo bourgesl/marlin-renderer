@@ -25,6 +25,7 @@
 
 package sun.java2d.marlin;
 
+import java.awt.Rectangle;
 import java.awt.geom.Path2D;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,6 +76,12 @@ final class RendererContext extends ReentrantContext implements IRendererContext
     final MarlinCache cache;
     // flag indicating the shape is stroked (1) or filled (0)
     int stroking = 0;
+    // flag indicating to clip the shape
+    int doClip = 0;
+    // clip rectangle (ymin, ymax, xmin, xmax):
+    final float[] clipRect = new float[4];
+    // flag indicating if the path is closed or not (in advance) to handle properly caps
+    int closedPath = 0;
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
@@ -116,7 +123,7 @@ final class RendererContext extends ReentrantContext implements IRendererContext
         nPQPathIterator  = new NormalizingPathIterator.NearestPixelQuarter(float6);
 
         // MarlinRenderingEngine.TransformingPathConsumer2D
-        transformerPC2D = new TransformingPathConsumer2D();
+        transformerPC2D = new TransformingPathConsumer2D(this);
 
         // Renderer:
         cache = new MarlinCache(this);
@@ -138,7 +145,10 @@ final class RendererContext extends ReentrantContext implements IRendererContext
             }
             stats.totalOffHeap = 0L;
         }
-        stroking = 0;
+        stroking   = 0;
+        doClip     = 0;
+        closedPath = 0;
+        
         // if context is maked as DIRTY:
         if (dirty) {
             // may happen if an exception if thrown in the pipeline processing:
