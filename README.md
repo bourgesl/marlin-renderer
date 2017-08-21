@@ -6,6 +6,7 @@ Marlin is an open source (GPL2+CP) Java2D RenderingEngine optimized for performa
 Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 
 News:
+* may 2017: Marlin & MarlinFX 0.7.5 integrated in OpenJFX10 (enabled by default)
 * nov 2016: MarlinFX integrated in OpenJFX9
 * jul 2016: Marlin integrated in [Jetbrains OpenJDK8 build](https://github.com/JetBrains/jdk8u) and running in IntelliJ IDEA 2016.3
 * feb 2016: My slides at FOSDEM 2016 about 'Marlin renderer, a successful fork and join the OpenJDK 9 project': [fosdem-2016-Marlin.pdf](https://bourgesl.github.io/fosdem-2016/slides/fosdem-2016-Marlin.pdf)
@@ -55,7 +56,15 @@ Users and developers interested in the Marlin-renderer are kindly invited to joi
 Contributing
 ============
 
-Contributions are welcomed, get in touch with us on the [marlin-renderer](https://groups.google.com/forum/#!forum/marlin-renderer) Google Group and share your improvements via pull requests. Since we aim, one day, to contribute this renderer back to OpenJDK, we will accept contributions only from people that have signed the [Oracle Contribution Agreeement](http://www.oracle.com/technetwork/community/oca-486395.html)
+Contributions are welcomed, get in touch with us on the [marlin-renderer](https://groups.google.com/forum/#!forum/marlin-renderer) Google Group and share your improvements via pull requests. 
+Since we contribute this renderer into OpenJDK, we accept contributions only from people that have signed the [Oracle Contribution Agreeement](http://www.oracle.com/technetwork/community/oca-486395.html)
+
+
+Support our work
+================
+
+To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, I launched a gofundme campaign: https://www.gofundme.com/javaone-2017-travel-costs
+Please contribute if you appreciate the Marlin renderer to cover extra expenses (travel costs ...)
 
 
 Related projects
