@@ -75,6 +75,12 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     final MarlinCache cache;
     // flag indicating the shape is stroked (1) or filled (0)
     int stroking = 0;
+    // flag indicating to clip the shape
+    boolean doClip = false;
+    // flag indicating if the path is closed or not (in advance) to handle properly caps
+    boolean closedPath = false;
+    // clip rectangle (ymin, ymax, xmin, xmax):
+    final double[] clipRect = new double[4];
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
@@ -119,7 +125,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         nPQPathIterator  = new NormalizingPathIterator.NearestPixelQuarter(double6);
 
         // MarlinRenderingEngine.TransformingPathConsumer2D
-        transformerPC2D = new DTransformingPathConsumer2D();
+        transformerPC2D = new DTransformingPathConsumer2D(this);
 
         // Renderer:
         cache = new MarlinCache(this);
@@ -141,7 +147,10 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
             }
             stats.totalOffHeap = 0L;
         }
-        stroking = 0;
+        stroking   = 0;
+        doClip     = false;
+        closedPath = false;
+
         // if context is maked as DIRTY:
         if (dirty) {
             // may happen if an exception if thrown in the pipeline processing:

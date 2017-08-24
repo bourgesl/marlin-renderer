@@ -27,24 +27,58 @@ package sun.java2d.marlin;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import sun.java2d.marlin.DHelpers.PolyStack;
 
 final class DTransformingPathConsumer2D {
 
-    DTransformingPathConsumer2D() {
-        // used by DRendererContext
-    }
+    private final DRendererContext rdrCtx;
+
+    // recycled ClosedPathDetector instance from detectClosedPath()
+    private final ClosedPathDetector   cpDetector;
 
     // recycled DPathConsumer2D instance from wrapPath2d()
     private final Path2DWrapper        wp_Path2DWrapper        = new Path2DWrapper();
+
+    // recycled DPathConsumer2D instances from deltaTransformConsumer()
+    private final DeltaScaleFilter     dt_DeltaScaleFilter     = new DeltaScaleFilter();
+    private final DeltaTransformFilter dt_DeltaTransformFilter = new DeltaTransformFilter();
+
+    // recycled DPathConsumer2D instances from inverseDeltaTransformConsumer()
+    private final DeltaScaleFilter     iv_DeltaScaleFilter     = new DeltaScaleFilter();
+    private final DeltaTransformFilter iv_DeltaTransformFilter = new DeltaTransformFilter();
+
+    // recycled PathTracer instances from tracer...() methods
+    private final PathTracer tracerInput      = new PathTracer("[Input]");
+    private final PathTracer tracerCPDetector = new PathTracer("ClosedPathDetector");
+    private final PathTracer tracerStroker    = new PathTracer("Stroker");
+
+    DTransformingPathConsumer2D(final DRendererContext rdrCtx) {
+        // used by RendererContext
+        this.rdrCtx = rdrCtx;
+        this.cpDetector = new ClosedPathDetector(rdrCtx);
+    }
 
     DPathConsumer2D wrapPath2d(Path2D.Double p2d)
     {
         return wp_Path2DWrapper.init(p2d);
     }
 
-    // recycled DPathConsumer2D instances from deltaTransformConsumer()
-    private final DeltaScaleFilter     dt_DeltaScaleFilter     = new DeltaScaleFilter();
-    private final DeltaTransformFilter dt_DeltaTransformFilter = new DeltaTransformFilter();
+    DPathConsumer2D traceInput(DPathConsumer2D out) {
+        return tracerInput.init(out);
+    }
+
+    DPathConsumer2D traceClosedPathDetector(DPathConsumer2D out) {
+        return tracerCPDetector.init(out);
+    }
+
+    DPathConsumer2D traceStroker(DPathConsumer2D out) {
+        return tracerStroker.init(out);
+    }
+
+    DPathConsumer2D detectClosedPath(DPathConsumer2D out)
+    {
+        return cpDetector.init(out);
+    }
 
     DPathConsumer2D deltaTransformConsumer(DPathConsumer2D out,
                                           AffineTransform at)
@@ -61,16 +95,89 @@ final class DTransformingPathConsumer2D {
             if (mxx == 1.0d && myy == 1.0d) {
                 return out;
             } else {
+                // Scale only
+                if (rdrCtx.doClip) {
+                    // adjust clip rectangle (ymin, ymax, xmin, xmax):
+                    adjustClipScale(rdrCtx.clipRect, mxx, myy);
+                }
                 return dt_DeltaScaleFilter.init(out, mxx, myy);
             }
         } else {
+            if (rdrCtx.doClip) {
+                // adjust clip rectangle (ymin, ymax, xmin, xmax):
+                adjustClipInverseDelta(rdrCtx.clipRect, mxx, mxy, myx, myy);
+            }
             return dt_DeltaTransformFilter.init(out, mxx, mxy, myx, myy);
         }
     }
 
-    // recycled DPathConsumer2D instances from inverseDeltaTransformConsumer()
-    private final DeltaScaleFilter     iv_DeltaScaleFilter     = new DeltaScaleFilter();
-    private final DeltaTransformFilter iv_DeltaTransformFilter = new DeltaTransformFilter();
+    private static void adjustClipOffset(final double[] clipRect) {
+        clipRect[0] += Renderer.RDR_OFFSET_Y;
+        clipRect[1] += Renderer.RDR_OFFSET_Y;
+        clipRect[2] += Renderer.RDR_OFFSET_X;
+        clipRect[3] += Renderer.RDR_OFFSET_X;
+    }
+
+    private static void adjustClipScale(final double[] clipRect,
+                                        final double mxx, final double myy)
+    {
+        adjustClipOffset(clipRect);
+
+        // Adjust the clipping rectangle (iv_DeltaScaleFilter):
+        clipRect[0] /= myy;
+        clipRect[1] /= myy;
+        clipRect[2] /= mxx;
+        clipRect[3] /= mxx;
+    }
+
+    private static void adjustClipInverseDelta(final double[] clipRect,
+                                               final double mxx, final double mxy,
+                                               final double myx, final double myy)
+    {
+        adjustClipOffset(clipRect);
+
+        // Adjust the clipping rectangle (iv_DeltaTransformFilter):
+        final double det = mxx * myy - mxy * myx;
+        final double imxx =  myy / det;
+        final double imxy = -mxy / det;
+        final double imyx = -myx / det;
+        final double imyy =  mxx / det;
+
+        double xmin, xmax, ymin, ymax;
+        double x, y;
+        // xmin, ymin:
+        x = clipRect[2] * imxx + clipRect[0] * imxy;
+        y = clipRect[2] * imyx + clipRect[0] * imyy;
+
+        xmin = xmax = x;
+        ymin = ymax = y;
+
+        // xmax, ymin:
+        x = clipRect[3] * imxx + clipRect[0] * imxy;
+        y = clipRect[3] * imyx + clipRect[0] * imyy;
+
+        if (x < xmin) { xmin = x; } else if (x > xmax) { xmax = x; }
+        if (y < ymin) { ymin = y; } else if (y > ymax) { ymax = y; }
+
+        // xmin, ymax:
+        x = clipRect[2] * imxx + clipRect[1] * imxy;
+        y = clipRect[2] * imyx + clipRect[1] * imyy;
+
+        if (x < xmin) { xmin = x; } else if (x > xmax) { xmax = x; }
+        if (y < ymin) { ymin = y; } else if (y > ymax) { ymax = y; }
+
+        // xmax, ymax:
+        x = clipRect[3] * imxx + clipRect[1] * imxy;
+        y = clipRect[3] * imyx + clipRect[1] * imyy;
+
+        if (x < xmin) { xmin = x; } else if (x > xmax) { xmax = x; }
+        if (y < ymin) { ymin = y; } else if (y > ymax) { ymax = y; }
+
+        clipRect[0] = ymin;
+        clipRect[1] = ymax;
+        clipRect[2] = xmin;
+        clipRect[3] = xmax;
+    }
 
     DPathConsumer2D inverseDeltaTransformConsumer(DPathConsumer2D out,
                                                  AffineTransform at)
@@ -90,7 +197,7 @@ final class DTransformingPathConsumer2D {
                 return iv_DeltaScaleFilter.init(out, 1.0d/mxx, 1.0d/myy);
             }
         } else {
-            double det = mxx * myy - mxy * myx;
+            final double det = mxx * myy - mxy * myx;
             return iv_DeltaTransformFilter.init(out,
                                                 myy / det,
                                                -mxy / det,
@@ -98,7 +205,6 @@ final class DTransformingPathConsumer2D {
                                                 mxx / det);
         }
     }
-
 
     static final class DeltaScaleFilter implements DPathConsumer2D {
         private DPathConsumer2D out;
@@ -267,6 +373,154 @@ final class DTransformingPathConsumer2D {
         @Override
         public void quadTo(double x1, double y1, double x2, double y2) {
             p2d.quadTo(x1, y1, x2, y2);
+        }
+
+        @Override
+        public long getNativeConsumer() {
+            throw new InternalError("Not using a native peer");
+        }
+    }
+
+    static final class ClosedPathDetector implements DPathConsumer2D {
+
+        private final DRendererContext rdrCtx;
+        private final PolyStack stack;
+
+        private DPathConsumer2D out;
+
+        ClosedPathDetector(final DRendererContext rdrCtx) {
+            this.rdrCtx = rdrCtx;
+            this.stack = (rdrCtx.stats != null) ?
+                new PolyStack(rdrCtx,
+                        rdrCtx.stats.stat_cpd_polystack_types,
+                        rdrCtx.stats.stat_cpd_polystack_curves,
+                        rdrCtx.stats.hist_cpd_polystack_curves,
+                        rdrCtx.stats.stat_array_cpd_polystack_curves,
+                        rdrCtx.stats.stat_array_cpd_polystack_types)
+                : new PolyStack(rdrCtx);
+        }
+
+        ClosedPathDetector init(DPathConsumer2D out) {
+            this.out = out;
+            return this; // fluent API
+        }
+
+        /**
+         * Disposes this instance:
+         * clean up before reusing this instance
+         */
+        void dispose() {
+            stack.dispose();
+        }
+
+        @Override
+        public void pathDone() {
+            // previous path is not closed:
+            finish(false);
+            out.pathDone();
+
+            // TODO: fix possible leak if exception happened
+            // Dispose this instance:
+            dispose();
+        }
+
+        @Override
+        public void closePath() {
+            // path is closed
+            finish(true);
+            out.closePath();
+        }
+
+        @Override
+        public void moveTo(double x0, double y0) {
+            // previous path is not closed:
+            finish(false);
+            out.moveTo(x0, y0);
+        }
+
+        private void finish(final boolean closed) {
+            rdrCtx.closedPath = closed;
+            stack.pullAll(out);
+        }
+
+        @Override
+        public void lineTo(double x1, double y1) {
+            stack.pushLine(x1, y1);
+        }
+
+        @Override
+        public void curveTo(double x3, double y3,
+                            double x2, double y2,
+                            double x1, double y1)
+        {
+            stack.pushCubic(x1, y1, x2, y2, x3, y3);
+        }
+
+        @Override
+        public void quadTo(double x2, double y2, double x1, double y1) {
+            stack.pushQuad(x1, y1, x2, y2);
+        }
+
+        @Override
+        public long getNativeConsumer() {
+            throw new InternalError("Not using a native peer");
+        }
+    }
+
+    static final class PathTracer implements DPathConsumer2D {
+        private final String prefix;
+        private DPathConsumer2D out;
+
+        PathTracer(String name) {
+            this.prefix = name + ": ";
+        }
+
+        PathTracer init(DPathConsumer2D out) {
+            this.out = out;
+            return this; // fluent API
+        }
+
+        @Override
+        public void moveTo(double x0, double y0) {
+            log("moveTo (" + x0 + ", " + y0 + ')');
+            out.moveTo(x0, y0);
+        }
+
+        @Override
+        public void lineTo(double x1, double y1) {
+            log("lineTo (" + x1 + ", " + y1 + ')');
+            out.lineTo(x1, y1);
+        }
+
+        @Override
+        public void curveTo(double x1, double y1,
+                            double x2, double y2,
+                            double x3, double y3)
+        {
+            log("curveTo P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2  + ") P3(" + x3 + ", " + y3 + ')');
+            out.curveTo(x1, y1, x2, y2, x3, y3);
+        }
+
+        @Override
+        public void quadTo(double x1, double y1, double x2, double y2) {
+            log("quadTo P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2  + ')');
+            out.quadTo(x1, y1, x2, y2);
+        }
+
+        @Override
+        public void closePath() {
+            log("closePath");
+            out.closePath();
+        }
+
+        @Override
+        public void pathDone() {
+            log("pathDone");
+            out.pathDone();
+        }
+
+        private void log(final String message) {
+            System.out.println(prefix + message);
         }
 
         @Override
