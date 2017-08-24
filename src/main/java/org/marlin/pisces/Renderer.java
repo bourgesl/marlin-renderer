@@ -33,8 +33,6 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
 
     static final boolean DISABLE_RENDER = false;
 
-    static final boolean CLIP_CURVE = MarlinProperties.isDoClipCurves();
-
     static final boolean ENABLE_BLOCK_FLAGS = MarlinProperties.isUseTileFlags();
     static final boolean ENABLE_BLOCK_FLAGS_HEURISTICS = MarlinProperties.isUseTileFlagsWithHeuristics();
 
@@ -48,6 +46,9 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     static final float SUBPIXEL_SCALE_Y = (float) SUBPIXEL_POSITIONS_Y;
     static final int SUBPIXEL_MASK_X = SUBPIXEL_POSITIONS_X - 1;
     static final int SUBPIXEL_MASK_Y = SUBPIXEL_POSITIONS_Y - 1;
+
+    static final float RDR_OFFSET_X = 0.501f / SUBPIXEL_SCALE_X;
+    static final float RDR_OFFSET_Y = 0.501f / SUBPIXEL_SCALE_Y;
 
     // number of subpixels corresponding to a tile line
     private static final int SUBPIXEL_TILE
@@ -171,8 +172,6 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     private final IntArrayCache.Reference edgeBuckets_ref;
     // edgeBucketCounts ref (clean)
     private final IntArrayCache.Reference edgeBucketCounts_ref;
-
-    private final float[] MIN_MAX = (CLIP_CURVE) ? new float[2] : null;
 
     // Flattens using adaptive forward differencing. This only carries out
     // one iteration of the AFD loop. All it does is update AFD variables (i.e.
@@ -499,8 +498,6 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     // Bounds of the drawing region, at subpixel precision.
     private int boundsMinX, boundsMinY, boundsMaxX, boundsMaxY;
 
-    private float fBoundsMinX, fBoundsMinY, fBoundsMaxX, fBoundsMaxY;
-
     // Current winding rule
     private int windingRule;
 
@@ -576,13 +573,6 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
         this.boundsMinY =  pix_boundsY << SUBPIXEL_LG_POSITIONS_Y;
         this.boundsMaxY =
             (pix_boundsY + pix_boundsHeight) << SUBPIXEL_LG_POSITIONS_Y;
-
-        if (CLIP_CURVE) {
-            this.fBoundsMinX = boundsMinX - 0.5f;
-            this.fBoundsMinY = boundsMinY;
-            this.fBoundsMaxX = boundsMaxX - 0.5f;
-            this.fBoundsMaxY = boundsMaxY;
-        }
 
         if (DO_LOG_BOUNDS) {
             MarlinUtils.logInfo("boundsXY = [" + boundsMinX + " ... "
@@ -709,161 +699,34 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
                         float pix_x2, float pix_y2,
                         float pix_x3, float pix_y3)
     {
-        final float cx1 = tosubpixx(pix_x1);
-        final float cy1 = tosubpixy(pix_y1);
-
-        final float cx2 = tosubpixx(pix_x2);
-        final float cy2 = tosubpixy(pix_y2);
-
         final float xe = tosubpixx(pix_x3);
         final float ye = tosubpixy(pix_y3);
-
-        // check possible artefacts with EvenOdd winding rule:
-        if (CLIP_CURVE && clipCurve(cx1, cy1, cx2, cy2, xe, ye)) {
-            return;
-        }
-
-        curve.set(x0, y0, cx1, cy1, cx2, cy2, xe, ye);
+        curve.set(x0, y0, tosubpixx(pix_x1), tosubpixy(pix_y1),
+                  tosubpixx(pix_x2), tosubpixy(pix_y2), xe, ye);
         curveBreakIntoLinesAndAdd(x0, y0, curve, xe, ye);
         x0 = xe;
         y0 = ye;
-    }
-
-    private boolean clipCurve(float cx1, float cy1,
-                              float cx2, float cy2,
-                              float xe, float ye)
-    {
-        // First quick check if the last endpoint is outside bounds:
-        if (ye > fBoundsMaxY || ye < fBoundsMinY
-            || xe > fBoundsMaxX || xe < fBoundsMinX)
-        {
-            // Mimic ShapeSpanIterator.c:
-
-            // check Y coordinates (top or bottom only):
-            min_max4(y0, cy1, cy2, ye, MIN_MAX);
-
-            // clip curve out of y range [boundsMinY; boundsMaxY]
-            if (MIN_MAX[0] > fBoundsMaxY || MIN_MAX[1] < fBoundsMinY) {
-//                System.out.println("curveTo: curve clipped: Y");
-                x0 = xe;
-                y0 = ye;
-                return true;
-            }
-
-            // At least 1 point is within Y bounds:
-            // check X coordinates (left or right only):
-            min_max4(x0, cx1, cx2, xe, MIN_MAX);
-
-            // clip curve out of X range [boundsMinX; boundsMaxX]
-            if (MIN_MAX[0] > fBoundsMaxX || MIN_MAX[1] < fBoundsMinX) {
-//                System.out.println("curveTo: curve clipped: X");
-                // just add a straight line between P0 and P3:
-                addLine(x0, y0, xe, ye);
-                x0 = xe;
-                y0 = ye;
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
     public void quadTo(float pix_x1, float pix_y1,
                        float pix_x2, float pix_y2)
     {
-        final float cx1 = tosubpixx(pix_x1);
-        final float cy1 = tosubpixy(pix_y1);
-
         final float xe = tosubpixx(pix_x2);
         final float ye = tosubpixy(pix_y2);
-
-        // check possible artefacts with EvenOdd winding rule:
-        if (CLIP_CURVE && clipQuad(cx1, cy1, xe, ye)) {
-            return;
-        }
-
-        curve.set(x0, y0, cx1, cy1, xe, ye);
+        curve.set(x0, y0, tosubpixx(pix_x1), tosubpixy(pix_y1), xe, ye);
         quadBreakIntoLinesAndAdd(x0, y0, curve, xe, ye);
         x0 = xe;
         y0 = ye;
     }
 
-    private boolean clipQuad(float cx1, float cy1,
-                             float xe, float ye)
-    {
-        // First quick check if the last endpoint is outside bounds:
-        if (ye > fBoundsMaxY || ye < fBoundsMinY
-            || xe > fBoundsMaxX || xe < fBoundsMinX)
-        {
-            // Mimic ShapeSpanIterator.c:
-
-            // check Y coordinates (top or bottom only):
-            min_max3(y0, cy1, ye, MIN_MAX);
-
-            // clip curve out of y range [boundsMinY; boundsMaxY]
-            if (MIN_MAX[0] > fBoundsMaxY || MIN_MAX[1] < fBoundsMinY) {
-//                System.out.println("quadTo: curve clipped: Y");
-                x0 = xe;
-                y0 = ye;
-                return true;
-            }
-
-            // At least 1 point is within Y bounds:
-            // check X coordinates (left or right only):
-            min_max3(x0, cx1, xe, MIN_MAX);
-
-            // clip curve out of X range [boundsMinX; boundsMaxX]
-            if (MIN_MAX[0] > fBoundsMaxX || MIN_MAX[1] < fBoundsMinX) {
-//                System.out.println("quadTo: curve clipped: X");
-                // just add a straight line between P0 and P3:
-                addLine(x0, y0, xe, ye);
-                x0 = xe;
-                y0 = ye;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void min_max3(float v1, float v2, float v3,
-                          float[] minmax)
-    {
-        if (v1 < v3) {
-            minmax[0] = (v1 < v2) ? v1 : v2;
-            minmax[1] = (v3 < v2) ? v2 : v3;
-        } else {
-            minmax[0] = (v3 < v2) ? v3 : v2;
-            minmax[1] = (v1 < v2) ? v2 : v1;
-        }
-    }
-
-    private void min_max4(float v1, float v2, float v3, float v4,
-                          float[] minmax)
-    {
-        if (v1 < v4) {
-            if (v2 < v3) {
-                minmax[0] = (v1 < v2) ? v1 : v2;
-                minmax[1] = (v4 < v3) ? v3 : v4;
-            } else {
-                minmax[0] = (v1 < v3) ? v1 : v3;
-                minmax[1] = (v4 < v2) ? v2 : v4;
-            }
-        } else {
-            if (v2 < v3) {
-                minmax[0] = (v4 < v2) ? v4 : v2;
-                minmax[1] = (v1 < v3) ? v3 : v1;
-            } else {
-                minmax[0] = (v4 < v3) ? v4 : v3;
-                minmax[1] = (v1 < v2) ? v2 : v1;
-            }
-        }
-    }
-
     @Override
     public void closePath() {
-        addLine(x0, y0, sx0, sy0);
-        x0 = sx0;
-        y0 = sy0;
+        if (x0 != sx0 || y0 != sy0) {
+            addLine(x0, y0, sx0, sy0);
+            x0 = sx0;
+            y0 = sy0;
+        }
     }
 
     @Override

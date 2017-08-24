@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.7.5-Unsafe</version>
+    <version>0.8.0-Unsafe</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -40,12 +40,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.6.1</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
+                    <!--
+                                        <compilerArguments>
+                                            <bootclasspath>/home/bourgesl/libs/marlin/branches/marlin-renderer-unsafe/marlin-renderer-ext2D/target/rt-marlin-ext2D.jar</bootclasspath>
+                                        </compilerArguments>
+                    -->
                 </configuration>
             </plugin>
             <plugin>
@@ -86,6 +91,7 @@
                             <classifier>sun-java2d</classifier>
                             <includes>
                                 <include>com/sun/imageio/**</include>
+                                <include>java/awt/geom/**</include>
                                 <include>sun/java2d/**</include>
                             </includes>
                         </configuration>
@@ -135,6 +141,14 @@
         </plugins>
     </build>
     <dependencies>
+        <!--
+                <dependency>
+                    <groupId>org.marlin</groupId>
+                    <artifactId>marlin-ext2D</artifactId>
+                    <version>0.1</version>
+                    <scope>provided</scope>
+                </dependency>
+        -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

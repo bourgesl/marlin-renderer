@@ -25,6 +25,8 @@
 
 package org.marlin.pisces;
 
+import java.awt.geom.Path2D.Double.DoubleIteratorContext;
+import java.awt.geom.Path2D.Float.FloatIteratorContext;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.marlin.geom.Path2D;
@@ -75,6 +77,12 @@ final class RendererContext extends ReentrantContext implements IRendererContext
     final MarlinCache cache;
     // flag indicating the shape is stroked (1) or filled (0)
     int stroking = 0;
+    // flag indicating to clip the shape
+    boolean doClip = false;
+    // flag indicating if the path is closed or not (in advance) to handle properly caps
+    boolean closedPath = false;
+    // clip rectangle (ymin, ymax, xmin, xmax):
+    final float[] clipRect = new float[4];
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
@@ -116,7 +124,7 @@ final class RendererContext extends ReentrantContext implements IRendererContext
         nPQPathIterator  = new NormalizingPathIterator.NearestPixelQuarter(float6);
 
         // MarlinRenderingEngine.TransformingPathConsumer2D
-        transformerPC2D = new TransformingPathConsumer2D();
+        transformerPC2D = new TransformingPathConsumer2D(this);
 
         // Renderer:
         cache = new MarlinCache(this);
@@ -138,7 +146,10 @@ final class RendererContext extends ReentrantContext implements IRendererContext
             }
             stats.totalOffHeap = 0L;
         }
-        stroking = 0;
+        stroking   = 0;
+        doClip     = false;
+        closedPath = false;
+
         // if context is maked as DIRTY:
         if (dirty) {
             // may happen if an exception if thrown in the pipeline processing:
