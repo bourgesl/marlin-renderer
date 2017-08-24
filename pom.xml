@@ -91,7 +91,7 @@
                             <classifier>sun-java2d</classifier>
                             <includes>
                                 <include>com/sun/imageio/**</include>
-                                <include>java/awt/geom/**</include>
+<!--                                <include>java/awt/geom/**</include> -->
                                 <include>sun/java2d/**</include>
                             </includes>
                         </configuration>

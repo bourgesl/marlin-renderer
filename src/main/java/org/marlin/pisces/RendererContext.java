@@ -25,8 +25,6 @@
 
 package org.marlin.pisces;
 
-import java.awt.geom.Path2D.Double.DoubleIteratorContext;
-import java.awt.geom.Path2D.Float.FloatIteratorContext;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.marlin.geom.Path2D;
