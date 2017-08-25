@@ -458,7 +458,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     // tree; however, the trees we are interested in have the property that
     // every non leaf node has exactly 2 children
     static final class LengthIterator {
-        private enum Side {LEFT, RIGHT};
+        private enum Side {LEFT, RIGHT}
         // Holds the curves at various levels of the recursion. The root
         // (i.e. the original curve) is at recCurveStack[0] (but then it
         // gets subdivided, the left half is put at 1, so most of the time
