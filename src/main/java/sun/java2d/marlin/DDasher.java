@@ -202,7 +202,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void moveTo(double x0, double y0) {
+    public void moveTo(final double x0, final double y0) {
         if (firstSegidx != 0) {
             out.moveTo(sx, sy);
             emitFirstSegments();
@@ -254,7 +254,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     private int firstSegidx;
 
     // precondition: pts must be in relative coordinates (relative to x0,y0)
-    private void goTo(double[] pts, final int off, final int type, final boolean on) {
+    private void goTo(final double[] pts, final int off, final int type,
+                      final boolean on)
+    {
         final int index = off + type;
         final double x = pts[index - 4];
         final double y = pts[index - 3];
@@ -302,7 +304,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void lineTo(double x1, double y1) {
+    public void lineTo(final double x1, final double y1) {
         final double dx = x1 - x0;
         final double dy = y1 - y0;
 
@@ -419,7 +421,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             _phase = 0.0d;
             leftInThisDashSegment = _dash[_idx];
         }
+
         goTo(_curCurvepts, curCurveoff + 2, type, _dashOn);
+
         _phase += _li.lastSegLen();
         if (_phase >= _dash[_idx]) {
             _phase = 0.0d;
@@ -430,6 +434,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         idx = _idx;
         dashOn = _dashOn;
         phase = _phase;
+
         // reset LengthIterator:
         _li.reset();
     }
@@ -732,9 +737,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void curveTo(double x1, double y1,
-                        double x2, double y2,
-                        double x3, double y3)
+    public void curveTo(final double x1, final double y1,
+                        final double x2, final double y2,
+                        final double x3, final double y3)
     {
         final double[] _curCurvepts = curCurvepts;
         _curCurvepts[0] = x0;        _curCurvepts[1] = y0;
@@ -745,7 +750,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void quadTo(double x1, double y1, double x2, double y2) {
+    public void quadTo(final double x1, final double y1,
+                       final double x2, final double y2)
+    {
         final double[] _curCurvepts = curCurvepts;
         _curCurvepts[0] = x0;        _curCurvepts[1] = y0;
         _curCurvepts[2] = x1;        _curCurvepts[3] = y1;

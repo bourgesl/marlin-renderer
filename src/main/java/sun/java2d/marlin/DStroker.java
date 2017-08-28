@@ -72,7 +72,11 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     // it to floating point, so that's why the divisions by 2^16 are there.
     private static final double ROUND_JOIN_THRESHOLD = 1000.0d/65536.0d;
 
-    private static final double C = 0.5522847498307933d;
+    // kappa = (4/3) * (SQRT(2) - 1)
+    private static final double C = (4.0d * (Math.sqrt(2.0d) - 1.0d) / 3.0d);
+
+    // SQRT(2)
+    private static final double SQRT_2 = Math.sqrt(2.0d);
 
     private static final int MAX_N_CURVES = 11;
 
@@ -167,12 +171,12 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
      * @param scale scaling factor applied to clip boundaries
      * @return this instance
      */
-    DStroker init(DPathConsumer2D pc2d,
-              double lineWidth,
-              int capStyle,
-              int joinStyle,
-              double miterLimit,
-              final double scale)
+    DStroker init(final DPathConsumer2D pc2d,
+                  final double lineWidth,
+                  final int capStyle,
+                  final int joinStyle,
+                  final double miterLimit,
+                  final double scale)
     {
         this.out = pc2d;
 
@@ -190,22 +194,17 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         if (rdrCtx.doClip) {
             // Adjust the clipping rectangle with the stroker margin (miter limit, width)
-
-            // round joins / caps:
-            final double widthLimit =
-                ((joinStyle == JOIN_ROUND) || (capStyle == CAP_ROUND)) ? C * lineWidth // why 0.55 ?
-                : lineWidth2;
-
-            double boundsMargin;
-            if (joinStyle == JOIN_MITER) {
-                boundsMargin = Math.max(widthLimit, limit);
-            } else {
-                boundsMargin = widthLimit;
-            }
             double rdrOffX = 0.0d, rdrOffY = 0.0d;
+            double margin = lineWidth2;
 
+            if (capStyle == CAP_SQUARE) {
+                margin *= SQRT_2;
+            }
+            if ((joinStyle == JOIN_MITER) && (margin < limit)) {
+                margin = limit;
+            }
             if (scale != 1.0d) {
-                boundsMargin *= scale;
+                margin *= scale;
                 rdrOffX = scale * DRenderer.RDR_OFFSET_X;
                 rdrOffY = scale * DRenderer.RDR_OFFSET_Y;
             }
@@ -213,12 +212,10 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             // bounds as half-open intervals: minX <= x < maxX and minY <= y < maxY
             // adjust clip rectangle (ymin, ymax, xmin, xmax):
             final double[] _clipRect = rdrCtx.clipRect;
-            _clipRect[0] -= boundsMargin - rdrOffY;
-            _clipRect[1] += boundsMargin + rdrOffY;
-            _clipRect[2] -= boundsMargin - rdrOffX;
-            _clipRect[3] += boundsMargin + rdrOffX;
-//            System.out.println("clip: "+java.util.Arrays.toString(_clipRect));
-
+            _clipRect[0] -= margin - rdrOffY;
+            _clipRect[1] += margin + rdrOffY;
+            _clipRect[2] -= margin - rdrOffX;
+            _clipRect[3] += margin + rdrOffX;
             this.clipRect = _clipRect;
         } else {
             this.clipRect = null;
@@ -506,7 +503,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void moveTo(double x0, double y0) {
+    public void moveTo(final double x0, final double y0) {
         moveTo(x0, y0, cOutCode);
         // update starting point:
         this.sx0 = x0;
@@ -523,7 +520,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         }
     }
 
-    private void moveTo(double x0, double y0,
+    private void moveTo(final double x0, final double y0,
                         final int outcode)
     {
         if (prev == MOVE_TO) {
@@ -542,11 +539,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void lineTo(double x1, double y1) {
+    public void lineTo(final double x1, final double y1) {
         lineTo(x1, y1, false);
     }
 
-    private void lineTo(double x1, double y1, boolean force) {
+    private void lineTo(final double x1, final double y1,
+                        final boolean force)
+    {
         final int outcode0 = this.cOutCode;
         if (!force && clipRect != null) {
             final int outcode1 = DHelpers.outcode(x1, y1, clipRect);
@@ -1087,9 +1086,10 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         return ret;
     }
 
-    @Override public void curveTo(double x1, double y1,
-                                  double x2, double y2,
-                                  double x3, double y3)
+    @Override
+    public void curveTo(final double x1, final double y1,
+                        final double x2, final double y2,
+                        final double x3, final double y3)
     {
         final int outcode0 = this.cOutCode;
         if (clipRect != null) {
@@ -1210,10 +1210,10 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void quadTo(double x1, double y1,
-                       double x2, double y2)
+    public void quadTo(final double x1, final double y1,
+                       final double x2, final double y2)
     {
-       final int outcode0 = this.cOutCode;
+        final int outcode0 = this.cOutCode;
         if (clipRect != null) {
             final int outcode2 = DHelpers.outcode(x2, y2, clipRect);
             this.cOutCode = outcode2;

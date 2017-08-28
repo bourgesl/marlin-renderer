@@ -203,7 +203,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void moveTo(float x0, float y0) {
+    public void moveTo(final float x0, final float y0) {
         if (firstSegidx != 0) {
             out.moveTo(sx, sy);
             emitFirstSegments();
@@ -255,7 +255,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     private int firstSegidx;
 
     // precondition: pts must be in relative coordinates (relative to x0,y0)
-    private void goTo(final float[] pts, final int off, final int type, final boolean on) {
+    private void goTo(final float[] pts, final int off, final int type,
+                      final boolean on)
+    {
         final int index = off + type;
         final float x = pts[index - 4];
         final float y = pts[index - 3];
@@ -303,7 +305,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void lineTo(float x1, float y1) {
+    public void lineTo(final float x1, final float y1) {
         final float dx = x1 - x0;
         final float dy = y1 - y0;
 
@@ -420,7 +422,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
             _phase = 0.0f;
             leftInThisDashSegment = _dash[_idx];
         }
+
         goTo(_curCurvepts, curCurveoff + 2, type, _dashOn);
+
         _phase += _li.lastSegLen();
         if (_phase >= _dash[_idx]) {
             _phase = 0.0f;
@@ -431,6 +435,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         idx = _idx;
         dashOn = _dashOn;
         phase = _phase;
+
         // reset LengthIterator:
         _li.reset();
     }
@@ -733,9 +738,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void curveTo(float x1, float y1,
-                        float x2, float y2,
-                        float x3, float y3)
+    public void curveTo(final float x1, final float y1,
+                        final float x2, final float y2,
+                        final float x3, final float y3)
     {
         final float[] _curCurvepts = curCurvepts;
         _curCurvepts[0] = x0;        _curCurvepts[1] = y0;
@@ -746,7 +751,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     }
 
     @Override
-    public void quadTo(float x1, float y1, float x2, float y2) {
+    public void quadTo(final float x1, final float y1,
+                       final float x2, final float y2)
+    {
         final float[] _curCurvepts = curCurvepts;
         _curCurvepts[0] = x0;        _curCurvepts[1] = y0;
         _curCurvepts[2] = x1;        _curCurvepts[3] = y1;
