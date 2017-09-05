@@ -85,12 +85,12 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
     private final IntArrayCache cleanIntCache = new IntArrayCache(true, 5);
-    /* dirty int[] cache = 4 refs */
-    private final IntArrayCache dirtyIntCache = new IntArrayCache(false, 4);
-    /* dirty double[] cache = 3 refs */
-    private final DoubleArrayCache dirtyDoubleCache = new DoubleArrayCache(false, 3);
-    /* dirty byte[] cache = 1 ref */
-    private final ByteArrayCache dirtyByteCache = new ByteArrayCache(false, 1);
+    /* dirty int[] cache = 5 refs */
+    private final IntArrayCache dirtyIntCache = new IntArrayCache(false, 5);
+    /* dirty double[] cache = 4 refs (2 polystack) */
+    private final DoubleArrayCache dirtyDoubleCache = new DoubleArrayCache(false, 4);
+    /* dirty byte[] cache = 2 ref (2 polystack) */
+    private final ByteArrayCache dirtyByteCache = new ByteArrayCache(false, 2);
 
     // RendererContext statistics
     final RendererStats stats;
@@ -176,7 +176,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
 
         // create a new Path2D ?
         if (p2d == null) {
-            p2d = new Path2D.Double(Path2D.WIND_NON_ZERO, INITIAL_EDGES_COUNT); // 32K
+            p2d = new Path2D.Double(WIND_NON_ZERO, INITIAL_EDGES_COUNT); // 32K
 
             // update weak reference:
             refPath2D = new WeakReference<Path2D.Double>(p2d);

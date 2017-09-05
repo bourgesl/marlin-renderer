@@ -27,6 +27,7 @@ package sun.java2d.marlin;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import sun.java2d.marlin.DHelpers.IndexStack;
 import sun.java2d.marlin.DHelpers.PolyStack;
 
 final class DTransformingPathConsumer2D {
@@ -35,6 +36,9 @@ final class DTransformingPathConsumer2D {
 
     // recycled ClosedPathDetector instance from detectClosedPath()
     private final ClosedPathDetector   cpDetector;
+
+    // recycled PathClipFilter instance from pathClipper()
+    private final PathClipFilter       pathClipper;
 
     // recycled DPathConsumer2D instance from wrapPath2d()
     private final Path2DWrapper        wp_Path2DWrapper        = new Path2DWrapper();
@@ -56,6 +60,7 @@ final class DTransformingPathConsumer2D {
         // used by RendererContext
         this.rdrCtx = rdrCtx;
         this.cpDetector = new ClosedPathDetector(rdrCtx);
+        this.pathClipper = new PathClipFilter(rdrCtx);
     }
 
     DPathConsumer2D wrapPath2d(Path2D.Double p2d)
@@ -78,6 +83,11 @@ final class DTransformingPathConsumer2D {
     DPathConsumer2D detectClosedPath(DPathConsumer2D out)
     {
         return cpDetector.init(out);
+    }
+
+    DPathConsumer2D pathClipper(DPathConsumer2D out)
+    {
+        return pathClipper.init(out);
     }
 
     DPathConsumer2D deltaTransformConsumer(DPathConsumer2D out,
@@ -459,6 +469,256 @@ final class DTransformingPathConsumer2D {
         @Override
         public void quadTo(double x2, double y2, double x1, double y1) {
             stack.pushQuad(x1, y1, x2, y2);
+        }
+
+        @Override
+        public long getNativeConsumer() {
+            throw new InternalError("Not using a native peer");
+        }
+    }
+
+    static final class PathClipFilter implements DPathConsumer2D {
+
+        private DPathConsumer2D out;
+
+        // Bounds of the drawing region, at pixel precision.
+        private final double[] clipRect;
+
+        private final double[] corners = new double[8];
+        private boolean init_corners = false;
+
+        private final IndexStack stack;
+
+        // the outcode of the starting point
+        private int sOutCode = 0;
+
+        // the current outcode of the current sub path
+        private int cOutCode = 0;
+
+        private boolean outside = false;
+        private double cx0, cy0;
+
+        PathClipFilter(final DRendererContext rdrCtx) {
+            this.clipRect = rdrCtx.clipRect;
+            this.stack = (rdrCtx.stats != null) ?
+                new IndexStack(rdrCtx,
+                        rdrCtx.stats.stat_pcf_idxstack_indices,
+                        rdrCtx.stats.hist_pcf_idxstack_indices,
+                        rdrCtx.stats.stat_array_pcf_idxstack_indices)
+                : new IndexStack(rdrCtx);
+        }
+
+        PathClipFilter init(final DPathConsumer2D out) {
+            this.out = out;
+
+            // Adjust the clipping rectangle with the renderer offsets
+            final double rdrOffX = DRenderer.RDR_OFFSET_X;
+            final double rdrOffY = DRenderer.RDR_OFFSET_Y;
+
+            // add a small rounding error:
+            final double margin = 1e-3d;
+
+            final double[] _clipRect = this.clipRect;
+            _clipRect[0] -= margin - rdrOffY;
+            _clipRect[1] += margin + rdrOffY;
+            _clipRect[2] -= margin - rdrOffX;
+            _clipRect[3] += margin + rdrOffX;
+
+            init_corners = true;
+
+            return this; // fluent API
+        }
+
+        /**
+         * Disposes this instance:
+         * clean up before reusing this instance
+         */
+        void dispose() {
+            stack.dispose();
+        }
+
+        @Override
+        public void pathDone() {
+            out.pathDone();
+
+            // TODO: fix possible leak if exception happened
+            // Dispose this instance:
+            dispose();
+        }
+
+        @Override
+        public void closePath() {
+            if (outside) {
+                this.outside = false;
+
+                if (sOutCode == 0) {
+                    finish();
+                } else {
+                    stack.reset();
+                }
+            }
+            out.closePath();
+            this.cOutCode = sOutCode;
+        }
+
+        private void finish() {
+            if (!stack.isEmpty()) {
+                if (init_corners) {
+                    init_corners = false;
+                    // Top Left (0):
+                    corners[0] = clipRect[2];
+                    corners[1] = clipRect[0];
+                    // Bottom Left (1):
+                    corners[2] = clipRect[2];
+                    corners[3] = clipRect[1];
+                    // Top right (2):
+                    corners[4] = clipRect[3];
+                    corners[5] = clipRect[0];
+                    // Bottom Right (3):
+                    corners[6] = clipRect[3];
+                    corners[7] = clipRect[1];
+                }
+                stack.pullAll(corners, out);
+            }
+            out.lineTo(cx0, cy0);
+        }
+
+        @Override
+        public void moveTo(final double x0, final double y0) {
+            final int outcode = DHelpers.outcode(x0, y0, clipRect);
+            this.sOutCode = outcode;
+            this.cOutCode = outcode;
+            this.outside = false;
+            out.moveTo(x0, y0);
+        }
+
+        @Override
+        public void lineTo(final double xe, final double ye) {
+            final int outcode0 = this.cOutCode;
+            final int outcode1 = DHelpers.outcode(xe, ye, clipRect);
+            this.cOutCode = outcode1;
+
+            final int sideCode = (outcode0 & outcode1);
+
+            // basic rejection criteria:
+            if (sideCode != 0) {
+                // keep last point coordinate before entering the clip again:
+                this.outside = true;
+                this.cx0 = xe;
+                this.cy0 = ye;
+
+                clip(sideCode, outcode0, outcode1);
+                return;
+            }
+            if (outside) {
+                this.outside = false;
+                finish();
+            }
+            // clipping disabled:
+            out.lineTo(xe, ye);
+        }
+
+        private void clip(final int sideCode,
+                          final int outcode0,
+                          final int outcode1)
+        {
+            // corner or cross-boundary on left or right side:
+            if ((outcode0 != outcode1)
+                    && ((sideCode & DHelpers.OUTCODE_MASK_T_B) != 0))
+            {
+                // combine outcodes:
+                final int mergeCode = (outcode0 | outcode1);
+                final int tbCode = mergeCode & DHelpers.OUTCODE_MASK_T_B;
+                final int lrCode = mergeCode & DHelpers.OUTCODE_MASK_L_R;
+                // add corners to outside stack:
+                final int off = (lrCode == DHelpers.OUTCODE_LEFT) ? 0 : 2;
+
+                switch (tbCode) {
+                    case DHelpers.OUTCODE_TOP:
+                        stack.push(off); // top
+                        return;
+                    case DHelpers.OUTCODE_BOTTOM:
+                        stack.push(off + 1); // bottom
+                        return;
+                    default:
+                        // both TOP / BOTTOM:
+                        if ((outcode0 & DHelpers.OUTCODE_TOP) != 0) {
+                            // top to bottom
+                            stack.push(off); // top
+                            stack.push(off + 1); // bottom
+                        } else {
+                            // bottom to top
+                            stack.push(off + 1); // bottom
+                            stack.push(off); // top
+                        }
+                }
+            }
+        }
+
+        @Override
+        public void curveTo(final double x1, final double y1,
+                            final double x2, final double y2,
+                            final double xe, final double ye)
+        {
+            final int outcode0 = this.cOutCode;
+            final int outcode3 = DHelpers.outcode(xe, ye, clipRect);
+            this.cOutCode = outcode3;
+
+            int sideCode = outcode0 & outcode3;
+
+            if (sideCode != 0) {
+                sideCode &= DHelpers.outcode(x1, y1, clipRect);
+                sideCode &= DHelpers.outcode(x2, y2, clipRect);
+
+                // basic rejection criteria:
+                if (sideCode != 0) {
+                    // keep last point coordinate before entering the clip again:
+                    this.outside = true;
+                    this.cx0 = xe;
+                    this.cy0 = ye;
+
+                    clip(sideCode, outcode0, outcode3);
+                    return;
+                }
+            }
+            if (outside) {
+                this.outside = false;
+                finish();
+            }
+            // clipping disabled:
+            out.curveTo(x1, y1, x2, y2, xe, ye);
+        }
+
+        @Override
+        public void quadTo(final double x1, final double y1,
+                           final double xe, final double ye)
+        {
+            final int outcode0 = this.cOutCode;
+            final int outcode2 = DHelpers.outcode(xe, ye, clipRect);
+            this.cOutCode = outcode2;
+
+            int sideCode = outcode0 & outcode2;
+
+            if (outcode2 != 0) {
+                sideCode &= DHelpers.outcode(x1, y1, clipRect);
+
+                // basic rejection criteria:
+                if (sideCode != 0) {
+                    // keep last point coordinate before entering the clip again:
+                    this.outside = true;
+                    this.cx0 = xe;
+                    this.cy0 = ye;
+
+                    clip(sideCode, outcode0, outcode2);
+                    return;
+                }
+            }
+            if (outside) {
+                this.outside = false;
+                finish();
+            }
+            // clipping disabled:
+            out.quadTo(x1, y1, xe, ye);
         }
 
         @Override

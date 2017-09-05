@@ -437,10 +437,12 @@ final class Helpers implements MarlinConst {
 
     // From sun.java2d.loops.GeneralRenderer:
 
-    static final int OUTCODE_TOP     = 1;
-    static final int OUTCODE_BOTTOM  = 2;
-    static final int OUTCODE_LEFT    = 4;
-    static final int OUTCODE_RIGHT   = 8;
+    static final int OUTCODE_TOP      = 1;
+    static final int OUTCODE_BOTTOM   = 2;
+    static final int OUTCODE_LEFT     = 4;
+    static final int OUTCODE_RIGHT    = 8;
+    static final int OUTCODE_MASK_T_B = OUTCODE_TOP  | OUTCODE_BOTTOM;
+    static final int OUTCODE_MASK_L_R = OUTCODE_LEFT | OUTCODE_RIGHT;
 
     static int outcode(final float x, final float y,
                        final float[] clipRect)
@@ -494,17 +496,17 @@ final class Helpers implements MarlinConst {
         private final StatLong stat_array_polystack_curves;
         private final StatLong stat_array_polystack_curveTypes;
 
-       PolyStack(final RendererContext rdrCtx) {
-           this(rdrCtx, null, null, null, null, null);
-       }
+        PolyStack(final RendererContext rdrCtx) {
+            this(rdrCtx, null, null, null, null, null);
+        }
 
-       PolyStack(final RendererContext rdrCtx,
-                 final StatLong stat_polystack_types,
-                 final StatLong stat_polystack_curves,
-                 final Histogram hist_polystack_curves,
-                 final StatLong stat_array_polystack_curves,
-                 final StatLong stat_array_polystack_curveTypes)
-       {
+        PolyStack(final RendererContext rdrCtx,
+                  final StatLong stat_polystack_types,
+                  final StatLong stat_polystack_curves,
+                  final Histogram hist_polystack_curves,
+                  final StatLong stat_array_polystack_curves,
+                  final StatLong stat_array_polystack_curveTypes)
+        {
             curves_ref = rdrCtx.newDirtyFloatArrayRef(INITIAL_CURVES_COUNT); // 32K
             curves     = curves_ref.initial;
 
@@ -711,6 +713,116 @@ final class Helpers implements MarlinConst {
                                        + "\n";
             }
             return ret;
+        }
+    }
+
+    // a stack of integer indices
+    static final class IndexStack {
+
+        // integer capacity = edges count / 4 ~ 1024
+        private static final int INITIAL_COUNT = INITIAL_EDGES_COUNT >> 2;
+
+        private int end;
+        private int[] indices;
+
+        // indices ref (dirty)
+        private final IntArrayCache.Reference indices_ref;
+
+        // used marks (stats only)
+        private int indicesUseMark;
+
+        private final StatLong stat_idxstack_indices;
+        private final Histogram hist_idxstack_indices;
+        private final StatLong stat_array_idxstack_indices;
+
+        IndexStack(final RendererContext rdrCtx) {
+            this(rdrCtx, null, null, null);
+        }
+
+        IndexStack(final RendererContext rdrCtx,
+                   final StatLong stat_idxstack_indices,
+                   final Histogram hist_idxstack_indices,
+                   final StatLong stat_array_idxstack_indices)
+        {
+            indices_ref = rdrCtx.newDirtyIntArrayRef(INITIAL_COUNT); // 4K
+            indices     = indices_ref.initial;
+            end = 0;
+
+            if (DO_STATS) {
+                indicesUseMark = 0;
+            }
+            this.stat_idxstack_indices = stat_idxstack_indices;
+            this.hist_idxstack_indices = hist_idxstack_indices;
+            this.stat_array_idxstack_indices = stat_array_idxstack_indices;
+        }
+
+        /**
+         * Disposes this PolyStack:
+         * clean up before reusing this instance
+         */
+        void dispose() {
+            end = 0;
+
+            if (DO_STATS) {
+                stat_idxstack_indices.add(indicesUseMark);
+                hist_idxstack_indices.add(indicesUseMark);
+
+                // reset marks
+                indicesUseMark = 0;
+            }
+
+            // Return arrays:
+            // values is kept dirty
+            indices = indices_ref.putArray(indices);
+        }
+
+        boolean isEmpty() {
+            return (end == 0);
+        }
+
+        void reset() {
+            end = 0;
+        }
+
+        void push(final int v) {
+            // remove redundant values (reverse order):
+            int[] _values = indices;
+            final int nc = end;
+            if (nc != 0) {
+                if (_values[nc - 1] == v) {
+                    // remove both duplicated values:
+                    end--;
+                    return;
+                }
+            }
+            if (_values.length <= nc) {
+                if (DO_STATS) {
+                    stat_array_idxstack_indices.add(nc + 1);
+                }
+                indices = _values = indices_ref.widenArray(_values, nc, nc + 1);
+            }
+            _values[end++] = v;
+
+            if (DO_STATS) {
+                // update used marks:
+                if (end > indicesUseMark) {
+                    indicesUseMark = end;
+                }
+            }
+        }
+
+        void pullAll(final float[] points, final PathConsumer2D io) {
+            final int nc = end;
+            if (nc == 0) {
+                return;
+            }
+            final int[] _values = indices;
+
+            for (int i = 0, j; i < nc; i++) {
+                j = _values[i] << 1;
+                io.lineTo(points[j], points[j + 1]);
+            }
+            end = 0;
         }
     }
 }

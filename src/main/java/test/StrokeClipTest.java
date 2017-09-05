@@ -47,12 +47,10 @@ public class StrokeClipTest {
 
     private final static boolean DO_CIRCLE = false;
 
-    private final static boolean DO_FILL = false;
-    private final static boolean DO_DRAW = true;
+    private final static boolean DO_FILL = true;
+    private final static boolean DO_DRAW = false;
 
     private final static float CIRCLE_RADIUS = 100f;
-
-    private final static float RECT_SIZE = 100f;
 
     private final static double sqrt2 = Math.sqrt(2);
 
@@ -140,8 +138,6 @@ public class StrokeClipTest {
 
     private static Shape createPath(final float size) {
         if (DO_CIRCLE) {
-            final float c = (float) (0.5f * size - CIRCLE_RADIUS / sqrt2);
-
             return new Ellipse2D.Float(
                     -CIRCLE_RADIUS,
                     100,
