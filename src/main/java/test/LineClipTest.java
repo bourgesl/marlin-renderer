@@ -38,10 +38,12 @@ import javax.imageio.ImageIO;
  */
 public class LineClipTest {
 
-    private final static int N = 20;
+    private final static int N = 100;
 
     static final int NUM_OFFSCREEN = 10000;
     static boolean OMIT_OFFSCREEN = false;
+
+    static boolean DO_FILL = true;
 
     public static void main(String[] args) {
 
@@ -56,8 +58,7 @@ public class LineClipTest {
         try {
             renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
             System.out.println(renderer);
-        }
-        catch (Throwable th) {
+        } catch (Throwable th) {
             // may fail with JDK9 jigsaw (jake)
             if (false) {
                 System.err.println("Unable to get RenderingEngine.getInstance()");
@@ -75,7 +76,7 @@ public class LineClipTest {
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         g2d.setClip(0, 0, size, size);
-        g2d.setStroke( new BasicStroke(1f) );
+        g2d.setStroke(new BasicStroke(1f));
 //        g2d.setStroke( new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER) );
 
         g2d.setBackground(Color.WHITE);
@@ -83,11 +84,19 @@ public class LineClipTest {
 
         g2d.setColor(Color.BLUE);
         final Shape path = createPath(size);
+        Shape fillPath = null;
 
         for (int i = 0; i < N; i++) {
             final long start = System.nanoTime();
 
-            g2d.draw(path);
+            if (DO_FILL) {
+                if (fillPath == null) {
+                    fillPath = g2d.getStroke().createStrokedShape(path);
+                }
+                g2d.fill(fillPath);
+            } else {
+                g2d.draw(path);
+            }
 
             final long time = System.nanoTime() - start;
 
@@ -96,15 +105,13 @@ public class LineClipTest {
 
         try {
             final File file = new File("LineClipTest-"
-            + (OMIT_OFFSCREEN ? "-noOffscreen" : "") + ".png");
+                    + (OMIT_OFFSCREEN ? "-noOffscreen" : "") + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
-        }
-        finally {
+        } finally {
             g2d.dispose();
         }
     }

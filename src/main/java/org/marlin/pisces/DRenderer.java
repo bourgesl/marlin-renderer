@@ -47,8 +47,8 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
     static final int SUBPIXEL_MASK_X = SUBPIXEL_POSITIONS_X - 1;
     static final int SUBPIXEL_MASK_Y = SUBPIXEL_POSITIONS_Y - 1;
 
-    static final double RDR_OFFSET_X = 0.501d / SUBPIXEL_SCALE_X;
-    static final double RDR_OFFSET_Y = 0.501d / SUBPIXEL_SCALE_Y;
+    static final double RDR_OFFSET_X = 0.5d / SUBPIXEL_SCALE_X;
+    static final double RDR_OFFSET_Y = 0.5d / SUBPIXEL_SCALE_Y;
 
     // number of subpixels corresponding to a tile line
     private static final int SUBPIXEL_TILE
@@ -60,9 +60,6 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
 
     // crossing capacity = edges count / 4 ~ 1024
     static final int INITIAL_CROSSING_COUNT = INITIAL_EDGES_COUNT >> 2;
-
-    public static final int WIND_EVEN_ODD = 0;
-    public static final int WIND_NON_ZERO = 1;
 
     // common to all types of input path segments.
     // OFFSET as bytes

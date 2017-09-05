@@ -112,6 +112,8 @@ public final class RendererStats implements MarlinConst {
         = new StatLong("closedPathDetector.polystack.curves");
     final StatLong stat_cpd_polystack_types
         = new StatLong("closedPathDetector.polystack.types");
+    final StatLong stat_pcf_idxstack_indices
+        = new StatLong("pathClipFilter.stack.indices");
     // growable arrays
     final StatLong stat_array_dasher_dasher
         = new StatLong("array.dasher.dasher.d_float");
@@ -143,6 +145,8 @@ public final class RendererStats implements MarlinConst {
         = new StatLong("array.closedPathDetector.polystack.curves.d_float");
     final StatLong stat_array_cpd_polystack_types
         = new StatLong("array.closedPathDetector.polystack.curveTypes.d_byte");
+    final StatLong stat_array_pcf_idxstack_indices
+        = new StatLong("array.pathClipFilter.stack.indices.d_int");
     // histograms
     final Histogram hist_rdr_edges_count
         = new Histogram("renderer.edges.count");
@@ -170,6 +174,8 @@ public final class RendererStats implements MarlinConst {
         = new Histogram("tile_generator.encoding.runLen");
     final Histogram hist_cpd_polystack_curves
         = new Histogram("closedPathDetector.polystack.curves");
+    final Histogram hist_pcf_idxstack_indices
+        = new Histogram("pathClipFilter.stack.indices");
     // all stats
     final StatLong[] statistics = new StatLong[]{
         stat_cache_rowAA,
@@ -197,6 +203,7 @@ public final class RendererStats implements MarlinConst {
         stat_str_polystack_curves,
         stat_cpd_polystack_curves,
         stat_cpd_polystack_types,
+        stat_pcf_idxstack_indices,
         hist_rdr_edges_count,
         hist_rdr_crossings,
         hist_rdr_crossings_ratio,
@@ -210,6 +217,7 @@ public final class RendererStats implements MarlinConst {
         hist_tile_generator_encoding_runLen,
         hist_str_polystack_curves,
         hist_cpd_polystack_curves,
+        hist_pcf_idxstack_indices,
         stat_array_dasher_dasher,
         stat_array_dasher_firstSegmentsBuffer,
         stat_array_marlincache_rowAAChunk,
@@ -224,7 +232,8 @@ public final class RendererStats implements MarlinConst {
         stat_array_str_polystack_curves,
         stat_array_str_polystack_types,
         stat_array_cpd_polystack_curves,
-        stat_array_cpd_polystack_types
+        stat_array_cpd_polystack_types,
+        stat_array_pcf_idxstack_indices
     };
     // monitors
     final Monitor mon_pre_getAATileGenerator

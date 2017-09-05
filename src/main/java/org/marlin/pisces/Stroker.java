@@ -39,36 +39,6 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
     private static final int CLOSE = 2;
 
-    /**
-     * Constant value for join style.
-     */
-    public static final int JOIN_MITER = 0;
-
-    /**
-     * Constant value for join style.
-     */
-    public static final int JOIN_ROUND = 1;
-
-    /**
-     * Constant value for join style.
-     */
-    public static final int JOIN_BEVEL = 2;
-
-    /**
-     * Constant value for end cap style.
-     */
-    public static final int CAP_BUTT = 0;
-
-    /**
-     * Constant value for end cap style.
-     */
-    public static final int CAP_ROUND = 1;
-
-    /**
-     * Constant value for end cap style.
-     */
-    public static final int CAP_SQUARE = 2;
-
     // pisces used to use fixed point arithmetic with 16 decimal digits. I
     // didn't want to change the values of the constant below when I converted
     // it to floating point, so that's why the divisions by 2^16 are there.
@@ -210,6 +180,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 rdrOffX = scale * Renderer.RDR_OFFSET_X;
                 rdrOffY = scale * Renderer.RDR_OFFSET_Y;
             }
+            // add a small rounding error:
+            margin += 1e-3f;
 
             // bounds as half-open intervals: minX <= x < maxX and minY <= y < maxY
             // adjust clip rectangle (ymin, ymax, xmin, xmax):
@@ -1098,7 +1070,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             final int outcode3 = Helpers.outcode(x3, y3, clipRect);
             this.cOutCode = outcode3;
 
-            if (outcode3 != 0) {
+            if ((outcode0 & outcode3) != 0) {
                 final int outcode1 = Helpers.outcode(x1, y1, clipRect);
                 final int outcode2 = Helpers.outcode(x2, y2, clipRect);
 
@@ -1220,7 +1192,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             final int outcode2 = Helpers.outcode(x2, y2, clipRect);
             this.cOutCode = outcode2;
 
-            if (outcode2 != 0) {
+            if ((outcode0 & outcode2) != 0) {
                 final int outcode1 = Helpers.outcode(x1, y1, clipRect);
 
                 // basic rejection criteria

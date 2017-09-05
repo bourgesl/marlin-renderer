@@ -85,7 +85,14 @@ public final class DMarlinRenderingEngine extends RenderingEngine
     static final double LOWER_BND = -UPPER_BND;
 
     static final boolean DO_CLIP = MarlinProperties.isDoClip();
-    static final boolean DO_TRACE = false;
+
+    static final boolean DO_TRACE_PATH = false;
+
+    static final boolean DO_CLIP_TEST = false;
+
+    static final boolean DO_CLIP_FILL = true;
+
+    static final boolean SKIP_WINDING_RULE_EVEN_ODD = false;
 
     /**
      * Public constructor
@@ -405,7 +412,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
         final DTransformingPathConsumer2D transformerPC2D = rdrCtx.transformerPC2D;
 
-        if (DO_TRACE) {
+        if (DO_TRACE_PATH) {
             // trace Stroker:
             pc2d = transformerPC2D.traceStroker(pc2d);
         }
@@ -426,7 +433,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
             pc2d = rdrCtx.dasher.init(pc2d, dashesD, dashLen, dashphase,
                                       recycleDashes);
         } else if (rdrCtx.doClip && (caps != Stroker.CAP_BUTT)) {
-            if (DO_TRACE) {
+            if (DO_TRACE_PATH) {
                 pc2d = transformerPC2D.traceClosedPathDetector(pc2d);
             }
 
@@ -436,7 +443,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         }
         pc2d = transformerPC2D.inverseDeltaTransformConsumer(pc2d, strokerat);
 
-        if (DO_TRACE) {
+        if (DO_TRACE_PATH) {
             // trace Input:
             pc2d = transformerPC2D.traceInput(pc2d);
         }
@@ -806,6 +813,33 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
         final DRendererContext rdrCtx = getRendererContext();
         try {
+            if (DO_CLIP) {
+                // Define the initial clip bounds:
+                final double[] clipRect = rdrCtx.clipRect;
+
+                if (DO_CLIP_TEST) {
+                    // clip rect area / 4 to see remaining paths after clipping:
+                    double h = clip.getHeight();
+                    double w = clip.getWidth();
+                    final double cx = (clip.getLoX() + w) / 2.0d;
+                    final double cy = (clip.getLoY() + h) / 2.0d;
+                    h /= 4.0d;
+                    w /= 4.0d;
+                    clipRect[0] = cy - h;
+                    clipRect[1] = cy + h;
+                    clipRect[2] = cx - w;
+                    clipRect[3] = cx + w;
+                } else {
+                    clipRect[0] = clip.getLoY();
+                    clipRect[1] = clip.getLoY() + clip.getHeight();
+                    clipRect[2] = clip.getLoX();
+                    clipRect[3] = clip.getLoX() + clip.getWidth();
+                }
+
+                // Enable clipping:
+                rdrCtx.doClip = true;
+            }
+
             // Test if at is identity:
             final AffineTransform _at = (at != null && !at.isIdentity()) ? at
                                         : null;
@@ -817,30 +851,32 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 final PathIterator pi = norm.getNormalizingPathIterator(rdrCtx,
                                                  s.getPathIterator(_at));
 
+                final int windingRule = pi.getWindingRule();
+
                 // note: Winding rule may be EvenOdd ONLY for fill operations !
                 r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                          clip.getWidth(), clip.getHeight(),
-                                         pi.getWindingRule());
+                                         windingRule);
 
-                // TODO: subdivide quad/cubic curves into monotonic curves ?
-                pathTo(rdrCtx, pi, r);
+                if (!SKIP_WINDING_RULE_EVEN_ODD) {
+                    DPathConsumer2D pc2d = r;
+
+                    if (DO_CLIP_FILL && (windingRule == WIND_NON_ZERO) && rdrCtx.doClip) {
+                        if (DO_TRACE_PATH) {
+                            // trace Input:
+                            pc2d = rdrCtx.transformerPC2D.traceInput(pc2d);
+                        }
+                        pc2d = rdrCtx.transformerPC2D.pathClipper(pc2d);
+                    }
+
+                    // TODO: subdivide quad/cubic curves into monotonic curves ?
+                    pathTo(rdrCtx, pi, pc2d);
+                }
             } else {
                 // draw shape with given stroke:
                 r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                          clip.getWidth(), clip.getHeight(),
-                                         PathIterator.WIND_NON_ZERO);
-
-                if (DO_CLIP) {
-                    // Define the initial clip bounds:
-                    final double[] clipRect = rdrCtx.clipRect;
-                    clipRect[0] = clip.getLoY();
-                    clipRect[1] = clip.getLoY() + clip.getHeight();
-                    clipRect[2] = clip.getLoX();
-                    clipRect[3] = clip.getLoX() + clip.getWidth();
-
-                    // Enable clipping:
-                    rdrCtx.doClip = true;
-                }
+                                         WIND_NON_ZERO);
 
                 strokeTo(rdrCtx, s, _at, bs, thin, norm, true, r);
             }
@@ -900,7 +936,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         try {
             r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                      clip.getWidth(), clip.getHeight(),
-                                     DRenderer.WIND_EVEN_ODD);
+                                     WIND_EVEN_ODD);
 
             r.moveTo( x,  y);
             r.lineTo( (x+dx1),  (y+dy1));
@@ -952,14 +988,14 @@ public final class DMarlinRenderingEngine extends RenderingEngine
     }
 
     static {
-        if (PathIterator.WIND_NON_ZERO != DRenderer.WIND_NON_ZERO ||
-            PathIterator.WIND_EVEN_ODD != DRenderer.WIND_EVEN_ODD ||
-            BasicStroke.JOIN_MITER != DStroker.JOIN_MITER ||
-            BasicStroke.JOIN_ROUND != DStroker.JOIN_ROUND ||
-            BasicStroke.JOIN_BEVEL != DStroker.JOIN_BEVEL ||
-            BasicStroke.CAP_BUTT != DStroker.CAP_BUTT ||
-            BasicStroke.CAP_ROUND != DStroker.CAP_ROUND ||
-            BasicStroke.CAP_SQUARE != DStroker.CAP_SQUARE)
+        if (PathIterator.WIND_NON_ZERO != WIND_NON_ZERO ||
+            PathIterator.WIND_EVEN_ODD != WIND_EVEN_ODD ||
+            BasicStroke.JOIN_MITER != JOIN_MITER ||
+            BasicStroke.JOIN_ROUND != JOIN_ROUND ||
+            BasicStroke.JOIN_BEVEL != JOIN_BEVEL ||
+            BasicStroke.CAP_BUTT != CAP_BUTT ||
+            BasicStroke.CAP_ROUND != CAP_ROUND ||
+            BasicStroke.CAP_SQUARE != CAP_SQUARE)
         {
             throw new InternalError("mismatched renderer constants");
         }
