@@ -33,8 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import sun.java2d.marlin.MarlinProperties;
-import sun.java2d.marlin.MarlinRenderingEngine;
-import sun.java2d.pipe.RenderingEngine;
 
 /**
  * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers
@@ -92,7 +90,7 @@ public class LineTests {
             final File file = new File("LinesTest-norm-subpix_lg_" + MarlinProperties.getSubPixel_Log2_X()
                     + "x" + MarlinProperties.getSubPixel_Log2_Y() + ".png");
 
-            System.out.println("Writing file: " + file.getAbsolutePath());;
+            System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -106,10 +104,6 @@ public class LineTests {
         final float half = size / 2f;
         final float radius = 166f;
         g2d.draw(new Ellipse2D.Float(half - radius, half - radius, 2f * radius, 2f * radius));
-
-        if (true) {
-            return;
-        }
 
         final Path2D.Float path = new Path2D.Float();
 
