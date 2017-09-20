@@ -580,7 +580,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             return;
         }
 
-        if (sOutCode == 0) {
+        // basic acceptance criteria
+        if ((sOutCode & cOutCode) == 0) {
             if (cx0 != sx0 || cy0 != sy0) {
                 lineTo(sx0, sy0, true);
             }

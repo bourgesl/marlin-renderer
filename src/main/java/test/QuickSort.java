@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -32,7 +30,7 @@ final class QuickSort {
     /**
      * Sorts the specified sub-array of integers into ascending order.
      */
-    static void sort1(final int x[], final int y[], final int off, final int len) {
+    static void sort1(final int[] x, final int[] y, final int off, final int len) {
         int t;
         // Insertion sort on smallest arrays
         if (len < 20) { // 7 in jdk8 or 20 as benchmark ?
@@ -150,7 +148,7 @@ final class QuickSort {
     /**
      * Returns the index of the median of the three indexed integers.
      */
-    private static int med3(final int x[], final int a, final int b, final int c) {
+    private static int med3(final int[] x, final int a, final int b, final int c) {
         return (x[a] < x[b]
                 ? (x[b] < x[c] ? b : x[a] < x[c] ? c : a)
                 : (x[b] > x[c] ? b : x[a] > x[c] ? c : a));

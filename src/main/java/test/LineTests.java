@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -28,13 +26,13 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import org.marlin.pisces.MarlinProperties;
-import sun.java2d.pipe.RenderingEngine;
+import sun.java2d.marlin.MarlinProperties;
 
 /**
  * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers
@@ -42,10 +40,26 @@ import sun.java2d.pipe.RenderingEngine;
 public class LineTests {
 
     public static void main(String[] args) {
-        final float lineStroke = 2f;
-        final int size = 2600;
 
-        System.out.println("Testing renderer = " + RenderingEngine.getInstance().getClass().getName());
+        final float lineStroke = 4f;
+        final int size = 1000;
+
+        // First display which renderer is tested:
+        // JDK9 only:
+        System.setProperty("sun.java2d.renderer.verbose", "true");
+        System.out.println("Testing renderer: ");
+        // Other JDK:
+        String renderer = "undefined";
+        try {
+            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
+            System.out.println(renderer);
+        } catch (Throwable th) {
+            // may fail with JDK9 jigsaw (jake)
+            if (false) {
+                System.err.println("Unable to get RenderingEngine.getInstance()");
+                th.printStackTrace();
+            }
+        }
 
         System.out.println("LineTests: size = " + size);
 
@@ -86,6 +100,10 @@ public class LineTests {
     }
 
     private static void paint(final Graphics2D g2d, final float size) {
+
+        final float half = size / 2f;
+        final float radius = 166f;
+        g2d.draw(new Ellipse2D.Float(half - radius, half - radius, 2f * radius, 2f * radius));
 
         final Path2D.Float path = new Path2D.Float();
 
