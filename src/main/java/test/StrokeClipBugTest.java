@@ -27,8 +27,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -36,22 +34,16 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 /**
- * Simple Stroke clipping test using GeneralPath
+ * Simple Stroke clipping BUG 0.8.1 test using GeneralPath
+ *
+ * run it with -Dsun.java2d.renderer.clip=true/false
  */
-public class StrokeClipTest {
+public class StrokeClipBugTest {
 
     private final static int N = 1;
 
-    private final static boolean DO_CLOSE_PATH = true;
-
-    private final static boolean DO_CIRCLE = false;
-
     private final static boolean DO_FILL = true;
-    private final static boolean DO_DRAW = false;
-
-    private final static float CIRCLE_RADIUS = 100f;
-
-    private final static double sqrt2 = Math.sqrt(2);
+    private final static boolean DO_DRAW = true;
 
     public static void main(String[] args) {
 
@@ -75,7 +67,7 @@ public class StrokeClipTest {
             }
         }
 
-        System.out.println("StrokeClipTest: size = " + size);
+        System.out.println("StrokeClipBugTest: size = " + size);
 
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 
@@ -86,7 +78,7 @@ public class StrokeClipTest {
 
         g2d.setClip(0, 0, size, size);
         g2d.setStroke(
-                new BasicStroke(lineStroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 20f)
+                new BasicStroke(lineStroke, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 20f)
         );
 
         g2d.setBackground(Color.WHITE);
@@ -102,9 +94,9 @@ public class StrokeClipTest {
             System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
         }
 
+        final String clipFlag = System.getProperty("sun.java2d.renderer.clip");
         try {
-            final File file = new File("StrokeClipTest-"
-                    + (DO_CIRCLE ? "circle" : "rect") + ".png");
+            final File file = new File("StrokeClipBugTest-clip-" + clipFlag + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
@@ -116,48 +108,29 @@ public class StrokeClipTest {
     }
 
     private static void paint(final Graphics2D g2d, final float size) {
-        final AffineTransform tx = g2d.getTransform();
-        final Shape path = createPath(size);
+        final Shape path = createPath();
 
-        for (int i = 500; i < 600; i += 1500) {
-            g2d.setTransform(AffineTransform.getTranslateInstance(i - 10000, 0));
-
-            if (DO_FILL) {
-                g2d.setColor(Color.BLUE);
-                g2d.fill(path);
-            }
-
-            if (DO_DRAW) {
-                g2d.setColor(Color.RED);
-                g2d.draw(path);
-            }
+        if (DO_FILL) {
+            g2d.setColor(Color.BLUE);
+            g2d.fill(path);
         }
-        g2d.setTransform(tx);
+
+        if (DO_DRAW) {
+            g2d.setColor(Color.RED);
+            g2d.draw(path);
+        }
     }
 
-    private static Shape createPath(final float size) {
-        if (DO_CIRCLE) {
-            return new Ellipse2D.Float(
-                    -CIRCLE_RADIUS,
-                    100,
-                    2.0f * CIRCLE_RADIUS,
-                    2.0f * CIRCLE_RADIUS
-            );
+    private static Shape createPath() {
+        final Path2D p = new Path2D.Float();
+        // outside top
+        p.moveTo(100, -100);
 
-        } else {
-            final Path2D p = new Path2D.Float();
-            p.moveTo(100, 100);
-            p.lineTo(100.0, 50);
-            p.lineTo(-100, 10);
-            p.lineTo(-100, 100);
-            p.lineTo(300.0, 200);
-            p.lineTo(100, 300);
-            p.lineTo(120, 80);
+        p.lineTo(100.0, 50);
+        p.lineTo(300.0, 200);
 
-            if (DO_CLOSE_PATH) {
-                p.closePath();
-            }
-            return p;
-        }
+        p.closePath();
+
+        return p;
     }
 }
