@@ -163,4 +163,12 @@ interface MarlinConst {
      */
     public static final int CAP_SQUARE = 2;
 
+    // Out codes
+    static final int OUTCODE_TOP      = 1;
+    static final int OUTCODE_BOTTOM   = 2;
+    static final int OUTCODE_LEFT     = 4;
+    static final int OUTCODE_RIGHT    = 8;
+    static final int OUTCODE_MASK_T_B = OUTCODE_TOP  | OUTCODE_BOTTOM;
+    static final int OUTCODE_MASK_L_R = OUTCODE_LEFT | OUTCODE_RIGHT;
+    static final int OUTCODE_MASK_T_B_L_R = OUTCODE_MASK_T_B | OUTCODE_MASK_L_R;
 }

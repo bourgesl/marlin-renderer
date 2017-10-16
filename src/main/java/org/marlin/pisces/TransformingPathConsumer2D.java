@@ -496,6 +496,9 @@ final class TransformingPathConsumer2D {
         // the current outcode of the current sub path
         private int cOutCode = 0;
 
+        // the cumulated (and) outcode of the complete path
+        private int gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
+
         private boolean outside = false;
         private float cx0, cy0;
 
@@ -525,7 +528,8 @@ final class TransformingPathConsumer2D {
             _clipRect[2] -= margin - rdrOffX;
             _clipRect[3] += margin + rdrOffX;
 
-            init_corners = true;
+            this.init_corners = true;
+            this.gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
 
             return this; // fluent API
         }
@@ -540,6 +544,8 @@ final class TransformingPathConsumer2D {
 
         @Override
         public void pathDone() {
+            finishPath();
+
             out.pathDone();
 
             // TODO: fix possible leak if exception happened
@@ -549,35 +555,45 @@ final class TransformingPathConsumer2D {
 
         @Override
         public void closePath() {
-            if (outside) {
-                this.outside = false;
+            finishPath();
 
-                if (sOutCode == 0) {
-                    finish();
-                } else {
-                    stack.reset();
-                }
-            }
             out.closePath();
             this.cOutCode = sOutCode;
         }
 
+        private void finishPath() {
+            if (outside) {
+                // criteria: inside or totally outside ?
+                if (gOutCode == 0) {
+                    finish();
+                } else {
+                    this.outside = false;
+                    stack.reset();
+                }
+            }
+        }
+
         private void finish() {
+            this.outside = false;
+
             if (!stack.isEmpty()) {
                 if (init_corners) {
                     init_corners = false;
+
+                    final float[] _corners = corners;
+                    final float[] _clipRect = clipRect;
                     // Top Left (0):
-                    corners[0] = clipRect[2];
-                    corners[1] = clipRect[0];
+                    _corners[0] = _clipRect[2];
+                    _corners[1] = _clipRect[0];
                     // Bottom Left (1):
-                    corners[2] = clipRect[2];
-                    corners[3] = clipRect[1];
+                    _corners[2] = _clipRect[2];
+                    _corners[3] = _clipRect[1];
                     // Top right (2):
-                    corners[4] = clipRect[3];
-                    corners[5] = clipRect[0];
+                    _corners[4] = _clipRect[3];
+                    _corners[5] = _clipRect[0];
                     // Bottom Right (3):
-                    corners[6] = clipRect[3];
-                    corners[7] = clipRect[1];
+                    _corners[6] = _clipRect[3];
+                    _corners[7] = _clipRect[1];
                 }
                 stack.pullAll(corners, out);
             }
@@ -602,7 +618,10 @@ final class TransformingPathConsumer2D {
             final int sideCode = (outcode0 & outcode1);
 
             // basic rejection criteria:
-            if (sideCode != 0) {
+            if (sideCode == 0) {
+                this.gOutCode = 0;
+            } else {
+                this.gOutCode &= sideCode;
                 // keep last point coordinate before entering the clip again:
                 this.outside = true;
                 this.cx0 = xe;
@@ -612,7 +631,6 @@ final class TransformingPathConsumer2D {
                 return;
             }
             if (outside) {
-                this.outside = false;
                 finish();
             }
             // clipping disabled:
@@ -625,25 +643,25 @@ final class TransformingPathConsumer2D {
         {
             // corner or cross-boundary on left or right side:
             if ((outcode0 != outcode1)
-                    && ((sideCode & DHelpers.OUTCODE_MASK_T_B) != 0))
+                    && ((sideCode & MarlinConst.OUTCODE_MASK_T_B) != 0))
             {
                 // combine outcodes:
                 final int mergeCode = (outcode0 | outcode1);
-                final int tbCode = mergeCode & DHelpers.OUTCODE_MASK_T_B;
-                final int lrCode = mergeCode & DHelpers.OUTCODE_MASK_L_R;
-                // add corners to outside stack:
-                final int off = (lrCode == DHelpers.OUTCODE_LEFT) ? 0 : 2;
+                final int tbCode = mergeCode & MarlinConst.OUTCODE_MASK_T_B;
+                final int lrCode = mergeCode & MarlinConst.OUTCODE_MASK_L_R;
+                final int off = (lrCode == MarlinConst.OUTCODE_LEFT) ? 0 : 2;
 
+                // add corners to outside stack:
                 switch (tbCode) {
-                    case DHelpers.OUTCODE_TOP:
+                    case MarlinConst.OUTCODE_TOP:
                         stack.push(off); // top
                         return;
-                    case DHelpers.OUTCODE_BOTTOM:
+                    case MarlinConst.OUTCODE_BOTTOM:
                         stack.push(off + 1); // bottom
                         return;
                     default:
                         // both TOP / BOTTOM:
-                        if ((outcode0 & DHelpers.OUTCODE_TOP) != 0) {
+                        if ((outcode0 & MarlinConst.OUTCODE_TOP) != 0) {
                             // top to bottom
                             stack.push(off); // top
                             stack.push(off + 1); // bottom
@@ -667,9 +685,12 @@ final class TransformingPathConsumer2D {
 
             int sideCode = outcode0 & outcode3;
 
-            if (sideCode != 0) {
+            if (sideCode == 0) {
+                this.gOutCode = 0;
+            } else {
                 sideCode &= Helpers.outcode(x1, y1, clipRect);
                 sideCode &= Helpers.outcode(x2, y2, clipRect);
+                this.gOutCode &= sideCode;
 
                 // basic rejection criteria:
                 if (sideCode != 0) {
@@ -683,7 +704,6 @@ final class TransformingPathConsumer2D {
                 }
             }
             if (outside) {
-                this.outside = false;
                 finish();
             }
             // clipping disabled:
@@ -700,8 +720,11 @@ final class TransformingPathConsumer2D {
 
             int sideCode = outcode0 & outcode2;
 
-            if (outcode2 != 0) {
+            if (sideCode == 0) {
+                this.gOutCode = 0;
+            } else {
                 sideCode &= Helpers.outcode(x1, y1, clipRect);
+                this.gOutCode &= sideCode;
 
                 // basic rejection criteria:
                 if (sideCode != 0) {
@@ -715,7 +738,6 @@ final class TransformingPathConsumer2D {
                 }
             }
             if (outside) {
-                this.outside = false;
                 finish();
             }
             // clipping disabled:
