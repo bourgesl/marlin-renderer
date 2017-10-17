@@ -93,8 +93,6 @@ public final class MarlinRenderingEngine extends RenderingEngine
 
     static final boolean DO_CLIP_FILL = true;
 
-    static final boolean SKIP_WINDING_RULE_EVEN_ODD = false;
-
     /**
      * Public constructor
      */
@@ -856,21 +854,20 @@ public final class MarlinRenderingEngine extends RenderingEngine
                                          clip.getWidth(), clip.getHeight(),
                                          windingRule);
 
-                if (!SKIP_WINDING_RULE_EVEN_ODD) {
-                    PathConsumer2D pc2d = r;
+                PathConsumer2D pc2d = r;
 
-                    if (DO_CLIP_FILL && (windingRule == WIND_NON_ZERO) && rdrCtx.doClip) {
-                        if (DO_TRACE_PATH) {
-                            // trace Input:
-                            pc2d = rdrCtx.transformerPC2D.traceInput(pc2d);
-                        }
-                        pc2d = rdrCtx.transformerPC2D.pathClipper(pc2d);
+                if (DO_CLIP_FILL && (windingRule == WIND_NON_ZERO) && rdrCtx.doClip) {
+                    if (DO_TRACE_PATH) {
+                        // trace Input:
+                        pc2d = rdrCtx.transformerPC2D.traceInput(pc2d);
                     }
-
-                    // TODO: subdivide quad/cubic curves into monotonic curves ?
-                    pathTo(rdrCtx, pi, pc2d);
+                    pc2d = rdrCtx.transformerPC2D.pathClipper(pc2d);
                 }
-            } else {
+
+                // TODO: subdivide quad/cubic curves into monotonic curves ?
+                pathTo(rdrCtx, pi, pc2d);
+
+             } else {
                 // draw shape with given stroke:
                 r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                          clip.getWidth(), clip.getHeight(),
