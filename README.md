@@ -6,6 +6,8 @@ Marlin is an open source (GPL2+CP) Java2D RenderingEngine optimized for performa
 Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 
 News:
+* My personal point of view after javaone: it is your turn to contribute to OpenJDK & OpenJFX: see [openjdk thread](http://mail.openjdk.java.net/pipermail/openjfx-dev/2017-October/020900.html)
+* 4 oct 2017: JavaOne talk slides: [Marlin, a JDK9 Success Story: Vector Graphics on Steroids for Java 2D and JavaFX](https://github.com/bourgesl/bourgesl.github.io/raw/master/javaone2017/slides/javaone-marlin-talk.pdf)
 * may 2017: Marlin & MarlinFX 0.7.5 integrated in OpenJFX10 (enabled by default)
 * nov 2016: MarlinFX integrated in OpenJFX9
 * jul 2016: Marlin integrated in [Jetbrains OpenJDK8 build](https://github.com/JetBrains/jdk8u) and running in IntelliJ IDEA 2016.3
@@ -64,7 +66,8 @@ Support our work
 ================
 
 To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, I launched a gofundme campaign: https://www.gofundme.com/javaone-2017-travel-costs
-Please contribute if you appreciate the Marlin renderer to cover extra expenses (travel costs ...)
+
+Please contribute if you appreciate the Marlin renderer to send me a gift in return ...
 
 
 Related projects
