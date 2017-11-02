@@ -90,7 +90,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
     static final boolean DO_TRACE_PATH = false;
 
     static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
-    
+
     static final boolean DO_CLIP_TEST = false;
 
     /**

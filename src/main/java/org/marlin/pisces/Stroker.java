@@ -193,6 +193,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             this.clipRect = _clipRect;
         } else {
             this.clipRect = null;
+            this.cOutCode = 0;
+            this.sOutCode = 0;
         }
         return this; // fluent API
     }
@@ -588,7 +590,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 lineTo(sx0, sy0, true);
             }
 
-            drawJoin(cdx, cdy, cx0, cy0, sdx, sdy, cmx, cmy, smx, smy, cOutCode);
+            drawJoin(cdx, cdy, cx0, cy0, sdx, sdy, cmx, cmy, smx, smy, sOutCode);
 
             emitLineTo(sx0 + smx, sy0 + smy);
 
