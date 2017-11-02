@@ -85,12 +85,13 @@ public final class DMarlinRenderingEngine extends RenderingEngine
     static final double LOWER_BND = -UPPER_BND;
 
     static final boolean DO_CLIP = MarlinProperties.isDoClip();
+    static final boolean DO_CLIP_FILL = true;
 
     static final boolean DO_TRACE_PATH = false;
 
+    static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
+    
     static final boolean DO_CLIP_TEST = false;
-
-    static final boolean DO_CLIP_FILL = true;
 
     /**
      * Public constructor
@@ -141,7 +142,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                      miterlimit,
                      dashes,
                      dashphase,
-                     rdrCtx.transformerPC2D.wrapPath2d(p2d)
+                     rdrCtx.transformerPC2D.wrapPath2D(p2d)
                     );
 
             // Use Path2D copy constructor (trim)
@@ -811,7 +812,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
         final DRendererContext rdrCtx = getRendererContext();
         try {
-            if (DO_CLIP) {
+            if (DO_CLIP || (DO_CLIP_RUNTIME_ENABLE && MarlinProperties.isDoClipAtRuntime())) {
                 // Define the initial clip bounds:
                 final double[] clipRect = rdrCtx.clipRect;
 

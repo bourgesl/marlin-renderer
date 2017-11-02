@@ -86,12 +86,13 @@ public final class MarlinRenderingEngine extends RenderingEngine
     static final float LOWER_BND = -UPPER_BND;
 
     static final boolean DO_CLIP = MarlinProperties.isDoClip();
+    static final boolean DO_CLIP_FILL = true;
 
     static final boolean DO_TRACE_PATH = false;
 
+    static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
+    
     static final boolean DO_CLIP_TEST = false;
-
-    static final boolean DO_CLIP_FILL = true;
 
     /**
      * Public constructor
@@ -142,7 +143,7 @@ public final class MarlinRenderingEngine extends RenderingEngine
                      miterlimit,
                      dashes,
                      dashphase,
-                     rdrCtx.transformerPC2D.wrapPath2d(p2d)
+                     rdrCtx.transformerPC2D.wrapPath2D(p2d)
                     );
 
             // Use Path2D copy constructor (trim)
@@ -809,7 +810,7 @@ public final class MarlinRenderingEngine extends RenderingEngine
 
         final RendererContext rdrCtx = getRendererContext();
         try {
-            if (DO_CLIP) {
+            if (DO_CLIP || (DO_CLIP_RUNTIME_ENABLE && MarlinProperties.isDoClipAtRuntime())) {
                 // Define the initial clip bounds:
                 final float[] clipRect = rdrCtx.clipRect;
 
@@ -867,7 +868,7 @@ public final class MarlinRenderingEngine extends RenderingEngine
                 // TODO: subdivide quad/cubic curves into monotonic curves ?
                 pathTo(rdrCtx, pi, pc2d);
 
-             } else {
+            } else {
                 // draw shape with given stroke:
                 r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                          clip.getWidth(), clip.getHeight(),
