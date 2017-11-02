@@ -41,7 +41,7 @@ final class TransformingPathConsumer2D {
     // recycled PathClipFilter instance from pathClipper()
     private final PathClipFilter       pathClipper;
 
-    // recycled PathConsumer2D instance from wrapPath2d()
+    // recycled PathConsumer2D instance from wrapPath2D()
     private final Path2DWrapper        wp_Path2DWrapper        = new Path2DWrapper();
 
     // recycled PathConsumer2D instances from deltaTransformConsumer()
@@ -64,7 +64,7 @@ final class TransformingPathConsumer2D {
         this.pathClipper = new PathClipFilter(rdrCtx);
     }
 
-    PathConsumer2D wrapPath2d(Path2D.Float p2d)
+    PathConsumer2D wrapPath2D(Path2D.Float p2d)
     {
         return wp_Path2DWrapper.init(p2d);
     }
