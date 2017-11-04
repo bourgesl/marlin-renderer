@@ -91,8 +91,6 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
     static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
 
-    static final boolean DO_CLIP_TEST = false;
-
     /**
      * Public constructor
      */
@@ -816,24 +814,10 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 // Define the initial clip bounds:
                 final double[] clipRect = rdrCtx.clipRect;
 
-                if (DO_CLIP_TEST) {
-                    // clip rect area / 4 to see remaining paths after clipping:
-                    double h = clip.getHeight();
-                    double w = clip.getWidth();
-                    final double cx = (clip.getLoX() + w) / 2.0d;
-                    final double cy = (clip.getLoY() + h) / 2.0d;
-                    h /= 4.0d;
-                    w /= 4.0d;
-                    clipRect[0] = cy - h;
-                    clipRect[1] = cy + h;
-                    clipRect[2] = cx - w;
-                    clipRect[3] = cx + w;
-                } else {
-                    clipRect[0] = clip.getLoY();
-                    clipRect[1] = clip.getLoY() + clip.getHeight();
-                    clipRect[2] = clip.getLoX();
-                    clipRect[3] = clip.getLoX() + clip.getWidth();
-                }
+                clipRect[0] = clip.getLoY();
+                clipRect[1] = clip.getLoY() + clip.getHeight();
+                clipRect[2] = clip.getLoX();
+                clipRect[3] = clip.getLoX() + clip.getWidth();
 
                 // Enable clipping:
                 rdrCtx.doClip = true;
@@ -859,12 +843,17 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
                 DPathConsumer2D pc2d = r;
 
-                if (DO_CLIP_FILL && (windingRule == WIND_NON_ZERO) && rdrCtx.doClip) {
+                if (DO_CLIP_FILL && rdrCtx.doClip) {
                     if (DO_TRACE_PATH) {
-                        // trace Input:
-                        pc2d = rdrCtx.transformerPC2D.traceInput(pc2d);
+                        // trace Filler:
+                        pc2d = rdrCtx.transformerPC2D.traceFiller(pc2d);
                     }
                     pc2d = rdrCtx.transformerPC2D.pathClipper(pc2d);
+                }
+
+                if (DO_TRACE_PATH) {
+                    // trace Input:
+                    pc2d = rdrCtx.transformerPC2D.traceInput(pc2d);
                 }
 
                 // TODO: subdivide quad/cubic curves into monotonic curves ?
