@@ -71,6 +71,16 @@ Please contribute if you appreciate the Marlin renderer to send me a gift in ret
 
 
 Related projects
-===============
+================
 
 [Mapbench](https://github.com/bourgesl/mapbench) provides benchmarking tools based on real world map painted by the [GeoServer](http://geoserver.org/) WMS server
+
+Acknowledgments:
+================
+
+YourKit supports open source projects with its full-featured Java Profiler.
+YourKit, LLC is the creator of <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>
+and <a href="https://www.yourkit.com/.net/profiler/">YourKit .NET Profiler</a>,
+innovative and intelligent tools for profiling Java and .NET applications.
+
+<img src="https://www.yourkit.com/images/yklogo.png" alt="Yourkit logo">
