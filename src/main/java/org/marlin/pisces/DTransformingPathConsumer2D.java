@@ -64,8 +64,7 @@ final class DTransformingPathConsumer2D {
         this.pathClipper = new PathClipFilter(rdrCtx);
     }
 
-    DPathConsumer2D wrapPath2D(Path2D.Double p2d)
-    {
+    DPathConsumer2D wrapPath2D(Path2D.Double p2d) {
         return wp_Path2DWrapper.init(p2d);
     }
 
@@ -85,13 +84,11 @@ final class DTransformingPathConsumer2D {
         return tracerStroker.init(out);
     }
 
-    DPathConsumer2D detectClosedPath(DPathConsumer2D out)
-    {
+    DPathConsumer2D detectClosedPath(DPathConsumer2D out) {
         return cpDetector.init(out);
     }
 
-    DPathConsumer2D pathClipper(DPathConsumer2D out)
-    {
+    DPathConsumer2D pathClipper(DPathConsumer2D out) {
         return pathClipper.init(out);
     }
 
