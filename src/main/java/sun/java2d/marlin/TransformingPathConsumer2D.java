@@ -41,7 +41,7 @@ final class TransformingPathConsumer2D {
     // recycled PathClipFilter instance from pathClipper()
     private final PathClipFilter       pathClipper;
 
-    // recycled PathConsumer2D instance from wrapPath2d()
+    // recycled PathConsumer2D instance from wrapPath2D()
     private final Path2DWrapper        wp_Path2DWrapper        = new Path2DWrapper();
 
     // recycled PathConsumer2D instances from deltaTransformConsumer()
@@ -55,6 +55,7 @@ final class TransformingPathConsumer2D {
     // recycled PathTracer instances from tracer...() methods
     private final PathTracer tracerInput      = new PathTracer("[Input]");
     private final PathTracer tracerCPDetector = new PathTracer("ClosedPathDetector");
+    private final PathTracer tracerFiller     = new PathTracer("Filler");
     private final PathTracer tracerStroker    = new PathTracer("Stroker");
 
     TransformingPathConsumer2D(final RendererContext rdrCtx) {
@@ -64,7 +65,7 @@ final class TransformingPathConsumer2D {
         this.pathClipper = new PathClipFilter(rdrCtx);
     }
 
-    PathConsumer2D wrapPath2d(Path2D.Float p2d)
+    PathConsumer2D wrapPath2D(Path2D.Float p2d)
     {
         return wp_Path2DWrapper.init(p2d);
     }
@@ -75,6 +76,10 @@ final class TransformingPathConsumer2D {
 
     PathConsumer2D traceClosedPathDetector(PathConsumer2D out) {
         return tracerCPDetector.init(out);
+    }
+
+    PathConsumer2D traceFiller(PathConsumer2D out) {
+        return tracerFiller.init(out);
     }
 
     PathConsumer2D traceStroker(PathConsumer2D out) {
@@ -490,9 +495,6 @@ final class TransformingPathConsumer2D {
 
         private final IndexStack stack;
 
-        // the outcode of the starting point
-        private int sOutCode = 0;
-
         // the current outcode of the current sub path
         private int cOutCode = 0;
 
@@ -500,6 +502,8 @@ final class TransformingPathConsumer2D {
         private int gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
 
         private boolean outside = false;
+
+        // The current point OUTSIDE
         private float cx0, cy0;
 
         PathClipFilter(final RendererContext rdrCtx) {
@@ -542,25 +546,6 @@ final class TransformingPathConsumer2D {
             stack.dispose();
         }
 
-        @Override
-        public void pathDone() {
-            finishPath();
-
-            out.pathDone();
-
-            // TODO: fix possible leak if exception happened
-            // Dispose this instance:
-            dispose();
-        }
-
-        @Override
-        public void closePath() {
-            finishPath();
-
-            out.closePath();
-            this.cOutCode = sOutCode;
-        }
-
         private void finishPath() {
             if (outside) {
                 // criteria: inside or totally outside ?
@@ -601,9 +586,28 @@ final class TransformingPathConsumer2D {
         }
 
         @Override
+        public void pathDone() {
+            finishPath();
+
+            out.pathDone();
+
+            // TODO: fix possible leak if exception happened
+            // Dispose this instance:
+            dispose();
+        }
+
+        @Override
+        public void closePath() {
+            finishPath();
+
+            out.closePath();
+        }
+
+        @Override
         public void moveTo(final float x0, final float y0) {
+            finishPath();
+
             final int outcode = Helpers.outcode(x0, y0, clipRect);
-            this.sOutCode = outcode;
             this.cOutCode = outcode;
             this.outside = false;
             out.moveTo(x0, y0);
@@ -643,7 +647,7 @@ final class TransformingPathConsumer2D {
         {
             // corner or cross-boundary on left or right side:
             if ((outcode0 != outcode1)
-                    && ((sideCode & MarlinConst.OUTCODE_MASK_T_B) != 0))
+                    && ((sideCode & MarlinConst.OUTCODE_MASK_L_R) != 0))
             {
                 // combine outcodes:
                 final int mergeCode = (outcode0 | outcode1);
@@ -654,18 +658,22 @@ final class TransformingPathConsumer2D {
                 // add corners to outside stack:
                 switch (tbCode) {
                     case MarlinConst.OUTCODE_TOP:
+// System.out.println("TOP "+ ((off == 0) ? "LEFT" : "RIGHT"));
                         stack.push(off); // top
                         return;
                     case MarlinConst.OUTCODE_BOTTOM:
+// System.out.println("BOTTOM "+ ((off == 0) ? "LEFT" : "RIGHT"));
                         stack.push(off + 1); // bottom
                         return;
                     default:
                         // both TOP / BOTTOM:
                         if ((outcode0 & MarlinConst.OUTCODE_TOP) != 0) {
+// System.out.println("TOP + BOTTOM "+ ((off == 0) ? "LEFT" : "RIGHT"));
                             // top to bottom
                             stack.push(off); // top
                             stack.push(off + 1); // bottom
                         } else {
+// System.out.println("BOTTOM + TOP "+ ((off == 0) ? "LEFT" : "RIGHT"));
                             // bottom to top
                             stack.push(off + 1); // bottom
                             stack.push(off); // top

@@ -32,12 +32,14 @@ import sun.misc.Unsafe;
 
 final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
 
+    private static final boolean DISABLE_BLEND = false;
+
     private static final int MAX_TILE_ALPHA_SUM = TILE_W * TILE_H * MAX_AA_ALPHA;
 
     private static final int TH_AA_ALPHA_FILL_EMPTY = ((MAX_AA_ALPHA + 1) / 3); // 33%
     private static final int TH_AA_ALPHA_FILL_FULL  = ((MAX_AA_ALPHA + 1) * 2 / 3); // 66%
 
-    private static final int FILL_TILE_W = TILE_W >> 1; // half tile width
+    private static final int FILL_TILE_W = Math.max(16, TILE_W >> 2); // 1/4th tile width
 
     static {
         if (MAX_TILE_ALPHA_SUM <= 0) {
@@ -142,6 +144,10 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
      */
     @Override
     public int getTypicalAlpha() {
+        if (DISABLE_BLEND) {
+            // always return empty tiles to disable blending operations
+            return 0x00;
+        }
         int al = cache.alphaSumInTile(x);
         // Note: if we have a filled rectangle that doesn't end on a tile
         // border, we could still return 0xff, even though al!=maxTileAlphaSum

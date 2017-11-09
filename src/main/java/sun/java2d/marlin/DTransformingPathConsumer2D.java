@@ -40,7 +40,7 @@ final class DTransformingPathConsumer2D {
     // recycled PathClipFilter instance from pathClipper()
     private final PathClipFilter       pathClipper;
 
-    // recycled DPathConsumer2D instance from wrapPath2d()
+    // recycled DPathConsumer2D instance from wrapPath2D()
     private final Path2DWrapper        wp_Path2DWrapper        = new Path2DWrapper();
 
     // recycled DPathConsumer2D instances from deltaTransformConsumer()
@@ -54,6 +54,7 @@ final class DTransformingPathConsumer2D {
     // recycled PathTracer instances from tracer...() methods
     private final PathTracer tracerInput      = new PathTracer("[Input]");
     private final PathTracer tracerCPDetector = new PathTracer("ClosedPathDetector");
+    private final PathTracer tracerFiller     = new PathTracer("Filler");
     private final PathTracer tracerStroker    = new PathTracer("Stroker");
 
     DTransformingPathConsumer2D(final DRendererContext rdrCtx) {
@@ -63,8 +64,7 @@ final class DTransformingPathConsumer2D {
         this.pathClipper = new PathClipFilter(rdrCtx);
     }
 
-    DPathConsumer2D wrapPath2d(Path2D.Double p2d)
-    {
+    DPathConsumer2D wrapPath2D(Path2D.Double p2d) {
         return wp_Path2DWrapper.init(p2d);
     }
 
@@ -76,17 +76,19 @@ final class DTransformingPathConsumer2D {
         return tracerCPDetector.init(out);
     }
 
+    DPathConsumer2D traceFiller(DPathConsumer2D out) {
+        return tracerFiller.init(out);
+    }
+
     DPathConsumer2D traceStroker(DPathConsumer2D out) {
         return tracerStroker.init(out);
     }
 
-    DPathConsumer2D detectClosedPath(DPathConsumer2D out)
-    {
+    DPathConsumer2D detectClosedPath(DPathConsumer2D out) {
         return cpDetector.init(out);
     }
 
-    DPathConsumer2D pathClipper(DPathConsumer2D out)
-    {
+    DPathConsumer2D pathClipper(DPathConsumer2D out) {
         return pathClipper.init(out);
     }
 
@@ -96,10 +98,10 @@ final class DTransformingPathConsumer2D {
         if (at == null) {
             return out;
         }
-        double mxx = at.getScaleX();
-        double mxy = at.getShearX();
-        double myx = at.getShearY();
-        double myy = at.getScaleY();
+        final double mxx = at.getScaleX();
+        final double mxy = at.getShearX();
+        final double myx = at.getShearY();
+        final double myy = at.getScaleY();
 
         if (mxy == 0.0d && myx == 0.0d) {
             if (mxx == 1.0d && myy == 1.0d) {
@@ -489,9 +491,6 @@ final class DTransformingPathConsumer2D {
 
         private final IndexStack stack;
 
-        // the outcode of the starting point
-        private int sOutCode = 0;
-
         // the current outcode of the current sub path
         private int cOutCode = 0;
 
@@ -499,6 +498,8 @@ final class DTransformingPathConsumer2D {
         private int gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
 
         private boolean outside = false;
+
+        // The current point OUTSIDE
         private double cx0, cy0;
 
         PathClipFilter(final DRendererContext rdrCtx) {
@@ -541,25 +542,6 @@ final class DTransformingPathConsumer2D {
             stack.dispose();
         }
 
-        @Override
-        public void pathDone() {
-            finishPath();
-
-            out.pathDone();
-
-            // TODO: fix possible leak if exception happened
-            // Dispose this instance:
-            dispose();
-        }
-
-        @Override
-        public void closePath() {
-            finishPath();
-
-            out.closePath();
-            this.cOutCode = sOutCode;
-        }
-
         private void finishPath() {
             if (outside) {
                 // criteria: inside or totally outside ?
@@ -600,9 +582,28 @@ final class DTransformingPathConsumer2D {
         }
 
         @Override
+        public void pathDone() {
+            finishPath();
+
+            out.pathDone();
+
+            // TODO: fix possible leak if exception happened
+            // Dispose this instance:
+            dispose();
+        }
+
+        @Override
+        public void closePath() {
+            finishPath();
+
+            out.closePath();
+        }
+
+        @Override
         public void moveTo(final double x0, final double y0) {
+            finishPath();
+
             final int outcode = DHelpers.outcode(x0, y0, clipRect);
-            this.sOutCode = outcode;
             this.cOutCode = outcode;
             this.outside = false;
             out.moveTo(x0, y0);
@@ -642,7 +643,7 @@ final class DTransformingPathConsumer2D {
         {
             // corner or cross-boundary on left or right side:
             if ((outcode0 != outcode1)
-                    && ((sideCode & MarlinConst.OUTCODE_MASK_T_B) != 0))
+                    && ((sideCode & MarlinConst.OUTCODE_MASK_L_R) != 0))
             {
                 // combine outcodes:
                 final int mergeCode = (outcode0 | outcode1);
@@ -653,18 +654,22 @@ final class DTransformingPathConsumer2D {
                 // add corners to outside stack:
                 switch (tbCode) {
                     case MarlinConst.OUTCODE_TOP:
+// System.out.println("TOP "+ ((off == 0) ? "LEFT" : "RIGHT"));
                         stack.push(off); // top
                         return;
                     case MarlinConst.OUTCODE_BOTTOM:
+// System.out.println("BOTTOM "+ ((off == 0) ? "LEFT" : "RIGHT"));
                         stack.push(off + 1); // bottom
                         return;
                     default:
                         // both TOP / BOTTOM:
                         if ((outcode0 & MarlinConst.OUTCODE_TOP) != 0) {
+// System.out.println("TOP + BOTTOM "+ ((off == 0) ? "LEFT" : "RIGHT"));
                             // top to bottom
                             stack.push(off); // top
                             stack.push(off + 1); // bottom
                         } else {
+// System.out.println("BOTTOM + TOP "+ ((off == 0) ? "LEFT" : "RIGHT"));
                             // bottom to top
                             stack.push(off + 1); // bottom
                             stack.push(off); // top

@@ -86,12 +86,11 @@ public final class MarlinRenderingEngine extends RenderingEngine
     static final float LOWER_BND = -UPPER_BND;
 
     static final boolean DO_CLIP = MarlinProperties.isDoClip();
+    static final boolean DO_CLIP_FILL = true;
 
     static final boolean DO_TRACE_PATH = false;
 
-    static final boolean DO_CLIP_TEST = false;
-
-    static final boolean DO_CLIP_FILL = true;
+    static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
 
     /**
      * Public constructor
@@ -142,7 +141,7 @@ public final class MarlinRenderingEngine extends RenderingEngine
                      miterlimit,
                      dashes,
                      dashphase,
-                     rdrCtx.transformerPC2D.wrapPath2d(p2d)
+                     rdrCtx.transformerPC2D.wrapPath2D(p2d)
                     );
 
             // Use Path2D copy constructor (trim)
@@ -203,14 +202,14 @@ public final class MarlinRenderingEngine extends RenderingEngine
         }
     }
 
-    final void strokeTo(final RendererContext rdrCtx,
-                        Shape src,
-                        AffineTransform at,
-                        BasicStroke bs,
-                        boolean thin,
-                        NormMode normalize,
-                        boolean antialias,
-                        PathConsumer2D pc2d)
+    void strokeTo(final RendererContext rdrCtx,
+                  Shape src,
+                  AffineTransform at,
+                  BasicStroke bs,
+                  boolean thin,
+                  NormMode normalize,
+                  boolean antialias,
+                  PathConsumer2D pc2d)
     {
         float lw;
         if (thin) {
@@ -235,7 +234,7 @@ public final class MarlinRenderingEngine extends RenderingEngine
                  pc2d);
     }
 
-    private final float userSpaceLineWidth(AffineTransform at, float lw) {
+    private float userSpaceLineWidth(AffineTransform at, float lw) {
 
         float widthScale;
 
@@ -303,17 +302,17 @@ public final class MarlinRenderingEngine extends RenderingEngine
         return (lw / widthScale);
     }
 
-    final void strokeTo(final RendererContext rdrCtx,
-                        Shape src,
-                        AffineTransform at,
-                        float width,
-                        NormMode norm,
-                        int caps,
-                        int join,
-                        float miterlimit,
-                        float[] dashes,
-                        float dashphase,
-                        PathConsumer2D pc2d)
+    void strokeTo(final RendererContext rdrCtx,
+                  Shape src,
+                  AffineTransform at,
+                  float width,
+                  NormMode norm,
+                  int caps,
+                  int join,
+                  float miterlimit,
+                  float[] dashes,
+                  float dashphase,
+                  PathConsumer2D pc2d)
     {
         // We use strokerat so that in Stroker and Dasher we can work only
         // with the pre-transformation coordinates. This will repeat a lot of
@@ -809,28 +808,14 @@ public final class MarlinRenderingEngine extends RenderingEngine
 
         final RendererContext rdrCtx = getRendererContext();
         try {
-            if (DO_CLIP) {
+            if (DO_CLIP || (DO_CLIP_RUNTIME_ENABLE && MarlinProperties.isDoClipAtRuntime())) {
                 // Define the initial clip bounds:
                 final float[] clipRect = rdrCtx.clipRect;
 
-                if (DO_CLIP_TEST) {
-                    // clip rect area / 4 to see remaining paths after clipping:
-                    float h = clip.getHeight();
-                    float w = clip.getWidth();
-                    final float cx = (clip.getLoX() + w) / 2.0f;
-                    final float cy = (clip.getLoY() + h) / 2.0f;
-                    h /= 4.0f;
-                    w /= 4.0f;
-                    clipRect[0] = cy - h;
-                    clipRect[1] = cy + h;
-                    clipRect[2] = cx - w;
-                    clipRect[3] = cx + w;
-                } else {
-                    clipRect[0] = clip.getLoY();
-                    clipRect[1] = clip.getLoY() + clip.getHeight();
-                    clipRect[2] = clip.getLoX();
-                    clipRect[3] = clip.getLoX() + clip.getWidth();
-                }
+                clipRect[0] = clip.getLoY();
+                clipRect[1] = clip.getLoY() + clip.getHeight();
+                clipRect[2] = clip.getLoX();
+                clipRect[3] = clip.getLoX() + clip.getWidth();
 
                 // Enable clipping:
                 rdrCtx.doClip = true;
@@ -856,18 +841,23 @@ public final class MarlinRenderingEngine extends RenderingEngine
 
                 PathConsumer2D pc2d = r;
 
-                if (DO_CLIP_FILL && (windingRule == WIND_NON_ZERO) && rdrCtx.doClip) {
+                if (DO_CLIP_FILL && rdrCtx.doClip) {
                     if (DO_TRACE_PATH) {
-                        // trace Input:
-                        pc2d = rdrCtx.transformerPC2D.traceInput(pc2d);
+                        // trace Filler:
+                        pc2d = rdrCtx.transformerPC2D.traceFiller(pc2d);
                     }
                     pc2d = rdrCtx.transformerPC2D.pathClipper(pc2d);
+                }
+
+                if (DO_TRACE_PATH) {
+                    // trace Input:
+                    pc2d = rdrCtx.transformerPC2D.traceInput(pc2d);
                 }
 
                 // TODO: subdivide quad/cubic curves into monotonic curves ?
                 pathTo(rdrCtx, pi, pc2d);
 
-             } else {
+            } else {
                 // draw shape with given stroke:
                 r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                          clip.getWidth(), clip.getHeight(),
@@ -894,12 +884,12 @@ public final class MarlinRenderingEngine extends RenderingEngine
     }
 
     @Override
-    public final AATileGenerator getAATileGenerator(double x, double y,
-                                                    double dx1, double dy1,
-                                                    double dx2, double dy2,
-                                                    double lw1, double lw2,
-                                                    Region clip,
-                                                    int[] bbox)
+    public AATileGenerator getAATileGenerator(double x, double y,
+                                              double dx1, double dy1,
+                                              double dx2, double dy2,
+                                              double lw1, double lw2,
+                                              Region clip,
+                                              int[] bbox)
     {
         // REMIND: Deal with large coordinates!
         double ldx1, ldy1, ldx2, ldy2;
