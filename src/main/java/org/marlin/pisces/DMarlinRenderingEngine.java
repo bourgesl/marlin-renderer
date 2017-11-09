@@ -1106,6 +1106,8 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinConst.USE_SIMPLIFIER);
         logInfo("sun.java2d.renderer.clip             = "
                 + MarlinProperties.isDoClip());
+        logInfo("sun.java2d.renderer.clip.runtime.enable = "
+                + MarlinProperties.isDoClipRuntimeFlag());
 
         // debugging parameters
         logInfo("sun.java2d.renderer.doStats          = "
