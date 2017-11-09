@@ -195,9 +195,11 @@ public final class AAShapePipe
                         aatg.nextTile();
                     } else {
                         atile = alpha;
+                        // could use w instead of tw (useless padding):
                         aatg.getAlpha(alpha, 0, tw);
                     }
 
+                    // could use w instead of tw (useless padding):
                     outpipe.renderPathTile(context, atile, 0, tw, x, y, w, h);
                 }
             }
