@@ -202,14 +202,14 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         }
     }
 
-    final void strokeTo(final DRendererContext rdrCtx,
-                        Shape src,
-                        AffineTransform at,
-                        BasicStroke bs,
-                        boolean thin,
-                        NormMode normalize,
-                        boolean antialias,
-                        DPathConsumer2D pc2d)
+    void strokeTo(final DRendererContext rdrCtx,
+                  Shape src,
+                  AffineTransform at,
+                  BasicStroke bs,
+                  boolean thin,
+                  NormMode normalize,
+                  boolean antialias,
+                  DPathConsumer2D pc2d)
     {
         double lw;
         if (thin) {
@@ -234,7 +234,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                  pc2d);
     }
 
-    private final double userSpaceLineWidth(AffineTransform at, double lw) {
+    private double userSpaceLineWidth(AffineTransform at, double lw) {
 
         double widthScale;
 
@@ -302,17 +302,17 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         return (lw / widthScale);
     }
 
-    final void strokeTo(final DRendererContext rdrCtx,
-                        Shape src,
-                        AffineTransform at,
-                        double width,
-                        NormMode norm,
-                        int caps,
-                        int join,
-                        float miterlimit,
-                        float[] dashes,
-                        float dashphase,
-                        DPathConsumer2D pc2d)
+    void strokeTo(final DRendererContext rdrCtx,
+                  Shape src,
+                  AffineTransform at,
+                  double width,
+                  NormMode norm,
+                  int caps,
+                  int join,
+                  float miterlimit,
+                  float[] dashes,
+                  float dashphase,
+                  DPathConsumer2D pc2d)
     {
         // We use strokerat so that in Stroker and Dasher we can work only
         // with the pre-transformation coordinates. This will repeat a lot of
@@ -886,12 +886,12 @@ public final class DMarlinRenderingEngine extends RenderingEngine
     }
 
     @Override
-    public final AATileGenerator getAATileGenerator(double x, double y,
-                                                    double dx1, double dy1,
-                                                    double dx2, double dy2,
-                                                    double lw1, double lw2,
-                                                    Region clip,
-                                                    int[] bbox)
+    public AATileGenerator getAATileGenerator(double x, double y,
+                                              double dx1, double dy1,
+                                              double dx2, double dy2,
+                                              double lw1, double lw2,
+                                              Region clip,
+                                              int[] bbox)
     {
         // REMIND: Deal with large coordinates!
         double ldx1, ldy1, ldx2, ldy2;

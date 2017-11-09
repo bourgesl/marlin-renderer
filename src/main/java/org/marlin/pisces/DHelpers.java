@@ -28,8 +28,6 @@ package org.marlin.pisces;
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
-import static java.lang.Math.cbrt;
-import static java.lang.Math.acos;
 import java.util.Arrays;
 import static org.marlin.pisces.MarlinConst.INITIAL_EDGES_COUNT;
 import org.marlin.pisces.stats.Histogram;
@@ -119,7 +117,7 @@ final class DHelpers implements MarlinConst {
         int num;
         if (D < 0.0d) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = (1.0d/3.0d) * acos(-q / sqrt(-cb_p));
+            final double phi = (1.0d/3.0d) * Math.acos(-q / sqrt(-cb_p));
             final double t = 2.0d * sqrt(-p);
 
             pts[ off+0 ] = ( t * cos(phi));
@@ -128,8 +126,8 @@ final class DHelpers implements MarlinConst {
             num = 3;
         } else {
             final double sqrt_D = sqrt(D);
-            final double u = cbrt(sqrt_D - q);
-            final double v = - cbrt(sqrt_D + q);
+            final double u = Math.cbrt(sqrt_D - q);
+            final double v = - Math.cbrt(sqrt_D + q);
 
             pts[ off ] = (u + v);
             num = 1;
