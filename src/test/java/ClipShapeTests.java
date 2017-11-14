@@ -1,7 +1,5 @@
-package test;
-
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -51,14 +49,16 @@ import javax.imageio.stream.ImageOutputStream;
 
 /**
  * @test
- * @bug TODO
+ * @bug 8184429
  * @summary Verifies that Marlin rendering generates the same
- * images with and without clipping optimization with all possible 
+ * images with and without clipping optimization with all possible
  * stroke (cap/join) and fill modes (EO rules)
  * Use the following setting to use Float or Double variant:
  * -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
  * -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
  * @run main ClipShapeTests
+ * @ignore tests that take a long time (huge number of polygons)
+ * @run main/othervm -ms1g -mx1g ClipShapeTests -slow
  */
 public final class ClipShapeTests {
 
@@ -67,7 +67,7 @@ public final class ClipShapeTests {
 
     static final boolean USE_DASHES = false; // really slower
 
-    static final int NUM_TESTS = 5000; // 10000 or 100000 but too slow !
+    static int NUM_TESTS = 500;
     static final int TESTW = 100;
     static final int TESTH = 100;
     static final ShapeMode SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
@@ -115,9 +115,14 @@ public final class ClipShapeTests {
 
     /**
      * Test
-     * @param unused
+     * @param args
      */
-    public static void main(String[] unused) {
+    public static void main(String[] args) {
+        boolean runSlowTests = (args.length != 0 && "-slow".equals(args[0]));
+
+        if (runSlowTests) {
+            NUM_TESTS = 10000; // 10000 or 100000 (very slow)
+        }
 
         // First display which renderer is tested:
         // JDK9 only:
