@@ -115,7 +115,7 @@ final class DHelpers implements MarlinConst {
         int num;
         if (D < 0.0d) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = (1.0d/3.0d) * Math.acos(-q / ath.sqrt(-cb_p));
+            final double phi = (1.0d/3.0d) * Math.acos(-q / Math.sqrt(-cb_p));
             final double t = 2.0d * Math.sqrt(-p);
 
             pts[ off+0 ] = ( t * Math.cos(phi));
