@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.8.2-Unsafe</version>
+    <version>0.8.2.1-Unsafe</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -77,6 +77,7 @@
                         <configuration>
                             <includes>
                                 <include>org/**</include>
+                                <include>net/**</include>
                                 <include>META-INF/services/*</include>
                             </includes>
                         </configuration>
@@ -116,7 +117,7 @@
                     -->
                     <argLine>
                         -Xms512m -Xmx512m
-                        -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
+                        -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
                         -Dsun.java2d.renderer.log=true
                         -Dsun.java2d.renderer.doChecks=true
                         -Xbootclasspath/p:${basedir}/target/classes/</argLine>
@@ -133,6 +134,20 @@
                             <skip>false</skip>
                             <includes>
                                 <include>**/*Test.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>integration-long-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
+                            <skip>true</skip>
+                            <includes>
+                                <include>**/*LongTests.java</include>
                             </includes>
                         </configuration>
                     </execution>
