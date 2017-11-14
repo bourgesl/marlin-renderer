@@ -50,7 +50,15 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
- * Shape rendering test comparing clipping On / Off
+ * @test
+ * @bug TODO
+ * @summary Verifies that Marlin rendering generates the same
+ * images with and without clipping optimization with all possible 
+ * stroke (cap/join) and fill modes (EO rules)
+ * Use the following setting to use Float or Double variant:
+ * -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
+ * -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
+ * @run main ClipShapeTests
  */
 public final class ClipShapeTests {
 
@@ -59,7 +67,7 @@ public final class ClipShapeTests {
 
     static final boolean USE_DASHES = false; // really slower
 
-    static final int NUM_TESTS = 1000; // 10000 by slower !
+    static final int NUM_TESTS = 5000; // 10000 or 100000 but too slow !
     static final int TESTW = 100;
     static final int TESTH = 100;
     static final ShapeMode SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
@@ -103,7 +111,7 @@ public final class ClipShapeTests {
         RANDOM = new Random(SEED);
     }
 
-    static final File diffDirectory = new File("..");
+    static final File OUTPUT_DIR = new File(".");
 
     /**
      * Test
@@ -130,12 +138,14 @@ public final class ClipShapeTests {
 
         System.out.println("ClipShapeTests: image = " + TESTW + " x " + TESTH);
 
+        int failures = 0;
         final long start = System.nanoTime();
         try {
             // TODO: test affine transforms ?
 
             if (TEST_STROKER) {
-                final float[][] dashArrays = (USE_DASHES) ? new float[][]{null, new float[]{1f, 2f}}
+                final float[][] dashArrays = (USE_DASHES)
+                        ? new float[][]{null, new float[]{1f, 2f}}
                         : new float[][]{null};
 
                 // Stroker tests:
@@ -143,8 +153,8 @@ public final class ClipShapeTests {
                     for (int cap = 0; cap <= 2; cap++) {
                         for (int join = 0; join <= 2; join++) {
                             for (float[] dashes : dashArrays) {
-                                paintPaths(new TestSetup(SHAPE_MODE, false, width, cap, join, dashes));
-                                paintPaths(new TestSetup(SHAPE_MODE, true, width, cap, join, dashes));
+                                failures += paintPaths(new TestSetup(SHAPE_MODE, false, width, cap, join, dashes));
+                                failures += paintPaths(new TestSetup(SHAPE_MODE, true, width, cap, join, dashes));
                             }
                         }
                     }
@@ -153,19 +163,22 @@ public final class ClipShapeTests {
 
             if (TEST_FILLER) {
                 // Filler tests:
-                paintPaths(new TestSetup(SHAPE_MODE, false, Path2D.WIND_NON_ZERO));
-                paintPaths(new TestSetup(SHAPE_MODE, true, Path2D.WIND_NON_ZERO));
+                failures += paintPaths(new TestSetup(SHAPE_MODE, false, Path2D.WIND_NON_ZERO));
+                failures += paintPaths(new TestSetup(SHAPE_MODE, true, Path2D.WIND_NON_ZERO));
 
-                paintPaths(new TestSetup(SHAPE_MODE, false, Path2D.WIND_EVEN_ODD));
-                paintPaths(new TestSetup(SHAPE_MODE, true, Path2D.WIND_EVEN_ODD));
+                failures += paintPaths(new TestSetup(SHAPE_MODE, false, Path2D.WIND_EVEN_ODD));
+                failures += paintPaths(new TestSetup(SHAPE_MODE, true, Path2D.WIND_EVEN_ODD));
             }
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            throw new RuntimeException(ioe);
         }
         System.out.println("main: duration= " + (1e-6 * (System.nanoTime() - start)) + " ms.");
+        if (failures != 0) {
+            throw new RuntimeException("Clip test failures : " + failures);
+        }
     }
 
-    public static void paintPaths(final TestSetup ts) throws IOException {
+    public static int paintPaths(final TestSetup ts) throws IOException {
         final long start = System.nanoTime();
 
         if (FIXED_SEED) {
@@ -173,7 +186,8 @@ public final class ClipShapeTests {
             RANDOM.setSeed(SEED);
         }
 
-        System.out.println("paintPaths: " + NUM_TESTS + " paths (" + SHAPE_MODE + ") - setup: " + ts);
+        System.out.println("paintPaths: " + NUM_TESTS
+                + " paths (" + SHAPE_MODE + ") - setup: " + ts);
 
         final boolean fill = !ts.isStroke();
         final Path2D p2d = new Path2D.Double(ts.windingRule);
@@ -191,6 +205,7 @@ public final class ClipShapeTests {
         int nd = 0;
         try {
             final DiffContext testCtx = new DiffContext("Test");
+            BufferedImage diffImage;
 
             for (int n = 0; n < NUM_TESTS; n++) {
                 genShape(p2d, ts);
@@ -202,7 +217,7 @@ public final class ClipShapeTests {
                 paintShape(p2d, g2dOn, fill, true);
 
                 /* compute image difference if possible */
-                final BufferedImage diffImage = computeDiffImage(testCtx, imgOn, imgOff, imgDiff, globalCtx);
+                diffImage = computeDiffImage(testCtx, imgOn, imgOff, imgDiff, globalCtx);
 
                 final String testName = "Setup_" + ts.id + "_test_" + n;
 
@@ -213,7 +228,7 @@ public final class ClipShapeTests {
                     System.out.println("Diff ratio: " + testName + " = " + trimTo3Digits(ratio) + " %");
 
                     if (false) {
-                        saveImage(diffImage, diffDirectory, testName + "-diff.png");
+                        saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
                     }
 
                     if (DUMP_SHAPE) {
@@ -225,9 +240,9 @@ public final class ClipShapeTests {
                             paintShapeDetails(g2dOn, p2d);
                         }
 
-                        saveImage(imgOff, diffDirectory, testName + "-off.png");
-                        saveImage(imgOn, diffDirectory, testName + "-on.png");
-                        saveImage(diffImage, diffDirectory, testName + "-diff.png");
+                        saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
+                        saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
+                        saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
                     }
                 }
             }
@@ -236,15 +251,19 @@ public final class ClipShapeTests {
             g2dOn.dispose();
 
             if (nd != 0) {
-                System.out.println("paintPaths: " + NUM_TESTS + " paths - Number of differences = " + nd + " ratio = " + (100f * nd) / NUM_TESTS + " %");
+                System.out.println("paintPaths: " + NUM_TESTS + " paths - "
+                        + "Number of differences = " + nd
+                        + " ratio = " + (100f * nd) / NUM_TESTS + " %");
             }
 
             globalCtx.dump();
         }
         System.out.println("paintPaths: duration= " + (1e-6 * (System.nanoTime() - start)) + " ms.");
+        return nd;
     }
 
-    private static void paintShape(final Path2D p2d, final Graphics2D g2d, final boolean fill, final boolean clip) {
+    private static void paintShape(final Path2D p2d, final Graphics2D g2d,
+                                   final boolean fill, final boolean clip) {
         reset(g2d);
 
         setClip(g2d, clip);
@@ -256,10 +275,13 @@ public final class ClipShapeTests {
         }
     }
 
-    private static Graphics2D initialize(final BufferedImage img, final TestSetup ts) {
+    private static Graphics2D initialize(final BufferedImage img,
+                                         final TestSetup ts) {
         final Graphics2D g2d = (Graphics2D) img.getGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_PURE);
 
         if (ts.isStroke()) {
             g2d.setStroke(createStroke(ts));
@@ -271,14 +293,16 @@ public final class ClipShapeTests {
 
     private static void reset(final Graphics2D g2d) {
         // Disable antialiasing:
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_OFF);
         g2d.setBackground(Color.WHITE);
         g2d.clearRect(0, 0, TESTW, TESTH);
     }
 
     private static void setClip(final Graphics2D g2d, final boolean clip) {
         // Enable antialiasing:
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Enable or Disable clipping:
         System.setProperty("sun.java2d.renderer.clip.runtime", (clip) ? "true" : "false");
