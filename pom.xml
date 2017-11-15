@@ -92,7 +92,7 @@
                             <classifier>sun-java2d</classifier>
                             <includes>
                                 <include>com/sun/imageio/**</include>
-<!--                                <include>java/awt/geom/**</include> -->
+                                <!-- <include>java/awt/geom/**</include> -->
                                 <include>sun/java2d/**</include>
                             </includes>
                         </configuration>
@@ -102,12 +102,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19</version>
+                <version>2.20.1</version>
                 <configuration>
                     <forkCount>1</forkCount>
                     <threadCount>1</threadCount>
-                    <!-- Skip the default running of this plug-in -->
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.20.1</version>
+                <configuration>
                     <!--
                     MarlinF: -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
                     MarlinD: -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
@@ -115,19 +121,13 @@
 
                     CrashTest may need large heap: -Xms4g -Xmx4g
                     -->
-                    <argLine>
-                        -Xms512m -Xmx512m
-                        -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
-                        -Dsun.java2d.renderer.log=true
-                        -Dsun.java2d.renderer.doChecks=true
-                        -Xbootclasspath/p:${basedir}/target/classes/</argLine>
                 </configuration>
                 <executions>
                     <execution>
                         <id>integration-tests</id>
                         <phase>integration-test</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>integration-test</goal>
                         </goals>
                         <configuration>
                             <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
@@ -135,20 +135,32 @@
                             <includes>
                                 <include>**/*Test.java</include>
                             </includes>
+                            <argLine>
+                                -Xms1g -Xmx1g
+                                -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
+                                -Dsun.java2d.renderer.log=true
+                                -Dsun.java2d.renderer.doChecks=true
+                                -Xbootclasspath/p:${basedir}/target/classes/</argLine>
                         </configuration>
                     </execution>
                     <execution>
                         <id>integration-long-tests</id>
                         <phase>integration-test</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>integration-test</goal>
                         </goals>
                         <configuration>
                             <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
-                            <skip>true</skip>
+                            <skip>false</skip>
                             <includes>
                                 <include>**/*LongTests.java</include>
                             </includes>
+                            <argLine>
+                                -Xms1g -Xmx1g
+                                -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
+                                -Dsun.java2d.renderer.log=true
+                                -Dsun.java2d.renderer.doChecks=false
+                                -Xbootclasspath/p:${basedir}/target/classes/</argLine>
                         </configuration>
                     </execution>
                 </executions>

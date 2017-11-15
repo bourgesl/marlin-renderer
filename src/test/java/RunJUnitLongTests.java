@@ -29,8 +29,11 @@ import org.junit.Test;
  */
 public class RunJUnitLongTests {
 
+    private final static String[] NO_ARGS = new String[0];
+
     @Test
     public void clipTests() {
-        ClipShapeTests.main(new String[] {"-slow"});
+        ClipShapeTests.main(NO_ARGS);
+        // ClipShapeTests.main(new String[] {"-slow"});
     }
 }
