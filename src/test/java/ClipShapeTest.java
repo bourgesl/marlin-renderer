@@ -23,8 +23,6 @@
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -32,7 +30,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,20 +53,25 @@ import javax.imageio.stream.ImageOutputStream;
  * Use the following setting to use Float or Double variant:
  * -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
  * -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
- * @run main ClipShapeTests
- * @ignore tests that take a long time (huge number of polygons)
- * @run main/othervm -ms1g -mx1g ClipShapeTests -slow
+ * @run main/othervm ClipShapeTest
+ *
+ * @ignore tests taking too much time (huge number of polygons)
+ * @run main/othervm ClipShapeTest -slow
  */
-public final class ClipShapeTests {
+public final class ClipShapeTest {
 
     static final boolean TEST_STROKER = true;
     static final boolean TEST_FILLER = true;
 
-    static final boolean USE_DASHES = false; // really slower
+    // complementary tests in slow mode:
+    static boolean USE_DASHES = false;
+    static boolean USE_VAR_STROKE = false;
 
-    static int NUM_TESTS = 500;
+    static int NUM_TESTS = 5000;
     static final int TESTW = 100;
     static final int TESTH = 100;
+
+    // shape settings:
     static final ShapeMode SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
     static final boolean SHAPE_REPEAT = true;
 
@@ -83,6 +85,7 @@ public final class ClipShapeTests {
 
     static final int MAX_SHOW_FRAMES = 10;
 
+    // use fixed seed to reproduce always same polygons between tests
     static final boolean FIXED_SEED = false;
     static final double RAND_SCALE = 3.0;
     static final double RANDW = TESTW * RAND_SCALE;
@@ -121,7 +124,9 @@ public final class ClipShapeTests {
         boolean runSlowTests = (args.length != 0 && "-slow".equals(args[0]));
 
         if (runSlowTests) {
-            NUM_TESTS = 10000; // 10000 or 100000 (very slow)
+            NUM_TESTS = 20000; // or 100000 (very slow)
+            USE_DASHES = true;
+            USE_VAR_STROKE = true;
         }
 
         // First display which renderer is tested:
@@ -153,11 +158,32 @@ public final class ClipShapeTests {
                         ? new float[][]{null, new float[]{1f, 2f}}
                         : new float[][]{null};
 
+                System.out.println("dashes: " + Arrays.toString(dashArrays));
+
+                final float[] strokeWidths = (USE_VAR_STROKE)
+                        ? new float[5] : new float[]{8f};
+
+                int nsw = 0;
+                if (USE_VAR_STROKE) {
+                    for (float width = 0.1f; width < 110f; width *= 5f) {
+                        strokeWidths[nsw++] = width;
+                    }
+                } else {
+                    nsw = 1;
+                }
+
+                System.out.println("stroke widths: " + Arrays.toString(strokeWidths));
+
                 // Stroker tests:
-                for (float width = 0.1f; width < 110f; width *= 5f) {
-                    for (int cap = 0; cap <= 2; cap++) {
-                        for (int join = 0; join <= 2; join++) {
-                            for (float[] dashes : dashArrays) {
+                for (int w = 0; w < nsw; w++) {
+                    final float width = strokeWidths[w];
+
+                    for (float[] dashes : dashArrays) {
+
+                        for (int cap = 0; cap <= 2; cap++) {
+
+                            for (int join = 0; join <= 2; join++) {
+
                                 failures += paintPaths(new TestSetup(SHAPE_MODE, false, width, cap, join, dashes));
                                 failures += paintPaths(new TestSetup(SHAPE_MODE, true, width, cap, join, dashes));
                             }
@@ -183,7 +209,7 @@ public final class ClipShapeTests {
         }
     }
 
-    public static int paintPaths(final TestSetup ts) throws IOException {
+    static int paintPaths(final TestSetup ts) throws IOException {
         final long start = System.nanoTime();
 
         if (FIXED_SEED) {
@@ -467,11 +493,11 @@ public final class ClipShapeTests {
         System.out.println("--------------------------------------------------");
     }
 
-    public static double randX() {
+    static double randX() {
         return RANDOM.nextDouble() * RANDW + OFFW;
     }
 
-    public static double randY() {
+    static double randY() {
         return RANDOM.nextDouble() * RANDH + OFFH;
     }
 
@@ -530,79 +556,50 @@ public final class ClipShapeTests {
     }
 
     // --- utilities ---
-    private static final boolean USE_GRAPHICS_ACCELERATION = false;
-    private static final boolean NORMALIZE_DIFF = true;
     private static final int DCM_ALPHA_MASK = 0xff000000;
 
-    private final static GraphicsConfiguration gc = (USE_GRAPHICS_ACCELERATION)
-            ? GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration() : null;
-
     public static BufferedImage newImage(final int w, final int h) {
-        if (USE_GRAPHICS_ACCELERATION) {
-            return gc.createCompatibleImage(w, h);
-        }
         return new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB_PRE);
     }
 
-    public static BufferedImage computeDiffImage(final DiffContext localCtx, final BufferedImage tstImage, final BufferedImage refImage,
-                                                 final BufferedImage diffImage, final DiffContext globalCtx) {
-        final int width = tstImage.getWidth();
-        final int height = tstImage.getHeight();
+    public static BufferedImage computeDiffImage(final DiffContext localCtx,
+                                                 final BufferedImage tstImage,
+                                                 final BufferedImage refImage,
+                                                 final BufferedImage diffImage,
+                                                 final DiffContext globalCtx) {
 
-        final DataBuffer refDataBuffer = refImage.getRaster().getDataBuffer();
-        final DataBuffer tstDataBuffer = tstImage.getRaster().getDataBuffer();
+        final int[] aRefPix = ((DataBufferInt) refImage.getRaster().getDataBuffer()).getData();
+        final int[] aTstPix = ((DataBufferInt) tstImage.getRaster().getDataBuffer()).getData();
+        final int[] aDifPix = ((DataBufferInt) diffImage.getRaster().getDataBuffer()).getData();
 
-        if (refDataBuffer instanceof DataBufferInt) {
-            final BufferedImage dImage = (diffImage != null) ? diffImage : newImage(width, height);
+        // reset local diff context:
+        localCtx.reset();
 
-            final int aRefPix[] = ((DataBufferInt) refDataBuffer).getData();
-            final int aTstPix[] = ((DataBufferInt) tstDataBuffer).getData();
-            final int aDifPix[] = ((DataBufferInt) dImage.getRaster().getDataBuffer()).getData();
+        int ref, tst, dg, v;
+        for (int i = 0, len = aRefPix.length; i < len; i++) {
+            ref = aRefPix[i];
+            tst = aTstPix[i];
 
-            // reset local diff context:
-            localCtx.reset();
+            // grayscale diff:
+            dg = (r(ref) + g(ref) + b(ref)) - (r(tst) + g(tst) + b(tst));
 
-            int dr, dg, db, v, max = 0;
-            for (int i = 0, len = aRefPix.length; i < len; i++) {
+            // max difference on grayscale values:
+            v = (int) Math.ceil(Math.abs(dg / 3.0));
 
-                /* put condition out of loop */
-                // grayscale diff:
-                dg = (r(aRefPix[i]) + g(aRefPix[i]) + b(aRefPix[i]))
-                        - (r(aTstPix[i]) + g(aTstPix[i]) + b(aTstPix[i]));
+            aDifPix[i] = toInt(v, v, v);
 
-                // max difference on grayscale values:
-                v = (int) Math.ceil(Math.abs(dg / 3.0));
-
-                if (v > max) {
-                    max = v;
-                }
-                aDifPix[i] = toInt(v, v, v);
-
-                localCtx.add(v);
-                globalCtx.add(v);
-            }
-
-            if (!localCtx.isDiff()) {
-                return null;
-            }
-
-            if (NORMALIZE_DIFF) {
-                /* normalize diff image vs mean(diff) */
-                if ((max > 0) && (max < 255)) {
-                    final float factor = 255f / max;
-                    for (int i = 0, len = aDifPix.length; i < len; i++) {
-                        v = (int) Math.ceil(factor * b(aDifPix[i]));
-                        aDifPix[i] = toInt(v, v, v);
-                    }
-                }
-            }
-
-            return dImage;
+            localCtx.add(v);
+            globalCtx.add(v);
         }
-        return null;
+
+        if (!localCtx.isDiff()) {
+            return null;
+        }
+
+        return diffImage;
     }
 
-    public static void saveImage(final BufferedImage image, final File resDirectory, final String imageFileName) throws IOException {
+    static void saveImage(final BufferedImage image, final File resDirectory, final String imageFileName) throws IOException {
         final Iterator<ImageWriter> itWriters = ImageIO.getImageWritersByFormatName("PNG");
         if (itWriters.hasNext()) {
             final ImageWriter writer = itWriters.next();
@@ -637,23 +634,23 @@ public final class ClipShapeTests {
         }
     }
 
-    public static int r(final int v) {
+    static int r(final int v) {
         return (v >> 16 & 0xff);
     }
 
-    public static int g(final int v) {
+    static int g(final int v) {
         return (v >> 8 & 0xff);
     }
 
-    public static int b(final int v) {
+    static int b(final int v) {
         return (v & 0xff);
     }
 
-    public static int clamp127(final int v) {
+    static int clamp127(final int v) {
         return (v < 128) ? (v > -127 ? (v + 127) : 0) : 255;
     }
 
-    public static int toInt(final int r, final int g, final int b) {
+    static int toInt(final int r, final int g, final int b) {
         return DCM_ALPHA_MASK | (r << 16) | (g << 8) | b;
     }
 
@@ -719,7 +716,7 @@ public final class ClipShapeTests {
 
     }
 
-    public final static class Histogram extends StatInteger {
+    final static class Histogram extends StatInteger {
 
         static final int BUCKET = 2;
         static final int MAX = 20;
@@ -793,26 +790,26 @@ public final class ClipShapeTests {
      * @param value value to adjust
      * @return double value with only 3 decimal digits
      */
-    public static double trimTo3Digits(final double value) {
+    static double trimTo3Digits(final double value) {
         return ((long) (1e3d * value)) / 1e3d;
     }
 
-    public static final class DiffContext {
+    static final class DiffContext {
 
         public final Histogram histAll;
         public final Histogram histPix;
 
-        public DiffContext(String name) {
+        DiffContext(String name) {
             histAll = new Histogram("All  Pixels [" + name + "]");
             histPix = new Histogram("Diff Pixels [" + name + "]");
         }
 
-        public void reset() {
+        void reset() {
             histAll.reset();
             histPix.reset();
         }
 
-        public void dump() {
+        void dump() {
             if (isDiff()) {
                 System.out.println("Differences [" + histAll.name + "]:");
                 System.out.println("Total [all pixels]:\n" + histAll.toString());
