@@ -47,11 +47,6 @@
                     <target>1.6</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
-                    <!--
-                                        <compilerArguments>
-                                            <bootclasspath>/home/bourgesl/libs/marlin/branches/marlin-renderer-unsafe/marlin-renderer-ext2D/target/rt-marlin-ext2D.jar</bootclasspath>
-                                        </compilerArguments>
-                    -->
                 </configuration>
             </plugin>
             <plugin>
@@ -141,7 +136,8 @@
                                 -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
                                 -Dsun.java2d.renderer.log=true
                                 -Dsun.java2d.renderer.doChecks=true
-                                -Xbootclasspath/p:${basedir}/target/classes/</argLine>
+                                -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
+                                -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
                     </execution>
                     <execution>
@@ -158,10 +154,11 @@
                             </includes>
                             <argLine>
                                 -Xms1g -Xmx1g
-                                -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
+                                -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
                                 -Dsun.java2d.renderer.log=true
                                 -Dsun.java2d.renderer.doChecks=false
-                                -Xbootclasspath/p:${basedir}/target/classes/</argLine>
+                                -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
+                                -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
                     </execution>
                 </executions>
@@ -169,14 +166,6 @@
         </plugins>
     </build>
     <dependencies>
-        <!--
-                <dependency>
-                    <groupId>org.marlin</groupId>
-                    <artifactId>marlin-ext2D</artifactId>
-                    <version>0.1</version>
-                    <scope>provided</scope>
-                </dependency>
-        -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
