@@ -19,6 +19,7 @@
 
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
+        <integration.skip>false</integration.skip>
     </properties>
 
     <build>
@@ -131,7 +132,7 @@
                         </goals>
                         <configuration>
                             <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
-                            <skip>false</skip>
+                            <skip>${integration.skip}</skip>
                             <includes>
                                 <include>**/*Test.java</include>
                             </includes>
@@ -151,7 +152,7 @@
                         </goals>
                         <configuration>
                             <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
-                            <skip>false</skip>
+                            <skip>${integration.skip}</skip>
                             <includes>
                                 <include>**/*LongTests.java</include>
                             </includes>
