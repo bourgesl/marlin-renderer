@@ -134,7 +134,7 @@
                             <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
                             <skip>${integration.skip}</skip>
                             <includes>
-                                <include>**/*Test.java</include>
+                                <include>**/RunJUnitTest.java</include>
                             </includes>
                             <argLine>
                                 -Xms1g -Xmx1g
@@ -154,7 +154,7 @@
                             <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
                             <skip>${integration.skip}</skip>
                             <includes>
-                                <include>**/*LongTests.java</include>
+                                <include>**/RunJUnitLongTest.java</include>
                             </includes>
                             <argLine>
                                 -Xms1g -Xmx1g

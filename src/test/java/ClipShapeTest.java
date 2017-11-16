@@ -54,10 +54,10 @@ import javax.imageio.stream.ImageOutputStream;
  * -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
  * -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
  * @run main ClipShapeTests
- * @ignore:quiet tests that take a long time (huge number of polygons)
+ * @ignore tests that take a long time (huge number of polygons)
  * @run main/othervm -ms1g -mx1g ClipShapeTests -slow
  */
-public final class ClipShapeTests {
+public final class ClipShapeTest {
 
     static final boolean TEST_STROKER = true;
     static final boolean TEST_FILLER = true;

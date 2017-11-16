@@ -27,13 +27,13 @@ import org.junit.Test;
  * Simple wrapper on Marlin long tests
  * @author bourgesl
  */
-public class RunJUnitLongTests {
+public class RunJUnitLongTest {
 
     private final static String[] NO_ARGS = new String[0];
 
     @Test
     public void clipTests() {
-        ClipShapeTests.main(NO_ARGS);
+        ClipShapeTest.main(NO_ARGS);
         // ClipShapeTests.main(new String[] {"-slow"});
     }
 }
