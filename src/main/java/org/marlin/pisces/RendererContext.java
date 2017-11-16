@@ -70,6 +70,8 @@ final class RendererContext extends ReentrantContext implements IRendererContext
     final Stroker stroker;
     // Simplifies out collinear lines
     final CollinearSimplifier simplifier = new CollinearSimplifier();
+    // Simplifies path
+    final PathSimplifier pathSimplifier = new PathSimplifier();
     final Dasher dasher;
     final MarlinTileGenerator ptg;
     final MarlinCache cache;

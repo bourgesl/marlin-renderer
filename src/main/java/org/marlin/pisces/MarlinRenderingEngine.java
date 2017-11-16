@@ -623,14 +623,18 @@ public final class MarlinRenderingEngine extends RenderingEngine
     }
 
     private static void pathTo(final RendererContext rdrCtx, final PathIterator pi,
-                               final PathConsumer2D pc2d)
+                               PathConsumer2D pc2d)
     {
+        if (USE_PATH_SIMPLIFIER) {
+            // Use path simplifier at the first step
+            // to remove useless points
+            pc2d = rdrCtx.pathSimplifier.init(pc2d);
+        }
+
         // mark context as DIRTY:
         rdrCtx.dirty = true;
 
-        final float[] coords = rdrCtx.float6;
-
-        pathToLoop(coords, pi, pc2d);
+        pathToLoop(rdrCtx.float6, pi, pc2d);
 
         // mark context as CLEAN:
         rdrCtx.dirty = false;
@@ -1102,6 +1106,11 @@ public final class MarlinRenderingEngine extends RenderingEngine
         // optimisation parameters
         logInfo("sun.java2d.renderer.useSimplifier    = "
                 + MarlinConst.USE_SIMPLIFIER);
+        logInfo("sun.java2d.renderer.usePathSimplifier= "
+                + MarlinConst.USE_PATH_SIMPLIFIER);
+        logInfo("sun.java2d.renderer.pathSimplifier.pixTol = "
+                + MarlinProperties.getPathSimplifierPixelTolerance());
+
         logInfo("sun.java2d.renderer.clip             = "
                 + MarlinProperties.isDoClip());
         logInfo("sun.java2d.renderer.clip.runtime.enable = "

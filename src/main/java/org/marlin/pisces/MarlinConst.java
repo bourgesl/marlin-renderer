@@ -74,8 +74,11 @@ interface MarlinConst {
     // do clean dirty array
     static final boolean DO_CLEAN_DIRTY = false;
 
-    // flag to use line simplifier
+    // flag to use collinear simplifier
     static final boolean USE_SIMPLIFIER = MarlinProperties.isUseSimplifier();
+
+    // flag to use path simplifier
+    static final boolean USE_PATH_SIMPLIFIER = MarlinProperties.isUsePathSimplifier();
 
     // flag to enable logs related bounds checks
     static final boolean DO_LOG_BOUNDS = ENABLE_LOGS && false;

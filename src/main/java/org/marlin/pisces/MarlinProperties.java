@@ -145,6 +145,18 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.useSimplifier", "false");
     }
 
+    public static boolean isUsePathSimplifier() {
+        return getBoolean("sun.java2d.renderer.usePathSimplifier", "false");
+    }
+
+    public static float getPathSimplifierPixelTolerance() {
+        // default: MIN_PEN_SIZE or less ?
+        return getFloat("sun.java2d.renderer.pathSimplifier.pixTol",
+                (1.0f / MarlinConst.NORM_SUBPIXELS),
+                1e-4f,
+                10.0f);
+    }
+
     public static boolean isDoClip() {
         return getBoolean("sun.java2d.renderer.clip", "true");
     }
