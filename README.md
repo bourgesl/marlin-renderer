@@ -65,7 +65,7 @@ Since we contribute this renderer into OpenJDK, we accept contributions only fro
 Support our work
 ================
 
-To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, I launched a gofundme campaign: https://www.gofundme.com/javaone-2017-travel-costs
+To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, I launched a gofundme campaign: https://www.gofundme.com/marlin-09
 
 Please contribute if you appreciate the Marlin renderer to send me a gift in return ...
 
