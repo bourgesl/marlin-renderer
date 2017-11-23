@@ -115,17 +115,17 @@ final class DHelpers implements MarlinConst {
         int num;
         if (D < 0.0d) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = (1.0d/3.0d) * Math.acos(-q / Math.sqrt(-cb_p));
+            final double phi = (1.0d/3.0d) * FMath.acos(-q / Math.sqrt(-cb_p));
             final double t = 2.0d * Math.sqrt(-p);
 
-            pts[ off+0 ] = ( t * Math.cos(phi));
-            pts[ off+1 ] = (-t * Math.cos(phi + (PI / 3.0d)));
-            pts[ off+2 ] = (-t * Math.cos(phi - (PI / 3.0d)));
+            pts[ off+0 ] = ( t * FMath.cos(phi));
+            pts[ off+1 ] = (-t * FMath.cos(phi + (PI / 3.0d)));
+            pts[ off+2 ] = (-t * FMath.cos(phi - (PI / 3.0d)));
             num = 3;
         } else {
             final double sqrt_D = Math.sqrt(D);
-            final double u =   Math.cbrt(sqrt_D - q);
-            final double v = - Math.cbrt(sqrt_D + q);
+            final double u =   FMath.cbrt(sqrt_D - q);
+            final double v = - FMath.cbrt(sqrt_D + q);
 
             pts[ off ] = (u + v);
             num = 1;
