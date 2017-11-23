@@ -34,16 +34,128 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 /**
- * Simple Line Clipping rendering test
+ * Simple Dashed Line Clipping rendering test
+
+- Diagonal line:
+
+* Float variant:
+
+LINE_HZ = false + CLIPPING OFF:
+
+paint: duration= 586.4380219999999 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.1474836E7-dashed-stroked.png
+
+Larger: float => while 1 (precision issue in decrement ?)
+
+---
+LINE_HZ = false + CLIPPING ON:
+
+paint: duration= 153.18715799999998 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.1474836E7-dashed-stroked.png
+
+
+
+>> Dasher Fix Only (kahan sum):
+
+LINE_HZ = false + CLIPPING OFF:
+
+paint: duration= 629.438667 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.1474836E7-dashed-stroked.png
+
+paint: duration= 6233.9366279999995 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748368E8-dashed-stroked.png
+
+---
+LINE_HZ = false + CLIPPING ON:
+
+paint: duration= 20.089544 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2147483.0-dashed-stroked.png
+
+paint: duration= 184.397379 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.1474836E7-dashed-stroked.png
+
+paint: duration= 1749.1042699999998 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748368E8-dashed-stroked.png
+
+paint: duration= 17595.900109 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748365E9-dashed-stroked.png
+
+
+
+---
+* Double variant:
+
+LINE_HZ = false + CLIPPING OFF:
+
+paint: duration= 74.80852999999999 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2147483.0-dashed-stroked.png
+
+paint: duration= 692.7280599999999 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.1474836E7-dashed-stroked.png
+
+paint: duration= 6910.535513 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748368E8-dashed-stroked.png
+
+No test for MAX-2.14748365E9
+
+---
+LINE_HZ = false + CLIPPING ON:
+
+paint: duration= 18.354069 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2147483.0-dashed-stroked.png
+
+paint: duration= 155.210102 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.1474836E7-dashed-stroked.png
+
+paint: duration= 1532.940877 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748368E8-dashed-stroked.png
+
+paint: duration= 15235.051479 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748365E9-dashed-stroked.png
+
+
+
+LINE_HZ = true + CLIPPING OFF:
+
+paint: duration= 121.60999899999999 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2147483.0-dashed-stroked.png
+
+paint: duration= 1275.035922 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.1474836E7-dashed-stroked.png
+
+[GC (Allocation Failure)  1270757K->1259627K(2095616K), 0,0703327 secs]
+[Full GC (Ergonomics)  1259627K->420695K(2095616K), 0,0455937 secs]
+paint: duration= 14317.566315 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748368E8-dashed-stroked.png
+
+No test for MAX-2.14748365E9
+
+---
+LINE_HZ = true + CLIPPING ON:
+
+paint: duration= 9.73142 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2147483.0-dashed-stroked.png
+
+paint: duration= 110.56740599999999 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.1474836E7-dashed-stroked.png
+
+paint: duration= 1078.545259 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748368E8-dashed-stroked.png
+
+paint: duration= 10815.384732999999 ms.
+Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MAX-2.14748365E9-dashed-stroked.png
+
  */
-public class LineClipTest {
+public class DashedLineClipTest {
 
-    private final static int N = 100;
+    private final static int N = 10;
 
-    static final int NUM_OFFSCREEN = 10000;
-    static boolean OMIT_OFFSCREEN = false;
+    final static boolean DO_DASHED = true;
+    final static boolean DO_FILL = false;
 
-    static boolean DO_FILL = true;
+    final static boolean LINE_HZ = false;
+    
+    final static float MAX = Integer.MAX_VALUE / 10;
 
     public static void main(String[] args) {
 
@@ -66,7 +178,7 @@ public class LineClipTest {
             }
         }
 
-        System.out.println("LineClipTest: size = " + size);
+        System.out.println("DashedLineClipTest: size = " + size);
 
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 
@@ -76,8 +188,7 @@ public class LineClipTest {
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         g2d.setClip(0, 0, size, size);
-        g2d.setStroke(new BasicStroke(1f));
-//        g2d.setStroke( new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER) );
+        g2d.setStroke(createStroke());
 
         g2d.setBackground(Color.WHITE);
         g2d.clearRect(0, 0, size, size);
@@ -104,8 +215,8 @@ public class LineClipTest {
         }
 
         try {
-            final File file = new File("LineClipTest-"
-                    + (OMIT_OFFSCREEN ? "-noOffscreen" : "") + ".png");
+            final File file = new File("DashedLineClipTest-MAX-"+MAX
+                    + (DO_DASHED ? "-dashed" : "") + (DO_FILL ? "-filled" : "-stroked") + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
@@ -119,20 +230,27 @@ public class LineClipTest {
     private static Shape createPath(final float size) {
         final Path2D p = new Path2D.Float();
 
-        if (OMIT_OFFSCREEN) {
-            p.moveTo(-100, 100);
-        } else {
-            p.moveTo(-500, 100);
+        if (LINE_HZ) {
+            p.moveTo(-5.5, 16);
 
-            for (int i = 0; i < NUM_OFFSCREEN; i++) {
-                double x = Math.random() * 400 - 500;
-                double y = Math.random() * 200;
-                p.lineTo(x, y);
-            }
-            p.lineTo(-100, 100);
+            // Mimics JDK-9:
+            // g2d.getDeviceConfiguration().getBounds()
+            p.lineTo(MAX, 16);
+            
+        } else {
+            p.moveTo(-5.5, -0.5);
+
+            // Mimics JDK-9:
+            // g2d.getDeviceConfiguration().getBounds()
+            p.lineTo(MAX, MAX);
         }
-        p.lineTo(50, 150);
-        p.lineTo(150, 50);
+
         return p;
     }
+
+    private static BasicStroke createStroke() {
+        return new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f,
+                ((DO_DASHED) ? new float[]{4f} : null), 0.0f);
+    }
+
 }

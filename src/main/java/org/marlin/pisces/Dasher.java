@@ -304,6 +304,8 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         firstSegidx = segIdx + len;
     }
 
+    private final static boolean USE_NAIVE_SUM = false;
+
     @Override
     public void lineTo(final float x1, final float y1) {
         final float dx = x1 - x0;
@@ -329,7 +331,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         float _phase = phase;
 
         float leftInThisDashSegment;
+        float el = 0.0f, ex = 0.0f, ey = 0.0f;
         float d, dashdx, dashdy, p;
+        float z, t;
 
         while (true) {
             d = _dash[_idx];
@@ -358,21 +362,56 @@ final class Dasher implements PathConsumer2D, MarlinConst {
                 return;
             }
 
+            // TODO: out of loop if nb(seg) >> dashLen
+            // may avoid multiply by precomputation
             dashdx = d * cx;
             dashdy = d * cy;
 
-            if (_phase == 0.0f) {
-                _curCurvepts[0] = x0 + dashdx;
-                _curCurvepts[1] = y0 + dashdy;
-            } else {
+            if (_phase != 0.0f) {
+                // less probable case:
+                // may avoid divide by precomputation
+                // TODO: out of loop if nb(seg) >> dashLen
                 p = leftInThisDashSegment / d;
-                _curCurvepts[0] = x0 + p * dashdx;
-                _curCurvepts[1] = y0 + p * dashdy;
+
+                dashdx *= p;
+                dashdy *= p;
             }
 
+if (USE_NAIVE_SUM) {
+            // naive sum:
+            _curCurvepts[0] = x0 + dashdx;
+            _curCurvepts[1] = y0 + dashdy;
+} else {
+            // Numerical precision problem: d << (x0,y0)
+
+            // kahan sum:
+            z = dashdx - ex;
+            t = x0 + z;
+            ex = (t - x0) - z;
+            _curCurvepts[0] = t;
+
+            // kahan sum:
+            z = dashdy - ey;
+            t = y0 + z;
+            ey = (t - y0) - z;
+            _curCurvepts[1] = t;
+}
             goTo(_curCurvepts, 0, 4, _dashOn);
 
+if (USE_NAIVE_SUM) {
+            // naive sum:
             len -= leftInThisDashSegment;
+} else {
+            // Very high dynamic: (len / dashTotal) > 4million
+            // TODO: find the proper threshold with accuracy ie dynamic range is larger than float precision !
+            // see ulps ! ie smallest dash length vs line length ~ 5e6 ?
+
+            // kahan sum:
+            z = leftInThisDashSegment - el;
+            t = len - z;
+            el = (len - t) - z;
+            len = t;
+}
             // Advance to next dash segment
             _idx = (_idx + 1) % _dashLen;
             _dashOn = !_dashOn;
@@ -382,6 +421,8 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
     // shared instance in Dasher
     private final LengthIterator li = new LengthIterator();
+
+    private final float[] initCurvepts = new float[8];
 
     // preconditions: curCurvepts must be an array of length at least 2 * type,
     // that contains the curve we want to dash in the first type elements
@@ -394,6 +435,13 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final float[] _dash = dash;
         final int _dashLen = this.dashLen;
 
+// TODO: cleanup or threshold ?
+        if (true) {
+            // backup (lolo):
+            // optimize arraycopy (8 values faster than 6 = type):
+            System.arraycopy(_curCurvepts, 0, initCurvepts, 0, 8);
+        }
+
         _li.initializeIterationOnCurve(_curCurvepts, type);
 
         int _idx = idx;
@@ -405,6 +453,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         float lastSplitT = 0.0f;
         float t;
         float leftInThisDashSegment = _dash[_idx] - _phase;
+        int c = 0;
 
         while ((t = _li.next(leftInThisDashSegment)) < 1.0f) {
             if (t != 0.0f) {
@@ -421,6 +470,17 @@ final class Dasher implements PathConsumer2D, MarlinConst {
             _dashOn = !_dashOn;
             _phase = 0.0f;
             leftInThisDashSegment = _dash[_idx];
+
+            if (true) {
+                if ((++c) == 10000) {
+                    c = 0;
+                    // Split from initial curve to correct from bias:
+                    Helpers.subdivideAt(lastSplitT,
+                                        initCurvepts, 0,
+                                        _curCurvepts, 0,
+                                        _curCurvepts, type, type);
+                }
+            }
         }
 
         goTo(_curCurvepts, curCurveoff + 2, type, _dashOn);
