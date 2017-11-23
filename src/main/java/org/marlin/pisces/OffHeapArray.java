@@ -37,7 +37,6 @@ import sun.misc.Unsafe;
 
 /**
  *
- * @author bourgesl
  */
 final class OffHeapArray  {
 

@@ -29,7 +29,6 @@ import sun.java2d.marlin.TextTransformTest;
 
 /**
  * Simple wrapper on Marlin tests
- * @author bourgesl
  */
 public class RunJUnitTest {
 
