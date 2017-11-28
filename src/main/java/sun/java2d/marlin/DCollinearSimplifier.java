@@ -28,26 +28,24 @@ package sun.java2d.marlin;
 
 final class DCollinearSimplifier implements DPathConsumer2D {
 
-    private static final int STATE_PREV_LINE = 0;
-    private static final int STATE_PREV_POINT = 1;
-    private static final int STATE_EMPTY = 2;
+    enum SimplifierState {
 
+        Empty, PreviousPoint, PreviousLine
+    };
     // slope precision threshold
-    private static final double EPS = 1e-3d; // aaime proposed 1e-3d
+    static final double EPS = 1e-4d; // aaime proposed 1e-3d
 
-    // members:
-    private DPathConsumer2D delegate;
-    private int state;
-    private double px1, py1;
-    private double pdx, pdy;
-    private double px2, py2;
+    DPathConsumer2D delegate;
+    SimplifierState state;
+    double px1, py1, px2, py2;
+    double pslope;
 
     DCollinearSimplifier() {
     }
 
-    public DCollinearSimplifier init(final DPathConsumer2D delegate) {
+    public DCollinearSimplifier init(DPathConsumer2D delegate) {
         this.delegate = delegate;
-        this.state = STATE_EMPTY;
+        this.state = SimplifierState.Empty;
 
         return this; // fluent API
     }
@@ -55,15 +53,15 @@ final class DCollinearSimplifier implements DPathConsumer2D {
     @Override
     public void pathDone() {
         emitStashedLine();
+        state = SimplifierState.Empty;
         delegate.pathDone();
-        state = STATE_EMPTY;
     }
 
     @Override
     public void closePath() {
         emitStashedLine();
+        state = SimplifierState.Empty;
         delegate.closePath();
-        state = STATE_EMPTY;
     }
 
     @Override
@@ -72,85 +70,85 @@ final class DCollinearSimplifier implements DPathConsumer2D {
     }
 
     @Override
-    public void quadTo(final double x1, final double y1,
-                       final double xe, final double ye)
-    {
+    public void quadTo(double x1, double y1, double x2, double y2) {
         emitStashedLine();
-        delegate.quadTo(x1, y1, xe, ye);
+        delegate.quadTo(x1, y1, x2, y2);
         // final end point:
-        state = STATE_PREV_POINT;
-        px1 = xe;
-        py1 = ye;
+        state = SimplifierState.PreviousPoint;
+        px1 = x2;
+        py1 = y2;
     }
 
     @Override
-    public void curveTo(final double x1, final double y1,
-                        final double x2, final double y2,
-                        final double xe, final double ye)
-    {
+    public void curveTo(double x1, double y1, double x2, double y2,
+                        double x3, double y3) {
         emitStashedLine();
-        delegate.curveTo(x1, y1, x2, y2, xe, ye);
+        delegate.curveTo(x1, y1, x2, y2, x3, y3);
         // final end point:
-        state = STATE_PREV_POINT;
-        px1 = xe;
-        py1 = ye;
+        state = SimplifierState.PreviousPoint;
+        px1 = x3;
+        py1 = y3;
     }
 
     @Override
-    public void moveTo(final double xe, final double ye) {
+    public void moveTo(double x, double y) {
         emitStashedLine();
-        delegate.moveTo(xe, ye);
-        state = STATE_PREV_POINT;
-        px1 = xe;
-        py1 = ye;
+        delegate.moveTo(x, y);
+        state = SimplifierState.PreviousPoint;
+        px1 = x;
+        py1 = y;
     }
 
     @Override
-    public void lineTo(final double xe, final double ye) {
-        // most probable case first:
-        if (state == STATE_PREV_LINE) {
-            // test for collinearity
-            final double dx = (xe - px2);
-            final double dy = (ye - py2);
+    public void lineTo(final double x, final double y) {
+        switch (state) {
+            case Empty:
+                delegate.lineTo(x, y);
+                state = SimplifierState.PreviousPoint;
+                px1 = x;
+                py1 = y;
+                return;
 
-            // perf: avoid slope computation (fdiv) replaced by 3 fmul
-            if ((dy == 0.0d && pdy == 0.0d && (pdx * dx) >= 0.0d)
-// uncertainty on slope:
-//                || (Math.abs(pdx * dy - pdy * dx) < EPS * Math.abs(pdy * dy))) {
-// try 0
-                || ((pdy * dy) != 0.0d && (pdx * dy - pdy * dx) == 0.0d)) {
-                // same horizontal orientation or same slope:
-                // TODO: store cumulated error on slope ?
-                // merge segments
-                px2 = xe;
-                py2 = ye;
-            } else {
+            case PreviousPoint:
+                state = SimplifierState.PreviousLine;
+                px2 = x;
+                py2 = y;
+                pslope = getSlope(px1, py1, x, y);
+                return;
+
+            case PreviousLine:
+                final double slope = getSlope(px2, py2, x, y);
+                // test for collinearity
+                if ((slope == pslope) || (Math.abs(pslope - slope) < EPS)) {
+                    // merge segments
+                    px2 = x;
+                    py2 = y;
+                    return;
+                }
                 // emit previous segment
                 delegate.lineTo(px2, py2);
                 px1 = px2;
                 py1 = py2;
-                pdx = dx;
-                pdy = dy;
-                px2 = xe;
-                py2 = ye;
-            }
-        } else if (state == STATE_PREV_POINT) {
-            state = STATE_PREV_LINE;
-            pdx = (xe - px1);
-            pdy = (ye - py1);
-            px2 = xe;
-            py2 = ye;
-        } else if (state == STATE_EMPTY) {
-            delegate.lineTo(xe, ye);
-            state = STATE_PREV_POINT;
-            px1 = xe;
-            py1 = ye;
+                px2 = x;
+                py2 = y;
+                pslope = slope;
+                return;
+            default:
         }
     }
 
     private void emitStashedLine() {
-        if (state == STATE_PREV_LINE) {
+        if (state == SimplifierState.PreviousLine) {
             delegate.lineTo(px2, py2);
         }
+    }
+
+    private static double getSlope(double x1, double y1, double x2, double y2) {
+        double dy = y2 - y1;
+        if (dy == 0.0d) {
+            return (x2 > x1) ? Double.POSITIVE_INFINITY
+                   : Double.NEGATIVE_INFINITY;
+        }
+        return (x2 - x1) / dy;
     }
 }

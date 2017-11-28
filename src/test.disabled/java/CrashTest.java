@@ -48,21 +48,7 @@ public class CrashTest {
         boolean runSlowTests = (args.length != 0 && "-slow".equals(args[0]));
 
         // First display which renderer is tested:
-        // JDK9 only:
         System.setProperty("sun.java2d.renderer.verbose", "true");
-        System.out.println("Testing renderer: ");
-        // Other JDK:
-        String renderer = "undefined";
-        try {
-            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
-            System.out.println(renderer);
-        } catch (Throwable th) {
-            // may fail with JDK9 jigsaw (jake)
-            if (false) {
-                System.err.println("Unable to get RenderingEngine.getInstance()");
-                th.printStackTrace();
-            }
-        }
 
         // try insane image sizes:
 

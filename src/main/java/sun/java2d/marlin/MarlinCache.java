@@ -25,8 +25,7 @@
 
 package sun.java2d.marlin;
 
-//import jdk.internal.misc.Unsafe;
-import sun.misc.Unsafe;
+import jdk.internal.misc.Unsafe;
 
 /**
  * An object used to cache pre-rendered complex paths.

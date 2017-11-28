@@ -28,13 +28,11 @@ package sun.java2d.marlin;
 
 public final class MarlinUtils {
     // Marlin logger
-//    private static final sun.util.logging.PlatformLogger LOG;
-    private static final java.util.logging.Logger LOG;
+    private static final sun.util.logging.PlatformLogger LOG;
 
     static {
         if (MarlinConst.USE_LOGGER) {
-//            log = sun.util.logging.PlatformLogger.getLogger("sun.java2d.marlin");
-            LOG = java.util.logging.Logger.getLogger("sun.java2d.marlin");
+            LOG = sun.util.logging.PlatformLogger.getLogger("sun.java2d.marlin");
         } else {
             LOG = null;
         }
@@ -55,30 +53,11 @@ public final class MarlinUtils {
 
     public static void logException(final String msg, final Throwable th) {
         if (MarlinConst.USE_LOGGER) {
-//            log.warning(msg, th);
-            LOG.log(java.util.logging.Level.WARNING, msg, th);
+            LOG.warning(msg, th);
         } else if (MarlinConst.ENABLE_LOGS) {
             System.out.print("WARNING: ");
             System.out.println(msg);
             th.printStackTrace(System.err);
         }
-    }
-
-    // From sun.awt.util.ThreadGroupUtils
-
-    /**
-     * Returns a root thread group.
-     * Should be called with {@link sun.security.util.SecurityConstants#MODIFY_THREADGROUP_PERMISSION}
-     *
-     * @return a root {@code ThreadGroup}
-     */
-    public static ThreadGroup getRootThreadGroup() {
-        ThreadGroup currentTG = Thread.currentThread().getThreadGroup();
-        ThreadGroup parentTG = currentTG.getParent();
-        while (parentTG != null) {
-            currentTG = parentTG;
-            parentTG = currentTG.getParent();
-        }
-        return currentTG;
     }
 }

@@ -227,7 +227,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                  pc2d);
     }
 
-    private final double userSpaceLineWidth(AffineTransform at, double lw) {
+    private double userSpaceLineWidth(AffineTransform at, double lw) {
 
         double widthScale;
 
@@ -1044,8 +1044,6 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         // optimisation parameters
         logInfo("sun.java2d.renderer.useSimplifier    = "
                 + MarlinConst.USE_SIMPLIFIER);
-        logInfo("sun.java2d.renderer.clip.curves      = "
-                + MarlinProperties.isDoClipCurves());
 
         // debugging parameters
         logInfo("sun.java2d.renderer.doStats          = "
