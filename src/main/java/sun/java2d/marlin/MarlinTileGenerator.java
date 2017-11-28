@@ -39,7 +39,7 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
     private static final int TH_AA_ALPHA_FILL_EMPTY = ((MAX_AA_ALPHA + 1) / 3); // 33%
     private static final int TH_AA_ALPHA_FILL_FULL  = ((MAX_AA_ALPHA + 1) * 2 / 3); // 66%
 
-    private static final int FILL_TILE_W = Math.max(16, TILE_W >> 2); // 1/4th tile width
+    private static final int FILL_TILE_W = TILE_W >> 1; // half tile width
 
     static {
         if (MAX_TILE_ALPHA_SUM <= 0) {

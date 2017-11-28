@@ -27,7 +27,6 @@ package sun.java2d.marlin;
 
 import static java.lang.Math.PI;
 import java.util.Arrays;
-import static sun.java2d.marlin.MarlinConst.INITIAL_EDGES_COUNT;
 import sun.java2d.marlin.stats.Histogram;
 import sun.java2d.marlin.stats.StatLong;
 

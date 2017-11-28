@@ -46,7 +46,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 /**
  * @test
- * @bug 8184429
+ * @bug 8191814
  * @summary Verifies that Marlin rendering generates the same
  * images with and without clipping optimization with all possible
  * stroke (cap/join) and fill modes (EO rules)
@@ -54,7 +54,6 @@ import javax.imageio.stream.ImageOutputStream;
  * -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
  * -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
  * @run main/othervm ClipShapeTest
- *
  * @ignore tests taking too much time (huge number of polygons)
  * @run main/othervm ClipShapeTest -slow
  */

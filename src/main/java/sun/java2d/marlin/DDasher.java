@@ -384,7 +384,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
 
     // preconditions: curCurvepts must be an array of length at least 2 * type,
     // that contains the curve we want to dash in the first type elements
-    private void somethingTo(int type) {
+    private void somethingTo(final int type) {
         if (pointCurve(curCurvepts, type)) {
             return;
         }
@@ -721,7 +721,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                 final double x1 = curve[i], y1 = curve[i+1];
                 final double len = DHelpers.linelen(x0, y0, x1, y1);
                 polyLen += len;
-                curLeafCtrlPolyLengths[i/2 - 1] = len;
+                curLeafCtrlPolyLengths[(i >> 1) - 1] = len;
                 x0 = x1;
                 y0 = y1;
             }
