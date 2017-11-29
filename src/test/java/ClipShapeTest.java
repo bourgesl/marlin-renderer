@@ -53,9 +53,8 @@ import javax.imageio.stream.ImageOutputStream;
  * Use the following setting to use Float or Double variant:
  * -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
  * -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
- * @run main/othervm ClipShapeTest
- * @ignore tests taking too much time (huge number of polygons)
- * @run main/othervm ClipShapeTest -slow
+ * Use the argument -slow to run more intensive tests (taking too much time)
+ * @run main/othervm/timeout=120 ClipShapeTest
  */
 public final class ClipShapeTest {
 
