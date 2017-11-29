@@ -830,12 +830,10 @@ public final class MarlinRenderingEngine extends RenderingEngine
                 final PathIterator pi = norm.getNormalizingPathIterator(rdrCtx,
                                                  s.getPathIterator(_at));
 
-                final int windingRule = pi.getWindingRule();
-
                 // note: Winding rule may be EvenOdd ONLY for fill operations !
                 r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                          clip.getWidth(), clip.getHeight(),
-                                         windingRule);
+                                         pi.getWindingRule());
 
                 PathConsumer2D pc2d = r;
 
