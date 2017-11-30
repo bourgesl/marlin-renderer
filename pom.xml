@@ -19,6 +19,7 @@
 
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
+        <integration.skip>false</integration.skip>
     </properties>
 
     <build>
@@ -37,22 +38,76 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            
+            <!-- To copy dependencies into target/test-libs (used by javac -module-path) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies-libs</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>test</includeScope>
+                            <outputDirectory>${project.build.directory}/test-libs</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <source>9</source>
-                    <target>9</target>
+                    <source>1.9</source>
+                    <target>1.9</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
+                    <showDeprecation>true</showDeprecation>
+                    <showWarnings>true</showWarnings>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                    <verbose>true</verbose>
+                    <!--                    
+                                        <useIncrementalCompilation>false</useIncrementalCompilation>
+                                        <fork>true</fork>
+                                        <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
+                                        <verbose>true</verbose>
+                                        <detail>true</detail>
+                    -->                
                     <compilerArgs>
                         <arg>--patch-module</arg>
                         <arg>java.desktop=src</arg>
                     </compilerArgs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--patch-module</arg>
+                                <arg>java.desktop=src</arg>
+                                <arg>--module-path</arg>
+                                <arg>${project.build.directory}/test-libs</arg>
+                                <arg>--add-modules</arg>
+                                <arg>java.logging,junit,hamcrest.core</arg>
+                                <arg>--add-reads</arg>
+                                <arg>java.desktop=java.logging,junit,hamcrest.core</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -67,6 +122,58 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20.1</version>
+                <!--
+                MarlinF: -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
+                MarlinD: -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
+
+                CrashTest may need large heap: -Xms4g -Xmx4g
+                -->
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${integration.skip}</skip>
+                            <includes>
+                                <include>**/RunJUnitTest.java</include>
+                            </includes>
+                            <argLine>
+                                -Xms1g -Xmx1g
+                                -Dsun.java2d.renderer.log=true
+                                -Dsun.java2d.renderer.doChecks=true
+                                --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
+                                --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>integration-long-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${integration.skip}</skip>
+                            <includes>
+                                <include>**/RunJUnitLongTest.java</include>
+                            </includes>
+                            <argLine>
+                                -Xms1g -Xmx1g
+                                -Dsun.java2d.renderer.log=true
+                                -Dsun.java2d.renderer.doChecks=false
+                                --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
+                                --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

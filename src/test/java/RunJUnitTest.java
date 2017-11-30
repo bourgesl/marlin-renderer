@@ -22,10 +22,6 @@
  */
 
 import org.junit.Test;
-import sun.java2d.marlin.BoundsTest;
-import sun.java2d.marlin.OpenJDKFillBug;
-import sun.java2d.marlin.RenderingTest;
-import sun.java2d.marlin.TextTransformTest;
 
 /**
  * Simple wrapper on Marlin tests
@@ -88,20 +84,5 @@ public class RunJUnitTest {
     @Test
     public void CeilAndFloorTest() {
         CeilAndFloorTests.main(NO_ARGS);
-    }
-
-    @Test
-    public void path2DGrowTest() {
-        Path2DGrow.main(NO_ARGS);
-    }
-
-    @Test
-    public void path2DCopyConstructorTest() {
-        Path2DCopyConstructor.main(NO_ARGS);
-    }
-
-    @Test
-    public void imageWriterCompressionTest() {
-        ImageWriterCompressionTest.main(NO_ARGS);
     }
 }

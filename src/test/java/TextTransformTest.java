@@ -21,7 +21,7 @@
  * questions.
  */
 
-package sun.java2d.marlin;
+
 
 import java.awt.BasicStroke;
 import java.awt.Color;
