@@ -171,8 +171,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
 
     Path2D.Double getPath2D() {
         // resolve reference:
-        Path2D.Double p2d
-            = (refPath2D != null) ? refPath2D.get() : null;
+        Path2D.Double p2d = (refPath2D != null) ? refPath2D.get() : null;
 
         // create a new Path2D ?
         if (p2d == null) {

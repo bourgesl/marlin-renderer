@@ -523,10 +523,10 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
 
     DRenderer(final DRendererContext rdrCtx) {
         this.rdrCtx = rdrCtx;
+        this.curve = rdrCtx.curve;
+        this.cache = rdrCtx.cache;
 
         this.edges = rdrCtx.newOffHeapArray(INITIAL_EDGES_CAPACITY); // 96K
-
-        this.curve = rdrCtx.curve;
 
         edgeBuckets_ref      = rdrCtx.newCleanIntArrayRef(INITIAL_BUCKET_ARRAY); // 64K
         edgeBucketCounts_ref = rdrCtx.newCleanIntArrayRef(INITIAL_BUCKET_ARRAY); // 64K
@@ -537,8 +537,6 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
         // 2048 (pixelsize) pixel large
         alphaLine_ref = rdrCtx.newCleanIntArrayRef(INITIAL_AA_ARRAY); // 8K
         alphaLine     = alphaLine_ref.initial;
-
-        this.cache = rdrCtx.cache;
 
         crossings_ref     = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 2K
         aux_crossings_ref = rdrCtx.newDirtyIntArrayRef(INITIAL_CROSSING_COUNT); // 2K

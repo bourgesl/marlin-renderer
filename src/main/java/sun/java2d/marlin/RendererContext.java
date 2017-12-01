@@ -168,8 +168,7 @@ final class RendererContext extends ReentrantContext implements IRendererContext
 
     Path2D.Float getPath2D() {
         // resolve reference:
-        Path2D.Float p2d
-            = (refPath2D != null) ? refPath2D.get() : null;
+        Path2D.Float p2d = (refPath2D != null) ? refPath2D.get() : null;
 
         // create a new Path2D ?
         if (p2d == null) {

@@ -55,7 +55,6 @@ public final class MarlinUtils {
 
     public static void logException(final String msg, final Throwable th) {
         if (MarlinConst.USE_LOGGER) {
-//            log.warning(msg, th);
             LOG.log(java.util.logging.Level.WARNING, msg, th);
         } else if (MarlinConst.ENABLE_LOGS) {
             System.out.print("WARNING: ");
