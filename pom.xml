@@ -39,7 +39,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            
+
             <!-- To copy dependencies into target/test-libs (used by javac -module-path) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -64,23 +64,17 @@
             </plugin>
             
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <source>1.9</source>
-                    <target>1.9</target>
+                    <source>9</source>
+                    <target>9</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                    <!--                    
-                                        <useIncrementalCompilation>false</useIncrementalCompilation>
-                                        <fork>true</fork>
-                                        <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
-                                        <verbose>true</verbose>
-                                        <detail>true</detail>
-                    -->                
                     <compilerArgs>
                         <arg>--patch-module</arg>
                         <arg>java.desktop=src</arg>
