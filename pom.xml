@@ -20,6 +20,7 @@
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
         <integration.skip>false</integration.skip>
+        <integration.skip.long>false</integration.skip.long>
     </properties>
 
     <build>
@@ -129,14 +130,21 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.20.1</version>
                 <!--
-                MarlinF: -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
-                MarlinD: -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
-
                 CrashTest may need large heap: -Xms4g -Xmx4g
                 -->
                 <executions>
                     <execution>
                         <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>integration-test-float</id>
                         <phase>test</phase>
                         <goals>
                             <goal>test</goal>
@@ -149,13 +157,13 @@
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
-                                -Dsun.java2d.renderer.doChecks=true
+                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                                 --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
                                 --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>integration-long-tests</id>
+                        <id>integration-test-double</id>
                         <phase>test</phase>
                         <goals>
                             <goal>test</goal>
@@ -163,12 +171,50 @@
                         <configuration>
                             <skip>${integration.skip}</skip>
                             <includes>
+                                <include>**/RunJUnitTest.java</include>
+                            </includes>
+                            <argLine>
+                                -Xms1g -Xmx1g
+                                -Dsun.java2d.renderer.log=true
+                                -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
+                                --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
+                                --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>integration-long-test-float</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${integration.skip.long}</skip>
+                            <includes>
                                 <include>**/RunJUnitLongTest.java</include>
                             </includes>
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
-                                -Dsun.java2d.renderer.doChecks=false
+                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
+                                --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
+                                --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>integration-long-test-double</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${integration.skip.long}</skip>
+                            <includes>
+                                <include>**/RunJUnitLongTest.java</include>
+                            </includes>
+                            <argLine>
+                                -Xms1g -Xmx1g
+                                -Dsun.java2d.renderer.log=true
+                                -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
                                 --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
                                 --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
                         </configuration>
