@@ -35,7 +35,6 @@ import javax.imageio.ImageIO;
 
 /**
  *
- * @author bourgesl
  */
 public class BoundsTest {
 

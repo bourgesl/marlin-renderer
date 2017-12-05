@@ -1100,6 +1100,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         // optimisation parameters
         logInfo("sun.java2d.renderer.useSimplifier    = "
                 + MarlinConst.USE_SIMPLIFIER);
+
         logInfo("sun.java2d.renderer.clip             = "
                 + MarlinProperties.isDoClip());
         logInfo("sun.java2d.renderer.clip.runtime.enable = "
