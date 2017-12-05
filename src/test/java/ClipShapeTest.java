@@ -123,7 +123,7 @@ public final class ClipShapeTest {
         }
 
         Locale.setDefault(Locale.US);
-        
+
         // Get Marlin runtime state from its log:
         final AtomicBoolean isMarlin = new AtomicBoolean();
         final AtomicBoolean isClipRuntime = new AtomicBoolean();
@@ -143,7 +143,7 @@ public final class ClipShapeTest {
                         isClipRuntime.set(msg.contains("true"));
                     }
                 }
-                
+
                 final Throwable th = record.getThrown();
                 // detect any Throwable:
                 if (th != null) {
@@ -170,7 +170,7 @@ public final class ClipShapeTest {
         // disable static clipping setting:
         System.setProperty("sun.java2d.renderer.clip", "false");
         System.setProperty("sun.java2d.renderer.clip.runtime.enable", "true");
-        
+
         System.out.println("ClipShapeTests: image = " + TESTW + " x " + TESTH);
 
         int failures = 0;
@@ -229,7 +229,7 @@ public final class ClipShapeTest {
             throw new RuntimeException(ioe);
         }
         System.out.println("main: duration= " + (1e-6 * (System.nanoTime() - start)) + " ms.");
-        
+
         if (!isMarlin.get()) {
             throw new RuntimeException("Marlin renderer not used at runtime !");
         }

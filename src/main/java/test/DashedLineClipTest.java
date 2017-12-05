@@ -154,7 +154,7 @@ public class DashedLineClipTest {
     final static boolean DO_FILL = false;
 
     final static boolean LINE_HZ = false;
-    
+
     final static float MAX = Integer.MAX_VALUE / 10;
 
     public static void main(String[] args) {
@@ -236,7 +236,7 @@ public class DashedLineClipTest {
             // Mimics JDK-9:
             // g2d.getDeviceConfiguration().getBounds()
             p.lineTo(MAX, 16);
-            
+
         } else {
             p.moveTo(-5.5, -0.5);
 

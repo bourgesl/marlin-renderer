@@ -362,17 +362,11 @@ final class Dasher implements PathConsumer2D, MarlinConst {
                 return;
             }
 
-            // TODO: out of loop if nb(seg) >> dashLen
-            // may avoid multiply by precomputation
             dashdx = d * cx;
             dashdy = d * cy;
 
             if (_phase != 0.0f) {
-                // less probable case:
-                // may avoid divide by precomputation
-                // TODO: out of loop if nb(seg) >> dashLen
                 p = leftInThisDashSegment / d;
-
                 dashdx *= p;
                 dashdy *= p;
             }
@@ -438,7 +432,6 @@ if (USE_NAIVE_SUM) {
 // TODO: what threshold (splits vs approx. curve length) ?
         final float[] _initCurvepts = initCurvepts;
         if (true) {
-            // backup (lolo):
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(_curCurvepts, 0, _initCurvepts, 0, 8);
         }

@@ -27,7 +27,6 @@ package org.marlin.pisces;
 
 import static java.lang.Math.PI;
 import java.util.Arrays;
-import static org.marlin.pisces.MarlinConst.INITIAL_EDGES_COUNT;
 import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.StatLong;
 
