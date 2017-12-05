@@ -836,12 +836,10 @@ public final class MarlinRenderingEngine extends RenderingEngine
                 final PathIterator pi = norm.getNormalizingPathIterator(rdrCtx,
                                                  s.getPathIterator(_at));
 
-                final int windingRule = pi.getWindingRule();
-
                 // note: Winding rule may be EvenOdd ONLY for fill operations !
                 r = rdrCtx.renderer.init(clip.getLoX(), clip.getLoY(),
                                          clip.getWidth(), clip.getHeight(),
-                                         windingRule);
+                                         pi.getWindingRule());
 
                 PathConsumer2D pc2d = r;
 
@@ -1075,8 +1073,10 @@ public final class MarlinRenderingEngine extends RenderingEngine
 
         logInfo("sun.java2d.renderer.edges            = "
                 + MarlinConst.INITIAL_EDGES_COUNT);
-        logInfo("sun.java2d.renderer.pixelsize        = "
-                + MarlinConst.INITIAL_PIXEL_DIM);
+        logInfo("sun.java2d.renderer.pixelWidth       = "
+                + MarlinConst.INITIAL_PIXEL_WIDTH);
+        logInfo("sun.java2d.renderer.pixelHeight      = "
+                + MarlinConst.INITIAL_PIXEL_HEIGHT);
 
         logInfo("sun.java2d.renderer.subPixel_log2_X  = "
                 + MarlinConst.SUBPIXEL_LG_POSITIONS_X);

@@ -54,14 +54,26 @@ public final class MarlinProperties {
     }
 
     /**
-     * Return the initial pixel size used to define initial arrays
-     * (tile AA chunk, alpha line, buckets)
+     * Return the initial pixel width used to define initial arrays
+     * (tile AA chunk, alpha line)
      *
-     * @return 64 < initial pixel size < 32768 (2048 by default)
+     * @return 64 < initial pixel size < 32768 (4096 by default)
      */
-    public static int getInitialImageSize() {
+    public static int getInitialPixelWidth() {
         return align(
-            getInteger("sun.java2d.renderer.pixelsize", 2048, 64, 32 * 1024),
+            getInteger("sun.java2d.renderer.pixelWidth", 4096, 64, 32 * 1024),
+            64);
+    }
+
+    /**
+     * Return the initial pixel height used to define initial arrays
+     * (buckets)
+     *
+     * @return 64 < initial pixel size < 32768 (2176 by default)
+     */
+    public static int getInitialPixelHeight() {
+        return align(
+            getInteger("sun.java2d.renderer.pixelHeight", 2176, 64, 32 * 1024),
             64);
     }
 

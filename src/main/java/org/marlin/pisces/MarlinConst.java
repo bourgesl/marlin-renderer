@@ -85,15 +85,18 @@ interface MarlinConst {
 
     // Initial Array sizing (initial context capacity) ~ 450K
 
-    // 2048 pixel (width x height) for initial capacity
-    static final int INITIAL_PIXEL_DIM
-        = MarlinProperties.getInitialImageSize();
+    // 4096 pixels (width) for initial capacity
+    static final int INITIAL_PIXEL_WIDTH
+        = MarlinProperties.getInitialPixelWidth();
+    // 2176 pixels (height) for initial capacity
+    static final int INITIAL_PIXEL_HEIGHT
+        = MarlinProperties.getInitialPixelHeight();
 
     // typical array sizes: only odd numbers allowed below
     static final int INITIAL_ARRAY        = 256;
 
     // alpha row dimension
-    static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_DIM;
+    static final int INITIAL_AA_ARRAY     = INITIAL_PIXEL_WIDTH;
 
     // 4096 edges for initial capacity
     static final int INITIAL_EDGES_COUNT = MarlinProperties.getInitialEdges();

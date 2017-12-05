@@ -54,9 +54,9 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     private static final int SUBPIXEL_TILE
         = TILE_H << SUBPIXEL_LG_POSITIONS_Y;
 
-    // 2048 (pixelSize) pixels (height) x 8 subpixels = 64K
+    // 2176 pixels (height) x 8 subpixels = 68K
     static final int INITIAL_BUCKET_ARRAY
-        = INITIAL_PIXEL_DIM * SUBPIXEL_POSITIONS_Y;
+        = INITIAL_PIXEL_HEIGHT * SUBPIXEL_POSITIONS_Y;
 
     // crossing capacity = edges count / 4 ~ 1024
     static final int INITIAL_CROSSING_COUNT = INITIAL_EDGES_COUNT >> 2;
@@ -537,8 +537,8 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
         edgeBuckets      = edgeBuckets_ref.initial;
         edgeBucketCounts = edgeBucketCounts_ref.initial;
 
-        // 2048 (pixelsize) pixel large
-        alphaLine_ref = rdrCtx.newCleanIntArrayRef(INITIAL_AA_ARRAY); // 8K
+        // 4096 pixels large
+        alphaLine_ref = rdrCtx.newCleanIntArrayRef(INITIAL_AA_ARRAY); // 16K
         alphaLine     = alphaLine_ref.initial;
 
         this.cache = rdrCtx.cache;
