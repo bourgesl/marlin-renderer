@@ -20,6 +20,7 @@
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
         <integration.skip>false</integration.skip>
+        <integration.skip.long>false</integration.skip.long>
     </properties>
 
     <build>
@@ -38,10 +39,11 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.6.2</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -49,10 +51,11 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.0.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -95,68 +98,97 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.20.1</version>
-                <configuration>
-                    <forkCount>1</forkCount>
-                    <threadCount>1</threadCount>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.20.1</version>
-                <configuration>
-                    <!--
-                    MarlinF: -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
-                    MarlinD: -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
-                    Pisces: -Dsun.java2d.renderer=sun.java2d.pisces.PiscesRenderingEngine
-
-                    CrashTest may need large heap: -Xms4g -Xmx4g
-                    -->
-                </configuration>
+                <!--
+                CrashTest may need large heap: -Xms4g -Xmx4g
+                -->
                 <executions>
                     <execution>
-                        <id>integration-tests</id>
-                        <phase>integration-test</phase>
+                        <id>default-test</id>
+                        <phase>test</phase>
                         <goals>
-                            <goal>integration-test</goal>
+                            <goal>test</goal>
                         </goals>
                         <configuration>
-                            <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>integration-test-float</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
                             <skip>${integration.skip}</skip>
                             <includes>
                                 <include>**/RunJUnitTest.java</include>
                             </includes>
                             <argLine>
                                 -Xms1g -Xmx1g
-                                -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
                                 -Dsun.java2d.renderer.log=true
-                                -Dsun.java2d.renderer.doChecks=true
+                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>integration-long-tests</id>
-                        <phase>integration-test</phase>
+                        <id>integration-test-double</id>
+                        <phase>test</phase>
                         <goals>
-                            <goal>integration-test</goal>
+                            <goal>test</goal>
                         </goals>
                         <configuration>
-                            <!-- Run tests when the integration-test phase is invoked (after the big jar is built) -->
                             <skip>${integration.skip}</skip>
+                            <includes>
+                                <include>**/RunJUnitTest.java</include>
+                            </includes>
+                            <argLine>
+                                -Xms1g -Xmx1g
+                                -Dsun.java2d.renderer.log=true
+                                -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
+                                -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
+                                -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>integration-long-test-float</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${integration.skip.long}</skip>
                             <includes>
                                 <include>**/RunJUnitLongTest.java</include>
                             </includes>
                             <argLine>
                                 -Xms1g -Xmx1g
-                                -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
                                 -Dsun.java2d.renderer.log=true
-                                -Dsun.java2d.renderer.doChecks=false
+                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
+                                -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
+                                -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>integration-long-test-double</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${integration.skip.long}</skip>
+                            <includes>
+                                <include>**/RunJUnitLongTest.java</include>
+                            </includes>
+                            <argLine>
+                                -Xms1g -Xmx1g
+                                -Dsun.java2d.renderer.log=true
+                                -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
@@ -179,17 +211,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.16</version>
-                <configuration>
-                    <configLocation>config/sun_checks.xml</configLocation>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
 </project>
 
