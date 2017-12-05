@@ -1,4 +1,6 @@
 language: java
 sudo: false
+script: "mvn verify"
 jdk:
   - oraclejdk8
+
