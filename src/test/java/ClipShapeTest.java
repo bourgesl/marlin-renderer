@@ -36,8 +36,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -46,17 +51,13 @@ import javax.imageio.stream.ImageOutputStream;
 
 /**
  * @test
- * @bug 8184429
+ * @bug 8191814
  * @summary Verifies that Marlin rendering generates the same
  * images with and without clipping optimization with all possible
  * stroke (cap/join) and fill modes (EO rules)
- * Use the following setting to use Float or Double variant:
- * -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
- * -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
- * @run main/othervm ClipShapeTest
- *
- * @ignore tests taking too much time (huge number of polygons)
- * @run main/othervm ClipShapeTest -slow
+ * Note: Use the argument -slow to run more intensive tests (too much time)
+ * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest
+ * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest
  */
 public final class ClipShapeTest {
 
@@ -103,16 +104,8 @@ public final class ClipShapeTest {
     }
 
     static final long SEED = 1666133789L;
-    static final Random RANDOM;
-
-    static {
-        // disable static clipping setting:
-        System.setProperty("sun.java2d.renderer.clip", "false");
-        System.setProperty("sun.java2d.renderer.clip.runtime.enable", "true");
-
-        // Fixed seed to avoid any difference between runs:
-        RANDOM = new Random(SEED);
-    }
+    // Fixed seed to avoid any difference between runs:
+    static final Random RANDOM = new Random(SEED);
 
     static final File OUTPUT_DIR = new File(".");
 
@@ -129,23 +122,55 @@ public final class ClipShapeTest {
             USE_VAR_STROKE = true;
         }
 
-        // First display which renderer is tested:
-        // JDK9 only:
-        System.setProperty("sun.java2d.renderer.verbose", "true");
-        System.out.println("Testing renderer: ");
-        // Other JDK:
-        String renderer = "undefined";
-        try {
-            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
-            System.out.println(renderer);
-        } catch (Throwable th) {
-            // may fail with JDK9 jigsaw (jake)
-            if (false) {
-                System.err.println("Unable to get RenderingEngine.getInstance()");
-                th.printStackTrace();
-            }
-        }
+        Locale.setDefault(Locale.US);
+        
+        // Get Marlin runtime state from its log:
+        final AtomicBoolean isMarlin = new AtomicBoolean();
+        final AtomicBoolean isClipRuntime = new AtomicBoolean();
 
+        // initialize j.u.l Looger:
+        final Logger log = Logger.getLogger("sun.java2d.marlin");
+        log.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                final String msg = record.getMessage();
+                if (msg != null) {
+                    // last space to avoid matching other settings:
+                    if (msg.startsWith("sun.java2d.renderer ")) {
+                        isMarlin.set(msg.contains("MarlinRenderingEngine"));
+                    }
+                    if (msg.startsWith("sun.java2d.renderer.clip.runtime.enable")) {
+                        isClipRuntime.set(msg.contains("true"));
+                    }
+                }
+                
+                final Throwable th = record.getThrown();
+                // detect any Throwable:
+                if (th != null) {
+                    System.out.println("Test failed:\n" + record.getMessage());
+                    th.printStackTrace(System.out);
+
+                    throw new RuntimeException("Test failed: ", th);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+
+        // enable Marlin logging & internal checks:
+        System.setProperty("sun.java2d.renderer.log", "true");
+        System.setProperty("sun.java2d.renderer.useLogger", "true");
+
+        // disable static clipping setting:
+        System.setProperty("sun.java2d.renderer.clip", "false");
+        System.setProperty("sun.java2d.renderer.clip.runtime.enable", "true");
+        
         System.out.println("ClipShapeTests: image = " + TESTW + " x " + TESTH);
 
         int failures = 0;
@@ -204,6 +229,13 @@ public final class ClipShapeTest {
             throw new RuntimeException(ioe);
         }
         System.out.println("main: duration= " + (1e-6 * (System.nanoTime() - start)) + " ms.");
+        
+        if (!isMarlin.get()) {
+            throw new RuntimeException("Marlin renderer not used at runtime !");
+        }
+        if (!isClipRuntime.get()) {
+            throw new RuntimeException("Marlin clipping not enabled at runtime !");
+        }
         if (failures != 0) {
             throw new RuntimeException("Clip test failures : " + failures);
         }
