@@ -33,7 +33,7 @@ final class DCurve {
     DCurve() {
     }
 
-    void set(double[] points, int type) {
+    void set(final double[] points, final int type) {
         switch(type) {
         case 8:
             set(points[0], points[1],
@@ -51,10 +51,10 @@ final class DCurve {
         }
     }
 
-    void set(double x1, double y1,
-             double x2, double y2,
-             double x3, double y3,
-             double x4, double y4)
+    void set(final double x1, final double y1,
+             final double x2, final double y2,
+             final double x3, final double y3,
+             final double x4, final double y4)
     {
         final double dx32 = 3.0d * (x3 - x2);
         final double dy32 = 3.0d * (y3 - y2);
@@ -72,9 +72,9 @@ final class DCurve {
         dbx = 2.0d * bx; dby = 2.0d * by;
     }
 
-    void set(double x1, double y1,
-             double x2, double y2,
-             double x3, double y3)
+    void set(final double x1, final double y1,
+             final double x2, final double y2,
+             final double x3, final double y3)
     {
         final double dx21 = (x2 - x1);
         final double dy21 = (y2 - y1);
@@ -89,30 +89,15 @@ final class DCurve {
         dbx = 2.0d * bx; dby = 2.0d * by;
     }
 
-    double xat(double t) {
-        return t * (t * (t * ax + bx) + cx) + dx;
-    }
-    double yat(double t) {
-        return t * (t * (t * ay + by) + cy) + dy;
-    }
-
-    double dxat(double t) {
-        return t * (t * dax + dbx) + cx;
-    }
-
-    double dyat(double t) {
-        return t * (t * day + dby) + cy;
-    }
-
-    int dxRoots(double[] roots, int off) {
+    int dxRoots(final double[] roots, final int off) {
         return DHelpers.quadraticRoots(dax, dbx, cx, roots, off);
     }
 
-    int dyRoots(double[] roots, int off) {
+    int dyRoots(final double[] roots, final int off) {
         return DHelpers.quadraticRoots(day, dby, cy, roots, off);
     }
 
-    int infPoints(double[] pts, int off) {
+    int infPoints(final double[] pts, final int off) {
         // inflection point at t if -f'(t)x*f''(t)y + f'(t)y*f''(t)x == 0
         // Fortunately, this turns out to be quadratic, so there are at
         // most 2 inflection points.
@@ -126,7 +111,7 @@ final class DCurve {
     // finds points where the first and second derivative are
     // perpendicular. This happens when g(t) = f'(t)*f''(t) == 0 (where
     // * is a dot product). Unfortunately, we have to solve a cubic.
-    private int perpendiculardfddf(double[] pts, int off) {
+    private int perpendiculardfddf(final double[] pts, final int off) {
         assert pts.length >= off + 4;
 
         // these are the coefficients of some multiple of g(t) (not g(t),
@@ -152,22 +137,24 @@ final class DCurve {
     // at most 4 sub-intervals of (0,1). ROC has asymptotes at inflection
     // points, so roc-w can have at least 6 roots. This shouldn't be a
     // problem for what we're trying to do (draw a nice looking curve).
-    int rootsOfROCMinusW(double[] roots, int off, final double w, final double err) {
+    int rootsOfROCMinusW(final double[] roots, final int off, final double w2, final double err) {
         // no OOB exception, because by now off<=6, and roots.length >= 10
         assert off <= 6 && roots.length >= 10;
+        
         int ret = off;
-        int numPerpdfddf = perpendiculardfddf(roots, off);
-        double t0 = 0.0d, ft0 = ROCsq(t0) - w*w;
-        roots[off + numPerpdfddf] = 1.0d; // always check interval end points
-        numPerpdfddf++;
-        for (int i = off; i < off + numPerpdfddf; i++) {
-            double t1 = roots[i], ft1 = ROCsq(t1) - w*w;
+        final int end = off + perpendiculardfddf(roots, off);
+        roots[end] = 1.0d; // always check interval end points
+
+        double t0 = 0.0d, ft0 = ROCsq(t0) - w2;
+        
+        for (int i = off; i <= end; i++) {
+            double t1 = roots[i], ft1 = ROCsq(t1) - w2;
             if (ft0 == 0.0d) {
                 roots[ret++] = t0;
             } else if (ft1 * ft0 < 0.0d) { // have opposite signs
                 // (ROC(t)^2 == w^2) == (ROC(t) == w) is true because
                 // ROC(t) >= 0 for all t.
-                roots[ret++] = falsePositionROCsqMinusX(t0, t1, w*w, err);
+                roots[ret++] = falsePositionROCsqMinusX(t0, t1, w2, err);
             }
             t0 = t1;
             ft0 = ft1;
@@ -176,9 +163,9 @@ final class DCurve {
         return ret - off;
     }
 
-    private static double eliminateInf(double x) {
+    private static double eliminateInf(final double x) {
         return (x == Double.POSITIVE_INFINITY ? Double.MAX_VALUE :
-            (x == Double.NEGATIVE_INFINITY ? Double.MIN_VALUE : x));
+               (x == Double.NEGATIVE_INFINITY ? Double.MIN_VALUE : x));
     }
 
     // A slight modification of the false position algorithm on wikipedia.
@@ -188,17 +175,18 @@ final class DCurve {
     // expressions make it into the language), depending on how closures
     // and turn out. Same goes for the newton's method
     // algorithm in DHelpers.java
-    private double falsePositionROCsqMinusX(double x0, double x1,
-                                           final double x, final double err)
+    private double falsePositionROCsqMinusX(final double t0, final double t1,
+                                            final double w2, final double err)
     {
         final int iterLimit = 100;
         int side = 0;
-        double t = x1, ft = eliminateInf(ROCsq(t) - x);
-        double s = x0, fs = eliminateInf(ROCsq(s) - x);
+        double t = t1, ft = eliminateInf(ROCsq(t) - w2);
+        double s = t0, fs = eliminateInf(ROCsq(s) - w2);
         double r = s, fr;
+
         for (int i = 0; i < iterLimit && Math.abs(t - s) > err * Math.abs(t + s); i++) {
             r = (fs * t - ft * s) / (fs - ft);
-            fr = ROCsq(r) - x;
+            fr = ROCsq(r) - w2;
             if (sameSign(fr, ft)) {
                 ft = fr; t = r;
                 if (side < 0) {
@@ -207,7 +195,7 @@ final class DCurve {
                 } else {
                     side = -1;
                 }
-            } else if (fr * fs > 0) {
+            } else if (fr * fs > 0.0d) {
                 fs = fr; s = r;
                 if (side > 0) {
                     ft /= (1 << side);
@@ -222,7 +210,7 @@ final class DCurve {
         return r;
     }
 
-    private static boolean sameSign(double x, double y) {
+    private static boolean sameSign(final double x, final double y) {
         // another way is to test if x*y > 0. This is bad for small x, y.
         return (x < 0.0d && y < 0.0d) || (x > 0.0d && y > 0.0d);
     }
@@ -230,7 +218,6 @@ final class DCurve {
     // returns the radius of curvature squared at t of this curve
     // see http://en.wikipedia.org/wiki/Radius_of_curvature_(applications)
     private double ROCsq(final double t) {
-        // dx=xat(t) and dy=yat(t). These calls have been inlined for efficiency
         final double dx = t * (t * dax + dbx) + cx;
         final double dy = t * (t * day + dby) + cy;
         final double ddx = 2.0d * dax * t + dbx;

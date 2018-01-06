@@ -604,8 +604,7 @@ final class TransformingPathConsumer2D {
         public void moveTo(final float x0, final float y0) {
             finishPath();
 
-            final int outcode = Helpers.outcode(x0, y0, clipRect);
-            this.cOutCode = outcode;
+            this.cOutCode = Helpers.outcode(x0, y0, clipRect);
             this.outside = false;
             out.moveTo(x0, y0);
         }

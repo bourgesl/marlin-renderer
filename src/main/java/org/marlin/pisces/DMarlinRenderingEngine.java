@@ -46,7 +46,7 @@ import sun.security.action.GetPropertyAction;
 public final class DMarlinRenderingEngine extends RenderingEngine
                                           implements MarlinConst
 {
-    private static enum NormMode {
+    private enum NormMode {
         ON_WITH_AA {
             @Override
             PathIterator getNormalizingPathIterator(final DRendererContext rdrCtx,
@@ -79,7 +79,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                                                          PathIterator src);
     }
 
-    private static final float MIN_PEN_SIZE = 1.0f / NORM_SUBPIXELS;
+    private static final float MIN_PEN_SIZE = 1.0f / MIN_SUBPIXELS;
 
     static final double UPPER_BND = Float.MAX_VALUE / 2.0d;
     static final double LOWER_BND = -UPPER_BND;
@@ -1108,6 +1108,10 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         // optimisation parameters
         logInfo("sun.java2d.renderer.useSimplifier    = "
                 + MarlinConst.USE_SIMPLIFIER);
+        logInfo("sun.java2d.renderer.usePathSimplifier= "
+                + MarlinConst.USE_PATH_SIMPLIFIER);
+        logInfo("sun.java2d.renderer.pathSimplifier.pixTol = "
+                + MarlinProperties.getPathSimplifierPixelTolerance());
 
         logInfo("sun.java2d.renderer.clip             = "
                 + MarlinProperties.isDoClip());

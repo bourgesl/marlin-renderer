@@ -21,6 +21,7 @@
  * questions.
  */
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -33,6 +34,23 @@ public class RunJUnitLongTest {
     @Test
     public void clipTests() {
         ClipShapeTest.main(NO_ARGS);
-        // ClipShapeTests.main(new String[] {"-slow"});
+    }
+
+    @Test
+    @Ignore
+    public void clipTestsDoScale() {
+        ClipShapeTest.main(new String[]{"-doScale"});
+    }
+
+    @Test
+    @Ignore
+    public void clipTestsDoShear() {
+        ClipShapeTest.main(new String[]{"-doScale", "-doShear"});
+    }
+
+    @Test
+    @Ignore
+    public void clipTestsSlow() {
+        ClipShapeTest.main(new String[]{"-slow"});
     }
 }

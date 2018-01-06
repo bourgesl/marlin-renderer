@@ -33,7 +33,7 @@ final class Curve {
     Curve() {
     }
 
-    void set(float[] points, int type) {
+    void set(final float[] points, final int type) {
         switch(type) {
         case 8:
             set(points[0], points[1],
@@ -51,10 +51,10 @@ final class Curve {
         }
     }
 
-    void set(float x1, float y1,
-             float x2, float y2,
-             float x3, float y3,
-             float x4, float y4)
+    void set(final float x1, final float y1,
+             final float x2, final float y2,
+             final float x3, final float y3,
+             final float x4, final float y4)
     {
         final float dx32 = 3.0f * (x3 - x2);
         final float dy32 = 3.0f * (y3 - y2);
@@ -72,9 +72,9 @@ final class Curve {
         dbx = 2.0f * bx; dby = 2.0f * by;
     }
 
-    void set(float x1, float y1,
-             float x2, float y2,
-             float x3, float y3)
+    void set(final float x1, final float y1,
+             final float x2, final float y2,
+             final float x3, final float y3)
     {
         final float dx21 = (x2 - x1);
         final float dy21 = (y2 - y1);
@@ -89,30 +89,15 @@ final class Curve {
         dbx = 2.0f * bx; dby = 2.0f * by;
     }
 
-    float xat(float t) {
-        return t * (t * (t * ax + bx) + cx) + dx;
-    }
-    float yat(float t) {
-        return t * (t * (t * ay + by) + cy) + dy;
-    }
-
-    float dxat(float t) {
-        return t * (t * dax + dbx) + cx;
-    }
-
-    float dyat(float t) {
-        return t * (t * day + dby) + cy;
-    }
-
-    int dxRoots(float[] roots, int off) {
+    int dxRoots(final float[] roots, final int off) {
         return Helpers.quadraticRoots(dax, dbx, cx, roots, off);
     }
 
-    int dyRoots(float[] roots, int off) {
+    int dyRoots(final float[] roots, final int off) {
         return Helpers.quadraticRoots(day, dby, cy, roots, off);
     }
 
-    int infPoints(float[] pts, int off) {
+    int infPoints(final float[] pts, final int off) {
         // inflection point at t if -f'(t)x*f''(t)y + f'(t)y*f''(t)x == 0
         // Fortunately, this turns out to be quadratic, so there are at
         // most 2 inflection points.
@@ -126,7 +111,7 @@ final class Curve {
     // finds points where the first and second derivative are
     // perpendicular. This happens when g(t) = f'(t)*f''(t) == 0 (where
     // * is a dot product). Unfortunately, we have to solve a cubic.
-    private int perpendiculardfddf(float[] pts, int off) {
+    private int perpendiculardfddf(final float[] pts, final int off) {
         assert pts.length >= off + 4;
 
         // these are the coefficients of some multiple of g(t) (not g(t),
@@ -152,22 +137,24 @@ final class Curve {
     // at most 4 sub-intervals of (0,1). ROC has asymptotes at inflection
     // points, so roc-w can have at least 6 roots. This shouldn't be a
     // problem for what we're trying to do (draw a nice looking curve).
-    int rootsOfROCMinusW(float[] roots, int off, final float w, final float err) {
+    int rootsOfROCMinusW(final float[] roots, final int off, final float w2, final float err) {
         // no OOB exception, because by now off<=6, and roots.length >= 10
         assert off <= 6 && roots.length >= 10;
+        
         int ret = off;
-        int numPerpdfddf = perpendiculardfddf(roots, off);
-        float t0 = 0.0f, ft0 = ROCsq(t0) - w*w;
-        roots[off + numPerpdfddf] = 1.0f; // always check interval end points
-        numPerpdfddf++;
-        for (int i = off; i < off + numPerpdfddf; i++) {
-            float t1 = roots[i], ft1 = ROCsq(t1) - w*w;
+        final int end = off + perpendiculardfddf(roots, off);
+        roots[end] = 1.0f; // always check interval end points
+
+        float t0 = 0.0f, ft0 = ROCsq(t0) - w2;
+        
+        for (int i = off; i <= end; i++) {
+            float t1 = roots[i], ft1 = ROCsq(t1) - w2;
             if (ft0 == 0.0f) {
                 roots[ret++] = t0;
             } else if (ft1 * ft0 < 0.0f) { // have opposite signs
                 // (ROC(t)^2 == w^2) == (ROC(t) == w) is true because
                 // ROC(t) >= 0 for all t.
-                roots[ret++] = falsePositionROCsqMinusX(t0, t1, w*w, err);
+                roots[ret++] = falsePositionROCsqMinusX(t0, t1, w2, err);
             }
             t0 = t1;
             ft0 = ft1;
@@ -176,9 +163,9 @@ final class Curve {
         return ret - off;
     }
 
-    private static float eliminateInf(float x) {
+    private static float eliminateInf(final float x) {
         return (x == Float.POSITIVE_INFINITY ? Float.MAX_VALUE :
-            (x == Float.NEGATIVE_INFINITY ? Float.MIN_VALUE : x));
+               (x == Float.NEGATIVE_INFINITY ? Float.MIN_VALUE : x));
     }
 
     // A slight modification of the false position algorithm on wikipedia.
@@ -188,17 +175,18 @@ final class Curve {
     // expressions make it into the language), depending on how closures
     // and turn out. Same goes for the newton's method
     // algorithm in Helpers.java
-    private float falsePositionROCsqMinusX(float x0, float x1,
-                                           final float x, final float err)
+    private float falsePositionROCsqMinusX(final float t0, final float t1,
+                                           final float w2, final float err)
     {
         final int iterLimit = 100;
         int side = 0;
-        float t = x1, ft = eliminateInf(ROCsq(t) - x);
-        float s = x0, fs = eliminateInf(ROCsq(s) - x);
+        float t = t1, ft = eliminateInf(ROCsq(t) - w2);
+        float s = t0, fs = eliminateInf(ROCsq(s) - w2);
         float r = s, fr;
+
         for (int i = 0; i < iterLimit && Math.abs(t - s) > err * Math.abs(t + s); i++) {
             r = (fs * t - ft * s) / (fs - ft);
-            fr = ROCsq(r) - x;
+            fr = ROCsq(r) - w2;
             if (sameSign(fr, ft)) {
                 ft = fr; t = r;
                 if (side < 0) {
@@ -207,7 +195,7 @@ final class Curve {
                 } else {
                     side = -1;
                 }
-            } else if (fr * fs > 0) {
+            } else if (fr * fs > 0.0f) {
                 fs = fr; s = r;
                 if (side > 0) {
                     ft /= (1 << side);
@@ -222,7 +210,7 @@ final class Curve {
         return r;
     }
 
-    private static boolean sameSign(float x, float y) {
+    private static boolean sameSign(final float x, final float y) {
         // another way is to test if x*y > 0. This is bad for small x, y.
         return (x < 0.0f && y < 0.0f) || (x > 0.0f && y > 0.0f);
     }
@@ -230,7 +218,6 @@ final class Curve {
     // returns the radius of curvature squared at t of this curve
     // see http://en.wikipedia.org/wiki/Radius_of_curvature_(applications)
     private float ROCsq(final float t) {
-        // dx=xat(t) and dy=yat(t). These calls have been inlined for efficiency
         final float dx = t * (t * dax + dbx) + cx;
         final float dy = t * (t * day + dby) + cy;
         final float ddx = 2.0f * dax * t + dbx;

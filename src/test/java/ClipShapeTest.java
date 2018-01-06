@@ -61,6 +61,9 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public final class ClipShapeTest {
 
+    static boolean TX_SCALE = false;
+    static boolean TX_SHEAR = false;
+    
     static final boolean TEST_STROKER = true;
     static final boolean TEST_FILLER = true;
 
@@ -73,7 +76,7 @@ public final class ClipShapeTest {
     static final int TESTH = 100;
 
     // shape settings:
-    static final ShapeMode SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
+    static final ShapeMode SHAPE_MODE = ShapeMode.FIFTY_LINE_POLYS;
     static final boolean SHAPE_REPEAT = true;
 
     // dump path on console:
@@ -108,25 +111,14 @@ public final class ClipShapeTest {
     static final Random RANDOM = new Random(SEED);
 
     static final File OUTPUT_DIR = new File(".");
-
-    /**
-     * Test
-     * @param args
-     */
-    public static void main(String[] args) {
-        boolean runSlowTests = (args.length != 0 && "-slow".equals(args[0]));
-
-        if (runSlowTests) {
-            NUM_TESTS = 20000; // or 100000 (very slow)
-            USE_DASHES = true;
-            USE_VAR_STROKE = true;
-        }
-
+    
+    static final AtomicBoolean isMarlin = new AtomicBoolean();
+    static final AtomicBoolean isClipRuntime = new AtomicBoolean();
+    
+    static {
         Locale.setDefault(Locale.US);
 
         // Get Marlin runtime state from its log:
-        final AtomicBoolean isMarlin = new AtomicBoolean();
-        final AtomicBoolean isClipRuntime = new AtomicBoolean();
 
         // initialize j.u.l Looger:
         final Logger log = Logger.getLogger("sun.java2d.marlin");
@@ -170,6 +162,35 @@ public final class ClipShapeTest {
         // disable static clipping setting:
         System.setProperty("sun.java2d.renderer.clip", "false");
         System.setProperty("sun.java2d.renderer.clip.runtime.enable", "true");
+    }
+
+    /**
+     * Test
+     * @param args
+     */
+    public static void main(String[] args) {
+        boolean runSlowTests = false;
+        
+        for (String arg : args) {
+            if ("-slow".equals(arg)) {
+                System.out.println("runSlowTests: enabled.");
+                runSlowTests = true;
+            }
+            if ("-doScale".equals(arg)) {
+                System.out.println("doScale: enabled.");
+                TX_SCALE = true;
+            }
+            if ("-doShear".equals(arg)) {
+                System.out.println("doShear: enabled.");
+                TX_SHEAR = true;
+            }
+        }
+
+        if (runSlowTests) {
+            NUM_TESTS = 20000; // or 100000 (very slow)
+            USE_DASHES = true;
+            USE_VAR_STROKE = true;
+        }
 
         System.out.println("ClipShapeTests: image = " + TESTW + " x " + TESTH);
 
@@ -350,6 +371,15 @@ public final class ClipShapeTest {
             g2d.setStroke(createStroke(ts));
         }
         g2d.setColor(Color.GRAY);
+        
+        // Test scale
+        if (TX_SCALE) {
+            g2d.scale(1.2, 1.2);
+        }
+        // Test shear
+        if (TX_SHEAR) {
+            g2d.shear(0.1, 0.2);
+        }
 
         return g2d;
     }

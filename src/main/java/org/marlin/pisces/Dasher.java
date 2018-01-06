@@ -41,7 +41,8 @@ import sun.awt.geom.PathConsumer2D;
  */
 final class Dasher implements PathConsumer2D, MarlinConst {
 
-    static final int REC_LIMIT = 4;
+    /* huge circle with radius ~ 2E9 only needs 12 subdivision levels */
+    static final int REC_LIMIT = 16;
     static final float ERR = 0.01f;
     static final float MIN_T_INC = 1.0f / (1 << REC_LIMIT);
 
@@ -69,6 +70,8 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
     // temporary storage for the current curve
     private final float[] curCurvepts;
+    // float precision correction (initial curve copy):
+    private final float[] initCurvepts = new float[8];
 
     // per-thread renderer context
     final RendererContext rdrCtx;
@@ -222,12 +225,12 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     private void emitSeg(float[] buf, int off, int type) {
         switch (type) {
         case 8:
-            out.curveTo(buf[off+0], buf[off+1],
+            out.curveTo(buf[off  ], buf[off+1],
                         buf[off+2], buf[off+3],
                         buf[off+4], buf[off+5]);
             return;
         case 6:
-            out.quadTo(buf[off+0], buf[off+1],
+            out.quadTo(buf[off  ], buf[off+1],
                        buf[off+2], buf[off+3]);
             return;
         case 4:
@@ -304,7 +307,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         firstSegidx = segIdx + len;
     }
 
-    private final static boolean USE_NAIVE_SUM = false;
+    private final static boolean USE_NAIVE_SUM = !DO_FIX_FLOAT_PREC;
 
     @Override
     public void lineTo(final float x1, final float y1) {
@@ -376,8 +379,6 @@ if (USE_NAIVE_SUM) {
             _curCurvepts[0] = x0 + dashdx;
             _curCurvepts[1] = y0 + dashdy;
 } else {
-            // Numerical precision problem: d << (x0,y0)
-
             // kahan sum:
             z = dashdx - ex;
             t = x0 + z;
@@ -396,10 +397,6 @@ if (USE_NAIVE_SUM) {
             // naive sum:
             len -= leftInThisDashSegment;
 } else {
-            // Very high dynamic: (len / dashTotal) > 4million
-            // TODO: find the proper threshold with accuracy ie dynamic range is larger than float precision !
-            // see ulps ! ie smallest dash length vs line length ~ 5e6 ?
-
             // kahan sum:
             z = leftInThisDashSegment - el;
             t = len - z;
@@ -413,10 +410,7 @@ if (USE_NAIVE_SUM) {
         }
     }
 
-    // shared instance in Dasher
     private final LengthIterator li = new LengthIterator();
-
-    private final float[] initCurvepts = new float[8];
 
     // preconditions: curCurvepts must be an array of length at least 2 * type,
     // that contains the curve we want to dash in the first type elements
@@ -429,9 +423,8 @@ if (USE_NAIVE_SUM) {
         final float[] _dash = dash;
         final int _dashLen = this.dashLen;
 
-// TODO: what threshold (splits vs approx. curve length) ?
         final float[] _initCurvepts = initCurvepts;
-        if (true) {
+        if (DO_FIX_FLOAT_PREC) {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(_curCurvepts, 0, _initCurvepts, 0, 8);
         }
@@ -444,18 +437,17 @@ if (USE_NAIVE_SUM) {
 
         // initially the current curve is at curCurvepts[0...type]
         int curCurveoff = 0;
-        float lastSplitT = 0.0f;
+        float prevT = 0.0f;
         float t;
         float leftInThisDashSegment = _dash[_idx] - _phase;
         int c = 0;
 
         while ((t = _li.next(leftInThisDashSegment)) < 1.0f) {
             if (t != 0.0f) {
-                Helpers.subdivideAt((t - lastSplitT) / (1.0f - lastSplitT),
+                Helpers.subdivideAt((t - prevT) / (1.0f - prevT),
                                     _curCurvepts, curCurveoff,
-                                    _curCurvepts, 0,
-                                    _curCurvepts, type, type);
-                lastSplitT = t;
+                                    _curCurvepts, type);
+                prevT = t;
                 goTo(_curCurvepts, 2, type, _dashOn);
                 curCurveoff = type;
             }
@@ -465,14 +457,13 @@ if (USE_NAIVE_SUM) {
             _phase = 0.0f;
             leftInThisDashSegment = _dash[_idx];
 
-            if (true) {
+            if (DO_FIX_FLOAT_PREC) {
                 if ((++c) == 10000) {
                     c = 0;
                     // Split from initial curve to correct from bias:
-                    Helpers.subdivideAt(lastSplitT,
+                    Helpers.subdivideAt(prevT,
                                         _initCurvepts, 0,
-                                        _curCurvepts, 0,
-                                        _curCurvepts, type, type);
+                                        _curCurvepts, type);
                 }
             }
         }
@@ -517,15 +508,14 @@ if (USE_NAIVE_SUM) {
     // tree; however, the trees we are interested in have the property that
     // every non leaf node has exactly 2 children
     static final class LengthIterator {
-        private enum Side {LEFT, RIGHT}
         // Holds the curves at various levels of the recursion. The root
         // (i.e. the original curve) is at recCurveStack[0] (but then it
         // gets subdivided, the left half is put at 1, so most of the time
         // only the right half of the original curve is at 0)
         private final float[][] recCurveStack; // dirty
-        // sides[i] indicates whether the node at level i+1 in the path from
+        // sidesRight[i] indicates whether the node at level i+1 in the path from
         // the root to the current leaf is a left or right child of its parent.
-        private final Side[] sides; // dirty
+        private final boolean[] sidesRight; // dirty
         private int curveType;
         // lastT and nextT delimit the current leaf.
         private float nextT;
@@ -546,7 +536,7 @@ if (USE_NAIVE_SUM) {
 
         LengthIterator() {
             this.recCurveStack = new float[REC_LIMIT + 1][8];
-            this.sides = new Side[REC_LIMIT];
+            this.sidesRight = new boolean[REC_LIMIT];
             // if any methods are called without first initializing this object
             // on a curve, we want it to fail ASAP.
             this.nextT = Float.MAX_VALUE;
@@ -568,7 +558,7 @@ if (USE_NAIVE_SUM) {
                 for (int i = recLimit; i >= 0; i--) {
                     Arrays.fill(recCurveStack[i], 0.0f);
                 }
-                Arrays.fill(sides, Side.LEFT);
+                Arrays.fill(sidesRight, false);
                 Arrays.fill(curLeafCtrlPolyLengths, 0.0f);
                 Arrays.fill(nextRoots, 0.0f);
                 Arrays.fill(flatLeafCoefCache, 0.0f);
@@ -588,11 +578,11 @@ if (USE_NAIVE_SUM) {
             goLeft(); // initializes nextT and lenAtNextT properly
             this.lenAtLastSplit = 0.0f;
             if (recLevel > 0) {
-                this.sides[0] = Side.LEFT;
+                this.sidesRight[0] = false;
                 this.done = false;
             } else {
                 // the root of the tree is a leaf so we're done.
-                this.sides[0] = Side.RIGHT;
+                this.sidesRight[0] = true;
                 this.done = true;
             }
             this.lastSegLen = 0.0f;
@@ -720,11 +710,11 @@ if (USE_NAIVE_SUM) {
         private void goToNextLeaf() {
             // We must go to the first ancestor node that has an unvisited
             // right child.
+            final boolean[] _sides = sidesRight;
             int _recLevel = recLevel;
-            final Side[] _sides = sides;
-
             _recLevel--;
-            while(_sides[_recLevel] == Side.RIGHT) {
+            
+            while(_sides[_recLevel]) {
                 if (_recLevel == 0) {
                     recLevel = 0;
                     done = true;
@@ -733,7 +723,7 @@ if (USE_NAIVE_SUM) {
                 _recLevel--;
             }
 
-            _sides[_recLevel] = Side.RIGHT;
+            _sides[_recLevel] = true;
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(recCurveStack[_recLevel], 0,
                              recCurveStack[_recLevel+1], 0, 8);
@@ -755,10 +745,11 @@ if (USE_NAIVE_SUM) {
                 flatLeafCoefCache[2] = -1.0f;
                 cachedHaveLowAcceleration = -1;
             } else {
-                Helpers.subdivide(recCurveStack[recLevel], 0,
-                                  recCurveStack[recLevel+1], 0,
-                                  recCurveStack[recLevel], 0, curveType);
-                sides[recLevel] = Side.LEFT;
+                Helpers.subdivide(recCurveStack[recLevel],
+                                  recCurveStack[recLevel+1],
+                                  recCurveStack[recLevel], curveType);
+
+                sidesRight[recLevel] = false;
                 recLevel++;
                 goLeft();
             }
@@ -784,6 +775,7 @@ if (USE_NAIVE_SUM) {
             final float lineLen = Helpers.linelen(curve[0], curve[1],
                                                   curve[_curveType-2],
                                                   curve[_curveType-1]);
+
             if ((polyLen - lineLen) < ERR || recLevel == REC_LIMIT) {
                 return (polyLen + lineLen) / 2.0f;
             }
@@ -844,4 +836,3 @@ if (USE_NAIVE_SUM) {
         throw new InternalError("Dasher does not use a native consumer");
     }
 }
-

@@ -39,11 +39,10 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
     private static final int CLOSE = 2;
 
-    // pisces used to use fixed point arithmetic with 16 decimal digits. I
-    // didn't want to change the values of the constant below when I converted
-    // it to floating point, so that's why the divisions by 2^16 are there.
-    private static final float ROUND_JOIN_THRESHOLD = 1000.0f/65536.0f;
-
+    // round join threshold = 1 subpixel
+    private static final float ERR_JOIN = (1.0f / MIN_SUBPIXELS);
+    private static final float ROUND_JOIN_THRESHOLD = ERR_JOIN * ERR_JOIN;
+    
     // kappa = (4/3) * (SQRT(2) - 1)
     private static final float C = (float)(4.0d * (Math.sqrt(2.0d) - 1.0d) / 3.0d);
 
@@ -58,6 +57,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     private int joinStyle;
 
     private float lineWidth2;
+    private float lineWidth2Sq;
     private float invHalfLineWidth2Sq;
 
     private final float[] offset0 = new float[2];
@@ -153,7 +153,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         this.out = pc2d;
 
         this.lineWidth2 = lineWidth / 2.0f;
-        this.invHalfLineWidth2Sq = 1.0f / (2.0f * lineWidth2 * lineWidth2);
+        this.lineWidth2Sq = lineWidth2 * lineWidth2;
+        this.invHalfLineWidth2Sq = 1.0f / (2.0f * lineWidth2Sq);
         this.capStyle = capStyle;
         this.joinStyle = joinStyle;
 
@@ -250,19 +251,20 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         return dx1 * dy2 <= dy1 * dx2;
     }
 
-    private void drawRoundJoin(float x, float y,
-                               float omx, float omy, float mx, float my,
-                               boolean rev,
-                               float threshold)
+    private void mayDrawRoundJoin(float cx, float cy,
+                                  float omx, float omy, 
+                                  float mx, float my,
+                                  boolean rev)
     {
         if ((omx == 0.0f && omy == 0.0f) || (mx == 0.0f && my == 0.0f)) {
             return;
         }
 
-        float domx = omx - mx;
-        float domy = omy - my;
-        float len = domx*domx + domy*domy;
-        if (len < threshold) {
+        final float domx = omx - mx;
+        final float domy = omy - my;
+        final float lenSq = domx*domx + domy*domy;
+        
+        if (lenSq < ROUND_JOIN_THRESHOLD) {
             return;
         }
 
@@ -272,7 +274,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             mx  = -mx;
             my  = -my;
         }
-        drawRoundJoin(x, y, omx, omy, mx, my, rev);
+        drawRoundJoin(cx, cy, omx, omy, mx, my, rev);
     }
 
     private void drawRoundJoin(float cx, float cy,
@@ -383,7 +385,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                                      final float x1, final float y1,
                                      final float x0p, final float y0p,
                                      final float x1p, final float y1p,
-                                     final float[] m, int off)
+                                     final float[] m)
     {
         float x10 = x1 - x0;
         float y10 = y1 - y0;
@@ -402,8 +404,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         float den = x10*y10p - x10p*y10;
         float t = x10p*(y0-y0p) - y10p*(x0-x0p);
         t /= den;
-        m[off++] = x0 + t*x10;
-        m[off]   = y0 + t*y10;
+        m[0] = x0 + t*x10;
+        m[1] = y0 + t*y10;
     }
 
     // Return the intersection point of the lines (x0, y0) -> (x1, y1)
@@ -412,7 +414,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                                          final float x1, final float y1,
                                          final float x0p, final float y0p,
                                          final float x1p, final float y1p,
-                                         final float[] m, int off)
+                                         final float[] m)
     {
         float x10 = x1 - x0;
         float y10 = y1 - y0;
@@ -430,20 +432,21 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // immediately).
         float den = x10*y10p - x10p*y10;
         if (den == 0.0f) {
-            m[off++] = (x0 + x0p) / 2.0f;
-            m[off]   = (y0 + y0p) / 2.0f;
-            return;
+            m[2] = (x0 + x0p) / 2.0f;
+            m[3]   = (y0 + y0p) / 2.0f;
+        } else {
+            float t = x10p*(y0-y0p) - y10p*(x0-x0p);
+            t /= den;
+            m[2] = x0 + t*x10;
+            m[3] = y0 + t*y10;
         }
-        float t = x10p*(y0-y0p) - y10p*(x0-x0p);
-        t /= den;
-        m[off++] = x0 + t*x10;
-        m[off] = y0 + t*y10;
     }
 
     private void drawMiter(final float pdx, final float pdy,
                            final float x0, final float y0,
                            final float dx, final float dy,
-                           float omx, float omy, float mx, float my,
+                           float omx, float omy, 
+                           float mx, float my,
                            boolean rev)
     {
         if ((mx == omx && my == omy) ||
@@ -461,8 +464,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         computeMiter((x0 - pdx) + omx, (y0 - pdy) + omy, x0 + omx, y0 + omy,
-                     (dx + x0) + mx, (dy + y0) + my, x0 + mx, y0 + my,
-                     miter, 0);
+                     (dx + x0) + mx, (dy + y0) + my, x0 + mx, y0 + my, miter);
 
         final float miterX = miter[0];
         final float miterY = miter[1];
@@ -754,10 +756,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 if (joinStyle == JOIN_MITER) {
                     drawMiter(pdx, pdy, x0, y0, dx, dy, omx, omy, mx, my, cw);
                 } else if (joinStyle == JOIN_ROUND) {
-                    drawRoundJoin(x0, y0,
-                                  omx, omy,
-                                  mx, my, cw,
-                                  ROUND_JOIN_THRESHOLD);
+                    mayDrawRoundJoin(x0, y0, omx, omy, mx, my, cw);
                 }
             }
             emitLineTo(x0, y0, !cw);
@@ -767,13 +766,13 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
     private static boolean within(final float x1, final float y1,
                                   final float x2, final float y2,
-                                  final float ERR)
+                                  final float err)
     {
-        assert ERR > 0 : "";
-        // compare taxicab distance. ERR will always be small, so using
+        assert err > 0 : "";
+        // compare taxicab distance. err will always be small, so using
         // true distance won't give much benefit
-        return (Helpers.within(x1, x2, ERR) &&  // we want to avoid calling Math.abs
-                Helpers.within(y1, y2, ERR)); // this is just as good.
+        return (Helpers.within(x1, x2, err) && // we want to avoid calling Math.abs
+                Helpers.within(y1, y2, err));  // this is just as good.
     }
 
     private void getLineOffsets(float x1, float y1,
@@ -802,7 +801,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // the input curve at the cusp, and passes it to this function.
         // because of inaccuracies in the splitting, we consider points
         // equal if they're very close to each other.
-        final float x1 = pts[off + 0], y1 = pts[off + 1];
+        final float x1 = pts[off    ], y1 = pts[off + 1];
         final float x2 = pts[off + 2], y2 = pts[off + 3];
         final float x3 = pts[off + 4], y3 = pts[off + 5];
         final float x4 = pts[off + 6], y4 = pts[off + 7];
@@ -816,6 +815,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // in which case ignore if p1 == p2
         final boolean p1eqp2 = within(x1, y1, x2, y2, 6.0f * Math.ulp(y2));
         final boolean p3eqp4 = within(x3, y3, x4, y4, 6.0f * Math.ulp(y4));
+        
         if (p1eqp2 && p3eqp4) {
             getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
             return 4;
@@ -831,6 +831,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         float dotsq = (dx1 * dx4 + dy1 * dy4);
         dotsq *= dotsq;
         float l1sq = dx1 * dx1 + dy1 * dy1, l4sq = dx4 * dx4 + dy4 * dy4;
+        
         if (Helpers.within(dotsq, l1sq * l4sq, 4.0f * Math.ulp(dotsq))) {
             getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
             return 4;
@@ -947,7 +948,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     private int computeOffsetQuad(float[] pts, final int off,
                                   float[] leftOff, float[] rightOff)
     {
-        final float x1 = pts[off + 0], y1 = pts[off + 1];
+        final float x1 = pts[off    ], y1 = pts[off + 1];
         final float x2 = pts[off + 2], y2 = pts[off + 3];
         final float x3 = pts[off + 4], y3 = pts[off + 5];
 
@@ -968,6 +969,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // in which case ignore.
         final boolean p1eqp2 = within(x1, y1, x2, y2, 6.0f * Math.ulp(y2));
         final boolean p2eqp3 = within(x2, y2, x3, y3, 6.0f * Math.ulp(y3));
+        
         if (p1eqp2 || p2eqp3) {
             getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
             return 4;
@@ -977,6 +979,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         float dotsq = (dx1 * dx3 + dy1 * dy3);
         dotsq *= dotsq;
         float l1sq = dx1 * dx1 + dy1 * dy1, l3sq = dx3 * dx3 + dy3 * dy3;
+        
         if (Helpers.within(dotsq, l1sq * l3sq, 4.0f * Math.ulp(dotsq))) {
             getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
             return 4;
@@ -992,13 +995,13 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         float y1p = y1 + offset0[1]; // point
         float x3p = x3 + offset1[0]; // end
         float y3p = y3 + offset1[1]; // point
-        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, leftOff, 2);
+        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, leftOff);
         leftOff[0] = x1p; leftOff[1] = y1p;
         leftOff[4] = x3p; leftOff[5] = y3p;
 
         x1p = x1 - offset0[0]; y1p = y1 - offset0[1];
         x3p = x3 - offset1[0]; y3p = y3 - offset1[1];
-        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, rightOff, 2);
+        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, rightOff);
         rightOff[0] = x1p; rightOff[1] = y1p;
         rightOff[4] = x3p; rightOff[5] = y3p;
         return 6;
@@ -1007,8 +1010,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     // finds values of t where the curve in pts should be subdivided in order
     // to get good offset curves a distance of w away from the middle curve.
     // Stores the points in ts, and returns how many of them there were.
-    private static int findSubdivPoints(final Curve c, float[] pts, float[] ts,
-                                        final int type, final float w)
+    private static int findSubdivPoints(final Curve c, final float[] pts, 
+                                        final float[] ts, final int type, 
+                                        final float w2)
     {
         final float x12 = pts[2] - pts[0];
         final float y12 = pts[3] - pts[1];
@@ -1056,10 +1060,10 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         // now we must subdivide at points where one of the offset curves will have
         // a cusp. This happens at ts where the radius of curvature is equal to w.
-        ret += c.rootsOfROCMinusW(ts, ret, w, 0.0001f);
+        ret += c.rootsOfROCMinusW(ts, ret, w2, 0.0001f);
 
         ret = Helpers.filterOutNotInAB(ts, 0, ret, 0.0001f, 0.9999f);
-        Helpers.isort(ts, 0, ret);
+        Helpers.isort(ts, ret);
         return ret;
     }
 
@@ -1144,13 +1148,13 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         computeOffset(dxs, dys, lineWidth2, offset0);
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, offset0[0], offset0[1], outcode0);
 
-        final int nSplits = findSubdivPoints(curve, mid, subdivTs, 8, lineWidth2);
+        final int nSplits = findSubdivPoints(curve, mid, subdivTs, 8, lineWidth2Sq);
 
         float prevT = 0.0f;
         for (int i = 0, off = 0; i < nSplits; i++, off += 6) {
             final float t = subdivTs[i];
             Helpers.subdivideCubicAt((t - prevT) / (1.0f - prevT),
-                                     mid, off, mid, off, mid, off + 6);
+                                     mid, off, mid, off, off + 6);
             prevT = t;
         }
 
@@ -1248,13 +1252,13 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         computeOffset(dxs, dys, lineWidth2, offset0);
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, offset0[0], offset0[1], outcode0);
 
-        int nSplits = findSubdivPoints(curve, mid, subdivTs, 6, lineWidth2);
+        final int nSplits = findSubdivPoints(curve, mid, subdivTs, 6, lineWidth2Sq);
 
         float prevt = 0.0f;
         for (int i = 0, off = 0; i < nSplits; i++, off += 4) {
             final float t = subdivTs[i];
             Helpers.subdivideQuadAt((t - prevt) / (1.0f - prevt),
-                                    mid, off, mid, off, mid, off + 4);
+                                    mid, off, mid, off, off + 4);
             prevt = t;
         }
 

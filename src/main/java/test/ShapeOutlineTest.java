@@ -45,11 +45,11 @@ public class ShapeOutlineTest {
     private final static boolean DO_FILL = true;
     private final static boolean DO_DRAW = true;
 
-    private final static boolean DO_CIRCLE = false;
+    private final static boolean DO_CIRCLE = true;
 
-    private final static float CIRCLE_RADIUS = 1843200.0f * 10.0f;
+    private final static double CIRCLE_RADIUS = 1843200.0 * 10.0;
 
-    private final static float RECT_SIZE = 900f * 1024 * 5 * 30;
+    private final static double RECT_SIZE = 900.0 * 1024 * 5 * 30;
 
     private final static double sqrt2 = Math.sqrt(2);
 
@@ -134,7 +134,7 @@ public class ShapeOutlineTest {
         }
     }
 
-    private static void paint(final Graphics2D g2d, final float size) {
+    private static void paint(final Graphics2D g2d, final double size) {
         final Shape path = createPath(size);
 
         if (DO_FILL) {
@@ -148,23 +148,25 @@ public class ShapeOutlineTest {
         }
     }
 
-    private static Shape createPath(final float size) {
+    private static Shape createPath(final double size) {
         if (DO_CIRCLE) {
-            final float c = (float)(0.5f * size - CIRCLE_RADIUS / sqrt2);
+            System.out.println("CIRCLE_RADIUS: " + CIRCLE_RADIUS);
 
-            return new Ellipse2D.Float(
+            final double c = (0.5 * size - CIRCLE_RADIUS / sqrt2);
+
+            return new Ellipse2D.Double(
             c - CIRCLE_RADIUS,
             c - CIRCLE_RADIUS,
-            2.0f * CIRCLE_RADIUS,
-            2.0f * CIRCLE_RADIUS
+            2.0 * CIRCLE_RADIUS,
+            2.0 * CIRCLE_RADIUS
             );
 
         } else {
-            final double half = 0.5f * size;
-
             System.out.println("RECT_SIZE: " + RECT_SIZE);
 
-            final Path2D p = new Path2D.Float();
+            final double half = 0.5 * size;
+
+            final Path2D p = new Path2D.Double();
             p.moveTo(half, half);
             p.lineTo(-RECT_SIZE, -RECT_SIZE);
             p.lineTo(0.0, -RECT_SIZE * 2.0);

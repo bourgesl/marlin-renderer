@@ -83,6 +83,9 @@ interface MarlinConst {
     // flag to enable logs related bounds checks
     static final boolean DO_LOG_BOUNDS = ENABLE_LOGS && false;
 
+    // flag to enable float precision correction 
+    static final boolean DO_FIX_FLOAT_PREC = true;
+
     // Initial Array sizing (initial context capacity) ~ 450K
 
     // 4096 pixels (width) for initial capacity
@@ -115,16 +118,17 @@ interface MarlinConst {
     public static final int SUBPIXEL_LG_POSITIONS_Y
         = MarlinProperties.getSubPixel_Log2_Y();
 
+    public static final int MIN_SUBPIXEL_LG_POSITIONS
+        = Math.min(SUBPIXEL_LG_POSITIONS_X, SUBPIXEL_LG_POSITIONS_Y);
+
     // number of subpixels
     public static final int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
     public static final int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
-
-    public static final float NORM_SUBPIXELS
-        = (float) Math.sqrt(( SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_X
-                            + SUBPIXEL_POSITIONS_Y * SUBPIXEL_POSITIONS_Y) / 2.0d);
+    
+    public static final float MIN_SUBPIXELS = 1 << MIN_SUBPIXEL_LG_POSITIONS;
 
     public static final int MAX_AA_ALPHA
-        = SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y;
+        = (SUBPIXEL_POSITIONS_X * SUBPIXEL_POSITIONS_Y);
 
     public static final int TILE_H_LG = MarlinProperties.getTileSize_Log2();
     public static final int TILE_H = 1 << TILE_H_LG; // 32 by default

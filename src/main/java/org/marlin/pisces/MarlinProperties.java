@@ -78,17 +78,17 @@ public final class MarlinProperties {
     }
 
     /**
-     * Return the log(2) corresponding to subpixel on x-axis (
+     * Return the log(2) corresponding to subpixel on x-axis
      *
      * @return 0 (1 subpixels) < initial pixel size < 8 (256 subpixels)
-     * (3 by default ie 8 subpixels)
+     * (8 by default ie 256 subpixels)
      */
     public static int getSubPixel_Log2_X() {
-        return getInteger("sun.java2d.renderer.subPixel_log2_X", 3, 0, 8);
+        return getInteger("sun.java2d.renderer.subPixel_log2_X", 8, 0, 8);
     }
 
     /**
-     * Return the log(2) corresponding to subpixel on y-axis (
+     * Return the log(2) corresponding to subpixel on y-axis
      *
      * @return 0 (1 subpixels) < initial pixel size < 8 (256 subpixels)
      * (3 by default ie 8 subpixels)
@@ -100,22 +100,21 @@ public final class MarlinProperties {
     /**
      * Return the log(2) corresponding to the square tile size in pixels
      *
-     * @return 3 (8x8 pixels) < tile size < 8 (256x256 pixels)
-     * (5 by default ie 32x32 pixels)
+     * @return 3 (8x8 pixels) < tile size < 10 (1024x1024 pixels)
+     * (6 by default ie 128x64 pixels)
      */
     public static int getTileSize_Log2() {
-        return getInteger("sun.java2d.renderer.tileSize_log2", 5, 3, 10);
+        return getInteger("sun.java2d.renderer.tileSize_log2", 6, 3, 10);
     }
 
     /**
      * Return the log(2) corresponding to the tile width in pixels
      *
-     * @return 3 (8 pixels) < tile with < 8 (256 pixels)
-     * (by default is given by the square tile size)
+     * @return 3 (8 pixels) < tile width < 8 (1024 pixels)
+     * (7 by default ie 128x64 pixels)
      */
     public static int getTileWidth_Log2() {
-        final int tileSize = getTileSize_Log2();
-        return getInteger("sun.java2d.renderer.tileWidth_log2", tileSize, 3, 10);
+        return getInteger("sun.java2d.renderer.tileWidth_log2", 7, 3, 10);
     }
 
     /**
@@ -164,8 +163,8 @@ public final class MarlinProperties {
     public static float getPathSimplifierPixelTolerance() {
         // default: MIN_PEN_SIZE or less ?
         return getFloat("sun.java2d.renderer.pathSimplifier.pixTol",
-                (1.0f / MarlinConst.NORM_SUBPIXELS),
-                1e-4f,
+                (1.0f / MarlinConst.MIN_SUBPIXELS),
+                1e-3f,
                 10.0f);
     }
 

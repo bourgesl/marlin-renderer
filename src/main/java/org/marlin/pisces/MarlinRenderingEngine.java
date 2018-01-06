@@ -47,7 +47,7 @@ import sun.security.action.GetPropertyAction;
 public final class MarlinRenderingEngine extends RenderingEngine
                                          implements MarlinConst
 {
-    private static enum NormMode {
+    private enum NormMode {
         ON_WITH_AA {
             @Override
             PathIterator getNormalizingPathIterator(final RendererContext rdrCtx,
@@ -80,7 +80,7 @@ public final class MarlinRenderingEngine extends RenderingEngine
                                                          PathIterator src);
     }
 
-    private static final float MIN_PEN_SIZE = 1.0f / NORM_SUBPIXELS;
+    private static final float MIN_PEN_SIZE = 1.0f / MIN_SUBPIXELS;
 
     static final float UPPER_BND = Float.MAX_VALUE / 2.0f;
     static final float LOWER_BND = -UPPER_BND;

@@ -76,11 +76,13 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
     // curve break into lines
     // cubic error in subpixels to decrement step
     private static final double CUB_DEC_ERR_SUBPIX
-        = MarlinProperties.getCubicDecD2() * (NORM_SUBPIXELS / 8.0d); // 1 pixel
+        = MarlinProperties.getCubicDecD2() * (SUBPIXEL_POSITIONS_X / 8.0d); // 1 pixel
     // cubic error in subpixels to increment step
     private static final double CUB_INC_ERR_SUBPIX
-        = MarlinProperties.getCubicIncD1() * (NORM_SUBPIXELS / 8.0d); // 0.4 pixel
-
+        = MarlinProperties.getCubicIncD1() * (SUBPIXEL_POSITIONS_X / 8.0d); // 0.4 pixel
+    // scale factor for Y-axis contribution to quad / cubic errors:
+    public static final double SCALE_DY = ((double) SUBPIXEL_POSITIONS_X) / SUBPIXEL_POSITIONS_Y; 
+    
     // TestNonAARasterization (JDK-8170879): cubics
     // bad paths (59294/100000 == 59,29%, 94335 bad pixels (avg = 1,59), 3966 warnings (avg = 0,07)
 
@@ -109,7 +111,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
     // quad break into lines
     // quadratic error in subpixels
     private static final double QUAD_DEC_ERR_SUBPIX
-        = MarlinProperties.getQuadDecD2() * (NORM_SUBPIXELS / 8.0d); // 0.5 pixel
+        = MarlinProperties.getQuadDecD2() * (SUBPIXEL_POSITIONS_X / 8.0d); // 0.5 pixel
 
     // TestNonAARasterization (JDK-8170879): quads
     // bad paths (62916/100000 == 62,92%, 103818 bad pixels (avg = 1,65), 6514 warnings (avg = 0,10)
@@ -179,7 +181,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
         int count = 1; // dt = 1 / count
 
         // maximum(ddX|Y) = norm(dbx, dby) * dt^2 (= 1)
-        double maxDD = Math.abs(c.dbx) + Math.abs(c.dby);
+        double maxDD = Math.abs(c.dbx) + Math.abs(c.dby) * SCALE_DY;
 
         final double _DEC_BND = QUAD_DEC_BND;
 
@@ -203,12 +205,13 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
             double dx = c.bx * icount2 + c.cx * icount;
             double dy = c.by * icount2 + c.cy * icount;
 
-            double x1, y1;
+            // we use x0, y0 to walk the line
+            double x1 = x0, y1 = y0;
 
             while (--count > 0) {
-                x1 = x0 + dx;
+                x1 += dx;
                 dx += ddx;
-                y1 = y0 + dy;
+                y1 += dy;
                 dy += ddy;
 
                 addLine(x0, y0, x1, y1);
@@ -234,7 +237,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
                                            final DCurve c,
                                            final double x3, final double y3)
     {
-        int count           = CUB_COUNT;
+        int count            = CUB_COUNT;
         final double icount  = CUB_INV_COUNT;   // dt
         final double icount2 = CUB_INV_COUNT_2; // dt^2
         final double icount3 = CUB_INV_COUNT_3; // dt^3
@@ -255,10 +258,11 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
 
         final double _DEC_BND = CUB_DEC_BND;
         final double _INC_BND = CUB_INC_BND;
+        final double _SCALE_DY = SCALE_DY;
 
         while (count > 0) {
             // divide step by half:
-            while (Math.abs(ddx) + Math.abs(ddy) >= _DEC_BND) {
+            while (Math.abs(ddx) + Math.abs(ddy) * _SCALE_DY >= _DEC_BND) {
                 dddx /= 8.0d;
                 dddy /= 8.0d;
                 ddx = ddx / 4.0d - dddx;
@@ -275,7 +279,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
             // double step:
             // can only do this on even "count" values, because we must divide count by 2
             while (count % 2 == 0
-                   && Math.abs(dx) + Math.abs(dy) <= _INC_BND)
+                   && Math.abs(dx) + Math.abs(dy) * _SCALE_DY <= _INC_BND)
             {
                 dx = 2.0d * dx + ddx;
                 dy = 2.0d * dy + ddy;

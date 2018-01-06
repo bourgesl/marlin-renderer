@@ -603,8 +603,7 @@ final class DTransformingPathConsumer2D {
         public void moveTo(final double x0, final double y0) {
             finishPath();
 
-            final int outcode = DHelpers.outcode(x0, y0, clipRect);
-            this.cOutCode = outcode;
+            this.cOutCode = DHelpers.outcode(x0, y0, clipRect);
             this.outside = false;
             out.moveTo(x0, y0);
         }
