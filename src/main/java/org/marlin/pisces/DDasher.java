@@ -337,14 +337,8 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         firstSegidx = segIdx + len;
     }
 
-        private static final boolean TRACE = false;
-
     @Override
     public void lineTo(final double x1, final double y1) {
-        if (TRACE) {
-            System.out.println("lineTo P0(" + cx0 + ", " + cy0 + ") P1(" + x1 + ", " + y1 + ")");
-        }
-
         final int outcode0 = this.cOutCode;
 
         if (clipRect != null) {
@@ -353,16 +347,8 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             // Should clip
             final int orCode = (outcode0 | outcode1);
 
-            if (TRACE) {
-                System.out.println("orCode: "+orCode);
-            }
-
             if (orCode != 0) {
                 final int sideCode = outcode0 & outcode1;
-
-                if (TRACE) {
-                    System.out.println("sideCode: "+sideCode);
-                }
 
                 // basic rejection criteria:
                 if (sideCode == 0) {
@@ -370,12 +356,14 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                     if (subdivide) {
                         // avoid reentrance
                         subdivide = false;
-                        // subdivide curve => call lineTo() with subdivided curves:
-                        curveSplitter.splitLine(cx0, cy0, x1, y1,
-                                                orCode, this);
+                        // subdivide curve => callback with subdivided parts:
+                        boolean ret = curveSplitter.splitLine(cx0, cy0, x1, y1,
+                                                              orCode, this);
                         // reentrance is done:
                         subdivide = true;
-                        return;
+                        if (ret) {
+                            return;
+                        }
                     }
                     // already subdivided so render it
                 } else {
@@ -847,7 +835,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                         subdivide = false;
                         // subdivide curve => callback with subdivided parts:
                         boolean ret = curveSplitter.splitCurve(cx0, cy0, x1, y1, x2, y2, x3, y3,
-                                                 orCode, this);
+                                                               orCode, this);
                         // reentrance is done:
                         subdivide = true;
                         if (ret) {
@@ -894,13 +882,48 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     public void quadTo(final double x1, final double y1,
                        final double x2, final double y2)
     {
+        final int outcode0 = this.cOutCode;
+
         if (clipRect != null) {
             final int outcode1 = DHelpers.outcode(x1, y1, clipRect);
             final int outcode2 = DHelpers.outcode(x2, y2, clipRect);
-            // TODO
+
+            // Should clip
+            final int orCode = (outcode0 | outcode1 | outcode2);
+            if (orCode != 0) {
+                final int sideCode = outcode0 & outcode1 & outcode2;
+
+                // basic rejection criteria:
+                if (sideCode == 0) {
+                    // ovelap clip:
+                    if (subdivide) {
+                        // avoid reentrance
+                        subdivide = false;
+                        // subdivide curve => call lineTo() with subdivided curves:
+                        boolean ret = curveSplitter.splitQuad(cx0, cy0, x1, y1, 
+                                                              x2, y2, orCode, this);
+                        // reentrance is done:
+                        subdivide = true;
+                        if (ret) {
+                            return;
+                        }
+                    }
+                    // already subdivided so render it
+                } else {
+                    this.cOutCode = outcode2;
+                    _moveTo(x2, y2);
+                    return;
+                }
+            }
+
             this.cOutCode = outcode2;
         }
+        _quadTo(x1, y1, x2, y2);
+    }
 
+    private void _quadTo(final double x1, final double y1,
+                          final double x2, final double y2)
+    {        
         final double[] _curCurvepts = curCurvepts;
 
         // monotonize quad:

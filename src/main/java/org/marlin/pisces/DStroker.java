@@ -183,8 +183,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                 rdrOffX = scale * DRenderer.RDR_OFFSET_X;
                 rdrOffY = scale * DRenderer.RDR_OFFSET_Y;
             }
-            // add a small rounding error:
-            margin += 1e-3d;
+            // add a rounding error (curve subdivision ~ 0.1px):
+            margin += DTransformingPathConsumer2D.CLIP_RECT_PADDING;
 
             // bounds as half-open intervals: minX <= x < maxX and minY <= y < maxY
             // adjust clip rectangle (ymin, ymax, xmin, xmax):
@@ -549,11 +549,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                         // avoid reentrance
                         subdivide = false;
                         // subdivide curve => callback with subdivided parts:
-                        curveSplitter.splitLine(cx0, cy0, x1, y1,
-                                                orCode, this);
+                        boolean ret = curveSplitter.splitLine(cx0, cy0, x1, y1,
+                                                              orCode, this);
                         // reentrance is done:
                         subdivide = true;
-                        return;
+                        if (ret) {
+                            return;
+                        }
                     }
                     // already subdivided so render it
                 } else {
@@ -1070,8 +1072,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                         // avoid reentrance
                         subdivide = false;
                         // subdivide curve => callback with subdivided parts:
-                        boolean ret = curveSplitter.splitCurve(cx0, cy0, x1, y1, x2, y2, x3, y3,
-                                                 orCode, this);
+                        boolean ret = curveSplitter.splitCurve(cx0, cy0, x1, y1, 
+                                                               x2, y2, x3, y3, 
+                                                               orCode, this);
                         // reentrance is done:
                         subdivide = true;
                         if (ret) {
@@ -1217,11 +1220,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                         // avoid reentrance
                         subdivide = false;
                         // subdivide curve => call lineTo() with subdivided curves:
-                        curveSplitter.splitQuad(cx0, cy0, x1, y1, x2, y2,
-                                                orCode, this);
+                        boolean ret = curveSplitter.splitQuad(cx0, cy0, x1, y1, 
+                                                              x2, y2, orCode, this);
                         // reentrance is done:
                         subdivide = true;
-                        return;
+                        if (ret) {
+                            return;
+                        }
                     }
                     // already subdivided so render it
                 } else {

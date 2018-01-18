@@ -33,6 +33,8 @@ import org.marlin.pisces.DHelpers.PolyStack;
 
 final class DTransformingPathConsumer2D {
 
+    static final double CLIP_RECT_PADDING = 0.5d;
+
     private final DRendererContext rdrCtx;
 
     // recycled ClosedPathDetector instance from detectClosedPath()
@@ -643,15 +645,20 @@ final class DTransformingPathConsumer2D {
                     if (subdivide) {
                         // avoid reentrance
                         subdivide = false;
+                        boolean ret;
                         // subdivide curve => callback with subdivided parts:
                         if (outside) {
-                            curveSplitter.splitLine(cox0, coy0, xe, ye, orCode, this);
+                            ret = curveSplitter.splitLine(cox0, coy0, xe, ye, 
+                                                          orCode, this);
                         } else {
-                            curveSplitter.splitLine(cx0, cy0, xe, ye, orCode, this);
+                            ret = curveSplitter.splitLine(cx0, cy0, xe, ye, 
+                                                          orCode, this);
                         }
                         // reentrance is done:
                         subdivide = true;
-                        return;
+                        if (ret) {
+                            return;
+                        }
                     }
                     // already subdivided so render it
                 } else {
@@ -740,11 +747,13 @@ final class DTransformingPathConsumer2D {
                         // subdivide curve => callback with subdivided parts:
                         boolean ret;
                         if (outside) {
-                            ret = curveSplitter.splitCurve(cox0, coy0, x1, y1, x2, y2, xe, ye,
-                                                     orCode, this);
+                            ret = curveSplitter.splitCurve(cox0, coy0, x1, y1, 
+                                                           x2, y2, xe, ye, 
+                                                           orCode, this);
                         } else {
-                            ret = curveSplitter.splitCurve(cx0, cy0, x1, y1, x2, y2, xe, ye,
-                                                     orCode, this);
+                            ret = curveSplitter.splitCurve(cx0, cy0, x1, y1, 
+                                                           x2, y2, xe, ye, 
+                                                           orCode, this);
                         }
                         // reentrance is done:
                         subdivide = true;
@@ -798,16 +807,19 @@ final class DTransformingPathConsumer2D {
                         // avoid reentrance
                         subdivide = false;
                         // subdivide curve => callback with subdivided parts:
+                        boolean ret;
                         if (outside) {
-                            curveSplitter.splitQuad(cox0, coy0, x1, y1, xe, ye,
-                                                    orCode, this);
+                            ret = curveSplitter.splitQuad(cox0, coy0, x1, y1, 
+                                                          xe, ye, orCode, this);
                         } else {
-                            curveSplitter.splitQuad(cx0, cy0, x1, y1, xe, ye,
-                                                    orCode, this);
+                            ret = curveSplitter.splitQuad(cx0, cy0, x1, y1, 
+                                                          xe, ye, orCode, this);
                         }
                         // reentrance is done:
                         subdivide = true;
-                        return;
+                        if (ret) {
+                            return;
+                        }
                     }
                     // already subdivided so render it
                 } else {
@@ -843,7 +855,7 @@ final class DTransformingPathConsumer2D {
 
     static final class CurveClipSplitter {
 
-        private static final double MAX_LEN = 100d;
+        static final double MAX_LEN = 100d;
 
         private static final boolean TRACE = false;
 
@@ -866,36 +878,46 @@ final class DTransformingPathConsumer2D {
             this.curve = rdrCtx.curve;
         }
 
-        void splitLine(final double x0, final double y0,
-                       final double x1, final double y1,
-                       final int outCodeOR,
-                       final DPathConsumer2D out)
+        boolean splitLine(final double x0, final double y0,
+                          final double x1, final double y1,
+                          final int outCodeOR,
+                          final DPathConsumer2D out)
         {
             if (TRACE) {
                 System.out.println("divLine P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ")");
             }
+
+            if (DHelpers.linelen(x0, y0, x1, y1) <= MAX_LEN) {
+                return false;
+            }
+
             final double[] mid = middle;
             mid[0] = x0;  mid[1] = y0;
             mid[2] = x1;  mid[3] = y1;
 
-            subdivideAtIntersections(4, outCodeOR, out, true);
+            return subdivideAtIntersections(4, outCodeOR, out);
         }
 
-        void splitQuad(final double x0, final double y0,
-                       final double x1, final double y1,
-                       final double x2, final double y2,
-                       final int outCodeOR,
-                       final DPathConsumer2D out)
+        boolean splitQuad(final double x0, final double y0,
+                          final double x1, final double y1,
+                          final double x2, final double y2,
+                          final int outCodeOR,
+                          final DPathConsumer2D out)
         {
             if (TRACE) {
                 System.out.println("divQuad P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ")");
             }
+
+            if (DHelpers.quadlen(x0, y0, x1, y1, x2, y2) <= MAX_LEN) {
+                return false;
+            }
+            
             final double[] mid = middle;
             mid[0] = x0;  mid[1] = y0;
             mid[2] = x1;  mid[3] = y1;
             mid[4] = x2;  mid[5] = y2;
 
-            subdivideAtIntersections(6, outCodeOR, out, true);
+            return subdivideAtIntersections(6, outCodeOR, out);
         }
 
         boolean splitCurve(final double x0, final double y0,
@@ -919,42 +941,37 @@ final class DTransformingPathConsumer2D {
             mid[4] = x2;  mid[5] = y2;
             mid[6] = x3;  mid[7] = y3;
 
-            return subdivideAtIntersections(8, outCodeOR, out, false);
+            return subdivideAtIntersections(8, outCodeOR, out);
         }
 
         private boolean subdivideAtIntersections(final int type, final int outCodeOR,
-                                                 final DPathConsumer2D out, final boolean test)
+                                                 final DPathConsumer2D out)
         {
-            final int nSplits;
             final double[] mid = middle;
+            final double[] subTs = subdivTs;
 
-            if (test && DHelpers.length(mid, type) <= MAX_LEN) {
-                nSplits = 0;
+            final int nSplits = DHelpers.findClipPoints(curve, mid, subTs, type,
+                                                        outCodeOR, clipRect);
+
+            if (TRACE) {
+                System.out.println("clip: X [" + clipRect[2] + " .. " + clipRect[3] +"] Y ["+ clipRect[0] + " .. " + clipRect[1] +"]");
+                System.out.println("nSplits: "+ nSplits);
+                System.out.println("subTs: "+Arrays.toString(Arrays.copyOfRange(subTs, 0, nSplits)));
+            }
+            if (nSplits == 0) {
+                // only curve support shortcut
                 return false;
-            } else {
-                final double[] subTs = subdivTs;
-                nSplits = DHelpers.findClipPoints(curve, mid, subTs, type,
-                                                  outCodeOR, clipRect);
+            }
+            double prevT = 0.0d;
+            for (int i = 0, off = 0; i < nSplits; i++, off += type) {
+                final double t = subTs[i];
+
+                DHelpers.subdivideAt((t - prevT) / (1.0d - prevT),
+                                     mid, off, mid, off, type);
+                prevT = t;
 
                 if (TRACE) {
-                    System.out.println("clip: X [" + (clipRect[2]-0.5) + " .. " + (clipRect[3]+0.5) +"] Y ["+ (clipRect[0]-0.5) + " .. " + (clipRect[1]+0.5) +"]");
-                    System.out.println("nSplits: "+ nSplits);
-                    System.out.println("subTs: "+Arrays.toString(Arrays.copyOfRange(subTs, 0, nSplits)));
-                }
-                if (nSplits == 0) {
-                    return false;
-                }
-                double prevT = 0.0d;
-                for (int i = 0, off = 0; i < nSplits; i++, off += type) {
-                    final double t = subTs[i];
-
-                    DHelpers.subdivideAt((t - prevT) / (1.0d - prevT),
-                                         mid, off, mid, off, type);
-                    prevT = t;
-
-                    if (TRACE) {
-                        System.out.println("Part Curve "+Arrays.toString(Arrays.copyOfRange(mid, off, off + type)));
-                    }
+                    System.out.println("Part Curve "+Arrays.toString(Arrays.copyOfRange(mid, off, off + type)));
                 }
             }
 

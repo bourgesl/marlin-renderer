@@ -1168,6 +1168,10 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinProperties.getQuadDecD2());
 
         logInfo("Renderer settings:");
+        
+        logInfo("MAX_LEN (CurveClipSplitter)          = "
+                + DTransformingPathConsumer2D.CurveClipSplitter.MAX_LEN); // TODO: use system property
+        
         logInfo("CUB_DEC_BND  = " + DRenderer.CUB_DEC_BND);
         logInfo("CUB_INC_BND  = " + DRenderer.CUB_INC_BND);
         logInfo("QUAD_DEC_BND = " + DRenderer.QUAD_DEC_BND);

@@ -254,8 +254,6 @@ final class DHelpers implements MarlinConst {
         return ret;
     }
 
-    private static double PADDING = 0.5d;
-
     // finds values of t where the curve in pts should be subdivided in order
     // to get intersections with the given clip rectangle.
     // Stores the points in ts, and returns how many of them there were.
@@ -270,16 +268,16 @@ final class DHelpers implements MarlinConst {
         int ret = 0;
 
         if ((outCodeOR & OUTCODE_LEFT) != 0) {
-            ret += curve.xPoints(ts, ret, clipRect[2] - PADDING);
+            ret += curve.xPoints(ts, ret, clipRect[2]);
         }
         if ((outCodeOR & OUTCODE_TOP) != 0) {
-            ret += curve.yPoints(ts, ret, clipRect[0] - PADDING);
+            ret += curve.yPoints(ts, ret, clipRect[0]);
         }
         if ((outCodeOR & OUTCODE_BOTTOM) != 0) {
-            ret += curve.yPoints(ts, ret, clipRect[1] + PADDING);
+            ret += curve.yPoints(ts, ret, clipRect[1]);
         }
         if ((outCodeOR & OUTCODE_RIGHT) != 0) {
-            ret += curve.xPoints(ts, ret, clipRect[3] + PADDING);
+            ret += curve.xPoints(ts, ret, clipRect[3]);
         }
 
         isort(ts, ret);
