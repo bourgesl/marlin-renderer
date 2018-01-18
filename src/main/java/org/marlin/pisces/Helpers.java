@@ -164,7 +164,7 @@ final class Helpers implements MarlinConst {
         return (float) Math.sqrt(dx*dx + dy*dy);
     }
 
-    static void subdivide(final float[] src, 
+    static void subdivide(final float[] src,
                           final float[] left, final float[] right,
                           final int type)
     {
@@ -228,10 +228,10 @@ final class Helpers implements MarlinConst {
         float cy2 = src[5];
         float  x2 = src[6];
         float  y2 = src[7];
-        
+
         left[0]  = x1;
         left[1]  = y1;
-        
+
         right[6] = x2;
         right[7] = y2;
 
@@ -265,7 +265,7 @@ final class Helpers implements MarlinConst {
         right[5] = y2;
     }
 
-    static void subdivideCubicAt(final float t, 
+    static void subdivideCubicAt(final float t,
                                  final float[] src, final int offS,
                                  final float[] pts, final int offL, final int offR)
     {
@@ -280,7 +280,7 @@ final class Helpers implements MarlinConst {
 
         pts[offL    ] = x1;
         pts[offL + 1] = y1;
-        
+
         pts[offR + 6] = x2;
         pts[offR + 7] = y2;
 
@@ -288,10 +288,10 @@ final class Helpers implements MarlinConst {
         y1 =  y1 + t * (cy1 - y1);
         x2 = cx2 + t * (x2 - cx2);
         y2 = cy2 + t * (y2 - cy2);
-        
+
         float cx = cx1 + t * (cx2 - cx1);
         float cy = cy1 + t * (cy2 - cy1);
-        
+
         cx1 =  x1 + t * (cx - x1);
         cy1 =  y1 + t * (cy - y1);
         cx2 =  cx + t * (x2 - cx);
@@ -324,7 +324,7 @@ final class Helpers implements MarlinConst {
         float cy = src[3];
         float x2 = src[4];
         float y2 = src[5];
-        
+
         left[0]  = x1;
         left[1]  = y1;
         right[4] = x2;
@@ -336,7 +336,7 @@ final class Helpers implements MarlinConst {
         y2 = (y2 + cy) / 2.0f;
         cx = (x1 + x2) / 2.0f;
         cy = (y1 + y2) / 2.0f;
-        
+
         left[2] = x1;
         left[3] = y1;
         left[4] = cx;
@@ -348,7 +348,7 @@ final class Helpers implements MarlinConst {
         right[3] = y2;
     }
 
-    static void subdivideQuadAt(final float t, 
+    static void subdivideQuadAt(final float t,
                                 final float[] src, final int offS,
                                 final float[] pts, final int offL, final int offR)
     {
@@ -358,10 +358,10 @@ final class Helpers implements MarlinConst {
         float cy = src[offS + 3];
         float x2 = src[offS + 4];
         float y2 = src[offS + 5];
-        
+
         pts[offL    ] = x1;
         pts[offL + 1] = y1;
-        
+
         pts[offR + 4] = x2;
         pts[offR + 5] = y2;
 
@@ -383,8 +383,8 @@ final class Helpers implements MarlinConst {
         pts[offR + 3] = y2;
     }
 
-    static void subdivideAt(final float t, 
-                            final float[] src, final int offS, 
+    static void subdivideAt(final float t,
+                            final float[] src, final int offS,
                             final float[] pts, final int type)
     {
         switch(type) {

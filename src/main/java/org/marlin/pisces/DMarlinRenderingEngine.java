@@ -46,6 +46,19 @@ import sun.security.action.GetPropertyAction;
 public final class DMarlinRenderingEngine extends RenderingEngine
                                           implements MarlinConst
 {
+    static final boolean DO_TRACE_PATH = false;
+
+    static final boolean TEST_CLIP = false;
+
+    static final boolean DO_CLIP = MarlinProperties.isDoClip();
+    static final boolean DO_CLIP_FILL = true;
+    static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
+
+    private static final float MIN_PEN_SIZE = 1.0f / MIN_SUBPIXELS;
+
+    static final double UPPER_BND = Float.MAX_VALUE / 2.0d;
+    static final double LOWER_BND = -UPPER_BND;
+
     private enum NormMode {
         ON_WITH_AA {
             @Override
@@ -78,18 +91,6 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         abstract PathIterator getNormalizingPathIterator(DRendererContext rdrCtx,
                                                          PathIterator src);
     }
-
-    private static final float MIN_PEN_SIZE = 1.0f / MIN_SUBPIXELS;
-
-    static final double UPPER_BND = Float.MAX_VALUE / 2.0d;
-    static final double LOWER_BND = -UPPER_BND;
-
-    static final boolean DO_CLIP = MarlinProperties.isDoClip();
-    static final boolean DO_CLIP_FILL = true;
-
-    static final boolean DO_TRACE_PATH = false;
-
-    static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
 
     /**
      * Public constructor
@@ -409,7 +410,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
         final DTransformingPathConsumer2D transformerPC2D = rdrCtx.transformerPC2D;
 
-        if (DO_TRACE_PATH) {
+        if (false && DO_TRACE_PATH) {
             // trace Stroker:
             pc2d = transformerPC2D.traceStroker(pc2d);
         }
@@ -424,11 +425,21 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         pc2d = transformerPC2D.deltaTransformConsumer(pc2d, strokerat);
 
         // stroker will adjust the clip rectangle (width / miter limit):
-        pc2d = rdrCtx.stroker.init(pc2d, width, caps, join, miterlimit, scale);
+        pc2d = rdrCtx.stroker.init(pc2d, width, caps, join, miterlimit, scale,
+                (dashesD == null));
 
         if (dashesD != null) {
+            if (DO_TRACE_PATH) {
+                pc2d = transformerPC2D.traceDasher(pc2d);
+            }
             pc2d = rdrCtx.dasher.init(pc2d, dashesD, dashLen, dashphase,
                                       recycleDashes);
+
+            rdrCtx.stroker.disableClipping();
+
+            // Curve Monotizer:
+            rdrCtx.monotonizer.init(width);
+
         } else if (rdrCtx.doClip && (caps != Stroker.CAP_BUTT)) {
             if (DO_TRACE_PATH) {
                 pc2d = transformerPC2D.traceClosedPathDetector(pc2d);
@@ -818,10 +829,21 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 // Define the initial clip bounds:
                 final double[] clipRect = rdrCtx.clipRect;
 
-                clipRect[0] = clip.getLoY();
-                clipRect[1] = clip.getLoY() + clip.getHeight();
-                clipRect[2] = clip.getLoX();
-                clipRect[3] = clip.getLoX() + clip.getWidth();
+                if (TEST_CLIP) {
+                    double small = clip.getHeight() / 8.0d;
+                    double half = (clip.getLoY() + clip.getHeight()) / 2.0d;
+                    clipRect[0] = half - small;
+                    clipRect[1] = half + small;
+                    small = clip.getWidth() / 4.0d;
+                    half = (clip.getLoX() + clip.getWidth()) / 2.0d;
+                    clipRect[2] = half - small;
+                    clipRect[3] = half + small;
+                } else {
+                    clipRect[0] = clip.getLoY();
+                    clipRect[1] = clip.getLoY() + clip.getHeight();
+                    clipRect[2] = clip.getLoX();
+                    clipRect[3] = clip.getLoX() + clip.getWidth();
+                }
 
                 // Enable clipping:
                 rdrCtx.doClip = true;
@@ -1117,6 +1139,9 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinProperties.isDoClip());
         logInfo("sun.java2d.renderer.clip.runtime.enable = "
                 + MarlinProperties.isDoClipRuntimeFlag());
+
+        logInfo("sun.java2d.renderer.clip.subdivider  = "
+                + MarlinProperties.isDoClipSubdivider());
 
         // debugging parameters
         logInfo("sun.java2d.renderer.doStats          = "

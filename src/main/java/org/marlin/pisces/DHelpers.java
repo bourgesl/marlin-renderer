@@ -41,7 +41,7 @@ final class DHelpers implements MarlinConst {
         return (d <= err && d >= -err);
     }
 
-    static int quadraticRoots(final double a, final double b, final double c, 
+    static int quadraticRoots(final double a, final double b, final double c,
                               final double[] zeroes, final int off)
     {
         int ret = off;
@@ -152,17 +152,148 @@ final class DHelpers implements MarlinConst {
         return ret;
     }
 
-    static double linelen(double x1, double y1, double x2, double y2) {
-        final double dx = x2 - x1;
-        final double dy = y2 - y1;
-        return Math.sqrt(dx*dx + dy*dy);
+    static double length(final double[] pts, final int type) {
+        // if instead of switch (perf + most probable cases first)
+        if (type == 4) {
+            return linelen (pts[0], pts[1], pts[2], pts[3]);
+        } else if (type == 8) {
+            return curvelen(pts[0], pts[1], pts[2], pts[3], pts[4], pts[5], pts[6], pts[7]);
+        } else {
+            return quadlen (pts[0], pts[1], pts[2], pts[3], pts[4], pts[5]);
+        }
     }
 
-    static void subdivide(final double[] src, 
+    static double linelen(final double x0, final double y0,
+                          final double x1, final double y1)
+    {
+        final double dx = x1 - x0;
+        final double dy = y1 - y0;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    static double quadlen(final double x0, final double y0,
+                          final double x1, final double y1,
+                          final double x2, final double y2)
+    {
+        return (linelen(x0, y0, x1, y1)
+                + linelen(x1, y1, x2, y2)
+                + linelen(x0, y0, x2, y2)) / 2.0d;
+    }
+
+    static double curvelen(final double x0, final double y0,
+                           final double x1, final double y1,
+                           final double x2, final double y2,
+                           final double x3, final double y3)
+    {
+        return (linelen(x0, y0, x1, y1)
+                + linelen(x1, y1, x2, y2)
+                + linelen(x2, y2, x3, y3)
+                + linelen(x0, y0, x3, y3)) / 2.0d;
+    }
+
+    // finds values of t where the curve in pts should be subdivided in order
+    // to get good offset curves a distance of w away from the middle curve.
+    // Stores the points in ts, and returns how many of them there were.
+    static int findSubdivPoints(final DCurve c, final double[] pts,
+                                final double[] ts, final int type,
+                                final double w2)
+    {
+        final double x12 = pts[2] - pts[0];
+        final double y12 = pts[3] - pts[1];
+        // if the curve is already parallel to either axis we gain nothing
+        // from rotating it.
+        if ((y12 != 0.0d && x12 != 0.0d)) {
+            // we rotate it so that the first vector in the control polygon is
+            // parallel to the x-axis. This will ensure that rotated quarter
+            // circles won't be subdivided.
+            final double hypot = Math.sqrt(x12 * x12 + y12 * y12);
+            final double cos = x12 / hypot;
+            final double sin = y12 / hypot;
+            final double x1 = cos * pts[0] + sin * pts[1];
+            final double y1 = cos * pts[1] - sin * pts[0];
+            final double x2 = cos * pts[2] + sin * pts[3];
+            final double y2 = cos * pts[3] - sin * pts[2];
+            final double x3 = cos * pts[4] + sin * pts[5];
+            final double y3 = cos * pts[5] - sin * pts[4];
+
+            switch(type) {
+            case 8:
+                final double x4 = cos * pts[6] + sin * pts[7];
+                final double y4 = cos * pts[7] - sin * pts[6];
+                c.set(x1, y1, x2, y2, x3, y3, x4, y4);
+                break;
+            case 6:
+                c.set(x1, y1, x2, y2, x3, y3);
+                break;
+            default:
+            }
+        } else {
+            c.set(pts, type);
+        }
+
+        int ret = 0;
+        // we subdivide at values of t such that the remaining rotated
+        // curves are monotonic in x and y.
+        ret += c.dxRoots(ts, ret);
+        ret += c.dyRoots(ts, ret);
+
+        // subdivide at inflection points.
+        if (type == 8) {
+            // quadratic curves can't have inflection points
+            ret += c.infPoints(ts, ret);
+        }
+
+//        if (w2 > 0.0d) {
+        // now we must subdivide at points where one of the offset curves will have
+        // a cusp. This happens at ts where the radius of curvature is equal to w.
+        ret += c.rootsOfROCMinusW(ts, ret, w2, 0.0001d);
+//        }
+
+        ret = filterOutNotInAB(ts, 0, ret, 0.0001d, 0.9999d);
+        isort(ts, ret);
+        return ret;
+    }
+
+    private static double PADDING = 0.5d;
+
+    // finds values of t where the curve in pts should be subdivided in order
+    // to get intersections with the given clip rectangle.
+    // Stores the points in ts, and returns how many of them there were.
+    static int findClipPoints(final DCurve curve, final double[] pts,
+                              final double[] ts, final int type,
+                              final int outCodeOR,
+                              final double[] clipRect)
+    {
+        curve.set(pts, type);
+
+        // clip rectangle (ymin, ymax, xmin, xmax)
+        int ret = 0;
+
+        if ((outCodeOR & OUTCODE_LEFT) != 0) {
+            ret += curve.xPoints(ts, ret, clipRect[2] - PADDING);
+        }
+        if ((outCodeOR & OUTCODE_TOP) != 0) {
+            ret += curve.yPoints(ts, ret, clipRect[0] - PADDING);
+        }
+        if ((outCodeOR & OUTCODE_BOTTOM) != 0) {
+            ret += curve.yPoints(ts, ret, clipRect[1] + PADDING);
+        }
+        if ((outCodeOR & OUTCODE_RIGHT) != 0) {
+            ret += curve.xPoints(ts, ret, clipRect[3] + PADDING);
+        }
+
+        isort(ts, ret);
+        return ret;
+    }
+
+    static void subdivide(final double[] src,
                           final double[] left, final double[] right,
                           final int type)
     {
         switch(type) {
+        case 4:
+            subdivideLine(src, left, right);
+            return;
         case 6:
             subdivideQuad(src, left, right);
             return;
@@ -222,10 +353,10 @@ final class DHelpers implements MarlinConst {
         double cy2 = src[5];
         double  x2 = src[6];
         double  y2 = src[7];
-        
+
         left[0]  = x1;
         left[1]  = y1;
-        
+
         right[6] = x2;
         right[7] = y2;
 
@@ -259,7 +390,7 @@ final class DHelpers implements MarlinConst {
         right[5] = y2;
     }
 
-    static void subdivideCubicAt(final double t, 
+    static void subdivideCubicAt(final double t,
                                  final double[] src, final int offS,
                                  final double[] pts, final int offL, final int offR)
     {
@@ -274,7 +405,7 @@ final class DHelpers implements MarlinConst {
 
         pts[offL    ] = x1;
         pts[offL + 1] = y1;
-        
+
         pts[offR + 6] = x2;
         pts[offR + 7] = y2;
 
@@ -282,10 +413,10 @@ final class DHelpers implements MarlinConst {
         y1 =  y1 + t * (cy1 - y1);
         x2 = cx2 + t * (x2 - cx2);
         y2 = cy2 + t * (y2 - cy2);
-        
+
         double cx = cx1 + t * (cx2 - cx1);
         double cy = cy1 + t * (cy2 - cy1);
-        
+
         cx1 =  x1 + t * (cx - x1);
         cy1 =  y1 + t * (cy - y1);
         cx2 =  cx + t * (x2 - cx);
@@ -308,6 +439,31 @@ final class DHelpers implements MarlinConst {
         pts[offR + 5] = y2;
     }
 
+    static void subdivideLine(final double[] src,
+                              final double[] left,
+                              final double[] right)
+    {
+        double x1 = src[0];
+        double y1 = src[1];
+        double x2 = src[2];
+        double y2 = src[3];
+
+        left[0]  = x1;
+        left[1]  = y1;
+
+        right[2] = x2;
+        right[3] = y2;
+
+        double cx = (x1 + x2) / 2.0d;
+        double cy = (y1 + y2) / 2.0d;
+
+        left[2] = cx;
+        left[3] = cy;
+
+        right[0] = cx;
+        right[1] = cy;
+    }
+
     static void subdivideQuad(final double[] src,
                               final double[] left,
                               final double[] right)
@@ -318,10 +474,10 @@ final class DHelpers implements MarlinConst {
         double cy = src[3];
         double x2 = src[4];
         double y2 = src[5];
-        
+
         left[0]  = x1;
         left[1]  = y1;
-        
+
         right[4] = x2;
         right[5] = y2;
 
@@ -331,7 +487,7 @@ final class DHelpers implements MarlinConst {
         y2 = (y2 + cy) / 2.0d;
         cx = (x1 + x2) / 2.0d;
         cy = (y1 + y2) / 2.0d;
-        
+
         left[2] = x1;
         left[3] = y1;
         left[4] = cx;
@@ -343,7 +499,7 @@ final class DHelpers implements MarlinConst {
         right[3] = y2;
     }
 
-    static void subdivideQuadAt(final double t, 
+    static void subdivideQuadAt(final double t,
                                 final double[] src, final int offS,
                                 final double[] pts, final int offL, final int offR)
     {
@@ -353,10 +509,10 @@ final class DHelpers implements MarlinConst {
         double cy = src[offS + 3];
         double x2 = src[offS + 4];
         double y2 = src[offS + 5];
-        
+
         pts[offL    ] = x1;
         pts[offL + 1] = y1;
-        
+
         pts[offR + 4] = x2;
         pts[offR + 5] = y2;
 
@@ -378,19 +534,42 @@ final class DHelpers implements MarlinConst {
         pts[offR + 3] = y2;
     }
 
-    static void subdivideAt(final double t, 
-                            final double[] src, final int offS, 
-                            final double[] pts, final int type)
+    static void subdivideLineAt(final double t,
+                                final double[] src, final int offS,
+                                final double[] pts, final int offL, final int offR)
     {
-        switch(type) {
-        case 8:
-            subdivideCubicAt(t, src, offS, pts, 0, type);
-            return;
-        case 6:
-            subdivideQuadAt(t, src, offS, pts, 0, type);
-            return;
-        default:
-            throw new InternalError("Unsupported curve type");
+        double x1 = src[offS    ];
+        double y1 = src[offS + 1];
+        double x2 = src[offS + 2];
+        double y2 = src[offS + 3];
+
+        pts[offL    ] = x1;
+        pts[offL + 1] = y1;
+
+        pts[offR + 2] = x2;
+        pts[offR + 3] = y2;
+
+        x1 = x1 + t * (x2 - x1);
+        y1 = y1 + t * (y2 - y1);
+
+        pts[offL + 2] = x1;
+        pts[offL + 3] = y1;
+
+        pts[offR    ] = x1;
+        pts[offR + 1] = y1;
+    }
+
+    static void subdivideAt(final double t,
+                            final double[] src, final int offS,
+                            final double[] pts, final int offL, final int type)
+    {
+        // if instead of switch (perf + most probable cases first)
+        if (type == 4) {
+            subdivideLineAt(t, src, offS, pts, offL, offL + type);
+        } else if (type == 8) {
+            subdivideCubicAt(t, src, offS, pts, offL, offL + type);
+        } else {
+            subdivideQuadAt(t, src, offS, pts, offL, offL + type);
         }
     }
 

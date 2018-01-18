@@ -63,7 +63,7 @@ public final class ClipShapeTest {
 
     static boolean TX_SCALE = false;
     static boolean TX_SHEAR = false;
-    
+
     static final boolean TEST_STROKER = true;
     static final boolean TEST_FILLER = true;
 
@@ -111,10 +111,10 @@ public final class ClipShapeTest {
     static final Random RANDOM = new Random(SEED);
 
     static final File OUTPUT_DIR = new File(".");
-    
+
     static final AtomicBoolean isMarlin = new AtomicBoolean();
     static final AtomicBoolean isClipRuntime = new AtomicBoolean();
-    
+
     static {
         Locale.setDefault(Locale.US);
 
@@ -170,7 +170,7 @@ public final class ClipShapeTest {
      */
     public static void main(String[] args) {
         boolean runSlowTests = false;
-        
+
         for (String arg : args) {
             if ("-slow".equals(arg)) {
                 System.out.println("runSlowTests: enabled.");
@@ -371,7 +371,7 @@ public final class ClipShapeTest {
             g2d.setStroke(createStroke(ts));
         }
         g2d.setColor(Color.GRAY);
-        
+
         // Test scale
         if (TX_SCALE) {
             g2d.scale(1.2, 1.2);

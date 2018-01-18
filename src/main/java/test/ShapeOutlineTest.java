@@ -40,22 +40,28 @@ import javax.imageio.ImageIO;
  */
 public class ShapeOutlineTest {
 
-    private final static int N = 10;
+    private final static int N = 1000;
 
     private final static boolean DO_FILL = true;
-    private final static boolean DO_DRAW = true;
+    private final static boolean DO_DRAW = false;
+    private final static boolean DO_DRAW_DASHED = true;
 
+    private final static boolean DO_QUAD = false;
     private final static boolean DO_CIRCLE = true;
 
     private final static double CIRCLE_RADIUS = 1843200.0 * 10.0;
 
-    private final static double RECT_SIZE = 900.0 * 1024 * 5 * 30;
+    private final static double RECT_SIZE = 900.0 * 1024 * 30; // * 5;
 
     private final static double sqrt2 = Math.sqrt(2);
 
+    private final static BasicStroke PLAIN = new BasicStroke(10);
+    private final static BasicStroke DASHED = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 20f,
+            new float[]{10f, 5f}, 0f
+    );
+
     public static void main(String[] args) {
 
-        final float lineStroke = 2f;
         final int size = 1000;
 
         // First display which renderer is tested:
@@ -67,8 +73,7 @@ public class ShapeOutlineTest {
         try {
             renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
             System.out.println(renderer);
-        }
-        catch (Throwable th) {
+        } catch (Throwable th) {
             // may fail with JDK9 jigsaw (jake)
             if (false) {
                 System.err.println("Unable to get RenderingEngine.getInstance()");
@@ -78,6 +83,12 @@ public class ShapeOutlineTest {
 
         System.out.println("ShapeOutlineTest: size = " + size);
 
+        if (DO_CIRCLE || DO_QUAD) {
+            System.out.println("CURVE RADIUS: " + CIRCLE_RADIUS);
+        } else {
+            System.out.println("RECT_SIZE: " + RECT_SIZE);
+        }
+
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 
         final Graphics2D g2d = (Graphics2D) image.getGraphics();
@@ -86,11 +97,6 @@ public class ShapeOutlineTest {
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         g2d.setClip(0, 0, size, size);
-        g2d.setStroke(
-        new BasicStroke(lineStroke, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 20f,
-                        new float[]{10f, 5f}, 0f
-        )
-        );
 
         g2d.setBackground(Color.WHITE);
         g2d.clearRect(0, 0, size, size);
@@ -101,15 +107,15 @@ public class ShapeOutlineTest {
         // with inlined variables: old = 3770 ms
         // Ductus 1.8: 35934.7 ms
         // DMarlinRenderingEngine: 4131.276773 ms.
-
         // CIRCLE:
         // old: 2696.341058 ms.
         // fix: 2442.098762 ms.
-
         // CPU fixed without clipping:  4357.567511 ms.
         // Stroker clipping: 700 ms.
-
         for (int i = 0; i < N; i++) {
+            if (i % 10 == 0) {
+                System.out.println("--- Test [" + i + "] ---");
+            }
             final long start = System.nanoTime();
 
             paint(g2d, size);
@@ -121,15 +127,13 @@ public class ShapeOutlineTest {
 
         try {
             final File file = new File("ShapeOutlineTest-"
-            + (DO_CIRCLE ? "circle" : "rect") + ".png");
+                    + (DO_CIRCLE ? "circle" : (DO_QUAD ? "quad" : "rect")) + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
-        }
-        finally {
+        } finally {
             g2d.dispose();
         }
     }
@@ -143,27 +147,38 @@ public class ShapeOutlineTest {
         }
 
         if (DO_DRAW) {
+            g2d.setColor(Color.GREEN);
+            g2d.setStroke(PLAIN);
+            g2d.draw(path);
+        }
+
+        if (DO_DRAW_DASHED) {
             g2d.setColor(Color.RED);
+            g2d.setStroke(DASHED);
             g2d.draw(path);
         }
     }
 
     private static Shape createPath(final double size) {
         if (DO_CIRCLE) {
-            System.out.println("CIRCLE_RADIUS: " + CIRCLE_RADIUS);
-
             final double c = (0.5 * size - CIRCLE_RADIUS / sqrt2);
 
             return new Ellipse2D.Double(
-            c - CIRCLE_RADIUS,
-            c - CIRCLE_RADIUS,
-            2.0 * CIRCLE_RADIUS,
-            2.0 * CIRCLE_RADIUS
+                    c - CIRCLE_RADIUS,
+                    c - CIRCLE_RADIUS,
+                    2.0 * CIRCLE_RADIUS,
+                    2.0 * CIRCLE_RADIUS
             );
+        } else if (DO_QUAD) {
+            final double c = (0.5 * size - CIRCLE_RADIUS / sqrt2);
+            final double half = 0.5 * size;
 
+            final Path2D p = new Path2D.Double();
+            p.moveTo(-size, -size);
+            p.quadTo(half, 5 * size, size, -size);
+            p.closePath();
+            return p;
         } else {
-            System.out.println("RECT_SIZE: " + RECT_SIZE);
-
             final double half = 0.5 * size;
 
             final Path2D p = new Path2D.Double();

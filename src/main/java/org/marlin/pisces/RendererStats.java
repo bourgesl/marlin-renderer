@@ -300,6 +300,8 @@ public final class RendererStats implements MarlinConst {
         }
 
         if (DO_STATS) {
+            logInfo("addLines: "+ stat_rdr_addLine.count + " edges: "+stat_rdr_edges_count.sum);
+
             for (StatLong stat : statistics) {
                 if (stat.count != 0) {
                     logInfo(stat.toString());

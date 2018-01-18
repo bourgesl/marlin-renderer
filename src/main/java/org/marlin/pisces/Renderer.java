@@ -82,8 +82,8 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
     private static final float CUB_INC_ERR_SUBPIX
         = MarlinProperties.getCubicIncD1() * (SUBPIXEL_POSITIONS_X / 8.0f); // 0.4 pixel
     // scale factor for Y-axis contribution to quad / cubic errors:
-    public static final float SCALE_DY = ((float) SUBPIXEL_POSITIONS_X) / SUBPIXEL_POSITIONS_Y; 
-    
+    public static final float SCALE_DY = ((float) SUBPIXEL_POSITIONS_X) / SUBPIXEL_POSITIONS_Y;
+
     // TestNonAARasterization (JDK-8170879): cubics
     // bad paths (59294/100000 == 59,29%, 94335 bad pixels (avg = 1,59), 3966 warnings (avg = 0,07)
 

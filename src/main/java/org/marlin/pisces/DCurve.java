@@ -46,6 +46,10 @@ final class DCurve {
                 points[2], points[3],
                 points[4], points[5]);
             return;
+        case 4:
+            set(points[0], points[1],
+                points[2], points[3]);
+            return;
         default:
             throw new InternalError("Curves can only be cubic or quadratic");
         }
@@ -60,16 +64,18 @@ final class DCurve {
         final double dy32 = 3.0d * (y3 - y2);
         final double dx21 = 3.0d * (x2 - x1);
         final double dy21 = 3.0d * (y2 - y1);
-        ax = (x4 - x1) - dx32;
+        ax = (x4 - x1) - dx32;  // A = P3 - P0 - 3 (P2 - P1) = (P3 - P0) + 3 (P1 - P2)
         ay = (y4 - y1) - dy32;
-        bx = (dx32 - dx21);
+        bx = (dx32 - dx21);     // B = 3 (P2 - P1) - 3(P1 - P0) = 3 (P2 + P0) - 6 P1
         by = (dy32 - dy21);
-        cx = dx21;
+        cx = dx21;              // C = 3 (P1 - P0)
         cy = dy21;
-        dx = x1;
+        dx = x1;                // D = P0
         dy = y1;
-        dax = 3.0d * ax; day = 3.0d * ay;
-        dbx = 2.0d * bx; dby = 2.0d * by;
+        dax = 3.0d * ax;
+        day = 3.0d * ay;
+        dbx = 2.0d * bx;
+        dby = 2.0d * by;
     }
 
     void set(final double x1, final double y1,
@@ -78,15 +84,37 @@ final class DCurve {
     {
         final double dx21 = (x2 - x1);
         final double dy21 = (y2 - y1);
-        ax = 0.0d; ay = 0.0d;
-        bx = (x3 - x2) - dx21;
+        ax = 0.0d;              // A = 0
+        ay = 0.0d;
+        bx = (x3 - x2) - dx21;  // B = P3 - P0 - 2 P2
         by = (y3 - y2) - dy21;
-        cx = 2.0d * dx21;
+        cx = 2.0d * dx21;       // C = 2 (P2 - P1)
         cy = 2.0d * dy21;
-        dx = x1;
+        dx = x1;                // D = P1
         dy = y1;
-        dax = 0.0d; day = 0.0d;
-        dbx = 2.0d * bx; dby = 2.0d * by;
+        dax = 0.0d;
+        day = 0.0d;
+        dbx = 2.0d * bx;
+        dby = 2.0d * by;
+    }
+
+    void set(final double x1, final double y1,
+             final double x2, final double y2)
+    {
+        final double dx21 = (x2 - x1);
+        final double dy21 = (y2 - y1);
+        ax = 0.0d;              // A = 0
+        ay = 0.0d;
+        bx = 0.0d;              // B = 0
+        by = 0.0d;
+        cx = dx21;              // C = (P2 - P1)
+        cy = dy21;
+        dx = x1;                // D = P1
+        dy = y1;
+        dax = 0.0d;             // USELESS
+        day = 0.0d;
+        dbx = 0.0d;
+        dby = 0.0d;
     }
 
     int dxRoots(final double[] roots, final int off) {
@@ -106,6 +134,16 @@ final class DCurve {
         final double c = cy * dbx - cx * dby;
 
         return DHelpers.quadraticRoots(a, b, c, pts, off);
+    }
+
+    int yPoints(final double[] ts, final int off, final double y)
+    {
+        return DHelpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off, 0.0d, 1.0d);
+    }
+
+    int xPoints(final double[] ts, final int off, final double x)
+    {
+        return DHelpers.cubicRootsInAB(ax, bx, cx, dx - x, ts, off, 0.0d, 1.0d);
     }
 
     // finds points where the first and second derivative are
@@ -140,13 +178,13 @@ final class DCurve {
     int rootsOfROCMinusW(final double[] roots, final int off, final double w2, final double err) {
         // no OOB exception, because by now off<=6, and roots.length >= 10
         assert off <= 6 && roots.length >= 10;
-        
+
         int ret = off;
         final int end = off + perpendiculardfddf(roots, off);
         roots[end] = 1.0d; // always check interval end points
 
         double t0 = 0.0d, ft0 = ROCsq(t0) - w2;
-        
+
         for (int i = off; i <= end; i++) {
             double t1 = roots[i], ft1 = ROCsq(t1) - w2;
             if (ft0 == 0.0d) {

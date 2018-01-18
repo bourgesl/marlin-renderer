@@ -713,7 +713,7 @@ if (USE_NAIVE_SUM) {
             final boolean[] _sides = sidesRight;
             int _recLevel = recLevel;
             _recLevel--;
-            
+
             while(_sides[_recLevel]) {
                 if (_recLevel == 0) {
                     recLevel = 0;

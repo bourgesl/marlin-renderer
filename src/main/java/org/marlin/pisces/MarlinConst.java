@@ -80,10 +80,12 @@ interface MarlinConst {
     // flag to use path simplifier
     static final boolean USE_PATH_SIMPLIFIER = MarlinProperties.isUsePathSimplifier();
 
+    static final boolean DO_CLIP_SUBDIVIDER = MarlinProperties.isDoClipSubdivider();
+
     // flag to enable logs related bounds checks
     static final boolean DO_LOG_BOUNDS = ENABLE_LOGS && false;
 
-    // flag to enable float precision correction 
+    // flag to enable float precision correction
     static final boolean DO_FIX_FLOAT_PREC = true;
 
     // Initial Array sizing (initial context capacity) ~ 450K
@@ -124,7 +126,7 @@ interface MarlinConst {
     // number of subpixels
     public static final int SUBPIXEL_POSITIONS_X = 1 << (SUBPIXEL_LG_POSITIONS_X);
     public static final int SUBPIXEL_POSITIONS_Y = 1 << (SUBPIXEL_LG_POSITIONS_Y);
-    
+
     public static final float MIN_SUBPIXELS = 1 << MIN_SUBPIXEL_LG_POSITIONS;
 
     public static final int MAX_AA_ALPHA

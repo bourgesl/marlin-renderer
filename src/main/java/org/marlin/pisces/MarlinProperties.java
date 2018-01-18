@@ -180,6 +180,10 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.clip.runtime", "true");
     }
 
+    public static boolean isDoClipSubdivider() {
+        return getBoolean("sun.java2d.renderer.clip.subdivider", "false");
+    }
+
     // debugging parameters
 
     public static boolean isDoStats() {
@@ -219,7 +223,7 @@ public final class MarlinProperties {
     }
 
     public static float getCubicIncD1() {
-        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.4f, 0.01f, 2.0f);
+        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.2f, 0.0001f, 2.0f);
     }
 
     public static float getQuadDecD2() {

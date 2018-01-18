@@ -140,13 +140,13 @@ final class Curve {
     int rootsOfROCMinusW(final float[] roots, final int off, final float w2, final float err) {
         // no OOB exception, because by now off<=6, and roots.length >= 10
         assert off <= 6 && roots.length >= 10;
-        
+
         int ret = off;
         final int end = off + perpendiculardfddf(roots, off);
         roots[end] = 1.0f; // always check interval end points
 
         float t0 = 0.0f, ft0 = ROCsq(t0) - w2;
-        
+
         for (int i = off; i <= end; i++) {
             float t1 = roots[i], ft1 = ROCsq(t1) - w2;
             if (ft0 == 0.0f) {
