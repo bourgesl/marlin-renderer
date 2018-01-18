@@ -34,24 +34,19 @@ final class DCurve {
     }
 
     void set(final double[] points, final int type) {
-        switch(type) {
-        case 8:
+        // if instead of switch (perf + most probable cases first)
+        if (type == 8) {
             set(points[0], points[1],
                 points[2], points[3],
                 points[4], points[5],
                 points[6], points[7]);
-            return;
-        case 6:
+        } else if (type == 4) {
+            set(points[0], points[1],
+                points[2], points[3]);
+        } else {
             set(points[0], points[1],
                 points[2], points[3],
                 points[4], points[5]);
-            return;
-        case 4:
-            set(points[0], points[1],
-                points[2], points[3]);
-            return;
-        default:
-            throw new InternalError("Curves can only be cubic or quadratic");
         }
     }
 
@@ -111,10 +106,12 @@ final class DCurve {
         cy = dy21;
         dx = x1;                // D = P1
         dy = y1;
-        dax = 0.0d;             // USELESS
-        day = 0.0d;
-        dbx = 0.0d;
-        dby = 0.0d;
+        if (false) {
+            dax = 0.0d;
+            day = 0.0d;
+            dbx = 0.0d;
+            dby = 0.0d;
+        }
     }
 
     int dxRoots(final double[] roots, final int off) {

@@ -42,6 +42,8 @@ import org.marlin.pisces.DTransformingPathConsumer2D.CurveClipSplitter;
  */
 final class DDasher implements DPathConsumer2D, MarlinConst {
 
+    private static final boolean TRACE = false;
+
     /* huge circle with radius ~ 2E9 only needs 12 subdivision levels */
     static final int REC_LIMIT = 16;
     static final double ERR = 0.01d;
@@ -376,11 +378,11 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
 
             this.cOutCode = outcode1;
         }
-        _lineTo(x1, y1);
-    }
 
-    private void _lineTo(final double x1, final double y1)
-    {
+        if (TRACE) {
+            System.out.println("Dasher _lineTo P0(" + cx0 + ", " + cy0 + ") P1(" + x1 + ", " + y1 + ")");
+        }
+
         final double dx = x1 - cx0;
         final double dy = y1 - cy0;
 
@@ -900,7 +902,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                         // avoid reentrance
                         subdivide = false;
                         // subdivide curve => call lineTo() with subdivided curves:
-                        boolean ret = curveSplitter.splitQuad(cx0, cy0, x1, y1, 
+                        boolean ret = curveSplitter.splitQuad(cx0, cy0, x1, y1,
                                                               x2, y2, orCode, this);
                         // reentrance is done:
                         subdivide = true;
@@ -923,7 +925,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
 
     private void _quadTo(final double x1, final double y1,
                           final double x2, final double y2)
-    {        
+    {
         final double[] _curCurvepts = curCurvepts;
 
         // monotonize quad:

@@ -187,7 +187,7 @@ public final class ClipShapeTest {
         }
 
         if (runSlowTests) {
-            NUM_TESTS = 20000; // or 100000 (very slow)
+            NUM_TESTS = 10000; // or 100000 (very slow)
             USE_DASHES = true;
             USE_VAR_STROKE = true;
         }

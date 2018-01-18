@@ -435,10 +435,13 @@ public final class DMarlinRenderingEngine extends RenderingEngine
             pc2d = rdrCtx.dasher.init(pc2d, dashesD, dashLen, dashphase,
                                       recycleDashes);
 
-            rdrCtx.stroker.disableClipping();
-
             // Curve Monotizer:
             rdrCtx.monotonizer.init(width);
+
+// TODO decide (not ?)
+            if (false) {
+                rdrCtx.stroker.disableClipping();
+            }
 
         } else if (rdrCtx.doClip && (caps != Stroker.CAP_BUTT)) {
             if (DO_TRACE_PATH) {
@@ -1168,10 +1171,10 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinProperties.getQuadDecD2());
 
         logInfo("Renderer settings:");
-        
+
         logInfo("MAX_LEN (CurveClipSplitter)          = "
                 + DTransformingPathConsumer2D.CurveClipSplitter.MAX_LEN); // TODO: use system property
-        
+
         logInfo("CUB_DEC_BND  = " + DRenderer.CUB_DEC_BND);
         logInfo("CUB_INC_BND  = " + DRenderer.CUB_INC_BND);
         logInfo("QUAD_DEC_BND = " + DRenderer.QUAD_DEC_BND);

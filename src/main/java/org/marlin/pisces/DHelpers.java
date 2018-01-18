@@ -152,17 +152,6 @@ final class DHelpers implements MarlinConst {
         return ret;
     }
 
-    static double length(final double[] pts, final int type) {
-        // if instead of switch (perf + most probable cases first)
-        if (type == 4) {
-            return linelen (pts[0], pts[1], pts[2], pts[3]);
-        } else if (type == 8) {
-            return curvelen(pts[0], pts[1], pts[2], pts[3], pts[4], pts[5], pts[6], pts[7]);
-        } else {
-            return quadlen (pts[0], pts[1], pts[2], pts[3], pts[4], pts[5]);
-        }
-    }
-
     static double linelen(final double x0, final double y0,
                           final double x1, final double y1)
     {
@@ -562,10 +551,10 @@ final class DHelpers implements MarlinConst {
                             final double[] pts, final int offL, final int type)
     {
         // if instead of switch (perf + most probable cases first)
-        if (type == 4) {
-            subdivideLineAt(t, src, offS, pts, offL, offL + type);
-        } else if (type == 8) {
+        if (type == 8) {
             subdivideCubicAt(t, src, offS, pts, offL, offL + type);
+        } else if (type == 4) {
+            subdivideLineAt(t, src, offS, pts, offL, offL + type);
         } else {
             subdivideQuadAt(t, src, offS, pts, offL, offL + type);
         }

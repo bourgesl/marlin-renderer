@@ -543,6 +543,9 @@ final class DTransformingPathConsumer2D {
             _clipRect[2] -= margin - rdrOffX;
             _clipRect[3] += margin + rdrOffX;
 
+            // adjust padded clip rectangle:
+            curveSplitter.init();
+
             this.init_corners = true;
             this.gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
 
@@ -648,10 +651,10 @@ final class DTransformingPathConsumer2D {
                         boolean ret;
                         // subdivide curve => callback with subdivided parts:
                         if (outside) {
-                            ret = curveSplitter.splitLine(cox0, coy0, xe, ye, 
+                            ret = curveSplitter.splitLine(cox0, coy0, xe, ye,
                                                           orCode, this);
                         } else {
-                            ret = curveSplitter.splitLine(cx0, cy0, xe, ye, 
+                            ret = curveSplitter.splitLine(cx0, cy0, xe, ye,
                                                           orCode, this);
                         }
                         // reentrance is done:
@@ -747,12 +750,12 @@ final class DTransformingPathConsumer2D {
                         // subdivide curve => callback with subdivided parts:
                         boolean ret;
                         if (outside) {
-                            ret = curveSplitter.splitCurve(cox0, coy0, x1, y1, 
-                                                           x2, y2, xe, ye, 
+                            ret = curveSplitter.splitCurve(cox0, coy0, x1, y1,
+                                                           x2, y2, xe, ye,
                                                            orCode, this);
                         } else {
-                            ret = curveSplitter.splitCurve(cx0, cy0, x1, y1, 
-                                                           x2, y2, xe, ye, 
+                            ret = curveSplitter.splitCurve(cx0, cy0, x1, y1,
+                                                           x2, y2, xe, ye,
                                                            orCode, this);
                         }
                         // reentrance is done:
@@ -809,10 +812,10 @@ final class DTransformingPathConsumer2D {
                         // subdivide curve => callback with subdivided parts:
                         boolean ret;
                         if (outside) {
-                            ret = curveSplitter.splitQuad(cox0, coy0, x1, y1, 
+                            ret = curveSplitter.splitQuad(cox0, coy0, x1, y1,
                                                           xe, ye, orCode, this);
                         } else {
-                            ret = curveSplitter.splitQuad(cx0, cy0, x1, y1, 
+                            ret = curveSplitter.splitQuad(cx0, cy0, x1, y1,
                                                           xe, ye, orCode, this);
                         }
                         // reentrance is done:
@@ -861,12 +864,15 @@ final class DTransformingPathConsumer2D {
 
         private static final int MAX_N_CURVES = 3 * 4;
 
-        // Bounds of the drawing region, at pixel precision.
-        private final double[] clipRect;
+        // clip rectangle (ymin, ymax, xmin, xmax):
+        final double[] clipRect;
+
+        // clip rectangle (ymin, ymax, xmin, xmax) including padding:
+        final double[] clipRectPad = new double[4];
 
         // This is where the curve to be processed is put. We give it
         // enough room to store all curves.
-        final double[] middle = new double[MAX_N_CURVES * 6 + 2];
+        final double[] middle = new double[MAX_N_CURVES * 8 + 2];
         // t values at subdivision points
         private final double[] subdivTs = new double[MAX_N_CURVES];
 
@@ -876,6 +882,24 @@ final class DTransformingPathConsumer2D {
         CurveClipSplitter(final DRendererContext rdrCtx) {
             this.clipRect = rdrCtx.clipRect;
             this.curve = rdrCtx.curve;
+        }
+
+        void init() {
+            // bounds as half-open intervals: minX <= x < maxX and minY <= y < maxY
+            // adjust padded clip rectangle (ymin, ymax, xmin, xmax):
+            // add a rounding error (curve subdivision ~ 0.1px):
+            final double[] _clipRect = clipRect;
+            final double[] _clipRectPad = clipRectPad;
+
+            _clipRectPad[0] = _clipRect[0] - CLIP_RECT_PADDING;
+            _clipRectPad[1] = _clipRect[1] + CLIP_RECT_PADDING;
+            _clipRectPad[2] = _clipRect[2] - CLIP_RECT_PADDING;
+            _clipRectPad[3] = _clipRect[3] + CLIP_RECT_PADDING;
+
+            if (TRACE) {
+                System.out.println("clip: X [" + clipRectPad[2] + " .. " + clipRectPad[3] +"] "
+                                        + "Y ["+ clipRectPad[0] + " .. " + clipRectPad[1] +"]");
+            }
         }
 
         boolean splitLine(final double x0, final double y0,
@@ -911,7 +935,7 @@ final class DTransformingPathConsumer2D {
             if (DHelpers.quadlen(x0, y0, x1, y1, x2, y2) <= MAX_LEN) {
                 return false;
             }
-            
+
             final double[] mid = middle;
             mid[0] = x0;  mid[1] = y0;
             mid[2] = x1;  mid[3] = y1;
@@ -951,10 +975,9 @@ final class DTransformingPathConsumer2D {
             final double[] subTs = subdivTs;
 
             final int nSplits = DHelpers.findClipPoints(curve, mid, subTs, type,
-                                                        outCodeOR, clipRect);
+                                                        outCodeOR, clipRectPad);
 
             if (TRACE) {
-                System.out.println("clip: X [" + clipRect[2] + " .. " + clipRect[3] +"] Y ["+ clipRect[0] + " .. " + clipRect[1] +"]");
                 System.out.println("nSplits: "+ nSplits);
                 System.out.println("subTs: "+Arrays.toString(Arrays.copyOfRange(subTs, 0, nSplits)));
             }
@@ -963,6 +986,7 @@ final class DTransformingPathConsumer2D {
                 return false;
             }
             double prevT = 0.0d;
+
             for (int i = 0, off = 0; i < nSplits; i++, off += type) {
                 final double t = subTs[i];
 
@@ -985,12 +1009,12 @@ final class DTransformingPathConsumer2D {
                                 final int off, final DPathConsumer2D out)
         {
             // if instead of switch (perf + most probable cases first)
-            if (type == 4) {
-                out.lineTo(pts[off + 2], pts[off + 3]);
-            } else if (type == 8) {
+            if (type == 8) {
                 out.curveTo(pts[off + 2], pts[off + 3],
                             pts[off + 4], pts[off + 5],
                             pts[off + 6], pts[off + 7]);
+            } else if (type == 4) {
+                out.lineTo(pts[off + 2], pts[off + 3]);
             } else {
                 out.quadTo(pts[off + 2], pts[off + 3],
                            pts[off + 4], pts[off + 5]);

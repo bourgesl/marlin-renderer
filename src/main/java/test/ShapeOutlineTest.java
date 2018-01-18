@@ -32,18 +32,71 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 
 /**
- * Simple Line rendering test using GeneralPath to enable Pisces / marlin /
- * ductus renderers
- */
+ * Simple Line rendering test using GeneralPath
+
+INFO: sun.java2d.renderer.clip             = true
+INFO: sun.java2d.renderer.clip.subdivider  = false
+
+- RECT_SIZE: 3.072E7
+dashes: [1.0]
+--- Test [0] ---
+paint: duration= 1541.1364509999999 ms.
+paint: duration= 1887.649172 ms.
+paint: duration= 2193.6667429999998 ms.
+paint: duration= 2178.339183 ms.
+paint: duration= 2176.393356 ms.
+paint: duration= 2176.082841 ms.
+paint: duration= 2183.116776 ms.
+paint: duration= 2187.393376 ms.
+paint: duration= 2183.929231 ms.
+
+INFO: sun.java2d.renderer.clip             = true
+INFO: sun.java2d.renderer.clip.subdivider  = true
+
+- RECT_SIZE: 3.072E7
+dashes: [1.0]
+--- Test [0] ---
+paint: duration= 2.070268 ms.
+paint: duration= 2.077565 ms.
+paint: duration= 2.0623929999999997 ms.
+paint: duration= 2.09372 ms.
+paint: duration= 2.06394 ms.
+paint: duration= 2.0717399999999997 ms.
+paint: duration= 2.1033969999999997 ms.
+paint: duration= 2.091361 ms.
+paint: duration= 2.0698149999999997 ms.
+paint: duration= 2.082739 ms.
+
+
+- CURVE RADIUS: 1.8432E7
+dashes: [1.0]
+--- Test [0] ---
+INFO: AAShapePipe: overriding JDK implementation: marlin-renderer TILE patch enabled.
+paint: duration= 5220.190052999999 ms.
+paint: duration= 5295.282114 ms.
+
+--- Test [990] ---
+paint: duration= 2.501419 ms.
+paint: duration= 2.423821 ms.
+paint: duration= 2.4920839999999997 ms.
+paint: duration= 2.430087 ms.
+paint: duration= 2.432111 ms.
+paint: duration= 2.435689 ms.
+paint: duration= 2.426099 ms.
+paint: duration= 2.423371 ms.
+paint: duration= 2.404911 ms.
+paint: duration= 2.400544 ms.
+*/
 public class ShapeOutlineTest {
 
     private final static int N = 1000;
 
     private final static boolean DO_FILL = true;
-    private final static boolean DO_DRAW = false;
+    private final static boolean DO_DRAW = true;
     private final static boolean DO_DRAW_DASHED = true;
 
     private final static boolean DO_QUAD = false;
@@ -57,7 +110,10 @@ public class ShapeOutlineTest {
 
     private final static BasicStroke PLAIN = new BasicStroke(10);
     private final static BasicStroke DASHED = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 20f,
-            new float[]{10f, 5f}, 0f
+// large:
+//            new float[]{10f, 5f}, 0f
+// small:
+            new float[]{1f}, 0f
     );
 
     public static void main(String[] args) {
@@ -87,6 +143,10 @@ public class ShapeOutlineTest {
             System.out.println("CURVE RADIUS: " + CIRCLE_RADIUS);
         } else {
             System.out.println("RECT_SIZE: " + RECT_SIZE);
+        }
+
+        if (DO_DRAW_DASHED) {
+            System.out.println("dashes: "+Arrays.toString(DASHED.getDashArray()));
         }
 
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
