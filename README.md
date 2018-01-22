@@ -6,6 +6,7 @@ Marlin is an open source (GPL2+CP) Java2D RenderingEngine optimized for performa
 Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 
 News:
+* nov 2017: Marlin rocks on [Geoserver benchmarks](https://gmf-test.sig.cloud.camptocamp.net/ms_perfs/): see geoserver (including Marlin 0.8.2) vs geoserver-jai results: it boosts geoserver to achieve MapServer performance !!
 * My personal point of view after javaone: it is your turn to contribute to OpenJDK & OpenJFX: see [openjdk thread](http://mail.openjdk.java.net/pipermail/openjfx-dev/2017-October/020900.html)
 * 4 oct 2017: JavaOne talk slides: [Marlin, a JDK9 Success Story: Vector Graphics on Steroids for Java 2D and JavaFX](https://github.com/bourgesl/bourgesl.github.io/raw/master/javaone2017/slides/javaone-marlin-talk.pdf)
 * may 2017: Marlin & MarlinFX 0.7.5 integrated in OpenJFX10 (enabled by default)
@@ -18,9 +19,12 @@ News:
 Build status
 ============
 Continuous integration by Travis CI (build + tests):
-
-   * Branch use_Unsafe: 
+   * Branch unsafe-dev (jdk6-8): 
+<img src="https://travis-ci.org/bourgesl/marlin-renderer.svg?branch=unsafe-dev" alt="build status"/>
+   * Branch use_Unsafe (jdk6-8): 
 <img src="https://travis-ci.org/bourgesl/marlin-renderer.svg?branch=use_Unsafe" alt="build status"/>
+   * Branch jdk (jdk9+): 
+<img src="https://travis-ci.org/bourgesl/marlin-renderer.svg?branch=openjdk" alt="build status"/>
 
 
 License
@@ -48,6 +52,8 @@ Documentation
 =============
 Documentation on how to use and tune the renderer is available in the [wiki]( https://github.com/bourgesl/marlin-renderer/wiki)
 
+Help is needed to improve the wiki & documentation !
+
 
 Getting in touch
 ================
@@ -59,21 +65,26 @@ Contributing
 ============
 
 Contributions are welcomed, get in touch with us on the [marlin-renderer](https://groups.google.com/forum/#!forum/marlin-renderer) Google Group and share your improvements via pull requests. 
-Since we contribute this renderer into OpenJDK, we accept contributions only from people that have signed the [Oracle Contribution Agreeement](http://www.oracle.com/technetwork/community/oca-486395.html)
+Since we contribute this renderer into OpenJDK, we accept contributions from people that have signed the [Oracle Contribution Agreeement](http://www.oracle.com/technetwork/community/oca-486395.html) (very easy to do)
 
 
 Support our work
 ================
 
-To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, I launched a gofundme campaign: https://www.gofundme.com/marlin-09
+To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, please contribute to the gofundme campaign: https://www.gofundme.com/marlin-09
 
-Please contribute if you appreciate the Marlin renderer to send me a gift in return ...
+Please help if you appreciate the Marlin renderer:
+   * share your benchmark & test results (quality ?)
+   * write documentation should be improved & updated
+   * improve test cases, quality & unit tests
 
 
 Related projects
 ================
 
 [Mapbench](https://github.com/bourgesl/mapbench) provides benchmarking tools based on real world map painted by the [GeoServer](http://geoserver.org/) WMS server
+[Marlin-FX](https://github.com/bourgesl/marlin-fx) provides the Marlin renderer port into JavaFX Prism (shape rasterizer)
+
 
 Acknowledgments:
 ================
