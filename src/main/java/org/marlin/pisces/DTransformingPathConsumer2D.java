@@ -858,7 +858,8 @@ final class DTransformingPathConsumer2D {
 
     static final class CurveClipSplitter {
 
-        static final double MAX_LEN = 100d;
+        static final double LEN_TH = MarlinProperties.getSubdividerMinLength();
+        static final boolean DO_CHECK_LENGTH = (LEN_TH > 0.0d);
 
         private static final boolean TRACE = false;
 
@@ -869,6 +870,7 @@ final class DTransformingPathConsumer2D {
 
         // clip rectangle (ymin, ymax, xmin, xmax) including padding:
         final double[] clipRectPad = new double[4];
+        private boolean init_clipRectPad = false;
 
         // This is where the curve to be processed is put. We give it
         // enough room to store all curves.
@@ -885,6 +887,10 @@ final class DTransformingPathConsumer2D {
         }
 
         void init() {
+            this.init_clipRectPad = true;
+        }
+
+        private void initPaddedClip() {
             // bounds as half-open intervals: minX <= x < maxX and minY <= y < maxY
             // adjust padded clip rectangle (ymin, ymax, xmin, xmax):
             // add a rounding error (curve subdivision ~ 0.1px):
@@ -897,8 +903,8 @@ final class DTransformingPathConsumer2D {
             _clipRectPad[3] = _clipRect[3] + CLIP_RECT_PADDING;
 
             if (TRACE) {
-                System.out.println("clip: X [" + clipRectPad[2] + " .. " + clipRectPad[3] +"] "
-                                        + "Y ["+ clipRectPad[0] + " .. " + clipRectPad[1] +"]");
+                System.out.println("clip: X [" + _clipRectPad[2] + " .. " + _clipRectPad[3] +"] "
+                                        + "Y ["+ _clipRectPad[0] + " .. " + _clipRectPad[1] +"]");
             }
         }
 
@@ -911,7 +917,7 @@ final class DTransformingPathConsumer2D {
                 System.out.println("divLine P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ")");
             }
 
-            if (DHelpers.linelen(x0, y0, x1, y1) <= MAX_LEN) {
+            if (DO_CHECK_LENGTH && DHelpers.fastLineLen(x0, y0, x1, y1) <= LEN_TH) {
                 return false;
             }
 
@@ -932,7 +938,7 @@ final class DTransformingPathConsumer2D {
                 System.out.println("divQuad P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ")");
             }
 
-            if (DHelpers.quadlen(x0, y0, x1, y1, x2, y2) <= MAX_LEN) {
+            if (DO_CHECK_LENGTH && DHelpers.fastQuadLen(x0, y0, x1, y1, x2, y2) <= LEN_TH) {
                 return false;
             }
 
@@ -955,7 +961,7 @@ final class DTransformingPathConsumer2D {
                 System.out.println("divCurve P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ") P3(" + x3 + ", " + y3 + ")");
             }
 
-            if (DHelpers.curvelen(x0, y0, x1, y1, x2, y2, x3, y3) <= MAX_LEN) {
+            if (DO_CHECK_LENGTH && DHelpers.fastCurvelen(x0, y0, x1, y1, x2, y2, x3, y3) <= LEN_TH) {
                 return false;
             }
 
@@ -973,6 +979,11 @@ final class DTransformingPathConsumer2D {
         {
             final double[] mid = middle;
             final double[] subTs = subdivTs;
+
+            if (init_clipRectPad) {
+                init_clipRectPad = false;
+                initPaddedClip();
+            }
 
             final int nSplits = DHelpers.findClipPoints(curve, mid, subTs, type,
                                                         outCodeOR, clipRectPad);
@@ -1160,265 +1171,6 @@ final class DTransformingPathConsumer2D {
         @Override
         public long getNativeConsumer() {
             throw new InternalError("Not using a native peer");
-        }
-    }
-
-    static final class CurveClipDivider {
-
-        /* huge circle with radius ~ 2E9 needs 24 subdivision levels to be smaller than 1024 pixel long */
-        private static final int REC_LIMIT = 32;
-
-        private static final double MAX_LEN = 1d;
-
-        private static final boolean TRACE = false;
-
-        // Bounds of the drawing region, at pixel precision.
-        private final double[] clipRect;
-
-        // Copied from Dasher.LengthIterator to subdivide curves in half:
-
-        // Holds the curves at various levels of the recursion. The root
-        // (i.e. the original curve) is at recCurveStack[0] (but then it
-        // gets subdivided, the left half is put at 1, so most of the time
-        // only the right half of the original curve is at 0)
-        private final double[][] recCurveStack; // dirty
-        // sidesRight[i] indicates whether the node at level i+1 in the path from
-        // the root to the current leaf is a left or right child of its parent.
-        private final boolean[] sidesRight; // dirty
-
-        private int curveType;
-
-        // the current level in the recursion tree. 0 is the root. limit
-        // is the deepest possible leaf.
-        private int recLevel;
-        private boolean done;
-
-        private final int[] outCodesS; // dirty
-        private final int[] outCodesE; // dirty
-        private final int[] sideOutcodes; // dirty
-
-        CurveClipDivider(final DRendererContext rdrCtx) {
-            this.clipRect = rdrCtx.clipRect;
-            this.recCurveStack = new double[REC_LIMIT + 1][8];
-            this.sidesRight = new boolean[REC_LIMIT];
-            this.outCodesS = new int[REC_LIMIT];
-            this.outCodesE = new int[REC_LIMIT];
-            this.sideOutcodes = new int[REC_LIMIT];
-            this.recLevel = 0;
-        }
-
-        void divLine(final double x0, final double y0,
-                     final double x1, final double y1,
-                     final DPathConsumer2D out)
-        {
-            final double[] _curCurvepts = recCurveStack[0];
-            _curCurvepts[0] = x0;  _curCurvepts[1] = y0;
-            _curCurvepts[2] = x1;  _curCurvepts[3] = y1;
-
-            if (TRACE) {
-                System.out.println("divLine P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ")");
-            }
-            somethingTo(4, out);
-        }
-
-        void divQuad(final double x0, final double y0,
-                     final double x1, final double y1,
-                     final double x2, final double y2,
-                     final DPathConsumer2D out)
-        {
-            final double[] _curCurvepts = recCurveStack[0];
-            _curCurvepts[0] = x0;  _curCurvepts[1] = y0;
-            _curCurvepts[2] = x1;  _curCurvepts[3] = y1;
-            _curCurvepts[4] = x2;  _curCurvepts[5] = y2;
-
-            if (TRACE) {
-                System.out.println("divQuad P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ")");
-            }
-            somethingTo(6, out);
-        }
-
-        void divCurve(final double x0, final double y0,
-                      final double x1, final double y1,
-                      final double x2, final double y2,
-                      final double x3, final double y3,
-                      final int outcode0, final int outcode3,
-                      final int outCodeOR,
-                      final DPathConsumer2D out)
-        {
-            if (TRACE) {
-                System.out.println("divCurve P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ") P3(" + x3 + ", " + y3 + ")");
-            }
-
-            final double[] _curCurvepts = recCurveStack[0];
-            _curCurvepts[0] = x0;  _curCurvepts[1] = y0;
-            _curCurvepts[2] = x1;  _curCurvepts[3] = y1;
-            _curCurvepts[4] = x2;  _curCurvepts[5] = y2;
-            _curCurvepts[6] = x3;  _curCurvepts[7] = y3;
-
-            outCodesS[0]    = outcode0;
-            outCodesE[0]    = outcode3;
-
-            somethingTo(8, out);
-        }
-
-        private void somethingTo(final int type,
-                                 final DPathConsumer2D out)
-        {
-            this.curveType = type;
-            this.recLevel = 0;
-            goLeft();
-
-            if (recLevel > 0) {
-                this.sidesRight[0] = false;
-                this.done = false;
-            } else {
-                // the root of the tree is a leaf so we're done.
-                this.sidesRight[0] = true;
-                this.done = true;
-            }
-
-            do {
-                // merge subcurves ?
-                emitCurrent(type, recCurveStack[recLevel], 0, out);
-                if (done) {
-                    return;
-                }
-                goToNextLeaf();
-            } while (!done);
-        }
-
-        static void emitCurrent(final int type, final double[] pts,
-                                final int off, final DPathConsumer2D out)
-        {
-            switch (type) {
-                case 4:
-                    out.lineTo(pts[off + 2], pts[off + 3]);
-                    return;
-                case 8:
-                    out.curveTo(pts[off + 2], pts[off + 3],
-                                pts[off + 4], pts[off + 5],
-                                pts[off + 6], pts[off + 7]);
-                    return;
-                case 6:
-                    out.quadTo(pts[off + 2], pts[off + 3],
-                               pts[off + 4], pts[off + 5]);
-                    return;
-                default:
-                    throw new InternalError("Unsupported curve type");
-            }
-        }
-
-        // go to the leftmost node from the current node. Return its length.
-        private void goLeft() {
-            final double len = onLeaf();
-            if (TRACE) {
-                System.out.println("goLeft: level: " + recLevel + " len: " + len);
-            }
-
-            if (len < 0.0d) {
-                final double[] _curCurvepts = recCurveStack[recLevel];
-                // left  curve part at recLevel + 1
-                // right curve part in recLevel
-                DHelpers.subdivide(_curCurvepts, recCurveStack[recLevel + 1], _curCurvepts, curveType);
-
-                sidesRight[recLevel] = false;
-                final int outcodeS = outCodesS[recLevel];
-                final int outcodeE = outCodesE[recLevel];
-                final int outcodeC = DHelpers.outcode(_curCurvepts[0], _curCurvepts[1], clipRect);
-
-                // left
-                outCodesS[recLevel + 1] = outcodeS;
-                outCodesE[recLevel + 1] = outcodeC;
-                // right
-                outCodesS[recLevel] = outcodeC;
-                outCodesE[recLevel] = outcodeE;
-
-                recLevel++;
-                goLeft();
-            }
-        }
-
-        // go to the next leaf (in an inorder traversal) in the recursion tree
-        // preconditions: must be on a leaf, and that leaf must not be the root.
-        private void goToNextLeaf() {
-            // We must go to the first ancestor node that has an unvisited
-            // right child.
-            final boolean[] _sides = sidesRight;
-            int _recLevel = recLevel;
-            _recLevel--;
-
-            while (_sides[_recLevel]) {
-                if (_recLevel == 0) {
-                    recLevel = 0;
-                    done = true;
-                    return;
-                }
-                _recLevel--;
-            }
-
-            _sides[_recLevel] = true;
-            // optimize arraycopy (8 values faster than 6 = type):
-            // Move right part to next level:
-            final int r = _recLevel;
-            final int n = ++_recLevel;
-            System.arraycopy(recCurveStack[r], 0,
-                             recCurveStack[n], 0, 8);
-            // right
-            outCodesS[n] = outCodesS[r];
-            outCodesE[n] = outCodesE[r];
-            recLevel = _recLevel;
-            goLeft();
-        }
-
-        // this is a bit of a hack. It returns -1 if we're not on a leaf, and
-        // the length of the leaf if we are on a leaf.
-        private double onLeaf() {
-            final double[] _curve = recCurveStack[recLevel];
-            final int _curveType = curveType;
-
-            boolean same;
-            double polyLen;
-
-            final int outcodeS = outCodesS[recLevel];
-            final int outcodeE = outCodesE[recLevel];
-            int outcode1, outcode2;
-            int sideCode;
-
-            switch (_curveType) {
-                case 4:
-                    polyLen = DHelpers.linelen(_curve[0], _curve[1], _curve[2], _curve[3]);
-                    sideCode = (outcodeS & outcodeE);
-                    same = (outcodeS == outcodeE);
-                    break;
-                case 8:
-                    polyLen = DHelpers.curvelen(_curve[0], _curve[1], _curve[2], _curve[3], _curve[4], _curve[5], _curve[6], _curve[7]);
-                    outcode1 = DHelpers.outcode(_curve[2], _curve[3], clipRect);
-                    outcode2 = DHelpers.outcode(_curve[4], _curve[5], clipRect);
-                    sideCode = (outcodeS  & outcode1 & outcode2 & outcodeE);
-                    same = ((outcodeS == outcode1) && (outcode1 == outcode2) && (outcode2 == outcodeE));
-                    break;
-                case 6:
-                    polyLen = DHelpers.quadlen(_curve[0], _curve[1], _curve[2], _curve[3], _curve[4], _curve[5]);
-                    outcode1 = DHelpers.outcode(_curve[2], _curve[3], clipRect);
-                    sideCode = (outcodeS  & outcode1 & outcodeE);
-                    same = ((outcodeS == outcode1) && (outcode1 == outcodeE));
-                    break;
-                default:
-                    same = false;
-                    polyLen = 0;
-                    sideCode = 0;
-            }
-            if (TRACE) {
-                System.out.println("polyLen: " + polyLen + " same outcode: " + same + " sideCode: "+sideCode);
-            }
-
-            sideOutcodes[recLevel] = sideCode; // share & use
-
-            if ((sideCode != 0) || same || (polyLen <= MAX_LEN) || (recLevel == REC_LIMIT)) {
-                // always return raw length = 1/2 (polyLen + lineLen):
-                return polyLen;
-            }
-            return -1.0d;
         }
     }
 }

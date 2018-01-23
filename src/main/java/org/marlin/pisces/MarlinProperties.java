@@ -184,6 +184,10 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.clip.subdivider", "false");
     }
 
+    public static float getSubdividerMinLength() {
+        return getFloat("sun.java2d.renderer.clip.subdivider.minLength", 100.0f, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+    }
+
     // debugging parameters
 
     public static boolean isDoStats() {

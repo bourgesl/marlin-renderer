@@ -46,6 +46,9 @@ import sun.security.action.GetPropertyAction;
 public final class DMarlinRenderingEngine extends RenderingEngine
                                           implements MarlinConst
 {
+    // slower ~ 10%
+    static final boolean DISABLE_STROKER_CLIPPING = false;
+
     static final boolean DO_TRACE_PATH = false;
 
     static final boolean TEST_CLIP = false;
@@ -438,8 +441,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
             // Curve Monotizer:
             rdrCtx.monotonizer.init(width);
 
-// TODO decide (not ?)
-            if (false) {
+            if (DISABLE_STROKER_CLIPPING) {
                 rdrCtx.stroker.disableClipping();
             }
 
@@ -1145,6 +1147,8 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
         logInfo("sun.java2d.renderer.clip.subdivider  = "
                 + MarlinProperties.isDoClipSubdivider());
+        logInfo("sun.java2d.renderer.clip.subdivider.minLength = "
+                + MarlinProperties.getSubdividerMinLength());
 
         // debugging parameters
         logInfo("sun.java2d.renderer.doStats          = "
@@ -1171,10 +1175,6 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinProperties.getQuadDecD2());
 
         logInfo("Renderer settings:");
-
-        logInfo("MAX_LEN (CurveClipSplitter)          = "
-                + DTransformingPathConsumer2D.CurveClipSplitter.MAX_LEN); // TODO: use system property
-
         logInfo("CUB_DEC_BND  = " + DRenderer.CUB_DEC_BND);
         logInfo("CUB_INC_BND  = " + DRenderer.CUB_INC_BND);
         logInfo("QUAD_DEC_BND = " + DRenderer.QUAD_DEC_BND);

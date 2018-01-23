@@ -152,6 +152,16 @@ final class DHelpers implements MarlinConst {
         return ret;
     }
 
+    static double fastLineLen(final double x0, final double y0,
+                              final double x1, final double y1)
+    {
+        final double dx = x1 - x0;
+        final double dy = y1 - y0;
+
+        // use manhattan norm:
+        return Math.abs(dx) + Math.abs(dy);
+    }
+
     static double linelen(final double x0, final double y0,
                           final double x1, final double y1)
     {
@@ -160,13 +170,44 @@ final class DHelpers implements MarlinConst {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
+    static double fastQuadLen(final double x0, final double y0,
+                              final double x1, final double y1,
+                              final double x2, final double y2)
+    {
+        final double dx1 = x1 - x0;
+        final double dx2 = x2 - x1;
+        final double dy1 = y1 - y0;
+        final double dy2 = y2 - y1;
+
+        // use manhattan norm:
+        return Math.abs(dx1) + Math.abs(dx2)
+             + Math.abs(dy1) + Math.abs(dy2);
+    }
+
     static double quadlen(final double x0, final double y0,
                           final double x1, final double y1,
                           final double x2, final double y2)
     {
         return (linelen(x0, y0, x1, y1)
-                + linelen(x1, y1, x2, y2)
-                + linelen(x0, y0, x2, y2)) / 2.0d;
+              + linelen(x1, y1, x2, y2)
+              + linelen(x0, y0, x2, y2)) / 2.0d;
+    }
+
+    static double fastCurvelen(final double x0, final double y0,
+                               final double x1, final double y1,
+                               final double x2, final double y2,
+                               final double x3, final double y3)
+    {
+        final double dx1 = x1 - x0;
+        final double dx2 = x2 - x1;
+        final double dx3 = x3 - x2;
+        final double dy1 = y1 - y0;
+        final double dy2 = y2 - y1;
+        final double dy3 = y3 - y2;
+
+        // use manhattan norm:
+        return Math.abs(dx1) + Math.abs(dx2) + Math.abs(dx3)
+             + Math.abs(dy1) + Math.abs(dy2) + Math.abs(dy3);
     }
 
     static double curvelen(final double x0, final double y0,
@@ -175,9 +216,9 @@ final class DHelpers implements MarlinConst {
                            final double x3, final double y3)
     {
         return (linelen(x0, y0, x1, y1)
-                + linelen(x1, y1, x2, y2)
-                + linelen(x2, y2, x3, y3)
-                + linelen(x0, y0, x3, y3)) / 2.0d;
+              + linelen(x1, y1, x2, y2)
+              + linelen(x2, y2, x3, y3)
+              + linelen(x0, y0, x3, y3)) / 2.0d;
     }
 
     // finds values of t where the curve in pts should be subdivided in order
@@ -232,11 +273,9 @@ final class DHelpers implements MarlinConst {
             ret += c.infPoints(ts, ret);
         }
 
-//        if (w2 > 0.0d) {
         // now we must subdivide at points where one of the offset curves will have
         // a cusp. This happens at ts where the radius of curvature is equal to w.
         ret += c.rootsOfROCMinusW(ts, ret, w2, 0.0001d);
-//        }
 
         ret = filterOutNotInAB(ts, 0, ret, 0.0001d, 0.9999d);
         isort(ts, ret);
@@ -268,7 +307,6 @@ final class DHelpers implements MarlinConst {
         if ((outCodeOR & OUTCODE_RIGHT) != 0) {
             ret += curve.xPoints(ts, ret, clipRect[3]);
         }
-
         isort(ts, ret);
         return ret;
     }
@@ -293,13 +331,13 @@ final class DHelpers implements MarlinConst {
     }
 
     static void isort(final double[] a, final int len) {
-        for (int i = 1, end = len; i < end; i++) {
-            double ai = a[i];
-            int j = i - 1;
+        for (int i = 1, j; i < len; i++) {
+            final double ai = a[i];
+            j = i - 1;
             for (; j >= 0 && a[j] > ai; j--) {
-                a[j+1] = a[j];
+                a[j + 1] = a[j];
             }
-            a[j+1] = ai;
+            a[j + 1] = ai;
         }
     }
 

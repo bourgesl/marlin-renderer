@@ -156,6 +156,7 @@ final class DCurve {
         final double b = 3.0d * (dax*dbx + day*dby);
         final double c = 2.0d * (dax*cx + day*cy) + dbx*dbx + dby*dby;
         final double d = dbx*cx + dby*cy;
+
         return DHelpers.cubicRootsInAB(a, b, c, d, pts, off, 0.0d, 1.0d);
     }
 
