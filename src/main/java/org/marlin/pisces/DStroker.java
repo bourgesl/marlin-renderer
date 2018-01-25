@@ -105,7 +105,6 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     private boolean monotonize;
 
     private boolean subdivide = DO_CLIP_SUBDIVIDER;
-
     private final CurveClipSplitter curveSplitter;
 
     /**
@@ -195,9 +194,10 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             _clipRect[3] += margin + rdrOffX;
             this.clipRect = _clipRect;
 
-            // adjust padded clip rectangle:
-            curveSplitter.init();
-
+            if (MarlinConst.DO_CLIP_SUBDIVIDER) {
+                // adjust padded clip rectangle:
+                curveSplitter.init();
+            }
         } else {
             this.clipRect = null;
             this.cOutCode = 0;

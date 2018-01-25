@@ -513,6 +513,7 @@ final class DTransformingPathConsumer2D {
         // The current point OUTSIDE
         private double cox0, coy0;
 
+        private boolean subdivide = MarlinConst.DO_CLIP_SUBDIVIDER;
         private final CurveClipSplitter curveSplitter;
 
         PathClipFilter(final DRendererContext rdrCtx) {
@@ -543,8 +544,10 @@ final class DTransformingPathConsumer2D {
             _clipRect[2] -= margin - rdrOffX;
             _clipRect[3] += margin + rdrOffX;
 
-            // adjust padded clip rectangle:
-            curveSplitter.init();
+            if (MarlinConst.DO_CLIP_SUBDIVIDER) {
+                // adjust padded clip rectangle:
+                curveSplitter.init();
+            }
 
             this.init_corners = true;
             this.gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
@@ -629,8 +632,6 @@ final class DTransformingPathConsumer2D {
             this.cx0 = x0;
             this.cy0 = y0;
         }
-
-        private boolean subdivide = MarlinConst.DO_CLIP_SUBDIVIDER;
 
         @Override
         public void lineTo(final double xe, final double ye) {
