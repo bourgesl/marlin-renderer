@@ -76,7 +76,7 @@ public final class ClipShapeTest {
     static final int TESTH = 100;
 
     // shape settings:
-    static final ShapeMode SHAPE_MODE = ShapeMode.FIFTY_LINE_POLYS;
+    static final ShapeMode SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
     static final boolean SHAPE_REPEAT = true;
 
     // dump path on console:
@@ -183,6 +183,14 @@ public final class ClipShapeTest {
             if ("-doShear".equals(arg)) {
                 System.out.println("doShear: enabled.");
                 TX_SHEAR = true;
+            }
+            if ("-doDash".equals(arg)) {
+                System.out.println("doDash: enabled.");
+                USE_DASHES = true;
+            }
+            if ("-doVarStroke".equals(arg)) {
+                System.out.println("doVarStroke: enabled.");
+                USE_VAR_STROKE = true;
             }
         }
 

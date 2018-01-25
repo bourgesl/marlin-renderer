@@ -113,7 +113,9 @@ public class ShapeOutlineTest {
 // large:
 //            new float[]{10f, 5f}, 0f
 // small:
-            new float[]{1f}, 0f
+//            new float[]{1f}, 0f
+// complex:
+            new float[]{0.17f, 0.39f, 0.137f, 0.487f}, 0.733333f
     );
 
     public static void main(String[] args) {

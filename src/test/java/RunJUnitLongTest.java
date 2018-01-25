@@ -37,6 +37,11 @@ public class RunJUnitLongTest {
     }
 
     @Test
+    public void clipTestsDashes() {
+        ClipShapeTest.main(new String[]{"-doDash"});
+    }
+
+    @Test
     @Ignore
     public void clipTestsDoScale() {
         ClipShapeTest.main(new String[]{"-doScale"});
