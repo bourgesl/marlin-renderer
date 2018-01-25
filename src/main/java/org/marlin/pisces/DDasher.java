@@ -90,6 +90,13 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     // flag to recycle dash array copy
     boolean recycleDashes;
 
+    // We don't emit the first dash right away. If we did, caps would be
+    // drawn on it, but we need joins to be drawn if there's a closePath()
+    // So, we store the path elements that make up the first dash in the
+    // buffer below.
+    private double[] firstSegmentsBuffer; // dynamic array
+    private int firstSegidx;
+
     // dashes ref (dirty)
     final DoubleArrayCache.Reference dashes_ref;
     // firstSegmentsBuffer ref (dirty)
@@ -103,9 +110,13 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
 
     private boolean subdivide = DO_CLIP_SUBDIVIDER;
 
+    private final LengthIterator li = new LengthIterator();
+
     private final CurveClipSplitter curveSplitter;
 
     private double cycleLen;
+    private boolean outside;
+    private double totalSkipLen;
 
     /**
      * Constructs a <code>DDasher</code>.
@@ -260,6 +271,8 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         if (clipRect != null) {
             final int outcode = DHelpers.outcode(x0, y0, clipRect);
             this.cOutCode = outcode;
+            this.outside = false;
+            this.totalSkipLen = 0.0d;
         }
     }
 
@@ -291,12 +304,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         }
         firstSegidx = 0;
     }
-    // We don't emit the first dash right away. If we did, caps would be
-    // drawn on it, but we need joins to be drawn if there's a closePath()
-    // So, we store the path elements that make up the first dash in the
-    // buffer below.
-    private double[] firstSegmentsBuffer; // dynamic array
-    private int firstSegidx;
 
     // precondition: pts must be in relative coordinates (relative to x0,y0)
     private void goTo(final double[] pts, final int off, final int type,
@@ -385,6 +392,12 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             }
 
             this.cOutCode = outcode1;
+
+            if (this.outside) {
+                this.outside = false;
+                // Adjust current index, phase & dash:
+                skipLen();
+            }
         }
         _lineTo(x1, y1);
     }
@@ -472,8 +485,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         }
     }
 
-    private void skipLineTo(final double x1, final double y1)
-    {
+    private void skipLineTo(final double x1, final double y1) {
         final double dx = x1 - cx0;
         final double dy = y1 - cy0;
 
@@ -482,118 +494,126 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             return;
         }
         len = Math.sqrt(len);
-        // Adjust current index, phase & dash:
-        skipLen(len);
+
+        if (TRACE) {
+            System.out.println("skipLineTo: length = "+len);
+        }
+
+        // Accumulate skipped length:
+        this.outside = true;
+        this.totalSkipLen += len;
 
         this.cx0 = x1;
         this.cy0 = y1;
     }
 
-    public void skipLen(final double orig_len) {
-        this.needsMoveTo = true;
-        this.starting = false;
+    public void skipLen() {
+        final double initial_len = this.totalSkipLen;
+        this.totalSkipLen = 0.0d;
+
+        if (TRACE) {
+            System.out.println("skipLen: length = "+initial_len);
+        }
 
         final double[] _dash = dash;
         final int _dashLen = this.dashLen;
 
-        int n_idx = idx;
-        boolean n_dashOn = dashOn;
-        double n_phase = phase;
-
-        double n_len = orig_len;
+        int _idx = idx;
+        boolean _dashOn = dashOn;
+        double _phase = phase;
+        double _len = initial_len;
 
         // -2 to ensure having 2 iterations of the post-loop
         // to compensate the remaining phase
-        final long fullcycles = (long)Math.floor(n_len / cycleLen) - 2L;
+        final long fullcycles = (long)Math.floor(_len / cycleLen) - 2L;
 
         if (fullcycles > 0L) {
-            final double totLen = fullcycles * cycleLen;
-            n_len -= totLen;
+            _len -= cycleLen * fullcycles;
 
             final long iterations = fullcycles * _dashLen;
-            n_idx = (int) (iterations + n_idx) % _dashLen;
-            n_dashOn = (iterations + (n_dashOn ? 1 : 0) & 1L) == 1L;
+            _idx = (int) (iterations + _idx) % _dashLen;
+            _dashOn = (iterations + (_dashOn ? 1L : 0L) & 1L) == 1L;
         }
 
         double leftInThisDashSegment, d;
 
         while (true) {
-            d = _dash[n_idx];
-            leftInThisDashSegment = d - n_phase;
+            d = _dash[_idx];
+            leftInThisDashSegment = d - _phase;
 
-            if (n_len <= leftInThisDashSegment) {
+            if (_len <= leftInThisDashSegment) {
                 // Advance phase within current dash segment
-                n_phase += n_len;
+                _phase += _len;
 
                 // TODO: compare double values using epsilon:
-                if (n_len == leftInThisDashSegment) {
-                    n_phase = 0.0d;
-                    n_idx = (n_idx + 1) % _dashLen;
-                    n_dashOn = !n_dashOn;
+                if (_len == leftInThisDashSegment) {
+                    _phase = 0.0d;
+                    _idx = (_idx + 1) % _dashLen;
+                    _dashOn = !_dashOn;
                 }
                 break;
             }
 
-            n_len -= leftInThisDashSegment;
+            _len -= leftInThisDashSegment;
             // Advance to next dash segment
-            n_idx = (n_idx + 1) % _dashLen;
-            n_dashOn = !n_dashOn;
-            n_phase = 0.0d;
+            _idx = (_idx + 1) % _dashLen;
+            _dashOn = !_dashOn;
+            _phase = 0.0d;
         }
 
         if (CHECK_DASH) {
-            double len = orig_len;
-
-            int _idx = idx;
-            boolean _dashOn = dashOn;
-            double _phase = phase;
+            int o_idx = idx;
+            boolean o_dashOn = dashOn;
+            double o_phase = phase;
+            double o_len = initial_len;
 
             while (true) {
-                d = _dash[_idx];
-                leftInThisDashSegment = d - _phase;
+                d = _dash[o_idx];
+                leftInThisDashSegment = d - o_phase;
 
-                if (len <= leftInThisDashSegment) {
+                if (o_len <= leftInThisDashSegment) {
                     // Advance phase within current dash segment
-                    _phase += len;
+                    o_phase += o_len;
 
                     // TODO: compare double values using epsilon:
-                    if (len == leftInThisDashSegment) {
-                        _phase = 0.0d;
-                        _idx = (_idx + 1) % _dashLen;
-                        _dashOn = !_dashOn;
+                    if (o_len == leftInThisDashSegment) {
+                        o_phase = 0.0d;
+                        o_idx = (o_idx + 1) % _dashLen;
+                        o_dashOn = !o_dashOn;
                     }
                     break;
                 }
 
-                len -= leftInThisDashSegment;
+                o_len -= leftInThisDashSegment;
                 // Advance to next dash segment
-                _idx = (_idx + 1) % _dashLen;
-                _dashOn = !_dashOn;
-                _phase = 0.0d;
+                o_idx = (o_idx + 1) % _dashLen;
+                o_dashOn = !o_dashOn;
+                o_phase = 0.0d;
             }
 
-            final double rel_phase_err = Math.abs(_phase - n_phase) / _phase;
+            final double rel_phase_err = Math.abs(o_phase - _phase) / o_phase;
 
-            if (_idx != n_idx || _dashOn != n_dashOn || rel_phase_err > 1e-5) {
-                System.out.println("CHECK_DASH: orig_len [" + orig_len + "] dash_len ["+_dashLen+"]");
-                if (_idx != n_idx) {
-                    System.out.println("CHECK_DASH: _idx [" + _idx + "] n_idx [" + n_idx + "]");
+            if (o_idx != _idx || o_dashOn != _dashOn || rel_phase_err > 1e-5) {
+                System.out.println("CHECK_DASH: orig_len [" + initial_len + "] dash_len ["+_dashLen+"]");
+                if (o_idx != _idx) {
+                    System.out.println("CHECK_DASH: _idx [" + o_idx + "] n_idx [" + _idx + "]");
                 }
-                if (_dashOn != n_dashOn) {
-                    System.out.println("CHECK_DASH: _dashOn [" + _dashOn + "] n_dashOn [" + n_dashOn + "]");
+                if (o_dashOn != _dashOn) {
+                    System.out.println("CHECK_DASH: _dashOn [" + o_dashOn + "] n_dashOn [" + _dashOn + "]");
                 }
                 if (rel_phase_err > 1e-5) {
-                    System.out.println("CHECK_DASH: _phase [" + _phase + "] n_phase [" + n_phase + "]");
+                    System.out.println("CHECK_DASH: _phase [" + o_phase + "] n_phase [" + _phase + "]");
                 }
             }
         }
+        // Fix initial move:
+        this.needsMoveTo = true;
+        this.starting = false;
         // Save local state:
-        idx = n_idx;
-        dashOn = n_dashOn;
-        phase = n_phase;
+        idx = _idx;
+        dashOn = _dashOn;
+        phase = _phase;
     }
-
-    private final LengthIterator li = new LengthIterator();
 
     // preconditions: curCurvepts must be an array of length at least 2 * type,
     // that contains the curve we want to dash in the first type elements
@@ -661,13 +681,16 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         _li.initializeIterationOnCurve(_curCurvepts, type);
 
         // In contrary to somethingTo(),
-        // just estimate properly curve length
+        // just estimate properly the curve length:
         final double len = _li.totalLength();
 
-//        System.out.println("skipSomethingTo: length = "+len);
+        if (TRACE) {
+            System.out.println("skipSomethingTo: length = "+len);
+        }
 
-        // Adjust current index, phase & dash:
-        skipLen(len);
+        // Accumulate skipped length:
+        this.outside = true;
+        this.totalSkipLen += len;
     }
 
     private static boolean pointCurve(final double[] curve, final int type) {
@@ -1015,6 +1038,12 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             }
 
             this.cOutCode = outcode3;
+
+            if (this.outside) {
+                this.outside = false;
+                // Adjust current index, phase & dash:
+                skipLen();
+            }
         }
         _curveTo(x1, y1, x2, y2, x3, y3);
     }
@@ -1096,6 +1125,12 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             }
 
             this.cOutCode = outcode2;
+
+            if (this.outside) {
+                this.outside = false;
+                // Adjust current index, phase & dash:
+                skipLen();
+            }
         }
         _quadTo(x1, y1, x2, y2);
     }
