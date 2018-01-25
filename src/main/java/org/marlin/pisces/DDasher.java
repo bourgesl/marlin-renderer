@@ -42,16 +42,6 @@ import org.marlin.pisces.DTransformingPathConsumer2D.CurveClipSplitter;
  */
 final class DDasher implements DPathConsumer2D, MarlinConst {
 
-    static final boolean CHECK_DASH = false;
-
-    static {
-        if (CHECK_DASH) {
-            System.out.println("CHECK_DASH: "+CHECK_DASH);
-        }
-    }
-
-    private static final boolean TRACE = false;
-
     /* huge circle with radius ~ 2E9 only needs 12 subdivision levels */
     static final int REC_LIMIT = 16;
     static final double ERR = 0.01d;
@@ -402,12 +392,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         _lineTo(x1, y1);
     }
 
-    private void _lineTo(final double x1, final double y1)
-    {
-        if (TRACE) {
-            System.out.println("Dasher _lineTo P0(" + cx0 + ", " + cy0 + ") P1(" + x1 + ", " + y1 + ")");
-        }
-
+    private void _lineTo(final double x1, final double y1) {
         final double dx = x1 - cx0;
         final double dy = y1 - cy0;
 
@@ -495,10 +480,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         }
         len = Math.sqrt(len);
 
-        if (TRACE) {
-            System.out.println("skipLineTo: length = "+len);
-        }
-
         // Accumulate skipped length:
         this.outside = true;
         this.totalSkipLen += len;
@@ -508,12 +489,8 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     }
 
     public void skipLen() {
-        final double initial_len = this.totalSkipLen;
+        double len = this.totalSkipLen;
         this.totalSkipLen = 0.0d;
-
-        if (TRACE) {
-            System.out.println("skipLen: length = "+initial_len);
-        }
 
         final double[] _dash = dash;
         final int _dashLen = this.dashLen;
@@ -521,14 +498,13 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         int _idx = idx;
         boolean _dashOn = dashOn;
         double _phase = phase;
-        double _len = initial_len;
 
         // -2 to ensure having 2 iterations of the post-loop
         // to compensate the remaining phase
-        final long fullcycles = (long)Math.floor(_len / cycleLen) - 2L;
+        final long fullcycles = (long)Math.floor(len / cycleLen) - 2L;
 
         if (fullcycles > 0L) {
-            _len -= cycleLen * fullcycles;
+            len -= cycleLen * fullcycles;
 
             final long iterations = fullcycles * _dashLen;
             _idx = (int) (iterations + _idx) % _dashLen;
@@ -541,12 +517,12 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             d = _dash[_idx];
             leftInThisDashSegment = d - _phase;
 
-            if (_len <= leftInThisDashSegment) {
+            if (len <= leftInThisDashSegment) {
                 // Advance phase within current dash segment
-                _phase += _len;
+                _phase += len;
 
                 // TODO: compare double values using epsilon:
-                if (_len == leftInThisDashSegment) {
+                if (len == leftInThisDashSegment) {
                     _phase = 0.0d;
                     _idx = (_idx + 1) % _dashLen;
                     _dashOn = !_dashOn;
@@ -554,61 +530,16 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                 break;
             }
 
-            _len -= leftInThisDashSegment;
+            len -= leftInThisDashSegment;
             // Advance to next dash segment
             _idx = (_idx + 1) % _dashLen;
             _dashOn = !_dashOn;
             _phase = 0.0d;
         }
-
-        if (CHECK_DASH) {
-            int o_idx = idx;
-            boolean o_dashOn = dashOn;
-            double o_phase = phase;
-            double o_len = initial_len;
-
-            while (true) {
-                d = _dash[o_idx];
-                leftInThisDashSegment = d - o_phase;
-
-                if (o_len <= leftInThisDashSegment) {
-                    // Advance phase within current dash segment
-                    o_phase += o_len;
-
-                    // TODO: compare double values using epsilon:
-                    if (o_len == leftInThisDashSegment) {
-                        o_phase = 0.0d;
-                        o_idx = (o_idx + 1) % _dashLen;
-                        o_dashOn = !o_dashOn;
-                    }
-                    break;
-                }
-
-                o_len -= leftInThisDashSegment;
-                // Advance to next dash segment
-                o_idx = (o_idx + 1) % _dashLen;
-                o_dashOn = !o_dashOn;
-                o_phase = 0.0d;
-            }
-
-            final double rel_phase_err = Math.abs(o_phase - _phase) / o_phase;
-
-            if (o_idx != _idx || o_dashOn != _dashOn || rel_phase_err > 1e-5) {
-                System.out.println("CHECK_DASH: orig_len [" + initial_len + "] dash_len ["+_dashLen+"]");
-                if (o_idx != _idx) {
-                    System.out.println("CHECK_DASH: _idx [" + o_idx + "] n_idx [" + _idx + "]");
-                }
-                if (o_dashOn != _dashOn) {
-                    System.out.println("CHECK_DASH: _dashOn [" + o_dashOn + "] n_dashOn [" + _dashOn + "]");
-                }
-                if (rel_phase_err > 1e-5) {
-                    System.out.println("CHECK_DASH: _phase [" + o_phase + "] n_phase [" + _phase + "]");
-                }
-            }
-        }
         // Fix initial move:
         this.needsMoveTo = true;
         this.starting = false;
+
         // Save local state:
         idx = _idx;
         dashOn = _dashOn;
@@ -683,10 +614,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         // In contrary to somethingTo(),
         // just estimate properly the curve length:
         final double len = _li.totalLength();
-
-        if (TRACE) {
-            System.out.println("skipSomethingTo: length = "+len);
-        }
 
         // Accumulate skipped length:
         this.outside = true;

@@ -59,17 +59,17 @@ INFO: sun.java2d.renderer.clip.subdivider  = true
 
 - RECT_SIZE: 3.072E7
 dashes: [1.0]
---- Test [0] ---
-paint: duration= 2.070268 ms.
-paint: duration= 2.077565 ms.
-paint: duration= 2.0623929999999997 ms.
-paint: duration= 2.09372 ms.
-paint: duration= 2.06394 ms.
-paint: duration= 2.0717399999999997 ms.
-paint: duration= 2.1033969999999997 ms.
-paint: duration= 2.091361 ms.
-paint: duration= 2.0698149999999997 ms.
-paint: duration= 2.082739 ms.
+--- Test [990] ---
+paint: duration= 2.086631 ms.
+paint: duration= 2.091678 ms.
+paint: duration= 2.089244 ms.
+paint: duration= 2.092831 ms.
+paint: duration= 2.086923 ms.
+paint: duration= 2.09877 ms.
+paint: duration= 2.088752 ms.
+paint: duration= 2.090345 ms.
+paint: duration= 2.087383 ms.
+paint: duration= 2.086769 ms.
 
 
 - CURVE RADIUS: 1.8432E7
@@ -80,16 +80,16 @@ paint: duration= 5220.190052999999 ms.
 paint: duration= 5295.282114 ms.
 
 --- Test [990] ---
-paint: duration= 2.501419 ms.
-paint: duration= 2.423821 ms.
-paint: duration= 2.4920839999999997 ms.
-paint: duration= 2.430087 ms.
-paint: duration= 2.432111 ms.
-paint: duration= 2.435689 ms.
-paint: duration= 2.426099 ms.
-paint: duration= 2.423371 ms.
-paint: duration= 2.404911 ms.
-paint: duration= 2.400544 ms.
+paint: duration= 2.642565 ms.
+paint: duration= 2.651068 ms.
+paint: duration= 2.635271 ms.
+paint: duration= 2.6239589999999997 ms.
+paint: duration= 2.6342779999999997 ms.
+paint: duration= 2.637479 ms.
+paint: duration= 2.634371 ms.
+paint: duration= 2.63426 ms.
+paint: duration= 2.636333 ms.
+paint: duration= 2.628594 ms.
 */
 public class ShapeOutlineTest {
 
@@ -113,9 +113,9 @@ public class ShapeOutlineTest {
 // large:
 //            new float[]{10f, 5f}, 0f
 // small:
-//            new float[]{1f}, 0f
+            new float[]{1f}, 0f
 // complex:
-            new float[]{0.17f, 0.39f, 0.137f, 0.487f}, 0.733333f
+//            new float[]{0.17f, 0.39f, 0.137f, 0.487f}, 0.733333f
     );
 
     public static void main(String[] args) {
