@@ -484,6 +484,10 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         this.outside = true;
         this.totalSkipLen += len;
 
+        // Fix initial move:
+        this.needsMoveTo = true;
+        this.starting = false;
+        
         this.cx0 = x1;
         this.cy0 = y1;
     }
@@ -536,10 +540,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             _dashOn = !_dashOn;
             _phase = 0.0d;
         }
-        // Fix initial move:
-        this.needsMoveTo = true;
-        this.starting = false;
-
         // Save local state:
         idx = _idx;
         dashOn = _dashOn;
@@ -618,6 +618,10 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         // Accumulate skipped length:
         this.outside = true;
         this.totalSkipLen += len;
+
+        // Fix initial move:
+        this.needsMoveTo = true;
+        this.starting = false;
     }
 
     private static boolean pointCurve(final double[] curve, final int type) {
@@ -1009,6 +1013,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         _curCurvepts[6] = x3;  _curCurvepts[7] = y3;
 
         skipSomethingTo(8);
+        
         this.cx0 = x3;
         this.cy0 = y3;
     }
@@ -1093,6 +1098,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         _curCurvepts[4] = x2;  _curCurvepts[5] = y2;
 
         skipSomethingTo(6);
+        
         this.cx0 = x2;
         this.cy0 = y2;
     }
