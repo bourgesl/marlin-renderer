@@ -167,6 +167,11 @@ public final class ClipShapeTest {
         System.setProperty("sun.java2d.renderer.clip", "false");
         System.setProperty("sun.java2d.renderer.clip.runtime.enable", "true");
 
+        // enable subdivider:
+        System.setProperty("sun.java2d.renderer.clip.subdivider", "true");
+        // disable min length check: always subdivide curves at clip edges
+        System.setProperty("sun.java2d.renderer.clip.subdivider.minLength", "-1");
+
         // If any curve, increase curve accuracy:
         // curve length max error:
         System.setProperty("sun.java2d.renderer.curve_len_err", "5e-4");
@@ -177,9 +182,6 @@ public final class ClipShapeTest {
         // cubic min/max error:
         System.setProperty("sun.java2d.renderer.cubic_inc_d1", "2e-4");
         System.setProperty("sun.java2d.renderer.cubic_dec_d2", "1e-3");
-
-        // disable min length check: always subdivide curves at clip edges
-        System.setProperty("sun.java2d.renderer.clip.subdivider.minLength", "-1");
     }
 
     /**
