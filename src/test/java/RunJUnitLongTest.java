@@ -31,7 +31,9 @@ public class RunJUnitLongTest {
 
     @Test
     public void clipTests() {
-        ClipShapeTest.main(new String[]{"-doDash"});
+        ClipShapeTest.main(new String[]{"-poly", "-doDash"});
+        ClipShapeTest.main(new String[]{"-quad", "-doDash"});
+        ClipShapeTest.main(new String[]{"-cubic", "-doDash"});
     }
 
     @Test

@@ -44,7 +44,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
 
     /* huge circle with radius ~ 2E9 only needs 12 subdivision levels */
     static final int REC_LIMIT = 16;
-    static final double ERR = 0.01d;
+    static final double CURVE_LEN_ERR = MarlinProperties.getCurveLengthError(); // 0.01 initial
     static final double MIN_T_INC = 1.0d / (1 << REC_LIMIT);
 
     // More than 24 bits of mantissa means we can no longer accurately
@@ -487,7 +487,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         // Fix initial move:
         this.needsMoveTo = true;
         this.starting = false;
-        
+
         this.cx0 = x1;
         this.cy0 = y1;
     }
@@ -921,7 +921,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
 
             final double lineLen = DHelpers.linelen(curve[0], curve[1], x0, y0);
 
-            if ((polyLen - lineLen) < ERR || recLevel == REC_LIMIT) {
+            if ((polyLen - lineLen) < CURVE_LEN_ERR || recLevel == REC_LIMIT) {
                 return (polyLen + lineLen) / 2.0d;
             }
             return -1.0d;
@@ -1013,7 +1013,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         _curCurvepts[6] = x3;  _curCurvepts[7] = y3;
 
         skipSomethingTo(8);
-        
+
         this.cx0 = x3;
         this.cy0 = y3;
     }
@@ -1098,7 +1098,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         _curCurvepts[4] = x2;  _curCurvepts[5] = y2;
 
         skipSomethingTo(6);
-        
+
         this.cx0 = x2;
         this.cy0 = y2;
     }

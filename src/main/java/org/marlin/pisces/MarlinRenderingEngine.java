@@ -1133,6 +1133,8 @@ public final class MarlinRenderingEngine extends RenderingEngine
                 + MarlinConst.LOG_UNSAFE_MALLOC);
 
         // quality settings
+        logInfo("sun.java2d.renderer.curve_len_err    = "
+                + MarlinProperties.getCurveLengthError());
         logInfo("sun.java2d.renderer.cubic_dec_d2     = "
                 + MarlinProperties.getCubicDecD2());
         logInfo("sun.java2d.renderer.cubic_inc_d1     = "
