@@ -47,7 +47,6 @@ final class OffHeapArray  {
 
     static {
         UNSAFE = AccessController.doPrivileged(new PrivilegedAction<Unsafe>() {
-
             @Override
             public Unsafe run() {
                 Unsafe ref = null;
@@ -56,12 +55,12 @@ final class OffHeapArray  {
                     field.setAccessible(true);
                     ref = (Unsafe) field.get(null);
                 } catch (Exception e) {
-                    MarlinUtils.logInfo("Unable to get sun.misc.Unsafe; exit now.");
-                    System.exit(1);
+                    throw new InternalError("Unable to get sun.misc.Unsafe instance", e);
                 }
                 return ref;
             }
         });
+
         SIZE_INT = 4; // jdk 1.6 (Unsafe.ARRAY_INT_INDEX_SCALE)
 
         // Mimics Java2D Disposer:
