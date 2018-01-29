@@ -71,7 +71,7 @@ public final class ClipShapeTest {
     static boolean USE_DASHES = false;
     static boolean USE_VAR_STROKE = false;
 
-    static int NUM_TESTS = 50;
+    static int NUM_TESTS = 5000;
     static final int TESTW = 100;
     static final int TESTH = 100;
 

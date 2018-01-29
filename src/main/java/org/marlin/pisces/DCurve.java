@@ -152,10 +152,10 @@ final class DCurve {
         // these are the coefficients of some multiple of g(t) (not g(t),
         // because the roots of a polynomial are not changed after multiplication
         // by a constant, and this way we save a few multiplications).
-        final double a = 2.0d * (dax*dax + day*day);
-        final double b = 3.0d * (dax*dbx + day*dby);
-        final double c = 2.0d * (dax*cx + day*cy) + dbx*dbx + dby*dby;
-        final double d = dbx*cx + dby*cy;
+        final double a = 2.0d * (dax * dax + day * day);
+        final double b = 3.0d * (dax * dbx + day * dby);
+        final double c = 2.0d * (dax * cx + day * cy) + dbx * dbx + dby * dby;
+        final double d = dbx * cx + dby * cy;
 
         return DHelpers.cubicRootsInAB(a, b, c, d, pts, off, 0.0d, 1.0d);
     }
@@ -258,9 +258,9 @@ final class DCurve {
         final double dy = t * (t * day + dby) + cy;
         final double ddx = 2.0d * dax * t + dbx;
         final double ddy = 2.0d * day * t + dby;
-        final double dx2dy2 = dx*dx + dy*dy;
-        final double ddx2ddy2 = ddx*ddx + ddy*ddy;
-        final double ddxdxddydy = ddx*dx + ddy*dy;
-        return dx2dy2*((dx2dy2*dx2dy2) / (dx2dy2 * ddx2ddy2 - ddxdxddydy*ddxdxddydy));
+        final double dx2dy2 = dx * dx + dy * dy;
+        final double ddx2ddy2 = ddx * ddx + ddy * ddy;
+        final double ddxdxddydy = ddx * dx + ddy * dy;
+        return dx2dy2 * ((dx2dy2 * dx2dy2) / (dx2dy2 * ddx2ddy2 - ddxdxddydy * ddxdxddydy));
     }
 }

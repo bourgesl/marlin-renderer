@@ -182,7 +182,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                 rdrOffX = scale * DRenderer.RDR_OFFSET_X;
                 rdrOffY = scale * DRenderer.RDR_OFFSET_Y;
             }
-            // add a rounding error (curve subdivision ~ 0.1px):
+            // add a small rounding error:
             margin += 1e-3d;
 
             // bounds as half-open intervals: minX <= x < maxX and minY <= y < maxY

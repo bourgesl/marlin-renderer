@@ -111,9 +111,9 @@ public class ShapeOutlineTest {
     private final static BasicStroke PLAIN = new BasicStroke(10);
     private final static BasicStroke DASHED = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 20f,
 // large:
-//            new float[]{10f, 5f}, 0f
+            new float[]{10f, 5f}, 0f
 // small:
-            new float[]{1f}, 0f
+//            new float[]{1f}, 0f
 // complex:
 //            new float[]{0.17f, 0.39f, 0.137f, 0.487f}, 0.733333f
     );

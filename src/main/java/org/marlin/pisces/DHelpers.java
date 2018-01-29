@@ -184,15 +184,6 @@ final class DHelpers implements MarlinConst {
              + Math.abs(dy1) + Math.abs(dy2);
     }
 
-    static double quadlen(final double x0, final double y0,
-                          final double x1, final double y1,
-                          final double x2, final double y2)
-    {
-        return (linelen(x0, y0, x1, y1)
-              + linelen(x1, y1, x2, y2)
-              + linelen(x0, y0, x2, y2)) / 2.0d;
-    }
-
     static double fastCurvelen(final double x0, final double y0,
                                final double x1, final double y1,
                                final double x2, final double y2,
@@ -208,17 +199,6 @@ final class DHelpers implements MarlinConst {
         // use manhattan norm:
         return Math.abs(dx1) + Math.abs(dx2) + Math.abs(dx3)
              + Math.abs(dy1) + Math.abs(dy2) + Math.abs(dy3);
-    }
-
-    static double curvelen(final double x0, final double y0,
-                           final double x1, final double y1,
-                           final double x2, final double y2,
-                           final double x3, final double y3)
-    {
-        return (linelen(x0, y0, x1, y1)
-              + linelen(x1, y1, x2, y2)
-              + linelen(x2, y2, x3, y3)
-              + linelen(x0, y0, x3, y3)) / 2.0d;
     }
 
     // finds values of t where the curve in pts should be subdivided in order

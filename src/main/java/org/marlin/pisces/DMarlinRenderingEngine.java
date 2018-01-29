@@ -35,6 +35,7 @@ import static org.marlin.pisces.MarlinUtils.logInfo;
 import org.marlin.ReentrantContextProvider;
 import org.marlin.ReentrantContextProviderCLQ;
 import org.marlin.ReentrantContextProviderTL;
+import sun.awt.geom.PathConsumer2D;
 import sun.java2d.pipe.AATileGenerator;
 import sun.java2d.pipe.Region;
 import sun.java2d.pipe.RenderingEngine;
@@ -190,7 +191,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                          boolean thin,
                          boolean normalize,
                          boolean antialias,
-                         final sun.awt.geom.PathConsumer2D consumer)
+                         final PathConsumer2D consumer)
     {
         final NormMode norm = (normalize) ?
                 ((antialias) ? NormMode.ON_WITH_AA : NormMode.ON_NO_AA)
@@ -413,7 +414,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
         final DTransformingPathConsumer2D transformerPC2D = rdrCtx.transformerPC2D;
 
-        if (false && DO_TRACE_PATH) {
+        if (DO_TRACE_PATH) {
             // trace Stroker:
             pc2d = transformerPC2D.traceStroker(pc2d);
         }

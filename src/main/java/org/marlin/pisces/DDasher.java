@@ -415,8 +415,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         boolean _dashOn = dashOn;
         double _phase = phase;
 
-        double leftInThisDashSegment;
-        double d, dashdx, dashdy, p;
+        double leftInThisDashSegment, d;
 
         while (true) {
             d = _dash[_idx];
@@ -437,27 +436,15 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                     _idx = (_idx + 1) % _dashLen;
                     _dashOn = !_dashOn;
                 }
-
-                // Save local state:
-                idx = _idx;
-                dashOn = _dashOn;
-                phase = _phase;
-
-                this.cx0 = x1;
-                this.cy0 = y1;
-                return;
+                break;
             }
 
-            dashdx = d * cx;
-            dashdy = d * cy;
-
             if (_phase == 0.0d) {
-                _curCurvepts[0] = cx0 + dashdx;
-                _curCurvepts[1] = cy0 + dashdy;
+                _curCurvepts[0] = cx0 + d * cx;
+                _curCurvepts[1] = cy0 + d * cy;
             } else {
-                p = leftInThisDashSegment / d;
-                _curCurvepts[0] = cx0 + p * dashdx;
-                _curCurvepts[1] = cy0 + p * dashdy;
+                _curCurvepts[0] = cx0 + leftInThisDashSegment * cx;
+                _curCurvepts[1] = cy0 + leftInThisDashSegment * cy;
             }
 
             goTo(_curCurvepts, 0, 4, _dashOn);
@@ -468,6 +455,13 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             _dashOn = !_dashOn;
             _phase = 0.0d;
         }
+        // Save local state:
+        idx = _idx;
+        dashOn = _dashOn;
+        phase = _phase;
+
+        this.cx0 = x1;
+        this.cy0 = y1;
     }
 
     private void skipLineTo(final double x1, final double y1) {
@@ -820,6 +814,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                 // and our quadratic root finder doesn't filter, so it's just a
                 // matter of convenience.
                 final int n = DHelpers.cubicRootsInAB(a, b, c, d, nextRoots, 0, 0.0d, 1.0d);
+// TODO: check NaN is impossible
                 if (n == 1 && !Double.isNaN(nextRoots[0])) {
                     t = nextRoots[0];
                 }
