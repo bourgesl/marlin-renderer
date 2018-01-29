@@ -125,8 +125,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <skip>true</skip>
-<!--                            <skip>${integration.skip.long}</skip>   -->
+                            <skip>${integration.skip}</skip>
                             <includes>
                                 <include>**/RunJUnitTest.java</include>
                             </includes>
@@ -166,8 +165,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <skip>true</skip>
-<!--                            <skip>${integration.skip.long}</skip>   -->
+                            <skip>${integration.skip.long}</skip>
                             <includes>
                                 <include>**/RunJUnitLongTest.java</include>
                             </includes>
