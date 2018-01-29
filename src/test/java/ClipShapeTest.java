@@ -222,7 +222,7 @@ public final class ClipShapeTest {
             }
         }
 
-        System.out.println("Shape mode: "+SHAPE_MODE);
+        System.out.println("Shape mode: " + SHAPE_MODE);
 
         // adjust image comparison thresholds:
         switch(SHAPE_MODE) {
@@ -238,8 +238,8 @@ public final class ClipShapeTest {
                 THRESHOLD_NBPIX = 8; // 8 / 10000
                 break;
             default:
-                THRESHOLD_DELTA = 0;
-                THRESHOLD_NBPIX = 0;
+                THRESHOLD_DELTA = 2;
+                THRESHOLD_NBPIX = 2;
         }
 
         System.out.println("THRESHOLD_DELTA: "+THRESHOLD_DELTA);
