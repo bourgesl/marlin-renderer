@@ -469,10 +469,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         final double dy = y1 - cy0;
 
         double len = dx * dx + dy * dy;
-        if (len == 0.0d) {
-            return;
+        if (len != 0.0d) {
+            len = Math.sqrt(len);
         }
-        len = Math.sqrt(len);
 
         // Accumulate skipped length:
         this.outside = true;
@@ -917,6 +916,11 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             final double lineLen = DHelpers.linelen(curve[0], curve[1], x0, y0);
 
             if ((polyLen - lineLen) < CURVE_LEN_ERR || recLevel == REC_LIMIT) {
+/*
+                if (recLevel == REC_LIMIT) {
+                    System.out.println("REC_LIMIT[" + recLevel + "] reached !");
+                }
+*/
                 return (polyLen + lineLen) / 2.0d;
             }
             return -1.0d;

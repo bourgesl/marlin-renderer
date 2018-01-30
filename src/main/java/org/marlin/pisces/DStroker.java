@@ -443,7 +443,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         double den = x10*y10p - x10p*y10;
         if (den == 0.0d) {
             m[2] = (x0 + x0p) / 2.0d;
-            m[3]   = (y0 + y0p) / 2.0d;
+            m[3] = (y0 + y0p) / 2.0d;
         } else {
             double t = x10p*(y0-y0p) - y10p*(x0-x0p);
             t /= den;
@@ -1240,8 +1240,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     }
 
     private void _quadTo(final double x1, final double y1,
-                          final double x2, final double y2,
-                          final int outcode0)
+                         final double x2, final double y2,
+                         final int outcode0)
     {
         // need these so we can update the state at the end of this method
         double dxs = x1 - cx0;
@@ -1274,7 +1274,6 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             dxf /= len;
             dyf /= len;
         }
-
         computeOffset(dxs, dys, lineWidth2, offset0);
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, offset0[0], offset0[1], outcode0);
 

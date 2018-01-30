@@ -1059,7 +1059,7 @@ final class TransformingPathConsumer2D {
         }
 
         void init(final float lineWidth) {
-            this.lw2 = (lineWidth * lineWidth / 4.0f);
+            this.lw2 = (lineWidth * lineWidth) / 4.0f;
         }
 
         CurveBasicMonotonizer curve(final float x0, final float y0,

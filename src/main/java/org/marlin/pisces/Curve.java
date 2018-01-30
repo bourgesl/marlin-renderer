@@ -134,14 +134,14 @@ final class Curve {
         return Helpers.quadraticRoots(a, b, c, pts, off);
     }
 
-    int yPoints(final float[] ts, final int off, final float y)
-    {
-        return Helpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off, 0.0f, 1.0f);
-    }
-
     int xPoints(final float[] ts, final int off, final float x)
     {
         return Helpers.cubicRootsInAB(ax, bx, cx, dx - x, ts, off, 0.0f, 1.0f);
+    }
+
+    int yPoints(final float[] ts, final int off, final float y)
+    {
+        return Helpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off, 0.0f, 1.0f);
     }
 
     // finds points where the first and second derivative are

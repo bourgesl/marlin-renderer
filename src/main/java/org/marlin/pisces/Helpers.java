@@ -284,14 +284,14 @@ final class Helpers implements MarlinConst {
         if ((outCodeOR & OUTCODE_LEFT) != 0) {
             ret += curve.xPoints(ts, ret, clipRect[2]);
         }
+        if ((outCodeOR & OUTCODE_RIGHT) != 0) {
+            ret += curve.xPoints(ts, ret, clipRect[3]);
+        }
         if ((outCodeOR & OUTCODE_TOP) != 0) {
             ret += curve.yPoints(ts, ret, clipRect[0]);
         }
         if ((outCodeOR & OUTCODE_BOTTOM) != 0) {
             ret += curve.yPoints(ts, ret, clipRect[1]);
-        }
-        if ((outCodeOR & OUTCODE_RIGHT) != 0) {
-            ret += curve.xPoints(ts, ret, clipRect[3]);
         }
         isort(ts, ret);
         return ret;

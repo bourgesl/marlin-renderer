@@ -86,12 +86,13 @@ public final class ClipShapeTest {
     // dump path on console:
     static final boolean DUMP_SHAPE = true;
 
-    static final boolean SHOW_DETAILS = true;
+    static final boolean SHOW_DETAILS = false; // disabled
     static final boolean SHOW_OUTLINE = true;
     static final boolean SHOW_POINTS = true;
     static final boolean SHOW_INFO = false;
 
     static final int MAX_SHOW_FRAMES = 10;
+    static final int MAX_SAVE_FRAMES = 100;
 
     // use fixed seed to reproduce always same polygons between tests
     static final boolean FIXED_SEED = false;
@@ -169,19 +170,20 @@ public final class ClipShapeTest {
 
         // enable subdivider:
         System.setProperty("sun.java2d.renderer.clip.subdivider", "true");
+
         // disable min length check: always subdivide curves at clip edges
         System.setProperty("sun.java2d.renderer.clip.subdivider.minLength", "-1");
 
         // If any curve, increase curve accuracy:
         // curve length max error:
-        System.setProperty("sun.java2d.renderer.curve_len_err", "5e-4");
+        System.setProperty("sun.java2d.renderer.curve_len_err", "1e-5");
 
         // quad max error:
-        System.setProperty("sun.java2d.renderer.quad_dec_d2", "2e-4");
+        System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
 
         // cubic min/max error:
-        System.setProperty("sun.java2d.renderer.cubic_inc_d1", "2e-4");
         System.setProperty("sun.java2d.renderer.cubic_dec_d2", "1e-3");
+        System.setProperty("sun.java2d.renderer.cubic_inc_d1", "1e-4"); // or disabled ~ 1e-6
     }
 
     /**
@@ -228,14 +230,16 @@ public final class ClipShapeTest {
         switch(SHAPE_MODE) {
             case TWO_CUBICS:
                 // Define uncertainty for curves:
-                THRESHOLD_DELTA = 4; // 4 / 256
-                THRESHOLD_NBPIX = 4; // 4 / 10000
+                THRESHOLD_DELTA = 32; //  / 256
+                THRESHOLD_NBPIX = 128; //  / 10000
                 break;
             case FOUR_QUADS:
             case MIXED:
                 // Define uncertainty for quads:
-                THRESHOLD_DELTA = 8; // 8 / 256
-                THRESHOLD_NBPIX = 8; // 8 / 10000
+                // curve subdivision causes curves to be smaller 
+                // then curve offsets are different (more accurate)
+                THRESHOLD_DELTA = 64;  // 64 / 256
+                THRESHOLD_NBPIX = 256; // 256 / 10000
                 break;
             default:
                 THRESHOLD_DELTA = 2;
@@ -261,9 +265,11 @@ public final class ClipShapeTest {
             if (TEST_STROKER) {
                 final float[][] dashArrays = (USE_DASHES) ?
 // small
-                        new float[][]{null, new float[]{1f, 2f}}
+//                        new float[][]{new float[]{1f, 2f}}
+// normal
+                        new float[][]{new float[]{13f, 7f}}
 // large (prime)
-//                        new float[][]{/*null, */ new float[]{41f, 7f}}
+//                        new float[][]{new float[]{41f, 7f}}
 // none
                         : new float[][]{null};
 
@@ -375,22 +381,20 @@ public final class ClipShapeTest {
                     final double ratio = (100.0 * testCtx.histPix.count) / testCtx.histAll.count;
                     System.out.println("Diff ratio: " + testName + " = " + trimTo3Digits(ratio) + " %");
 
-                    if (false) {
-                        saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
-                    }
-
-                    if (DUMP_SHAPE) {
-                        dumpShape(p2d);
-                    }
                     if (nd < MAX_SHOW_FRAMES) {
                         if (SHOW_DETAILS) {
                             paintShapeDetails(g2dOff, p2d);
                             paintShapeDetails(g2dOn, p2d);
                         }
 
-                        saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
-                        saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
-                        saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
+                        if (nd < MAX_SAVE_FRAMES) {
+                            if (DUMP_SHAPE) {
+                                dumpShape(p2d);
+                            }
+                            saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
+                            saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
+                            saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
+                        }
                     }
                 }
             }
@@ -682,10 +686,54 @@ public final class ClipShapeTest {
 
         @Override
         public String toString() {
+            if (isStroke()) {
+                return "TestSetup{id=" + id + ", shapeMode=" + shapeMode + ", closed=" + closed
+                        + ", strokeWidth=" + strokeWidth + ", strokeCap=" + getCap(strokeCap) + ", strokeJoin=" + getJoin(strokeJoin)
+                        + ((dashes != null) ? ", dashes: " + Arrays.toString(dashes) : "")
+                        + '}';
+            }
             return "TestSetup{id=" + id + ", shapeMode=" + shapeMode + ", closed=" + closed
-                    + ", strokeWidth=" + strokeWidth + ", strokeCap=" + strokeCap + ", strokeJoin=" + strokeJoin
-                    + ((dashes != null) ? ", dashes: " + Arrays.toString(dashes) : "")
-                    + ", windingRule=" + windingRule + '}';
+                    + ", fill"
+                    + ", windingRule=" + getWindingRule(windingRule) + '}';
+        }
+        
+        private static String getCap(final int cap) {
+            switch (cap) {
+                case BasicStroke.CAP_BUTT:
+                    return "CAP_BUTT";
+                case BasicStroke.CAP_ROUND:
+                    return "CAP_ROUND";
+                case BasicStroke.CAP_SQUARE:
+                    return "CAP_SQUARE";
+                default:
+                    return "";
+            }
+            
+        }
+        
+        private static String getJoin(final int join) {
+            switch (join) {
+                case BasicStroke.JOIN_MITER:
+                    return "JOIN_MITER";
+                case BasicStroke.JOIN_ROUND:
+                    return "JOIN_ROUND";
+                case BasicStroke.JOIN_BEVEL:
+                    return "JOIN_BEVEL";
+                default:
+                    return "";
+            }
+            
+        }
+        
+        private static String getWindingRule(final int rule) {
+            switch (rule) {
+                case PathIterator.WIND_EVEN_ODD:
+                    return "WIND_EVEN_ODD";
+                case PathIterator.WIND_NON_ZERO:
+                    return "WIND_NON_ZERO";
+                default:
+                    return "";
+            }
         }
     }
 

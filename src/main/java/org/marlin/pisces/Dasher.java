@@ -251,11 +251,12 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         this.idx = startIdx;
         this.dashOn = this.startDashOn;
         this.phase = this.startPhase;
+        this.cx0 = x0;
+        this.cy0 = y0;
+
         // update starting point:
         this.sx0 = x0;
         this.sy0 = y0;
-        this.cx0 = x0;
-        this.cy0 = y0;
         this.starting = true;
 
         if (clipRect != null) {
@@ -450,7 +451,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
             goTo(_curCurvepts, 0, 4, _dashOn);
 
             len -= leftInThisDashSegment;
-
             // Advance to next dash segment
             _idx = (_idx + 1) % _dashLen;
             _dashOn = !_dashOn;
@@ -470,10 +470,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final float dy = y1 - cy0;
 
         float len = dx * dx + dy * dy;
-        if (len == 0.0f) {
-            return;
+        if (len != 0.0f) {
+            len = (float)Math.sqrt(len);
         }
-        len = (float)Math.sqrt(len);
 
         // Accumulate skipped length:
         this.outside = true;
@@ -530,7 +529,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
             }
 
             len -= leftInThisDashSegment;
-
             // Advance to next dash segment
             _idx = (_idx + 1) % _dashLen;
             _dashOn = !_dashOn;
@@ -919,6 +917,11 @@ final class Dasher implements PathConsumer2D, MarlinConst {
             final float lineLen = Helpers.linelen(curve[0], curve[1], x0, y0);
 
             if ((polyLen - lineLen) < CURVE_LEN_ERR || recLevel == REC_LIMIT) {
+/*
+                if (recLevel == REC_LIMIT) {
+                    System.out.println("REC_LIMIT[" + recLevel + "] reached !");
+                }
+*/
                 return (polyLen + lineLen) / 2.0f;
             }
             return -1.0f;

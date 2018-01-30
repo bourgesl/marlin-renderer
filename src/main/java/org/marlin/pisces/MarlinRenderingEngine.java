@@ -47,9 +47,6 @@ import sun.security.action.GetPropertyAction;
 public final class MarlinRenderingEngine extends RenderingEngine
                                          implements MarlinConst
 {
-    // slightly slower (~ 1%) if enabled
-    static final boolean DISABLE_STROKER_CLIPPING = false;
-
     static final boolean DO_TRACE_PATH = false;
 
     static final boolean TEST_CLIP = false;
@@ -426,6 +423,9 @@ public final class MarlinRenderingEngine extends RenderingEngine
         pc2d = rdrCtx.stroker.init(pc2d, width, caps, join, miterlimit, scale,
                 (dashes == null));
 
+        // Curve Monotizer:
+        rdrCtx.monotonizer.init(width);
+
         if (dashes != null) {
             if (!recycleDashes) {
                 dashLen = dashes.length;
@@ -436,12 +436,8 @@ public final class MarlinRenderingEngine extends RenderingEngine
             pc2d = rdrCtx.dasher.init(pc2d, dashes, dashLen, dashphase,
                                       recycleDashes);
 
-            // Curve Monotizer:
-            rdrCtx.monotonizer.init(width);
-
-            if (DISABLE_STROKER_CLIPPING) {
-                rdrCtx.stroker.disableClipping();
-            }
+            // disable stoker clipping (artefacts happen if dasher + stroker clipping:
+            rdrCtx.stroker.disableClipping();
 
         } else if (rdrCtx.doClip && (caps != Stroker.CAP_BUTT)) {
             if (DO_TRACE_PATH) {

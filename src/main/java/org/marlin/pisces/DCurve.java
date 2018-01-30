@@ -133,14 +133,14 @@ final class DCurve {
         return DHelpers.quadraticRoots(a, b, c, pts, off);
     }
 
-    int yPoints(final double[] ts, final int off, final double y)
-    {
-        return DHelpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off, 0.0d, 1.0d);
-    }
-
     int xPoints(final double[] ts, final int off, final double x)
     {
         return DHelpers.cubicRootsInAB(ax, bx, cx, dx - x, ts, off, 0.0d, 1.0d);
+    }
+
+    int yPoints(final double[] ts, final int off, final double y)
+    {
+        return DHelpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off, 0.0d, 1.0d);
     }
 
     // finds points where the first and second derivative are

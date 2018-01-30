@@ -223,19 +223,19 @@ public final class MarlinProperties {
     // quality settings
 
     public static float getCurveLengthError() {
-        return getFloat("sun.java2d.renderer.curve_len_err", 0.01f, 1e-4f, 1.0f);
+        return getFloat("sun.java2d.renderer.curve_len_err", 0.01f, 1e-5f, 1.0f);
     }
 
     public static float getCubicDecD2() {
-        return getFloat("sun.java2d.renderer.cubic_dec_d2", 1.0f, 1e-4f, 4.0f);
+        return getFloat("sun.java2d.renderer.cubic_dec_d2", 1.0f, 1e-5f, 4.0f);
     }
 
     public static float getCubicIncD1() {
-        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.2f, 1e-4f, 2.0f);
+        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.2f, 1e-6f, 1.0f);
     }
 
     public static float getQuadDecD2() {
-        return getFloat("sun.java2d.renderer.quad_dec_d2", 0.5f, 1e-4f, 4.0f);
+        return getFloat("sun.java2d.renderer.quad_dec_d2", 0.5f, 1e-5f, 4.0f);
     }
 
     // system property utilities

@@ -445,7 +445,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         float den = x10*y10p - x10p*y10;
         if (den == 0.0f) {
             m[2] = (x0 + x0p) / 2.0f;
-            m[3]   = (y0 + y0p) / 2.0f;
+            m[3] = (y0 + y0p) / 2.0f;
         } else {
             float t = x10p*(y0-y0p) - y10p*(x0-x0p);
             t /= den;
@@ -1276,7 +1276,6 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             dxf /= len;
             dyf /= len;
         }
-
         computeOffset(dxs, dys, lineWidth2, offset0);
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, offset0[0], offset0[1], outcode0);
 
