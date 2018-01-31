@@ -223,7 +223,7 @@ public final class MarlinProperties {
     // quality settings
 
     public static float getCurveLengthError() {
-        return getFloat("sun.java2d.renderer.curve_len_err", 0.01f, 1e-5f, 1.0f);
+        return getFloat("sun.java2d.renderer.curve_len_err", 0.01f, 1e-6f, 1.0f);
     }
 
     public static float getCubicDecD2() {
