@@ -242,8 +242,10 @@ public final class ClipShapeTest {
                 THRESHOLD_NBPIX = 256; // 256 / 10000
                 break;
             default:
-                THRESHOLD_DELTA = 2;
-                THRESHOLD_NBPIX = 2;
+                // Define uncertainty for lines:
+                // float variant have higher uncertainty
+                THRESHOLD_DELTA = 4;
+                THRESHOLD_NBPIX = 4;
         }
 
         System.out.println("THRESHOLD_DELTA: "+THRESHOLD_DELTA);
