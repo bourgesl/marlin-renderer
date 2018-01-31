@@ -176,7 +176,8 @@ public final class ClipShapeTest {
 
         // If any curve, increase curve accuracy:
         // curve length max error:
-        System.setProperty("sun.java2d.renderer.curve_len_err", "1e-5");
+// TODO: Very small error as 1 failure happens (float + dashed cubics)
+        System.setProperty("sun.java2d.renderer.curve_len_err", "1e-6");
 
         // quad max error:
         System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
@@ -236,7 +237,7 @@ public final class ClipShapeTest {
             case FOUR_QUADS:
             case MIXED:
                 // Define uncertainty for quads:
-                // curve subdivision causes curves to be smaller 
+                // curve subdivision causes curves to be smaller
                 // then curve offsets are different (more accurate)
                 THRESHOLD_DELTA = 64;  // 64 / 256
                 THRESHOLD_NBPIX = 256; // 256 / 10000
@@ -698,7 +699,7 @@ public final class ClipShapeTest {
                     + ", fill"
                     + ", windingRule=" + getWindingRule(windingRule) + '}';
         }
-        
+
         private static String getCap(final int cap) {
             switch (cap) {
                 case BasicStroke.CAP_BUTT:
@@ -710,9 +711,9 @@ public final class ClipShapeTest {
                 default:
                     return "";
             }
-            
+
         }
-        
+
         private static String getJoin(final int join) {
             switch (join) {
                 case BasicStroke.JOIN_MITER:
@@ -724,9 +725,9 @@ public final class ClipShapeTest {
                 default:
                     return "";
             }
-            
+
         }
-        
+
         private static String getWindingRule(final int rule) {
             switch (rule) {
                 case PathIterator.WIND_EVEN_ODD:

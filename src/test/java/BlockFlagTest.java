@@ -109,7 +109,7 @@ public class BlockFlagTest {
             for (float off = 0f; off <= 64f; off += 0.05f) {
                 final double x = orig_x + off;
 
-                System.out.println("Test boundary at x = " + x);
+//                System.out.println("Test boundary at x = " + x);
 
                 // clear previous image:
                 g2d.setTransform(at);
