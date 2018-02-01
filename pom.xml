@@ -21,6 +21,7 @@
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
         <integration.skip>false</integration.skip>
         <integration.skip.long>false</integration.skip.long>
+        <javadoc.skip>true</javadoc.skip>
     </properties>
 
     <build>
@@ -101,6 +102,41 @@
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <configuration>
+                    <skipSource>false</skipSource>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <skip>${javadoc.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.20.1</version>
                 <configuration>
@@ -112,6 +148,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.20.1</version>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                </configuration>
                 <!-- Run tests when the integration-test phase is invoked (after the marlin jar is built) -->
                 <!--
                     CrashTest may need large heap: -Xms4g -Xmx4g
@@ -133,6 +173,7 @@
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
+                                -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
@@ -153,6 +194,7 @@
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
+                                -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
@@ -175,6 +217,7 @@
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
+                                -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
@@ -195,6 +238,7 @@
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
+                                -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>

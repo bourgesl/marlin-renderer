@@ -47,6 +47,8 @@ import sun.security.action.GetPropertyAction;
 public final class MarlinRenderingEngine extends RenderingEngine
                                          implements MarlinConst
 {
+    static final boolean DISABLE_2ND_STROKER_CLIPPING = true;
+
     static final boolean DO_TRACE_PATH = false;
 
     static final boolean TEST_CLIP = false;
@@ -436,8 +438,10 @@ public final class MarlinRenderingEngine extends RenderingEngine
             pc2d = rdrCtx.dasher.init(pc2d, dashes, dashLen, dashphase,
                                       recycleDashes);
 
-            // disable stoker clipping (artefacts happen if dasher + stroker clipping:
-            rdrCtx.stroker.disableClipping();
+            if (DISABLE_2ND_STROKER_CLIPPING) {
+                // disable stoker clipping
+                rdrCtx.stroker.disableClipping();
+            }
 
         } else if (rdrCtx.doClip && (caps != Stroker.CAP_BUTT)) {
             if (DO_TRACE_PATH) {

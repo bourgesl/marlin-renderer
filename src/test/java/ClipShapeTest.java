@@ -176,8 +176,7 @@ public final class ClipShapeTest {
 
         // If any curve, increase curve accuracy:
         // curve length max error:
-// TODO: Very small error as 1 failure happens (float + dashed cubics)
-        System.setProperty("sun.java2d.renderer.curve_len_err", "1e-6");
+        System.setProperty("sun.java2d.renderer.curve_len_err", "1e-4");
 
         // quad max error:
         System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");

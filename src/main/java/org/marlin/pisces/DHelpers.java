@@ -79,12 +79,16 @@ final class DHelpers implements MarlinConst {
             return filterOutNotInAB(pts, off, num, A, B) - off;
         }
         // From Graphics Gems:
-        // http://tog.acm.org/resources/GraphicsGems/gems/Roots3And4.c
+        // https://github.com/erich666/GraphicsGems/blob/master/gems/Roots3And4.c
         // (also from awt.geom.CubicCurve2D. But here we don't need as
         // much accuracy and we don't want to create arrays so we use
         // our own customized version).
 
         // normal form: x^3 + ax^2 + bx + c = 0
+
+        /*
+         * TODO: cleanup all that code after reading Roots3And4.c
+         */
         a /= d;
         b /= d;
         c /= d;
@@ -130,6 +134,7 @@ final class DHelpers implements MarlinConst {
             }
         }
 
+        // TODO: inline such operations into previous cases:
         final double sub = (1.0d/3.0d) * a;
 
         for (int i = 0; i < num; ++i) {
@@ -199,6 +204,17 @@ final class DHelpers implements MarlinConst {
         // use manhattan norm:
         return Math.abs(dx1) + Math.abs(dx2) + Math.abs(dx3)
              + Math.abs(dy1) + Math.abs(dy2) + Math.abs(dy3);
+    }
+
+    static double curvelen(final double x0, final double y0,
+                           final double x1, final double y1,
+                           final double x2, final double y2,
+                           final double x3, final double y3)
+    {
+        return (linelen(x0, y0, x1, y1)
+              + linelen(x1, y1, x2, y2)
+              + linelen(x2, y2, x3, y3)
+              + linelen(x0, y0, x3, y3)) / 2.0d;
     }
 
     // finds values of t where the curve in pts should be subdivided in order

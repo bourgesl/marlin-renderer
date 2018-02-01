@@ -104,7 +104,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     // flag indicating to monotonize curves
     private boolean monotonize;
 
-    private boolean subdivide = DO_CLIP_SUBDIVIDER;
+    private boolean subdivide = false;
     private final CurveClipSplitter curveSplitter;
 
     /**
@@ -140,6 +140,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
      * <code>JOIN_BEVEL</code>.
      * @param miterLimit the desired miter limit
      * @param scale scaling factor applied to clip boundaries
+     * @param subdivideCurves true to indicate to subdivide curves, false if dasher does
      * @return this instance
      */
     DStroker init(final DPathConsumer2D pc2d,
@@ -148,13 +149,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                   final int joinStyle,
                   final double miterLimit,
                   final double scale,
-                  final boolean monotonize)
+                  final boolean subdivideCurves)
     {
         this.out = pc2d;
 
         this.lineWidth2 = lineWidth / 2.0d;
         this.invHalfLineWidth2Sq = 1.0d / (2.0d * lineWidth2 * lineWidth2);
-        this.monotonize = monotonize;
+        this.monotonize = subdivideCurves;
 
         this.capStyle = capStyle;
         this.joinStyle = joinStyle;
@@ -194,9 +195,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             _clipRect[3] += margin + rdrOffX;
             this.clipRect = _clipRect;
 
-            if (MarlinConst.DO_CLIP_SUBDIVIDER) {
+            // initialize curve splitter here for stroker & dasher:
+            if (DO_CLIP_SUBDIVIDER) {
+                subdivide = subdivideCurves;
                 // adjust padded clip rectangle:
                 curveSplitter.init();
+            } else {
+                subdivide = false;
             }
         } else {
             this.clipRect = null;

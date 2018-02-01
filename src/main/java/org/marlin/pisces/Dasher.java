@@ -303,7 +303,15 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final int index = off + type;
         final float x = pts[index - 4];
         final float y = pts[index - 3];
-
+/*
+        if (type == 8) {
+            System.out.println("seg["+on+"] len: "
+                    +Helpers.curvelen(pts[off - 2], pts[off - 1],
+                            pts[off    ], pts[off + 1],
+                        pts[off + 2], pts[off + 3],
+                        pts[off + 4], pts[off + 5]));
+        }
+*/
         if (on) {
             if (starting) {
                 goTo_starting(pts, off, type);
@@ -460,9 +468,10 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         idx = _idx;
         dashOn = _dashOn;
         phase = _phase;
-
+/*
         this.cx0 = x1;
         this.cy0 = y1;
+*/
     }
 
     private void skipLineTo(final float x1, final float y1) {
@@ -998,8 +1007,10 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
             somethingTo(8);
         }
+/*
         this.cx0 = x3;
         this.cy0 = y3;
+*/
     }
 
     private void skipCurveTo(final float x1, final float y1,
@@ -1085,8 +1096,10 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
             somethingTo(6);
         }
+/*
         this.cx0 = x2;
         this.cy0 = y2;
+*/
     }
 
     private void skipQuadTo(final float x1, final float y1,

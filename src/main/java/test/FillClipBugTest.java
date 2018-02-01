@@ -38,7 +38,7 @@ public class FillClipBugTest {
 
         if (true) {
             createFrame("Test", new PanelPath(false));
-            createFrame("Test Clip", new PanelPath(true));
+//            createFrame("Test Clip", new PanelPath(true));
         } else {
             createFrame("Test", new PanelRects());
             createFrame("Test", new PanelRect2());
@@ -114,35 +114,30 @@ public class FillClipBugTest {
         private void setAttributes(final Graphics2D g2d) {
             g2d.setColor(Color.GRAY);
 
-            g2d.setStroke(new BasicStroke(15f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f,
-                    new float[]{1f, 2f}, 0.0f));
-//                    new float[]{13f, 2f}, 0.0f));
+// TestSetup{id=91, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+
+            g2d.setStroke(new BasicStroke(10f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f,
+//                    new float[]{1f, 2f}, 0.0f));
+                    new float[]{13f, 7f}, 0.0f));
         }
 
         private static Path2D.Double createPath() {
             final Path2D.Double p2d = new Path2D.Double();
             // ClipShapeTests dumped shape code:
             // --- begin of pasted code ---
-p2d.moveTo(146.82729, 178.81085);
-p2d.quadTo(196.73093, 186.10008, 199.25151, 94.648094);
-p2d.quadTo(-39.960365, 49.80094, 58.815327, 33.731182);
-p2d.quadTo(-30.7607, 76.5013, 123.609, 140.78426);
-p2d.quadTo(-85.50613, -84.816864, -96.68608, -73.03612);
-p2d.closePath();
-p2d.moveTo(-94.13188, 192.13202);
-p2d.quadTo(189.80658, 110.6088, 2.818996, 186.69853);
-p2d.quadTo(192.63135, 33.426117, 81.44253, 125.4388);
-p2d.quadTo(-45.18242, 194.22488, -34.159706, -44.944065);
-p2d.quadTo(73.012436, 84.398285, 119.40327, 195.09143);
-p2d.closePath();
-            /*
-            p2d.moveTo(-14.54943, 93.93557);
-            p2d.lineTo(51.435753, 35.81831);
-            p2d.lineTo(124.99598, 147.45825);
-            p2d.lineTo(-36.886967, 143.34232);
-            p2d.lineTo(-7.2472034, -16.372465);
-            p2d.closePath();
-             */
+/*
+p2d.moveTo(-35.56648, -49.42984);
+p2d.curveTo(101.8177, -34.789795, 29.526112, 174.11511, 51.948048, -71.48531);
+p2d.curveTo(78.92995, -77.82397, 62.719154, 119.40237, 64.43939, 0.64784384);
+*/
+/*
+// BUGGY:
+p2d.moveTo(-92.52811, 177.39606);
+p2d.curveTo(-90.536575, -36.88768, 91.337616, 23.993149, 136.64645, 1.4918735);
+p2d.curveTo(-25.203772, 126.223206, -20.010153, 131.30772, 117.95181, -27.589094);
+*/
+p2d.moveTo(136.64645, 1.4918735);
+p2d.curveTo(-25.203772, 126.223206, -20.010153, 131.30772, 117.95181, -27.589094);
             // --- end of pasted code ---
             return p2d;
         }

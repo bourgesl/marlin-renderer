@@ -76,24 +76,29 @@ final class Helpers implements MarlinConst {
     }
 
     // find the roots of g(t) = d*t^3 + a*t^2 + b*t + c in [A,B)
-    static int cubicRootsInAB(final float d, float a, float b, float c,
+    static int cubicRootsInAB(final float d0, float a0, float b0, float c0,
                               final float[] pts, final int off,
                               final float A, final float B)
     {
-        if (d == 0.0f) {
-            final int num = quadraticRoots(a, b, c, pts, off);
+        if (d0 == 0.0f) {
+            final int num = quadraticRoots(a0, b0, c0, pts, off);
             return filterOutNotInAB(pts, off, num, A, B) - off;
         }
         // From Graphics Gems:
-        // http://tog.acm.org/resources/GraphicsGems/gems/Roots3And4.c
+        // https://github.com/erich666/GraphicsGems/blob/master/gems/Roots3And4.c
         // (also from awt.geom.CubicCurve2D. But here we don't need as
         // much accuracy and we don't want to create arrays so we use
         // our own customized version).
 
         // normal form: x^3 + ax^2 + bx + c = 0
-        a /= d;
-        b /= d;
-        c /= d;
+
+        // 2018.1: Need double precision if d is very small !
+        /*
+         * TODO: cleanup all that code after reading Roots3And4.c
+         */
+        final double a = ((double)a0) / d0;
+        final double b = ((double)b0) / d0;
+        final double c = ((double)c0) / d0;
 
         //  substitute x = y - A/3 to eliminate quadratic term:
         //     x^3 +Px + Q = 0
@@ -136,7 +141,8 @@ final class Helpers implements MarlinConst {
             }
         }
 
-        final float sub = (1.0f/3.0f) * a;
+        // TODO: inline such operations into previous cases:
+        final float sub = (float) ((1.0d/3.0d) * a);
 
         for (int i = 0; i < num; ++i) {
             pts[off + i] -= sub;
@@ -205,6 +211,17 @@ final class Helpers implements MarlinConst {
         // use manhattan norm:
         return Math.abs(dx1) + Math.abs(dx2) + Math.abs(dx3)
              + Math.abs(dy1) + Math.abs(dy2) + Math.abs(dy3);
+    }
+
+    static double curvelen(final float x0, final float y0,
+                           final float x1, final float y1,
+                           final float x2, final float y2,
+                           final float x3, final float y3)
+    {
+        return (linelen(x0, y0, x1, y1)
+              + linelen(x1, y1, x2, y2)
+              + linelen(x2, y2, x3, y3)
+              + linelen(x0, y0, x3, y3)) / 2.0d;
     }
 
     // finds values of t where the curve in pts should be subdivided in order
