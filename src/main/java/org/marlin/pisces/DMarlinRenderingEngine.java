@@ -47,6 +47,7 @@ import sun.security.action.GetPropertyAction;
 public final class DMarlinRenderingEngine extends RenderingEngine
                                           implements MarlinConst
 {
+    // slightly slower ~2% if disabled stroker clipping (skip cap / join + deoptimization ?)
     static final boolean DISABLE_2ND_STROKER_CLIPPING = false;
 
     static final boolean DO_TRACE_PATH = false;

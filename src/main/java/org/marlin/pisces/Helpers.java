@@ -173,7 +173,7 @@ final class Helpers implements MarlinConst {
     {
         final float dx = x1 - x0;
         final float dy = y1 - y0;
-        return (float)Math.sqrt(dx * dx + dy * dy);
+        return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
     static float fastQuadLen(final float x0, final float y0,
@@ -189,6 +189,16 @@ final class Helpers implements MarlinConst {
         return Math.abs(dx1) + Math.abs(dx2)
              + Math.abs(dy1) + Math.abs(dy2);
     }
+
+    static float quadlen(final float x0, final float y0,
+                         final float x1, final float y1,
+                         final float x2, final float y2)
+    {
+        return (linelen(x0, y0, x1, y1)
+                + linelen(x1, y1, x2, y2)
+                + linelen(x0, y0, x2, y2)) / 2.0f;
+    }
+
 
     static float fastCurvelen(final float x0, final float y0,
                               final float x1, final float y1,
@@ -207,15 +217,15 @@ final class Helpers implements MarlinConst {
              + Math.abs(dy1) + Math.abs(dy2) + Math.abs(dy3);
     }
 
-    static double curvelen(final float x0, final float y0,
-                           final float x1, final float y1,
-                           final float x2, final float y2,
-                           final float x3, final float y3)
+    static float curvelen(final float x0, final float y0,
+                          final float x1, final float y1,
+                          final float x2, final float y2,
+                          final float x3, final float y3)
     {
         return (linelen(x0, y0, x1, y1)
               + linelen(x1, y1, x2, y2)
               + linelen(x2, y2, x3, y3)
-              + linelen(x0, y0, x3, y3)) / 2.0d;
+              + linelen(x0, y0, x3, y3)) / 2.0f;
     }
 
     // finds values of t where the curve in pts should be subdivided in order
