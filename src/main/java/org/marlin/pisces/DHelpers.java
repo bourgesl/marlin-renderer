@@ -101,9 +101,10 @@ final class DHelpers implements MarlinConst {
         // p = P/3
         // q = Q/2
         // instead and use those values for simplicity of the code.
+        final double sub = (1.0d/3.0d) * a;
         final double sq_A = a * a;
         final double p = (1.0d/3.0d) * ((-1.0d/3.0d) * sq_A + b);
-        final double q = (1.0d/2.0d) * ((2.0d/27.0d) * a * sq_A - (1.0d/3.0d) * a * b + c);
+        final double q = (1.0d/2.0d) * ((2.0d/27.0d) * a * sq_A - sub * b + c);
 
         // use Cardano's formula
 
@@ -116,29 +117,22 @@ final class DHelpers implements MarlinConst {
             final double phi = (1.0d/3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
             final double t = 2.0d * Math.sqrt(-p);
 
-            pts[off    ] = ( t * FastMath.cos(phi));
-            pts[off + 1] = (-t * FastMath.cos(phi + (Math.PI / 3.0d)));
-            pts[off + 2] = (-t * FastMath.cos(phi - (Math.PI / 3.0d)));
+            pts[off    ] = ( t * FastMath.cos(phi) - sub);
+            pts[off + 1] = (-t * FastMath.cos(phi + (Math.PI / 3.0d)) - sub);
+            pts[off + 2] = (-t * FastMath.cos(phi - (Math.PI / 3.0d)) - sub);
             num = 3;
         } else {
             final double sqrt_D = Math.sqrt(D);
             final double u =   FastMath.cbrt(sqrt_D - q);
             final double v = - FastMath.cbrt(sqrt_D + q);
 
-            pts[off    ] = (u + v);
+            pts[off    ] = (u + v - sub);
             num = 1;
 
             if (within(D, 0.0d, 1e-8d)) {
-                pts[off + 1] = -(pts[off] / 2.0d);
+                pts[off + 1] = (-(1.0d/2.0d) * (u + v) - sub);
                 num = 2;
             }
-        }
-
-        // TODO: inline such operations into previous cases:
-        final double sub = (1.0d/3.0d) * a;
-
-        for (int i = 0; i < num; ++i) {
-            pts[off + i] -= sub;
         }
 
         return filterOutNotInAB(pts, off, num, A, B) - off;

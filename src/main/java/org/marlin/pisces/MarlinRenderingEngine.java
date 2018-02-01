@@ -47,7 +47,7 @@ import sun.security.action.GetPropertyAction;
 public final class MarlinRenderingEngine extends RenderingEngine
                                          implements MarlinConst
 {
-    static final boolean DISABLE_2ND_STROKER_CLIPPING = true;
+    static final boolean DISABLE_2ND_STROKER_CLIPPING = false;
 
     static final boolean DO_TRACE_PATH = false;
 

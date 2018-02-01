@@ -34,6 +34,7 @@ import org.marlin.pisces.Helpers.PolyStack;
 
 final class TransformingPathConsumer2D {
 
+    // higher uncertainty in float variant for huge shapes > 10^7
     static final float CLIP_RECT_PADDING = 1.0f;
 
     private final RendererContext rdrCtx;

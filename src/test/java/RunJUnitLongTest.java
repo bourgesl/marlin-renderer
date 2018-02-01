@@ -32,9 +32,11 @@ public class RunJUnitLongTest {
     @Test
     public void clipTests() {
         ClipShapeTest.main(new String[]{"-poly"});                    // OK
+/*
         ClipShapeTest.main(new String[]{"-poly", "-doDash"});         // OK
         ClipShapeTest.main(new String[]{"-quad"});                    // OK (offsets are slightly fixed)
         ClipShapeTest.main(new String[]{"-quad", "-doDash"});         // OK (offsets are less different)
+*/
         ClipShapeTest.main(new String[]{"-cubic"});                   // OK (offsets are slightly fixed)
         ClipShapeTest.main(new String[]{"-cubic", "-doDash"});        // OK
     }

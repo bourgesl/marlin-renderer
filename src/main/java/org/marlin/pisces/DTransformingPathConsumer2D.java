@@ -33,7 +33,8 @@ import org.marlin.pisces.DHelpers.PolyStack;
 
 final class DTransformingPathConsumer2D {
 
-    static final double CLIP_RECT_PADDING = 1.0d;
+    // smaller uncertainty in double variant
+    static final double CLIP_RECT_PADDING = 0.25d;
 
     private final DRendererContext rdrCtx;
 

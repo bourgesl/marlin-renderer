@@ -468,10 +468,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         idx = _idx;
         dashOn = _dashOn;
         phase = _phase;
-/*
-        this.cx0 = x1;
-        this.cy0 = y1;
-*/
     }
 
     private void skipLineTo(final float x1, final float y1) {
@@ -1007,10 +1003,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
             somethingTo(8);
         }
-/*
-        this.cx0 = x3;
-        this.cy0 = y3;
-*/
     }
 
     private void skipCurveTo(final float x1, final float y1,
@@ -1096,10 +1088,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
             somethingTo(6);
         }
-/*
-        this.cx0 = x2;
-        this.cy0 = y2;
-*/
     }
 
     private void skipQuadTo(final float x1, final float y1,
