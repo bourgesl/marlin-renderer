@@ -180,6 +180,14 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.clip.runtime", "true");
     }
 
+    public static boolean isDoClipSubdivider() {
+        return getBoolean("sun.java2d.renderer.clip.subdivider", "true");
+    }
+
+    public static float getSubdividerMinLength() {
+        return getFloat("sun.java2d.renderer.clip.subdivider.minLength", 100.0f, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+    }
+
     // debugging parameters
 
     public static boolean isDoStats() {
@@ -214,16 +222,20 @@ public final class MarlinProperties {
 
     // quality settings
 
+    public static float getCurveLengthError() {
+        return getFloat("sun.java2d.renderer.curve_len_err", 0.01f, 1e-6f, 1.0f);
+    }
+
     public static float getCubicDecD2() {
-        return getFloat("sun.java2d.renderer.cubic_dec_d2", 1.0f, 0.01f, 4.0f);
+        return getFloat("sun.java2d.renderer.cubic_dec_d2", 1.0f, 1e-5f, 4.0f);
     }
 
     public static float getCubicIncD1() {
-        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.4f, 0.01f, 2.0f);
+        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.2f, 1e-6f, 1.0f);
     }
 
     public static float getQuadDecD2() {
-        return getFloat("sun.java2d.renderer.quad_dec_d2", 0.5f, 0.01f, 4.0f);
+        return getFloat("sun.java2d.renderer.quad_dec_d2", 0.5f, 1e-5f, 4.0f);
     }
 
     // system property utilities

@@ -35,6 +35,7 @@ import static org.marlin.pisces.MarlinUtils.logInfo;
 import org.marlin.ReentrantContextProvider;
 import org.marlin.ReentrantContextProviderCLQ;
 import org.marlin.ReentrantContextProviderTL;
+import sun.awt.geom.PathConsumer2D;
 import sun.java2d.pipe.AATileGenerator;
 import sun.java2d.pipe.Region;
 import sun.java2d.pipe.RenderingEngine;
@@ -46,6 +47,22 @@ import sun.security.action.GetPropertyAction;
 public final class DMarlinRenderingEngine extends RenderingEngine
                                           implements MarlinConst
 {
+    // slightly slower ~2% if enabled stroker clipping (lines) but skipping cap / join handling is few percents faster in specific cases
+    static final boolean DISABLE_2ND_STROKER_CLIPPING = true;
+
+    static final boolean DO_TRACE_PATH = false;
+
+    static final boolean TEST_CLIP = false;
+
+    static final boolean DO_CLIP = MarlinProperties.isDoClip();
+    static final boolean DO_CLIP_FILL = true;
+    static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
+
+    private static final float MIN_PEN_SIZE = 1.0f / MIN_SUBPIXELS;
+
+    static final double UPPER_BND = Float.MAX_VALUE / 2.0d;
+    static final double LOWER_BND = -UPPER_BND;
+
     private enum NormMode {
         ON_WITH_AA {
             @Override
@@ -78,18 +95,6 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         abstract PathIterator getNormalizingPathIterator(DRendererContext rdrCtx,
                                                          PathIterator src);
     }
-
-    private static final float MIN_PEN_SIZE = 1.0f / MIN_SUBPIXELS;
-
-    static final double UPPER_BND = Float.MAX_VALUE / 2.0d;
-    static final double LOWER_BND = -UPPER_BND;
-
-    static final boolean DO_CLIP = MarlinProperties.isDoClip();
-    static final boolean DO_CLIP_FILL = true;
-
-    static final boolean DO_TRACE_PATH = false;
-
-    static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
 
     /**
      * Public constructor
@@ -186,7 +191,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                          boolean thin,
                          boolean normalize,
                          boolean antialias,
-                         final sun.awt.geom.PathConsumer2D consumer)
+                         final PathConsumer2D consumer)
     {
         final NormMode norm = (normalize) ?
                 ((antialias) ? NormMode.ON_WITH_AA : NormMode.ON_NO_AA)
@@ -424,11 +429,24 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         pc2d = transformerPC2D.deltaTransformConsumer(pc2d, strokerat);
 
         // stroker will adjust the clip rectangle (width / miter limit):
-        pc2d = rdrCtx.stroker.init(pc2d, width, caps, join, miterlimit, scale);
+        pc2d = rdrCtx.stroker.init(pc2d, width, caps, join, miterlimit, scale,
+                (dashesD == null));
+
+        // Curve Monotizer:
+        rdrCtx.monotonizer.init(width);
 
         if (dashesD != null) {
+            if (DO_TRACE_PATH) {
+                pc2d = transformerPC2D.traceDasher(pc2d);
+            }
             pc2d = rdrCtx.dasher.init(pc2d, dashesD, dashLen, dashphase,
                                       recycleDashes);
+
+            if (DISABLE_2ND_STROKER_CLIPPING) {
+                // disable stoker clipping:
+                rdrCtx.stroker.disableClipping();
+            }
+
         } else if (rdrCtx.doClip && (caps != Stroker.CAP_BUTT)) {
             if (DO_TRACE_PATH) {
                 pc2d = transformerPC2D.traceClosedPathDetector(pc2d);
@@ -818,10 +836,21 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 // Define the initial clip bounds:
                 final double[] clipRect = rdrCtx.clipRect;
 
-                clipRect[0] = clip.getLoY();
-                clipRect[1] = clip.getLoY() + clip.getHeight();
-                clipRect[2] = clip.getLoX();
-                clipRect[3] = clip.getLoX() + clip.getWidth();
+                if (TEST_CLIP) {
+                    double small = clip.getHeight() / 8.0d;
+                    double half = (clip.getLoY() + clip.getHeight()) / 2.0d;
+                    clipRect[0] = half - small;
+                    clipRect[1] = half + small;
+                    small = clip.getWidth() / 4.0d;
+                    half = (clip.getLoX() + clip.getWidth()) / 2.0d;
+                    clipRect[2] = half - small;
+                    clipRect[3] = half + small;
+                } else {
+                    clipRect[0] = clip.getLoY();
+                    clipRect[1] = clip.getLoY() + clip.getHeight();
+                    clipRect[2] = clip.getLoX();
+                    clipRect[3] = clip.getLoX() + clip.getWidth();
+                }
 
                 // Enable clipping:
                 rdrCtx.doClip = true;
@@ -1118,6 +1147,11 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         logInfo("sun.java2d.renderer.clip.runtime.enable = "
                 + MarlinProperties.isDoClipRuntimeFlag());
 
+        logInfo("sun.java2d.renderer.clip.subdivider  = "
+                + MarlinProperties.isDoClipSubdivider());
+        logInfo("sun.java2d.renderer.clip.subdivider.minLength = "
+                + MarlinProperties.getSubdividerMinLength());
+
         // debugging parameters
         logInfo("sun.java2d.renderer.doStats          = "
                 + MarlinConst.DO_STATS);
@@ -1135,6 +1169,8 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinConst.LOG_UNSAFE_MALLOC);
 
         // quality settings
+        logInfo("sun.java2d.renderer.curve_len_err    = "
+                + MarlinProperties.getCurveLengthError());
         logInfo("sun.java2d.renderer.cubic_dec_d2     = "
                 + MarlinProperties.getCubicDecD2());
         logInfo("sun.java2d.renderer.cubic_inc_d1     = "

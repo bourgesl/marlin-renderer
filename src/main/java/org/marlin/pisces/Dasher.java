@@ -26,6 +26,8 @@
 package org.marlin.pisces;
 
 import java.util.Arrays;
+import org.marlin.pisces.TransformingPathConsumer2D.CurveBasicMonotonizer;
+import org.marlin.pisces.TransformingPathConsumer2D.CurveClipSplitter;
 import sun.awt.geom.PathConsumer2D;
 
 /**
@@ -43,7 +45,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
     /* huge circle with radius ~ 2E9 only needs 12 subdivision levels */
     static final int REC_LIMIT = 16;
-    static final float ERR = 0.01f;
+    static final float CURVE_LEN_ERR = MarlinProperties.getCurveLengthError(); // 0.01
     static final float MIN_T_INC = 1.0f / (1 << REC_LIMIT);
 
     // More than 24 bits of mantissa means we can no longer accurately
@@ -65,13 +67,13 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     private boolean dashOn;
     private float phase;
 
-    private float sx, sy;
-    private float x0, y0;
+    // The starting point of the path
+    private float sx0, sy0;
+    // the current point
+    private float cx0, cy0;
 
     // temporary storage for the current curve
     private final float[] curCurvepts;
-    // float precision correction (initial curve copy):
-    private final float[] initCurvepts = new float[8];
 
     // per-thread renderer context
     final RendererContext rdrCtx;
@@ -79,10 +81,33 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     // flag to recycle dash array copy
     boolean recycleDashes;
 
+    // We don't emit the first dash right away. If we did, caps would be
+    // drawn on it, but we need joins to be drawn if there's a closePath()
+    // So, we store the path elements that make up the first dash in the
+    // buffer below.
+    private float[] firstSegmentsBuffer; // dynamic array
+    private int firstSegidx;
+
     // dashes ref (dirty)
     final FloatArrayCache.Reference dashes_ref;
     // firstSegmentsBuffer ref (dirty)
     final FloatArrayCache.Reference firstSegmentsBuffer_ref;
+
+    // Bounds of the drawing region, at pixel precision.
+    private float[] clipRect;
+
+    // the outcode of the current point
+    private int cOutCode = 0;
+
+    private boolean subdivide = DO_CLIP_SUBDIVIDER;
+
+    private final LengthIterator li = new LengthIterator();
+
+    private final CurveClipSplitter curveSplitter;
+
+    private float cycleLen;
+    private boolean outside;
+    private float totalSkipLen;
 
     /**
      * Constructs a <code>Dasher</code>.
@@ -99,6 +124,8 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         // we need curCurvepts to be able to contain 2 curves because when
         // dashing curves, we need to subdivide it
         curCurvepts = new float[8 * 2];
+
+        this.curveSplitter = rdrCtx.curveClipSplitter;
     }
 
     /**
@@ -119,10 +146,13 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         // Normalize so 0 <= phase < dash[0]
         int sidx = 0;
         dashOn = true;
+
         float sum = 0.0f;
         for (float d : dash) {
             sum += d;
         }
+        this.cycleLen = sum;
+
         float cycles = phase / sum;
         if (phase < 0.0f) {
             if (-cycles >= MAX_CYCLES) {
@@ -171,6 +201,12 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
         this.recycleDashes = recycleDashes;
 
+        if (rdrCtx.doClip) {
+            this.clipRect = rdrCtx.clipRect;
+        } else {
+            this.clipRect = null;
+            this.cOutCode = 0;
+        }
         return this; // fluent API
     }
 
@@ -208,33 +244,42 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     @Override
     public void moveTo(final float x0, final float y0) {
         if (firstSegidx != 0) {
-            out.moveTo(sx, sy);
+            out.moveTo(sx0, sy0);
             emitFirstSegments();
         }
-        needsMoveTo = true;
+        this.needsMoveTo = true;
         this.idx = startIdx;
         this.dashOn = this.startDashOn;
         this.phase = this.startPhase;
-        this.sx = x0;
-        this.sy = y0;
-        this.x0 = x0;
-        this.y0 = y0;
+        this.cx0 = x0;
+        this.cy0 = y0;
+
+        // update starting point:
+        this.sx0 = x0;
+        this.sy0 = y0;
         this.starting = true;
+
+        if (clipRect != null) {
+            final int outcode = Helpers.outcode(x0, y0, clipRect);
+            this.cOutCode = outcode;
+            this.outside = false;
+            this.totalSkipLen = 0.0f;
+        }
     }
 
     private void emitSeg(float[] buf, int off, int type) {
         switch (type) {
         case 8:
-            out.curveTo(buf[off  ], buf[off+1],
-                        buf[off+2], buf[off+3],
-                        buf[off+4], buf[off+5]);
+            out.curveTo(buf[off    ], buf[off + 1],
+                        buf[off + 2], buf[off + 3],
+                        buf[off + 4], buf[off + 5]);
             return;
         case 6:
-            out.quadTo(buf[off  ], buf[off+1],
-                       buf[off+2], buf[off+3]);
+            out.quadTo(buf[off    ], buf[off + 1],
+                       buf[off + 2], buf[off + 3]);
             return;
         case 4:
-            out.lineTo(buf[off], buf[off+1]);
+            out.lineTo(buf[off], buf[off + 1]);
             return;
         default:
         }
@@ -250,12 +295,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         }
         firstSegidx = 0;
     }
-    // We don't emit the first dash right away. If we did, caps would be
-    // drawn on it, but we need joins to be drawn if there's a closePath()
-    // So, we store the path elements that make up the first dash in the
-    // buffer below.
-    private float[] firstSegmentsBuffer; // dynamic array
-    private int firstSegidx;
 
     // precondition: pts must be in relative coordinates (relative to x0,y0)
     private void goTo(final float[] pts, final int off, final int type,
@@ -264,14 +303,22 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final int index = off + type;
         final float x = pts[index - 4];
         final float y = pts[index - 3];
-
+/*
+        if (type == 8) {
+            System.out.println("seg["+on+"] len: "
+                    +Helpers.curvelen(pts[off - 2], pts[off - 1],
+                            pts[off    ], pts[off + 1],
+                        pts[off + 2], pts[off + 3],
+                        pts[off + 4], pts[off + 5]));
+        }
+*/
         if (on) {
             if (starting) {
                 goTo_starting(pts, off, type);
             } else {
                 if (needsMoveTo) {
                     needsMoveTo = false;
-                    out.moveTo(x0, y0);
+                    out.moveTo(cx0, cy0);
                 }
                 emitSeg(pts, off, type);
             }
@@ -282,8 +329,8 @@ final class Dasher implements PathConsumer2D, MarlinConst {
             }
             needsMoveTo = true;
         }
-        this.x0 = x;
-        this.y0 = y;
+        this.cx0 = x;
+        this.cy0 = y;
     }
 
     private void goTo_starting(final float[] pts, final int off, final int type) {
@@ -307,14 +354,58 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         firstSegidx = segIdx + len;
     }
 
-    private final static boolean USE_NAIVE_SUM = !DO_FIX_FLOAT_PREC;
-
     @Override
     public void lineTo(final float x1, final float y1) {
-        final float dx = x1 - x0;
-        final float dy = y1 - y0;
+        final int outcode0 = this.cOutCode;
 
-        float len = dx*dx + dy*dy;
+        if (clipRect != null) {
+            final int outcode1 = Helpers.outcode(x1, y1, clipRect);
+
+            // Should clip
+            final int orCode = (outcode0 | outcode1);
+
+            if (orCode != 0) {
+                final int sideCode = outcode0 & outcode1;
+
+                // basic rejection criteria:
+                if (sideCode == 0) {
+                    // ovelap clip:
+                    if (subdivide) {
+                        // avoid reentrance
+                        subdivide = false;
+                        // subdivide curve => callback with subdivided parts:
+                        boolean ret = curveSplitter.splitLine(cx0, cy0, x1, y1,
+                                                              orCode, this);
+                        // reentrance is done:
+                        subdivide = true;
+                        if (ret) {
+                            return;
+                        }
+                    }
+                    // already subdivided so render it
+                } else {
+                    this.cOutCode = outcode1;
+                    skipLineTo(x1, y1);
+                    return;
+                }
+            }
+
+            this.cOutCode = outcode1;
+
+            if (this.outside) {
+                this.outside = false;
+                // Adjust current index, phase & dash:
+                skipLen();
+            }
+        }
+        _lineTo(x1, y1);
+    }
+
+    private void _lineTo(final float x1, final float y1) {
+        final float dx = x1 - cx0;
+        final float dy = y1 - cy0;
+
+        float len = dx * dx + dy * dy;
         if (len == 0.0f) {
             return;
         }
@@ -333,10 +424,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         boolean _dashOn = dashOn;
         float _phase = phase;
 
-        float leftInThisDashSegment;
-        float el = 0.0f, ex = 0.0f, ey = 0.0f;
-        float d, dashdx, dashdy, p;
-        float z, t;
+        float leftInThisDashSegment, d;
 
         while (true) {
             d = _dash[_idx];
@@ -357,77 +445,116 @@ final class Dasher implements PathConsumer2D, MarlinConst {
                     _idx = (_idx + 1) % _dashLen;
                     _dashOn = !_dashOn;
                 }
-
-                // Save local state:
-                idx = _idx;
-                dashOn = _dashOn;
-                phase = _phase;
-                return;
+                break;
             }
 
-            dashdx = d * cx;
-            dashdy = d * cy;
-
-            if (_phase != 0.0f) {
-                p = leftInThisDashSegment / d;
-                dashdx *= p;
-                dashdy *= p;
+            if (_phase == 0.0f) {
+                _curCurvepts[0] = cx0 + d * cx;
+                _curCurvepts[1] = cy0 + d * cy;
+            } else {
+                _curCurvepts[0] = cx0 + leftInThisDashSegment * cx;
+                _curCurvepts[1] = cy0 + leftInThisDashSegment * cy;
             }
 
-if (USE_NAIVE_SUM) {
-            // naive sum:
-            _curCurvepts[0] = x0 + dashdx;
-            _curCurvepts[1] = y0 + dashdy;
-} else {
-            // kahan sum:
-            z = dashdx - ex;
-            t = x0 + z;
-            ex = (t - x0) - z;
-            _curCurvepts[0] = t;
-
-            // kahan sum:
-            z = dashdy - ey;
-            t = y0 + z;
-            ey = (t - y0) - z;
-            _curCurvepts[1] = t;
-}
             goTo(_curCurvepts, 0, 4, _dashOn);
 
-if (USE_NAIVE_SUM) {
-            // naive sum:
             len -= leftInThisDashSegment;
-} else {
-            // kahan sum:
-            z = leftInThisDashSegment - el;
-            t = len - z;
-            el = (len - t) - z;
-            len = t;
-}
             // Advance to next dash segment
             _idx = (_idx + 1) % _dashLen;
             _dashOn = !_dashOn;
             _phase = 0.0f;
         }
+        // Save local state:
+        idx = _idx;
+        dashOn = _dashOn;
+        phase = _phase;
     }
 
-    private final LengthIterator li = new LengthIterator();
+    private void skipLineTo(final float x1, final float y1) {
+        final float dx = x1 - cx0;
+        final float dy = y1 - cy0;
+
+        float len = dx * dx + dy * dy;
+        if (len != 0.0f) {
+            len = (float)Math.sqrt(len);
+        }
+
+        // Accumulate skipped length:
+        this.outside = true;
+        this.totalSkipLen += len;
+
+        // Fix initial move:
+        this.needsMoveTo = true;
+        this.starting = false;
+
+        this.cx0 = x1;
+        this.cy0 = y1;
+    }
+
+    public void skipLen() {
+        float len = this.totalSkipLen;
+        this.totalSkipLen = 0.0f;
+
+        final float[] _dash = dash;
+        final int _dashLen = this.dashLen;
+
+        int _idx = idx;
+        boolean _dashOn = dashOn;
+        float _phase = phase;
+
+        // -2 to ensure having 2 iterations of the post-loop
+        // to compensate the remaining phase
+        final long fullcycles = (long)Math.floor(len / cycleLen) - 2L;
+
+        if (fullcycles > 0L) {
+            len -= cycleLen * fullcycles;
+
+            final long iterations = fullcycles * _dashLen;
+            _idx = (int) (iterations + _idx) % _dashLen;
+            _dashOn = (iterations + (_dashOn ? 1L : 0L) & 1L) == 1L;
+        }
+
+        float leftInThisDashSegment, d;
+
+        while (true) {
+            d = _dash[_idx];
+            leftInThisDashSegment = d - _phase;
+
+            if (len <= leftInThisDashSegment) {
+                // Advance phase within current dash segment
+                _phase += len;
+
+                // TODO: compare float values using epsilon:
+                if (len == leftInThisDashSegment) {
+                    _phase = 0.0f;
+                    _idx = (_idx + 1) % _dashLen;
+                    _dashOn = !_dashOn;
+                }
+                break;
+            }
+
+            len -= leftInThisDashSegment;
+            // Advance to next dash segment
+            _idx = (_idx + 1) % _dashLen;
+            _dashOn = !_dashOn;
+            _phase = 0.0f;
+        }
+        // Save local state:
+        idx = _idx;
+        dashOn = _dashOn;
+        phase = _phase;
+    }
 
     // preconditions: curCurvepts must be an array of length at least 2 * type,
     // that contains the curve we want to dash in the first type elements
     private void somethingTo(final int type) {
-        if (pointCurve(curCurvepts, type)) {
+        final float[] _curCurvepts = curCurvepts;
+        if (pointCurve(_curCurvepts, type)) {
             return;
         }
         final LengthIterator _li = li;
-        final float[] _curCurvepts = curCurvepts;
         final float[] _dash = dash;
         final int _dashLen = this.dashLen;
-
-        final float[] _initCurvepts = initCurvepts;
-        if (DO_FIX_FLOAT_PREC) {
-            // optimize arraycopy (8 values faster than 6 = type):
-            System.arraycopy(_curCurvepts, 0, _initCurvepts, 0, 8);
-        }
 
         _li.initializeIterationOnCurve(_curCurvepts, type);
 
@@ -440,13 +567,12 @@ if (USE_NAIVE_SUM) {
         float prevT = 0.0f;
         float t;
         float leftInThisDashSegment = _dash[_idx] - _phase;
-        int c = 0;
 
         while ((t = _li.next(leftInThisDashSegment)) < 1.0f) {
             if (t != 0.0f) {
                 Helpers.subdivideAt((t - prevT) / (1.0f - prevT),
                                     _curCurvepts, curCurveoff,
-                                    _curCurvepts, type);
+                                    _curCurvepts, 0, type);
                 prevT = t;
                 goTo(_curCurvepts, 2, type, _dashOn);
                 curCurveoff = type;
@@ -456,16 +582,6 @@ if (USE_NAIVE_SUM) {
             _dashOn = !_dashOn;
             _phase = 0.0f;
             leftInThisDashSegment = _dash[_idx];
-
-            if (DO_FIX_FLOAT_PREC) {
-                if ((++c) == 10000) {
-                    c = 0;
-                    // Split from initial curve to correct from bias:
-                    Helpers.subdivideAt(prevT,
-                                        _initCurvepts, 0,
-                                        _curCurvepts, type);
-                }
-            }
         }
 
         goTo(_curCurvepts, curCurveoff + 2, type, _dashOn);
@@ -485,7 +601,29 @@ if (USE_NAIVE_SUM) {
         _li.reset();
     }
 
-    private static boolean pointCurve(float[] curve, int type) {
+    private void skipSomethingTo(final int type) {
+        final float[] _curCurvepts = curCurvepts;
+        if (pointCurve(_curCurvepts, type)) {
+            return;
+        }
+        final LengthIterator _li = li;
+
+        _li.initializeIterationOnCurve(_curCurvepts, type);
+
+        // In contrary to somethingTo(),
+        // just estimate properly the curve length:
+        final float len = _li.totalLength();
+
+        // Accumulate skipped length:
+        this.outside = true;
+        this.totalSkipLen += len;
+
+        // Fix initial move:
+        this.needsMoveTo = true;
+        this.starting = false;
+    }
+
+    private static boolean pointCurve(final float[] curve, final int type) {
         for (int i = 2; i < type; i++) {
             if (curve[i] != curve[i-2]) {
                 return false;
@@ -566,7 +704,7 @@ if (USE_NAIVE_SUM) {
             }
         }
 
-        void initializeIterationOnCurve(float[] pts, int type) {
+        void initializeIterationOnCurve(final float[] pts, final int type) {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(pts, 0, recCurveStack[0], 0, 8);
             this.curveType = type;
@@ -591,7 +729,7 @@ if (USE_NAIVE_SUM) {
         // 0 == false, 1 == true, -1 == invalid cached value.
         private int cachedHaveLowAcceleration = -1;
 
-        private boolean haveLowAcceleration(float err) {
+        private boolean haveLowAcceleration(final float err) {
             if (cachedHaveLowAcceleration == -1) {
                 final float len1 = curLeafCtrlPolyLengths[0];
                 final float len2 = curLeafCtrlPolyLengths[1];
@@ -680,7 +818,8 @@ if (USE_NAIVE_SUM) {
                 // we use cubicRootsInAB here, because we want only roots in 0, 1,
                 // and our quadratic root finder doesn't filter, so it's just a
                 // matter of convenience.
-                int n = Helpers.cubicRootsInAB(a, b, c, d, nextRoots, 0, 0.0f, 1.0f);
+                final int n = Helpers.cubicRootsInAB(a, b, c, d, nextRoots, 0, 0.0f, 1.0f);
+// TODO: check NaN is impossible
                 if (n == 1 && !Float.isNaN(nextRoots[0])) {
                     t = nextRoots[0];
                 }
@@ -701,6 +840,16 @@ if (USE_NAIVE_SUM) {
             return t;
         }
 
+        float totalLength() {
+            while (!done) {
+                goToNextLeaf();
+            }
+            // reset LengthIterator:
+            reset();
+
+            return lenAtNextT;
+        }
+
         float lastSegLen() {
             return lastSegLen;
         }
@@ -713,7 +862,7 @@ if (USE_NAIVE_SUM) {
             final boolean[] _sides = sidesRight;
             int _recLevel = recLevel;
             _recLevel--;
-            
+
             while(_sides[_recLevel]) {
                 if (_recLevel == 0) {
                     recLevel = 0;
@@ -725,17 +874,15 @@ if (USE_NAIVE_SUM) {
 
             _sides[_recLevel] = true;
             // optimize arraycopy (8 values faster than 6 = type):
-            System.arraycopy(recCurveStack[_recLevel], 0,
-                             recCurveStack[_recLevel+1], 0, 8);
-            _recLevel++;
-
+            System.arraycopy(recCurveStack[_recLevel++], 0,
+                             recCurveStack[_recLevel], 0, 8);
             recLevel = _recLevel;
             goLeft();
         }
 
         // go to the leftmost node from the current node. Return its length.
         private void goLeft() {
-            float len = onLeaf();
+            final float len = onLeaf();
             if (len >= 0.0f) {
                 lastT = nextT;
                 lenAtLastT = lenAtNextT;
@@ -746,7 +893,7 @@ if (USE_NAIVE_SUM) {
                 cachedHaveLowAcceleration = -1;
             } else {
                 Helpers.subdivide(recCurveStack[recLevel],
-                                  recCurveStack[recLevel+1],
+                                  recCurveStack[recLevel + 1],
                                   recCurveStack[recLevel], curveType);
 
                 sidesRight[recLevel] = false;
@@ -764,7 +911,7 @@ if (USE_NAIVE_SUM) {
 
             float x0 = curve[0], y0 = curve[1];
             for (int i = 2; i < _curveType; i += 2) {
-                final float x1 = curve[i], y1 = curve[i+1];
+                final float x1 = curve[i], y1 = curve[i + 1];
                 final float len = Helpers.linelen(x0, y0, x1, y1);
                 polyLen += len;
                 curLeafCtrlPolyLengths[(i >> 1) - 1] = len;
@@ -772,11 +919,14 @@ if (USE_NAIVE_SUM) {
                 y0 = y1;
             }
 
-            final float lineLen = Helpers.linelen(curve[0], curve[1],
-                                                  curve[_curveType-2],
-                                                  curve[_curveType-1]);
+            final float lineLen = Helpers.linelen(curve[0], curve[1], x0, y0);
 
-            if ((polyLen - lineLen) < ERR || recLevel == REC_LIMIT) {
+            if ((polyLen - lineLen) < CURVE_LEN_ERR || recLevel == REC_LIMIT) {
+/*
+                if (recLevel == REC_LIMIT) {
+                    System.out.println("REC_LIMIT[" + recLevel + "] reached !");
+                }
+*/
                 return (polyLen + lineLen) / 2.0f;
             }
             return -1.0f;
@@ -788,41 +938,193 @@ if (USE_NAIVE_SUM) {
                         final float x2, final float y2,
                         final float x3, final float y3)
     {
+        final int outcode0 = this.cOutCode;
+
+        if (clipRect != null) {
+            final int outcode1 = Helpers.outcode(x1, y1, clipRect);
+            final int outcode2 = Helpers.outcode(x2, y2, clipRect);
+            final int outcode3 = Helpers.outcode(x3, y3, clipRect);
+
+            // Should clip
+            final int orCode = (outcode0 | outcode1 | outcode2 | outcode3);
+            if (orCode != 0) {
+                final int sideCode = outcode0 & outcode1 & outcode2 & outcode3;
+
+                // basic rejection criteria:
+                if (sideCode == 0) {
+                    // ovelap clip:
+                    if (subdivide) {
+                        // avoid reentrance
+                        subdivide = false;
+                        // subdivide curve => callback with subdivided parts:
+                        boolean ret = curveSplitter.splitCurve(cx0, cy0, x1, y1, x2, y2, x3, y3,
+                                                               orCode, this);
+                        // reentrance is done:
+                        subdivide = true;
+                        if (ret) {
+                            return;
+                        }
+                    }
+                    // already subdivided so render it
+                } else {
+                    this.cOutCode = outcode3;
+                    skipCurveTo(x1, y1, x2, y2, x3, y3);
+                    return;
+                }
+            }
+
+            this.cOutCode = outcode3;
+
+            if (this.outside) {
+                this.outside = false;
+                // Adjust current index, phase & dash:
+                skipLen();
+            }
+        }
+        _curveTo(x1, y1, x2, y2, x3, y3);
+    }
+
+    private void _curveTo(final float x1, final float y1,
+                          final float x2, final float y2,
+                          final float x3, final float y3)
+    {
         final float[] _curCurvepts = curCurvepts;
-        _curCurvepts[0] = x0;        _curCurvepts[1] = y0;
-        _curCurvepts[2] = x1;        _curCurvepts[3] = y1;
-        _curCurvepts[4] = x2;        _curCurvepts[5] = y2;
-        _curCurvepts[6] = x3;        _curCurvepts[7] = y3;
-        somethingTo(8);
+
+        // monotonize curve:
+        final CurveBasicMonotonizer monotonizer
+            = rdrCtx.monotonizer.curve(cx0, cy0, x1, y1, x2, y2, x3, y3);
+
+        final int nSplits = monotonizer.nbSplits;
+        final float[] mid = monotonizer.middle;
+
+        for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
+/*
+            System.out.println("Part Curve "+Arrays.toString(Arrays.copyOfRange(mid, off, off + 8)));
+*/
+            // optimize arraycopy (8 values faster than 6 = type):
+            System.arraycopy(mid, off, _curCurvepts, 0, 8);
+
+            somethingTo(8);
+        }
+    }
+
+    private void skipCurveTo(final float x1, final float y1,
+                             final float x2, final float y2,
+                             final float x3, final float y3)
+    {
+        final float[] _curCurvepts = curCurvepts;
+        _curCurvepts[0] = cx0; _curCurvepts[1] = cy0;
+        _curCurvepts[2] = x1;  _curCurvepts[3] = y1;
+        _curCurvepts[4] = x2;  _curCurvepts[5] = y2;
+        _curCurvepts[6] = x3;  _curCurvepts[7] = y3;
+
+        skipSomethingTo(8);
+
+        this.cx0 = x3;
+        this.cy0 = y3;
     }
 
     @Override
     public void quadTo(final float x1, final float y1,
                        final float x2, final float y2)
     {
+        final int outcode0 = this.cOutCode;
+
+        if (clipRect != null) {
+            final int outcode1 = Helpers.outcode(x1, y1, clipRect);
+            final int outcode2 = Helpers.outcode(x2, y2, clipRect);
+
+            // Should clip
+            final int orCode = (outcode0 | outcode1 | outcode2);
+            if (orCode != 0) {
+                final int sideCode = outcode0 & outcode1 & outcode2;
+
+                // basic rejection criteria:
+                if (sideCode == 0) {
+                    // ovelap clip:
+                    if (subdivide) {
+                        // avoid reentrance
+                        subdivide = false;
+                        // subdivide curve => call lineTo() with subdivided curves:
+                        boolean ret = curveSplitter.splitQuad(cx0, cy0, x1, y1,
+                                                              x2, y2, orCode, this);
+                        // reentrance is done:
+                        subdivide = true;
+                        if (ret) {
+                            return;
+                        }
+                    }
+                    // already subdivided so render it
+                } else {
+                    this.cOutCode = outcode2;
+                    skipQuadTo(x1, y1, x2, y2);
+                    return;
+                }
+            }
+
+            this.cOutCode = outcode2;
+
+            if (this.outside) {
+                this.outside = false;
+                // Adjust current index, phase & dash:
+                skipLen();
+            }
+        }
+        _quadTo(x1, y1, x2, y2);
+    }
+
+    private void _quadTo(final float x1, final float y1,
+                         final float x2, final float y2)
+    {
         final float[] _curCurvepts = curCurvepts;
-        _curCurvepts[0] = x0;        _curCurvepts[1] = y0;
-        _curCurvepts[2] = x1;        _curCurvepts[3] = y1;
-        _curCurvepts[4] = x2;        _curCurvepts[5] = y2;
-        somethingTo(6);
+
+        // monotonize quad:
+        final CurveBasicMonotonizer monotonizer
+            = rdrCtx.monotonizer.quad(cx0, cy0, x1, y1, x2, y2);
+
+        final int nSplits = monotonizer.nbSplits;
+        final float[] mid = monotonizer.middle;
+
+        for (int i = 0, off = 0; i <= nSplits; i++, off += 4) {
+            // optimize arraycopy (8 values faster than 6 = type):
+            System.arraycopy(mid, off, _curCurvepts, 0, 8);
+
+            somethingTo(6);
+        }
+    }
+
+    private void skipQuadTo(final float x1, final float y1,
+                            final float x2, final float y2)
+    {
+        final float[] _curCurvepts = curCurvepts;
+        _curCurvepts[0] = cx0; _curCurvepts[1] = cy0;
+        _curCurvepts[2] = x1;  _curCurvepts[3] = y1;
+        _curCurvepts[4] = x2;  _curCurvepts[5] = y2;
+
+        skipSomethingTo(6);
+
+        this.cx0 = x2;
+        this.cy0 = y2;
     }
 
     @Override
     public void closePath() {
-        lineTo(sx, sy);
+        if (cx0 != sx0 || cy0 != sy0) {
+            lineTo(sx0, sy0);
+        }
         if (firstSegidx != 0) {
             if (!dashOn || needsMoveTo) {
-                out.moveTo(sx, sy);
+                out.moveTo(sx0, sy0);
             }
             emitFirstSegments();
         }
-        moveTo(sx, sy);
+        moveTo(sx0, sy0);
     }
 
     @Override
     public void pathDone() {
         if (firstSegidx != 0) {
-            out.moveTo(sx, sy);
+            out.moveTo(sx0, sy0);
             emitFirstSegments();
         }
         out.pathDone();

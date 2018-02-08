@@ -29,11 +29,16 @@ import org.junit.Test;
  */
 public class RunJUnitLongTest {
 
-    private final static String[] NO_ARGS = new String[0];
-
     @Test
     public void clipTests() {
-        ClipShapeTest.main(NO_ARGS);
+        ClipShapeTest.main(new String[]{"-poly"});                    // OK
+/*
+        ClipShapeTest.main(new String[]{"-poly", "-doDash"});         // OK
+        ClipShapeTest.main(new String[]{"-quad"});                    // OK (offsets are slightly fixed)
+        ClipShapeTest.main(new String[]{"-quad", "-doDash"});         // OK (offsets are less different)
+*/
+        ClipShapeTest.main(new String[]{"-cubic"});                   // OK (offsets are slightly fixed)
+        ClipShapeTest.main(new String[]{"-cubic", "-doDash"});        // OK
     }
 
     @Test

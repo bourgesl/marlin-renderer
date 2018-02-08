@@ -63,7 +63,7 @@ public final class ClipShapeTest {
 
     static boolean TX_SCALE = false;
     static boolean TX_SHEAR = false;
-    
+
     static final boolean TEST_STROKER = true;
     static final boolean TEST_FILLER = true;
 
@@ -76,18 +76,23 @@ public final class ClipShapeTest {
     static final int TESTH = 100;
 
     // shape settings:
-    static final ShapeMode SHAPE_MODE = ShapeMode.FIFTY_LINE_POLYS;
+    static ShapeMode SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
+
+    static int THRESHOLD_DELTA;
+    static long THRESHOLD_NBPIX;
+
     static final boolean SHAPE_REPEAT = true;
 
     // dump path on console:
     static final boolean DUMP_SHAPE = true;
 
-    static final boolean SHOW_DETAILS = true;
+    static final boolean SHOW_DETAILS = false; // disabled
     static final boolean SHOW_OUTLINE = true;
     static final boolean SHOW_POINTS = true;
     static final boolean SHOW_INFO = false;
 
     static final int MAX_SHOW_FRAMES = 10;
+    static final int MAX_SAVE_FRAMES = 100;
 
     // use fixed seed to reproduce always same polygons between tests
     static final boolean FIXED_SEED = false;
@@ -111,14 +116,14 @@ public final class ClipShapeTest {
     static final Random RANDOM = new Random(SEED);
 
     static final File OUTPUT_DIR = new File(".");
-    
+
     static final AtomicBoolean isMarlin = new AtomicBoolean();
     static final AtomicBoolean isClipRuntime = new AtomicBoolean();
-    
+
     static {
         Locale.setDefault(Locale.US);
 
-        // Get Marlin runtime state from its log:
+        // FIRST: Get Marlin runtime state from its log:
 
         // initialize j.u.l Looger:
         final Logger log = Logger.getLogger("sun.java2d.marlin");
@@ -162,6 +167,23 @@ public final class ClipShapeTest {
         // disable static clipping setting:
         System.setProperty("sun.java2d.renderer.clip", "false");
         System.setProperty("sun.java2d.renderer.clip.runtime.enable", "true");
+
+        // enable subdivider:
+        System.setProperty("sun.java2d.renderer.clip.subdivider", "true");
+
+        // disable min length check: always subdivide curves at clip edges
+        System.setProperty("sun.java2d.renderer.clip.subdivider.minLength", "-1");
+
+        // If any curve, increase curve accuracy:
+        // curve length max error:
+        System.setProperty("sun.java2d.renderer.curve_len_err", "1e-4");
+
+        // quad max error:
+        System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
+
+        // cubic min/max error:
+        System.setProperty("sun.java2d.renderer.cubic_dec_d2", "1e-3");
+        System.setProperty("sun.java2d.renderer.cubic_inc_d1", "1e-4"); // or disabled ~ 1e-6
     }
 
     /**
@@ -170,24 +192,67 @@ public final class ClipShapeTest {
      */
     public static void main(String[] args) {
         boolean runSlowTests = false;
-        
+
         for (String arg : args) {
             if ("-slow".equals(arg)) {
-                System.out.println("runSlowTests: enabled.");
+                System.out.println("slow: enabled.");
                 runSlowTests = true;
-            }
-            if ("-doScale".equals(arg)) {
+            } else if ("-doScale".equals(arg)) {
                 System.out.println("doScale: enabled.");
                 TX_SCALE = true;
-            }
-            if ("-doShear".equals(arg)) {
+            } else if ("-doShear".equals(arg)) {
                 System.out.println("doShear: enabled.");
                 TX_SHEAR = true;
+            } else if ("-doDash".equals(arg)) {
+                System.out.println("doDash: enabled.");
+                USE_DASHES = true;
+            } else if ("-doVarStroke".equals(arg)) {
+                System.out.println("doVarStroke: enabled.");
+                USE_VAR_STROKE = true;
+            }
+            // shape mode:
+            else if (arg.equalsIgnoreCase("-poly")) {
+                SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
+            } else if (arg.equalsIgnoreCase("-bigpoly")) {
+                SHAPE_MODE = ShapeMode.FIFTY_LINE_POLYS;
+            } else if (arg.equalsIgnoreCase("-quad")) {
+                SHAPE_MODE = ShapeMode.FOUR_QUADS;
+            } else if (arg.equalsIgnoreCase("-cubic")) {
+                SHAPE_MODE = ShapeMode.TWO_CUBICS;
+            } else if (arg.equalsIgnoreCase("-mixed")) {
+                SHAPE_MODE = ShapeMode.MIXED;
             }
         }
 
+        System.out.println("Shape mode: " + SHAPE_MODE);
+
+        // adjust image comparison thresholds:
+        switch(SHAPE_MODE) {
+            case TWO_CUBICS:
+                // Define uncertainty for curves:
+                THRESHOLD_DELTA = 32; //  / 256
+                THRESHOLD_NBPIX = 128; //  / 10000
+                break;
+            case FOUR_QUADS:
+            case MIXED:
+                // Define uncertainty for quads:
+                // curve subdivision causes curves to be smaller
+                // then curve offsets are different (more accurate)
+                THRESHOLD_DELTA = 64;  // 64 / 256
+                THRESHOLD_NBPIX = 256; // 256 / 10000
+                break;
+            default:
+                // Define uncertainty for lines:
+                // float variant have higher uncertainty
+                THRESHOLD_DELTA = 4;
+                THRESHOLD_NBPIX = 4;
+        }
+
+        System.out.println("THRESHOLD_DELTA: "+THRESHOLD_DELTA);
+        System.out.println("THRESHOLD_NBPIX: "+THRESHOLD_NBPIX);
+
         if (runSlowTests) {
-            NUM_TESTS = 20000; // or 100000 (very slow)
+            NUM_TESTS = 10000; // or 100000 (very slow)
             USE_DASHES = true;
             USE_VAR_STROKE = true;
         }
@@ -200,14 +265,21 @@ public final class ClipShapeTest {
             // TODO: test affine transforms ?
 
             if (TEST_STROKER) {
-                final float[][] dashArrays = (USE_DASHES)
-                        ? new float[][]{null, new float[]{1f, 2f}}
+                final float[][] dashArrays = (USE_DASHES) ?
+// small
+//                        new float[][]{new float[]{1f, 2f}}
+// normal
+                        new float[][]{new float[]{13f, 7f}}
+// large (prime)
+//                        new float[][]{new float[]{41f, 7f}}
+// none
                         : new float[][]{null};
 
-                System.out.println("dashes: " + Arrays.toString(dashArrays));
+                System.out.println("dashes: " + Arrays.deepToString(dashArrays));
 
                 final float[] strokeWidths = (USE_VAR_STROKE)
-                        ? new float[5] : new float[]{8f};
+                                                ? new float[5] :
+                                                  new float[]{10f};
 
                 int nsw = 0;
                 if (USE_VAR_STROKE) {
@@ -311,22 +383,20 @@ public final class ClipShapeTest {
                     final double ratio = (100.0 * testCtx.histPix.count) / testCtx.histAll.count;
                     System.out.println("Diff ratio: " + testName + " = " + trimTo3Digits(ratio) + " %");
 
-                    if (false) {
-                        saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
-                    }
-
-                    if (DUMP_SHAPE) {
-                        dumpShape(p2d);
-                    }
                     if (nd < MAX_SHOW_FRAMES) {
                         if (SHOW_DETAILS) {
                             paintShapeDetails(g2dOff, p2d);
                             paintShapeDetails(g2dOn, p2d);
                         }
 
-                        saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
-                        saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
-                        saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
+                        if (nd < MAX_SAVE_FRAMES) {
+                            if (DUMP_SHAPE) {
+                                dumpShape(p2d);
+                            }
+                            saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
+                            saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
+                            saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
+                        }
                     }
                 }
             }
@@ -371,7 +441,7 @@ public final class ClipShapeTest {
             g2d.setStroke(createStroke(ts));
         }
         g2d.setColor(Color.GRAY);
-        
+
         // Test scale
         if (TX_SCALE) {
             g2d.scale(1.2, 1.2);
@@ -500,6 +570,8 @@ public final class ClipShapeTest {
                     }
                     break;
                 case PathIterator.SEG_LINETO:
+                case PathIterator.SEG_QUADTO:
+                case PathIterator.SEG_CUBICTO:
                     if (SHOW_POINTS) {
                         g2d.setColor((nLine % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
                     }
@@ -544,6 +616,12 @@ public final class ClipShapeTest {
                     break;
                 case PathIterator.SEG_LINETO:
                     System.out.println("p2d.lineTo(" + coords[0] + ", " + coords[1] + ");");
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    System.out.println("p2d.quadTo(" + coords[0] + ", " + coords[1] + ", " + coords[2] + ", " + coords[3] + ");");
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    System.out.println("p2d.curveTo(" + coords[0] + ", " + coords[1] + ", " + coords[2] + ", " + coords[3] + ", " + coords[4] + ", " + coords[5] + ");");
                     break;
                 case PathIterator.SEG_CLOSE:
                     System.out.println("p2d.closePath();");
@@ -610,10 +688,54 @@ public final class ClipShapeTest {
 
         @Override
         public String toString() {
+            if (isStroke()) {
+                return "TestSetup{id=" + id + ", shapeMode=" + shapeMode + ", closed=" + closed
+                        + ", strokeWidth=" + strokeWidth + ", strokeCap=" + getCap(strokeCap) + ", strokeJoin=" + getJoin(strokeJoin)
+                        + ((dashes != null) ? ", dashes: " + Arrays.toString(dashes) : "")
+                        + '}';
+            }
             return "TestSetup{id=" + id + ", shapeMode=" + shapeMode + ", closed=" + closed
-                    + ", strokeWidth=" + strokeWidth + ", strokeCap=" + strokeCap + ", strokeJoin=" + strokeJoin
-                    + ((dashes != null) ? ", dashes: " + Arrays.toString(dashes) : "")
-                    + ", windingRule=" + windingRule + '}';
+                    + ", fill"
+                    + ", windingRule=" + getWindingRule(windingRule) + '}';
+        }
+
+        private static String getCap(final int cap) {
+            switch (cap) {
+                case BasicStroke.CAP_BUTT:
+                    return "CAP_BUTT";
+                case BasicStroke.CAP_ROUND:
+                    return "CAP_ROUND";
+                case BasicStroke.CAP_SQUARE:
+                    return "CAP_SQUARE";
+                default:
+                    return "";
+            }
+
+        }
+
+        private static String getJoin(final int join) {
+            switch (join) {
+                case BasicStroke.JOIN_MITER:
+                    return "JOIN_MITER";
+                case BasicStroke.JOIN_ROUND:
+                    return "JOIN_ROUND";
+                case BasicStroke.JOIN_BEVEL:
+                    return "JOIN_BEVEL";
+                default:
+                    return "";
+            }
+
+        }
+
+        private static String getWindingRule(final int rule) {
+            switch (rule) {
+                case PathIterator.WIND_EVEN_ODD:
+                    return "WIND_EVEN_ODD";
+                case PathIterator.WIND_NON_ZERO:
+                    return "WIND_NON_ZERO";
+                default:
+                    return "";
+            }
         }
     }
 
@@ -648,15 +770,22 @@ public final class ClipShapeTest {
             // max difference on grayscale values:
             v = (int) Math.ceil(Math.abs(dg / 3.0));
 
-            aDifPix[i] = toInt(v, v, v);
+// TODO: count warnings
+            if (v <= THRESHOLD_DELTA) {
+                aDifPix[i] = 0;
+            } else {
+                aDifPix[i] = toInt(v, v, v);
 
-            localCtx.add(v);
+                localCtx.add(v);
+            }
             globalCtx.add(v);
         }
 
-        if (!localCtx.isDiff()) {
+        if (!localCtx.isDiff() || (localCtx.histPix.count <= THRESHOLD_NBPIX)) {
             return null;
         }
+
+        localCtx.dump();
 
         return diffImage;
     }

@@ -47,6 +47,19 @@ final class Helpers implements MarlinConst {
         return (d <= err && d >= -err);
     }
 
+    public static float evalCubic(final float a, final float b,
+                                  final float c, final float d,
+                                  final float t)
+    {
+        return t * (t * (t * a + b) + c) + d;
+    }
+
+    public static float evalQuad(final float a, final float b,
+                                 final float c, final float t)
+    {
+        return t * (t * a + b) + c;
+    }
+
     static int quadraticRoots(final float a, final float b, final float c,
                               final float[] zeroes, final int off)
     {
@@ -76,24 +89,29 @@ final class Helpers implements MarlinConst {
     }
 
     // find the roots of g(t) = d*t^3 + a*t^2 + b*t + c in [A,B)
-    static int cubicRootsInAB(final float d, float a, float b, float c,
+    public static int cubicRootsInAB(final float d0, float a0, float b0, float c0,
                               final float[] pts, final int off,
                               final float A, final float B)
     {
-        if (d == 0.0f) {
-            final int num = quadraticRoots(a, b, c, pts, off);
+        if (d0 == 0.0f) {
+            final int num = quadraticRoots(a0, b0, c0, pts, off);
             return filterOutNotInAB(pts, off, num, A, B) - off;
         }
         // From Graphics Gems:
-        // http://tog.acm.org/resources/GraphicsGems/gems/Roots3And4.c
+        // https://github.com/erich666/GraphicsGems/blob/master/gems/Roots3And4.c
         // (also from awt.geom.CubicCurve2D. But here we don't need as
         // much accuracy and we don't want to create arrays so we use
         // our own customized version).
 
         // normal form: x^3 + ax^2 + bx + c = 0
-        a /= d;
-        b /= d;
-        c /= d;
+
+        // 2018.1: Need double precision if d is very small (flat curve) !
+        /*
+         * TODO: cleanup all that code after reading Roots3And4.c
+         */
+        final double a = ((double)a0) / d0;
+        final double b = ((double)b0) / d0;
+        final double c = ((double)c0) / d0;
 
         //  substitute x = y - A/3 to eliminate quadratic term:
         //     x^3 +Px + Q = 0
@@ -103,9 +121,10 @@ final class Helpers implements MarlinConst {
         // p = P/3
         // q = Q/2
         // instead and use those values for simplicity of the code.
+        final double sub = (1.0d / 3.0d) * a;
         final double sq_A = a * a;
-        final double p = (1.0d/3.0d) * ((-1.0d/3.0d) * sq_A + b);
-        final double q = (1.0d/2.0d) * ((2.0d/27.0d) * a * sq_A - (1.0d/3.0d) * a * b + c);
+        final double p = (1.0d / 3.0d) * ((-1.0d / 3.0d) * sq_A + b);
+        final double q = (1.0d / 2.0d) * ((2.0d / 27.0d) * a * sq_A - sub * b + c);
 
         // use Cardano's formula
 
@@ -115,31 +134,25 @@ final class Helpers implements MarlinConst {
         int num;
         if (D < 0.0d) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = (1.0d/3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
+            final double phi = (1.0d / 3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
             final double t = 2.0d * Math.sqrt(-p);
 
-            pts[off    ] = (float) ( t * FastMath.cos(phi));
-            pts[off + 1] = (float) (-t * FastMath.cos(phi + (Math.PI / 3.0d)));
-            pts[off + 2] = (float) (-t * FastMath.cos(phi - (Math.PI / 3.0d)));
+            pts[off    ] = (float) ( t * FastMath.cos(phi) - sub);
+            pts[off + 1] = (float) (-t * FastMath.cos(phi + (Math.PI / 3.0d)) - sub);
+            pts[off + 2] = (float) (-t * FastMath.cos(phi - (Math.PI / 3.0d)) - sub);
             num = 3;
         } else {
             final double sqrt_D = Math.sqrt(D);
             final double u =   FastMath.cbrt(sqrt_D - q);
             final double v = - FastMath.cbrt(sqrt_D + q);
 
-            pts[off    ] = (float) (u + v);
+            pts[off    ] = (float) (u + v - sub);
             num = 1;
 
             if (within(D, 0.0d, 1e-8d)) {
-                pts[off + 1] = -(pts[off] / 2.0f);
+                pts[off + 1] = (float)((-1.0d / 2.0d) * (u + v) - sub);
                 num = 2;
             }
-        }
-
-        final float sub = (1.0f/3.0f) * a;
-
-        for (int i = 0; i < num; ++i) {
-            pts[off + i] -= sub;
         }
 
         return filterOutNotInAB(pts, off, num, A, B) - off;
@@ -158,17 +171,174 @@ final class Helpers implements MarlinConst {
         return ret;
     }
 
-    static float linelen(float x1, float y1, float x2, float y2) {
-        final float dx = x2 - x1;
-        final float dy = y2 - y1;
-        return (float) Math.sqrt(dx*dx + dy*dy);
+    static float fastLineLen(final float x0, final float y0,
+                             final float x1, final float y1)
+    {
+        final float dx = x1 - x0;
+        final float dy = y1 - y0;
+
+        // use manhattan norm:
+        return Math.abs(dx) + Math.abs(dy);
     }
 
-    static void subdivide(final float[] src, 
+    static float linelen(final float x0, final float y0,
+                         final float x1, final float y1)
+    {
+        final float dx = x1 - x0;
+        final float dy = y1 - y0;
+        return (float) Math.sqrt(dx * dx + dy * dy);
+    }
+
+    static float fastQuadLen(final float x0, final float y0,
+                             final float x1, final float y1,
+                             final float x2, final float y2)
+    {
+        final float dx1 = x1 - x0;
+        final float dx2 = x2 - x1;
+        final float dy1 = y1 - y0;
+        final float dy2 = y2 - y1;
+
+        // use manhattan norm:
+        return Math.abs(dx1) + Math.abs(dx2)
+             + Math.abs(dy1) + Math.abs(dy2);
+    }
+
+    static float quadlen(final float x0, final float y0,
+                         final float x1, final float y1,
+                         final float x2, final float y2)
+    {
+        return (linelen(x0, y0, x1, y1)
+                + linelen(x1, y1, x2, y2)
+                + linelen(x0, y0, x2, y2)) / 2.0f;
+    }
+
+
+    static float fastCurvelen(final float x0, final float y0,
+                              final float x1, final float y1,
+                              final float x2, final float y2,
+                              final float x3, final float y3)
+    {
+        final float dx1 = x1 - x0;
+        final float dx2 = x2 - x1;
+        final float dx3 = x3 - x2;
+        final float dy1 = y1 - y0;
+        final float dy2 = y2 - y1;
+        final float dy3 = y3 - y2;
+
+        // use manhattan norm:
+        return Math.abs(dx1) + Math.abs(dx2) + Math.abs(dx3)
+             + Math.abs(dy1) + Math.abs(dy2) + Math.abs(dy3);
+    }
+
+    static float curvelen(final float x0, final float y0,
+                          final float x1, final float y1,
+                          final float x2, final float y2,
+                          final float x3, final float y3)
+    {
+        return (linelen(x0, y0, x1, y1)
+              + linelen(x1, y1, x2, y2)
+              + linelen(x2, y2, x3, y3)
+              + linelen(x0, y0, x3, y3)) / 2.0f;
+    }
+
+    // finds values of t where the curve in pts should be subdivided in order
+    // to get good offset curves a distance of w away from the middle curve.
+    // Stores the points in ts, and returns how many of them there were.
+    static int findSubdivPoints(final Curve c, final float[] pts,
+                                final float[] ts, final int type,
+                                final float w2)
+    {
+        final float x12 = pts[2] - pts[0];
+        final float y12 = pts[3] - pts[1];
+        // if the curve is already parallel to either axis we gain nothing
+        // from rotating it.
+        if ((y12 != 0.0f && x12 != 0.0f)) {
+            // we rotate it so that the first vector in the control polygon is
+            // parallel to the x-axis. This will ensure that rotated quarter
+            // circles won't be subdivided.
+            final float hypot = (float)Math.sqrt(x12 * x12 + y12 * y12);
+            final float cos = x12 / hypot;
+            final float sin = y12 / hypot;
+            final float x1 = cos * pts[0] + sin * pts[1];
+            final float y1 = cos * pts[1] - sin * pts[0];
+            final float x2 = cos * pts[2] + sin * pts[3];
+            final float y2 = cos * pts[3] - sin * pts[2];
+            final float x3 = cos * pts[4] + sin * pts[5];
+            final float y3 = cos * pts[5] - sin * pts[4];
+
+            switch(type) {
+            case 8:
+                final float x4 = cos * pts[6] + sin * pts[7];
+                final float y4 = cos * pts[7] - sin * pts[6];
+                c.set(x1, y1, x2, y2, x3, y3, x4, y4);
+                break;
+            case 6:
+                c.set(x1, y1, x2, y2, x3, y3);
+                break;
+            default:
+            }
+        } else {
+            c.set(pts, type);
+        }
+
+        int ret = 0;
+        // we subdivide at values of t such that the remaining rotated
+        // curves are monotonic in x and y.
+        ret += c.dxRoots(ts, ret);
+        ret += c.dyRoots(ts, ret);
+
+        // subdivide at inflection points.
+        if (type == 8) {
+            // quadratic curves can't have inflection points
+            ret += c.infPoints(ts, ret);
+        }
+
+        // now we must subdivide at points where one of the offset curves will have
+        // a cusp. This happens at ts where the radius of curvature is equal to w.
+        ret += c.rootsOfROCMinusW(ts, ret, w2, 0.0001f);
+
+        ret = filterOutNotInAB(ts, 0, ret, 0.0001f, 0.9999f);
+        isort(ts, ret);
+        return ret;
+    }
+
+    // finds values of t where the curve in pts should be subdivided in order
+    // to get intersections with the given clip rectangle.
+    // Stores the points in ts, and returns how many of them there were.
+    static int findClipPoints(final Curve curve, final float[] pts,
+                              final float[] ts, final int type,
+                              final int outCodeOR,
+                              final float[] clipRect)
+    {
+        curve.set(pts, type);
+
+        // clip rectangle (ymin, ymax, xmin, xmax)
+        int ret = 0;
+
+        if ((outCodeOR & OUTCODE_LEFT) != 0) {
+            ret += curve.xPoints(ts, ret, clipRect[2]);
+        }
+        if ((outCodeOR & OUTCODE_RIGHT) != 0) {
+            ret += curve.xPoints(ts, ret, clipRect[3]);
+        }
+        if ((outCodeOR & OUTCODE_TOP) != 0) {
+            ret += curve.yPoints(ts, ret, clipRect[0]);
+        }
+        if ((outCodeOR & OUTCODE_BOTTOM) != 0) {
+            ret += curve.yPoints(ts, ret, clipRect[1]);
+        }
+        isort(ts, ret);
+        return ret;
+    }
+
+    static void subdivide(final float[] src,
                           final float[] left, final float[] right,
                           final int type)
     {
         switch(type) {
+        case 4:
+            subdivideLine(src, left, right);
+            return;
         case 6:
             subdivideQuad(src, left, right);
             return;
@@ -181,13 +351,13 @@ final class Helpers implements MarlinConst {
     }
 
     static void isort(final float[] a, final int len) {
-        for (int i = 1, end = len; i < end; i++) {
-            float ai = a[i];
-            int j = i - 1;
+        for (int i = 1, j; i < len; i++) {
+            final float ai = a[i];
+            j = i - 1;
             for (; j >= 0 && a[j] > ai; j--) {
-                a[j+1] = a[j];
+                a[j + 1] = a[j];
             }
-            a[j+1] = ai;
+            a[j + 1] = ai;
         }
     }
 
@@ -228,10 +398,10 @@ final class Helpers implements MarlinConst {
         float cy2 = src[5];
         float  x2 = src[6];
         float  y2 = src[7];
-        
+
         left[0]  = x1;
         left[1]  = y1;
-        
+
         right[6] = x2;
         right[7] = y2;
 
@@ -265,7 +435,7 @@ final class Helpers implements MarlinConst {
         right[5] = y2;
     }
 
-    static void subdivideCubicAt(final float t, 
+    static void subdivideCubicAt(final float t,
                                  final float[] src, final int offS,
                                  final float[] pts, final int offL, final int offR)
     {
@@ -280,7 +450,7 @@ final class Helpers implements MarlinConst {
 
         pts[offL    ] = x1;
         pts[offL + 1] = y1;
-        
+
         pts[offR + 6] = x2;
         pts[offR + 7] = y2;
 
@@ -288,10 +458,10 @@ final class Helpers implements MarlinConst {
         y1 =  y1 + t * (cy1 - y1);
         x2 = cx2 + t * (x2 - cx2);
         y2 = cy2 + t * (y2 - cy2);
-        
+
         float cx = cx1 + t * (cx2 - cx1);
         float cy = cy1 + t * (cy2 - cy1);
-        
+
         cx1 =  x1 + t * (cx - x1);
         cy1 =  y1 + t * (cy - y1);
         cx2 =  cx + t * (x2 - cx);
@@ -314,6 +484,31 @@ final class Helpers implements MarlinConst {
         pts[offR + 5] = y2;
     }
 
+    static void subdivideLine(final float[] src,
+                              final float[] left,
+                              final float[] right)
+    {
+        float x1 = src[0];
+        float y1 = src[1];
+        float x2 = src[2];
+        float y2 = src[3];
+
+        left[0]  = x1;
+        left[1]  = y1;
+
+        right[2] = x2;
+        right[3] = y2;
+
+        float cx = (x1 + x2) / 2.0f;
+        float cy = (y1 + y2) / 2.0f;
+
+        left[2] = cx;
+        left[3] = cy;
+
+        right[0] = cx;
+        right[1] = cy;
+    }
+
     static void subdivideQuad(final float[] src,
                               final float[] left,
                               final float[] right)
@@ -324,9 +519,10 @@ final class Helpers implements MarlinConst {
         float cy = src[3];
         float x2 = src[4];
         float y2 = src[5];
-        
+
         left[0]  = x1;
         left[1]  = y1;
+
         right[4] = x2;
         right[5] = y2;
 
@@ -336,7 +532,7 @@ final class Helpers implements MarlinConst {
         y2 = (y2 + cy) / 2.0f;
         cx = (x1 + x2) / 2.0f;
         cy = (y1 + y2) / 2.0f;
-        
+
         left[2] = x1;
         left[3] = y1;
         left[4] = cx;
@@ -348,7 +544,7 @@ final class Helpers implements MarlinConst {
         right[3] = y2;
     }
 
-    static void subdivideQuadAt(final float t, 
+    static void subdivideQuadAt(final float t,
                                 final float[] src, final int offS,
                                 final float[] pts, final int offL, final int offR)
     {
@@ -358,10 +554,10 @@ final class Helpers implements MarlinConst {
         float cy = src[offS + 3];
         float x2 = src[offS + 4];
         float y2 = src[offS + 5];
-        
+
         pts[offL    ] = x1;
         pts[offL + 1] = y1;
-        
+
         pts[offR + 4] = x2;
         pts[offR + 5] = y2;
 
@@ -383,19 +579,42 @@ final class Helpers implements MarlinConst {
         pts[offR + 3] = y2;
     }
 
-    static void subdivideAt(final float t, 
-                            final float[] src, final int offS, 
-                            final float[] pts, final int type)
+    static void subdivideLineAt(final float t,
+                                final float[] src, final int offS,
+                                final float[] pts, final int offL, final int offR)
     {
-        switch(type) {
-        case 8:
-            subdivideCubicAt(t, src, offS, pts, 0, type);
-            return;
-        case 6:
-            subdivideQuadAt(t, src, offS, pts, 0, type);
-            return;
-        default:
-            throw new InternalError("Unsupported curve type");
+        float x1 = src[offS    ];
+        float y1 = src[offS + 1];
+        float x2 = src[offS + 2];
+        float y2 = src[offS + 3];
+
+        pts[offL    ] = x1;
+        pts[offL + 1] = y1;
+
+        pts[offR + 2] = x2;
+        pts[offR + 3] = y2;
+
+        x1 = x1 + t * (x2 - x1);
+        y1 = y1 + t * (y2 - y1);
+
+        pts[offL + 2] = x1;
+        pts[offL + 3] = y1;
+
+        pts[offR    ] = x1;
+        pts[offR + 1] = y1;
+    }
+
+    static void subdivideAt(final float t,
+                            final float[] src, final int offS,
+                            final float[] pts, final int offL, final int type)
+    {
+        // if instead of switch (perf + most probable cases first)
+        if (type == 8) {
+            subdivideCubicAt(t, src, offS, pts, offL, offL + type);
+        } else if (type == 4) {
+            subdivideLineAt(t, src, offS, pts, offL, offL + type);
+        } else {
+            subdivideQuadAt(t, src, offS, pts, offL, offL + type);
         }
     }
 

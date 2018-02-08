@@ -31,6 +31,8 @@ import org.marlin.geom.Path2D;
 import org.marlin.ReentrantContext;
 import org.marlin.pisces.ArrayCacheConst.CacheStats;
 import org.marlin.pisces.DMarlinRenderingEngine.NormalizingPathIterator;
+import org.marlin.pisces.DTransformingPathConsumer2D.CurveBasicMonotonizer;
+import org.marlin.pisces.DTransformingPathConsumer2D.CurveClipSplitter;
 
 /**
  * This class is a renderer context dedicated to a single thread
@@ -83,6 +85,10 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     boolean closedPath = false;
     // clip rectangle (ymin, ymax, xmin, xmax):
     final double[] clipRect = new double[4];
+    // CurveBasicMonotonizer instance
+    final CurveBasicMonotonizer monotonizer;
+    // CurveClipSplitter instance
+    final CurveClipSplitter curveClipSplitter;
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
@@ -125,6 +131,10 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         // NormalizingPathIterator instances:
         nPCPathIterator = new NormalizingPathIterator.NearestPixelCenter(double6);
         nPQPathIterator  = new NormalizingPathIterator.NearestPixelQuarter(double6);
+
+        // curve monotonizer & clip subdivider (before transformerPC2D init)
+        monotonizer = new CurveBasicMonotonizer(this);
+        curveClipSplitter = new CurveClipSplitter(this);
 
         // MarlinRenderingEngine.TransformingPathConsumer2D
         transformerPC2D = new DTransformingPathConsumer2D(this);

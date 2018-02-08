@@ -34,20 +34,19 @@ final class Curve {
     }
 
     void set(final float[] points, final int type) {
-        switch(type) {
-        case 8:
+        // if instead of switch (perf + most probable cases first)
+        if (type == 8) {
             set(points[0], points[1],
                 points[2], points[3],
                 points[4], points[5],
                 points[6], points[7]);
-            return;
-        case 6:
+        } else if (type == 4) {
+            set(points[0], points[1],
+                points[2], points[3]);
+        } else {
             set(points[0], points[1],
                 points[2], points[3],
                 points[4], points[5]);
-            return;
-        default:
-            throw new InternalError("Curves can only be cubic or quadratic");
         }
     }
 
@@ -60,16 +59,18 @@ final class Curve {
         final float dy32 = 3.0f * (y3 - y2);
         final float dx21 = 3.0f * (x2 - x1);
         final float dy21 = 3.0f * (y2 - y1);
-        ax = (x4 - x1) - dx32;
+        ax = (x4 - x1) - dx32;  // A = P3 - P0 - 3 (P2 - P1) = (P3 - P0) + 3 (P1 - P2)
         ay = (y4 - y1) - dy32;
-        bx = (dx32 - dx21);
+        bx = (dx32 - dx21);     // B = 3 (P2 - P1) - 3(P1 - P0) = 3 (P2 + P0) - 6 P1
         by = (dy32 - dy21);
-        cx = dx21;
+        cx = dx21;              // C = 3 (P1 - P0)
         cy = dy21;
-        dx = x1;
+        dx = x1;                // D = P0
         dy = y1;
-        dax = 3.0f * ax; day = 3.0f * ay;
-        dbx = 2.0f * bx; dby = 2.0f * by;
+        dax = 3.0f * ax;
+        day = 3.0f * ay;
+        dbx = 2.0f * bx;
+        dby = 2.0f * by;
     }
 
     void set(final float x1, final float y1,
@@ -78,15 +79,40 @@ final class Curve {
     {
         final float dx21 = (x2 - x1);
         final float dy21 = (y2 - y1);
-        ax = 0.0f; ay = 0.0f;
-        bx = (x3 - x2) - dx21;
+        ax = 0.0f;              // A = 0
+        ay = 0.0f;
+        bx = (x3 - x2) - dx21;  // B = P3 - P0 - 2 P2
         by = (y3 - y2) - dy21;
-        cx = 2.0f * dx21;
+        cx = 2.0f * dx21;       // C = 2 (P2 - P1)
         cy = 2.0f * dy21;
-        dx = x1;
+        dx = x1;                // D = P1
         dy = y1;
-        dax = 0.0f; day = 0.0f;
-        dbx = 2.0f * bx; dby = 2.0f * by;
+        dax = 0.0f;
+        day = 0.0f;
+        dbx = 2.0f * bx;
+        dby = 2.0f * by;
+    }
+
+    void set(final float x1, final float y1,
+             final float x2, final float y2)
+    {
+        final float dx21 = (x2 - x1);
+        final float dy21 = (y2 - y1);
+        ax = 0.0f;              // A = 0
+        ay = 0.0f;
+        bx = 0.0f;              // B = 0
+        by = 0.0f;
+        cx = dx21;              // C = (P2 - P1)
+        cy = dy21;
+        dx = x1;                // D = P1
+        dy = y1;
+        // useless derivatives for lines
+        if (false) {
+            dax = 0.0f;
+            day = 0.0f;
+            dbx = 0.0f;
+            dby = 0.0f;
+        }
     }
 
     int dxRoots(final float[] roots, final int off) {
@@ -108,6 +134,16 @@ final class Curve {
         return Helpers.quadraticRoots(a, b, c, pts, off);
     }
 
+    int xPoints(final float[] ts, final int off, final float x)
+    {
+        return Helpers.cubicRootsInAB(ax, bx, cx, dx - x, ts, off, 0.0f, 1.0f);
+    }
+
+    int yPoints(final float[] ts, final int off, final float y)
+    {
+        return Helpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off, 0.0f, 1.0f);
+    }
+
     // finds points where the first and second derivative are
     // perpendicular. This happens when g(t) = f'(t)*f''(t) == 0 (where
     // * is a dot product). Unfortunately, we have to solve a cubic.
@@ -117,10 +153,11 @@ final class Curve {
         // these are the coefficients of some multiple of g(t) (not g(t),
         // because the roots of a polynomial are not changed after multiplication
         // by a constant, and this way we save a few multiplications).
-        final float a = 2.0f * (dax*dax + day*day);
-        final float b = 3.0f * (dax*dbx + day*dby);
-        final float c = 2.0f * (dax*cx + day*cy) + dbx*dbx + dby*dby;
-        final float d = dbx*cx + dby*cy;
+        final float a = 2.0f * (dax * dax + day * day);
+        final float b = 3.0f * (dax * dbx + day * dby);
+        final float c = 2.0f * (dax * cx  + day * cy) + dbx * dbx + dby * dby;
+        final float d = dbx * cx + dby * cy;
+
         return Helpers.cubicRootsInAB(a, b, c, d, pts, off, 0.0f, 1.0f);
     }
 
@@ -140,13 +177,13 @@ final class Curve {
     int rootsOfROCMinusW(final float[] roots, final int off, final float w2, final float err) {
         // no OOB exception, because by now off<=6, and roots.length >= 10
         assert off <= 6 && roots.length >= 10;
-        
+
         int ret = off;
         final int end = off + perpendiculardfddf(roots, off);
         roots[end] = 1.0f; // always check interval end points
 
         float t0 = 0.0f, ft0 = ROCsq(t0) - w2;
-        
+
         for (int i = off; i <= end; i++) {
             float t1 = roots[i], ft1 = ROCsq(t1) - w2;
             if (ft0 == 0.0f) {
@@ -222,9 +259,9 @@ final class Curve {
         final float dy = t * (t * day + dby) + cy;
         final float ddx = 2.0f * dax * t + dbx;
         final float ddy = 2.0f * day * t + dby;
-        final float dx2dy2 = dx*dx + dy*dy;
-        final float ddx2ddy2 = ddx*ddx + ddy*ddy;
-        final float ddxdxddydy = ddx*dx + ddy*dy;
-        return dx2dy2*((dx2dy2*dx2dy2) / (dx2dy2 * ddx2ddy2 - ddxdxddydy*ddxdxddydy));
+        final float dx2dy2 = dx * dx + dy * dy;
+        final float ddx2ddy2 = ddx * ddx + ddy * ddy;
+        final float ddxdxddydy = ddx * dx + ddy * dy;
+        return dx2dy2 * ((dx2dy2 * dx2dy2) / (dx2dy2 * ddx2ddy2 - ddxdxddydy * ddxdxddydy));
     }
 }

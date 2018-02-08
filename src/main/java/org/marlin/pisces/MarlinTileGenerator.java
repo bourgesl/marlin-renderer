@@ -27,7 +27,6 @@ package org.marlin.pisces;
 
 import java.util.Arrays;
 import sun.java2d.pipe.AATileGenerator;
-//import jdk.internal.misc.Unsafe;
 import sun.misc.Unsafe;
 
 final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
