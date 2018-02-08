@@ -133,7 +133,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -200,7 +199,7 @@
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
                     </execution>
-                    
+
                     <!-- RunJUnitLongTest -->
                     <execution>
                         <id>integration-long-test-double</id>
