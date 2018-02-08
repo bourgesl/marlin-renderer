@@ -177,7 +177,7 @@ final class Helpers implements MarlinConst {
         if (Math.abs(d) < 1e-4f) {
             System.out.println("small coefficients: d: "+ d + " a: "+a + " b: " +b + " c: "+c);
         }
-        
+
         // normal form: x^3 + ax^2 + bx + c = 0
         a /= d;
         b /= d;

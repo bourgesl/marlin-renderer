@@ -9,6 +9,9 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
@@ -16,6 +19,8 @@ import javax.swing.border.LineBorder;
 public class FillClipBugTest {
 
     private static final int PASS = 1;
+
+    private static boolean SAVE = true;
 
     public static void main(String[] args) {
 
@@ -26,7 +31,7 @@ public class FillClipBugTest {
         // Other JDK:
         String renderer = "undefined";
         try {
-            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
+            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getSimpleName();
             System.out.println(renderer);
         } catch (Throwable th) {
             // may fail with JDK9 jigsaw (jake)
@@ -37,7 +42,7 @@ public class FillClipBugTest {
         }
 
         if (true) {
-            createFrame("Test", new PanelPath(false));
+            createFrame("Test", new PanelPath(false, renderer));
 //            createFrame("Test Clip", new PanelPath(true));
         } else {
             createFrame("Test", new PanelRects());
@@ -62,8 +67,11 @@ public class FillClipBugTest {
 
         private Path2D.Double path = createPath();
 
-        PanelPath(final boolean showClip) {
+        private String rdr;
+
+        PanelPath(final boolean showClip, final String rdr) {
             this.showClip = showClip;
+            this.rdr = rdr;
             setPreferredSize(new Dimension(computeSize(), computeSize()));
             setBorder(new LineBorder(Color.GREEN));
         }
@@ -108,7 +116,19 @@ public class FillClipBugTest {
 
             g.drawImage(bi, 0, 0, this);
 
-            g2d.dispose();
+            try {
+                if (SAVE) {
+                    SAVE = false; // only once
+                    final File file = new File("FillClipBugTest-"+rdr+".png");
+
+                    System.out.println("Writing file: " + file.getAbsolutePath());
+                    ImageIO.write(bi, "PNG", file);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                g2d.dispose();
+            }
         }
 
         private void setAttributes(final Graphics2D g2d) {
@@ -125,19 +145,13 @@ public class FillClipBugTest {
             final Path2D.Double p2d = new Path2D.Double();
             // ClipShapeTests dumped shape code:
             // --- begin of pasted code ---
-/*
-p2d.moveTo(-35.56648, -49.42984);
-p2d.curveTo(101.8177, -34.789795, 29.526112, 174.11511, 51.948048, -71.48531);
-p2d.curveTo(78.92995, -77.82397, 62.719154, 119.40237, 64.43939, 0.64784384);
-*/
-/*
-// BUGGY:
-p2d.moveTo(-92.52811, 177.39606);
-p2d.curveTo(-90.536575, -36.88768, 91.337616, 23.993149, 136.64645, 1.4918735);
-p2d.curveTo(-25.203772, 126.223206, -20.010153, 131.30772, 117.95181, -27.589094);
-*/
+if (false) {
 p2d.moveTo(136.64645, 1.4918735);
 p2d.curveTo(-25.203772, 126.223206, -20.010153, 131.30772, 117.95181, -27.589094);
+} else {
+p2d.moveTo(74.466354, 49.791237);
+p2d.curveTo(66.91898, 55.68379, 60.10631, 61.002728, 54.017857, 65.7345);
+}
             // --- end of pasted code ---
             return p2d;
         }
