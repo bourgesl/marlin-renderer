@@ -49,7 +49,7 @@ final class DHelpers implements MarlinConst {
     }
 
     public static double evalQuad(final double a, final double b,
-                                  final double c, double float t)
+                                  final double c, final double t)
     {
         return t * (t * a + b) + c;
     }
