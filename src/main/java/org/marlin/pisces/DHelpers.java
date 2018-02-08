@@ -41,6 +41,19 @@ final class DHelpers implements MarlinConst {
         return (d <= err && d >= -err);
     }
 
+    public static double evalCubic(final double a, final double b,
+                                   final double c, final double d,
+                                   final double t)
+    {
+        return t * (t * (t * a + b) + c) + d;
+    }
+
+    public static double evalQuad(final double a, final double b,
+                                  final double c, double float t)
+    {
+        return t * (t * a + b) + c;
+    }
+
     static int quadraticRoots(final double a, final double b, final double c,
                               final double[] zeroes, final int off)
     {
@@ -101,10 +114,10 @@ final class DHelpers implements MarlinConst {
         // p = P/3
         // q = Q/2
         // instead and use those values for simplicity of the code.
-        final double sub = (1.0d/3.0d) * a;
+        final double sub = (1.0d / 3.0d) * a;
         final double sq_A = a * a;
-        final double p = (1.0d/3.0d) * ((-1.0d/3.0d) * sq_A + b);
-        final double q = (1.0d/2.0d) * ((2.0d/27.0d) * a * sq_A - sub * b + c);
+        final double p = (1.0d / 3.0d) * ((-1.0d / 3.0d) * sq_A + b);
+        final double q = (1.0d / 2.0d) * ((2.0d / 27.0d) * a * sq_A - sub * b + c);
 
         // use Cardano's formula
 
@@ -114,7 +127,7 @@ final class DHelpers implements MarlinConst {
         int num;
         if (D < 0.0d) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = (1.0d/3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
+            final double phi = (1.0d / 3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
             final double t = 2.0d * Math.sqrt(-p);
 
             pts[off    ] = ( t * FastMath.cos(phi) - sub);
@@ -130,7 +143,7 @@ final class DHelpers implements MarlinConst {
             num = 1;
 
             if (within(D, 0.0d, 1e-8d)) {
-                pts[off + 1] = (-(1.0d/2.0d) * (u + v) - sub);
+                pts[off + 1] = ((-1.0d / 2.0d) * (u + v) - sub);
                 num = 2;
             }
         }

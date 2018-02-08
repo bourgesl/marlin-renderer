@@ -1007,13 +1007,12 @@ final class TransformingPathConsumer2D {
                 Helpers.subdivideAt((t - prevT) / (1.0f - prevT),
                                      mid, off, mid, off, type);
                 prevT = t;
-
-                if (TRACE) {
-                    System.out.println("Part Curve "+Arrays.toString(Arrays.copyOfRange(mid, off, off + type)));
-                }
             }
 
             for (int i = 0, off = 0; i <= nSplits; i++, off += type) {
+                if (TRACE) {
+                    System.out.println("Part Curve "+Arrays.toString(Arrays.copyOfRange(mid, off, off + type)));
+                }
                 emitCurrent(type, mid, off, out);
             }
             return true;
