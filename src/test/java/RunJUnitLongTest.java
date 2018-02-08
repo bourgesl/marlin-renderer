@@ -21,6 +21,7 @@
  * questions.
  */
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -28,11 +29,33 @@ import org.junit.Test;
  */
 public class RunJUnitLongTest {
 
-    private final static String[] NO_ARGS = new String[0];
-
     @Test
     public void clipTests() {
-        ClipShapeTest.main(NO_ARGS);
-        // ClipShapeTests.main(new String[] {"-slow"});
+        ClipShapeTest.main(new String[]{"-poly"});                    // OK
+/*
+        ClipShapeTest.main(new String[]{"-poly", "-doDash"});         // OK
+        ClipShapeTest.main(new String[]{"-quad"});                    // OK (offsets are slightly fixed)
+        ClipShapeTest.main(new String[]{"-quad", "-doDash"});         // OK (offsets are less different)
+*/
+        ClipShapeTest.main(new String[]{"-cubic"});                   // OK (offsets are slightly fixed)
+        ClipShapeTest.main(new String[]{"-cubic", "-doDash"});        // OK
+    }
+
+    @Test
+    @Ignore
+    public void clipTestsDoScale() {
+        ClipShapeTest.main(new String[]{"-doScale"});
+    }
+
+    @Test
+    @Ignore
+    public void clipTestsDoShear() {
+        ClipShapeTest.main(new String[]{"-doScale", "-doShear"});
+    }
+
+    @Test
+    @Ignore
+    public void clipTestsSlow() {
+        ClipShapeTest.main(new String[]{"-slow"});
     }
 }

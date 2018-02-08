@@ -43,9 +43,9 @@ public final class MarlinCache implements MarlinConst {
     // values are stored as int [x|alpha] where alpha is 8 bits
     static final int RLE_MAX_WIDTH = 1 << (24 - 1);
 
-    // 2048 (pixelSize) alpha values (width) x 32 rows (tile) = 64K bytes
+    // 4096 (pixels) alpha values (width) x 64 rows / 4 (tile) = 64K bytes
     // x1 instead of 4 bytes (RLE) ie 1/4 capacity or average good RLE compression
-    static final long INITIAL_CHUNK_ARRAY = TILE_H * INITIAL_PIXEL_DIM; // 64K
+    static final long INITIAL_CHUNK_ARRAY = TILE_H * INITIAL_PIXEL_WIDTH >> 2; // 64K
 
     // The alpha map used by this object (taken out of our map cache) to convert
     // pixel coverage counts gotten from MarlinCache (which are in the range

@@ -60,4 +60,22 @@ public final class MarlinUtils {
             th.printStackTrace(System.err);
         }
     }
+
+    // From sun.awt.util.ThreadGroupUtils
+
+    /**
+     * Returns a root thread group.
+     * Should be called with {@link sun.security.util.SecurityConstants#MODIFY_THREADGROUP_PERMISSION}
+     *
+     * @return a root {@code ThreadGroup}
+     */
+    public static ThreadGroup getRootThreadGroup() {
+        ThreadGroup currentTG = Thread.currentThread().getThreadGroup();
+        ThreadGroup parentTG = currentTG.getParent();
+        while (parentTG != null) {
+            currentTG = parentTG;
+            parentTG = currentTG.getParent();
+        }
+        return currentTG;
+    }
 }
