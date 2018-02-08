@@ -998,6 +998,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final float[] mid = monotonizer.middle;
 
         for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
+/*
+            System.out.println("Part Curve "+Arrays.toString(Arrays.copyOfRange(mid, off, off + 8)));
+*/
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
 
@@ -1135,3 +1138,4 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         throw new InternalError("Dasher does not use a native consumer");
     }
 }
+
