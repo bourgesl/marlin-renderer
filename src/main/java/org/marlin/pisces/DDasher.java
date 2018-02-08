@@ -1134,3 +1134,4 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         throw new InternalError("DDasher does not use a native consumer");
     }
 }
+

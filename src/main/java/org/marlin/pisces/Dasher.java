@@ -1138,3 +1138,4 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         throw new InternalError("Dasher does not use a native consumer");
     }
 }
+
