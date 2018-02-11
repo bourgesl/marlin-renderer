@@ -1,24 +1,27 @@
 Marlin-renderer
 ===============
 
-Marlin is an open source (GPL2+CP) Java2D RenderingEngine optimized for performance (improved memory usage (less GC) and footprint, better multi-threading) based on openjdk's pisces implementation.
+Marlin is an open source (GPL2 + CP) Java2D ``RenderingEngine`` optimized for performance (improved memory usage (~ no GC) and footprint, better multi-threading) and better visual quality based on openjdk's pisces implementation.
+It handles shape rendering (``Graphics2D draw(Shape) / fill(Shape)`` with stroke & dash attributes only but it does it very well !
 
 Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 
 News:
+* dec 2017: Marlin & MarlinFX 0.8.2 integrated in OpenJDK & OpenJFX 10
 * nov 2017: Marlin rocks on [Geoserver benchmarks](https://gmf-test.sig.cloud.camptocamp.net/ms_perfs/): see geoserver (including Marlin 0.8.2) vs geoserver-jai results: it boosts geoserver to achieve MapServer performance !!
 * My personal point of view after javaone: it is your turn to contribute to OpenJDK & OpenJFX: see [openjdk thread](http://mail.openjdk.java.net/pipermail/openjfx-dev/2017-October/020900.html)
 * 4 oct 2017: JavaOne talk slides: [Marlin, a JDK9 Success Story: Vector Graphics on Steroids for Java 2D and JavaFX](https://github.com/bourgesl/bourgesl.github.io/raw/master/javaone2017/slides/javaone-marlin-talk.pdf)
 * may 2017: Marlin & MarlinFX 0.7.5 integrated in OpenJFX10 (enabled by default)
-* nov 2016: MarlinFX integrated in OpenJFX9
+* feb 2017: Blog post comparing Oracle ductus vs OpenJDK Marlin renderers (latency) [Performance Rendered Visual](https://www.azul.com/performance-rendered-visual/)
+* nov 2016: MarlinFX 0.7.5 integrated in OpenJFX9
 * jul 2016: Marlin integrated in [Jetbrains OpenJDK8 build](https://github.com/JetBrains/jdk8u) and running in IntelliJ IDEA 2016.3
-* feb 2016: My slides at FOSDEM 2016 about 'Marlin renderer, a successful fork and join the OpenJDK 9 project': [fosdem-2016-Marlin.pdf](https://bourgesl.github.io/fosdem-2016/slides/fosdem-2016-Marlin.pdf)
-* dec 2015: Marlin integrated in OpenJDK9
+* feb 2016: FOSDEM talk slides [Marlin renderer, a successful fork and join the OpenJDK 9 project](https://bourgesl.github.io/fosdem-2016/slides/fosdem-2016-Marlin.pdf)
+* dec 2015: Marlin 0.7.4 integrated in OpenJDK9
 
 
 Build status
 ============
-Continuous integration by Travis CI (build + tests):
+Continuous Integration by Travis CI (build + unit & integration tests):
    * Branch unsafe-dev (jdk6-8): 
 <img src="https://travis-ci.org/bourgesl/marlin-renderer.svg?branch=unsafe-dev" alt="build status"/>
    * Branch use_Unsafe (jdk6-8): 
@@ -30,7 +33,7 @@ Continuous integration by Travis CI (build + tests):
 License
 =======
 
-As marlin is a fork from OpenJDK 8 pisces, its license is the OpenJDK's license = GPL2+CP:
+As marlin is a fork from OpenJDK 8 pisces, its license is the OpenJDK's license = GPL2 + ClassPath exception:
 
 GNU General Public License, version 2,
 with the Classpath Exception
@@ -50,7 +53,7 @@ See the [Benchmarks](https://github.com/bourgesl/marlin-renderer/wiki/Benchmarks
 
 Documentation
 =============
-Documentation on how to use and tune the renderer is available in the [wiki]( https://github.com/bourgesl/marlin-renderer/wiki)
+Documentation on how to use and tune the Marlin renderer is available in the [wiki]( https://github.com/bourgesl/marlin-renderer/wiki)
 
 Help is needed to improve the wiki & documentation !
 
@@ -71,19 +74,19 @@ Since we contribute this renderer into OpenJDK, we accept contributions from peo
 Support our work
 ================
 
-To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, please contribute to the gofundme campaign: https://www.gofundme.com/marlin-09
+To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, please contribute to the gofundme campaign 'Marlin renderer 0.9 dev & FX port': https://www.gofundme.com/marlin-09
 
-Please help if you appreciate the Marlin renderer:
+Please help if you appreciate the Marlin project:
    * share your benchmark & test results (quality ?)
-   * write documentation should be improved & updated
-   * improve test cases, quality & unit tests
+   * improve test cases, quality & unit tests, submit bug reports
+   * documentation should be improved & updated
 
 
 Related projects
 ================
 
-[Mapbench](https://github.com/bourgesl/mapbench) provides benchmarking tools based on real world map painted by the [GeoServer](http://geoserver.org/) WMS server
-[Marlin-FX](https://github.com/bourgesl/marlin-fx) provides the Marlin renderer port into JavaFX Prism (shape rasterizer)
+- [Mapbench](https://github.com/bourgesl/mapbench) provides testing & benchmarking tools based on real world map painted by the [GeoServer](http://geoserver.org/)
+- [Marlin-FX](https://github.com/bourgesl/marlin-fx) provides the Marlin renderer port into JavaFX Prism (shape rasterizer)
 
 
 Acknowledgments:
