@@ -27,17 +27,15 @@ package sun.java2d.marlin;
 
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
+import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Vector;
 import static sun.java2d.marlin.MarlinConst.LOG_UNSAFE_MALLOC;
-//import sun.awt.util.ThreadGroupUtils;
-//import jdk.internal.misc.Unsafe;
 import sun.misc.Unsafe;
 
 /**
  *
- * @author bourgesl
  */
 final class OffHeapArray  {
 
@@ -47,19 +45,34 @@ final class OffHeapArray  {
     static final int SIZE_INT;
 
     static {
-        UNSAFE   = Unsafe.getUnsafe();
-        SIZE_INT = Unsafe.ARRAY_INT_INDEX_SCALE;
+        UNSAFE = AccessController.doPrivileged(new PrivilegedAction<Unsafe>() {
+            @Override
+            public Unsafe run() {
+                Unsafe ref = null;
+                try {
+                    final Field field = Unsafe.class.getDeclaredField("theUnsafe");
+                    field.setAccessible(true);
+                    ref = (Unsafe) field.get(null);
+                } catch (Exception e) {
+                    throw new InternalError("Unable to get sun.misc.Unsafe instance", e);
+                }
+                return ref;
+            }
+        });
+
+        SIZE_INT = 4; // jdk 1.6 (Unsafe.ARRAY_INT_INDEX_SCALE)
 
         // Mimics Java2D Disposer:
-        AccessController.doPrivileged(
-            (PrivilegedAction<Void>) () -> {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            @Override
+            public Void run() {
                 /*
                  * The thread must be a member of a thread group
                  * which will not get GCed before VM exit.
                  * Make its parent the top-level thread group.
                  */
                 final ThreadGroup rootTG
-//                    = ThreadGroupUtils.getRootThreadGroup();
                     = MarlinUtils.getRootThreadGroup();
                 final Thread t = new Thread(rootTG, new OffHeapDisposer(),
                     "MarlinRenderer Disposer");
@@ -69,7 +82,7 @@ final class OffHeapArray  {
                 t.start();
                 return null;
             }
-        );
+        });
     }
 
     /* members */

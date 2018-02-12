@@ -358,10 +358,11 @@ public final class RendererStats implements MarlinConst {
             = new ConcurrentLinkedQueue<RendererStats>();
 
         private RendererStatsHolder() {
-            AccessController.doPrivileged(
-                (PrivilegedAction<Void>) () -> {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                @Override
+                public Void run() {
                     final Thread hook = new Thread(
-//                        ThreadGroupUtils.getRootThreadGroup(),
                         MarlinUtils.getRootThreadGroup(),
                         new Runnable() {
                             @Override
@@ -385,11 +386,13 @@ public final class RendererStats implements MarlinConst {
                     }
                     return null;
                 }
-            );
+            });
 
             // Mimics Java2D Disposer:
-            AccessController.doPrivileged(
-                (PrivilegedAction<Void>) () -> {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                @Override
+                public Void run() {
                     /*
                      * The thread must be a member of a thread group
                      * which will not get GCed before VM exit.
@@ -406,7 +409,7 @@ public final class RendererStats implements MarlinConst {
                     t.start();
                     return null;
                 }
-            );
+            });
         }
 
         void add(final Object parent, final RendererStats stats) {

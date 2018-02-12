@@ -1,17 +1,26 @@
 package test;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
 public class FillClipBugTest {
+
+    private static final int PASS = 1;
+
+    private static boolean SAVE = true;
 
     public static void main(String[] args) {
 
@@ -22,7 +31,7 @@ public class FillClipBugTest {
         // Other JDK:
         String renderer = "undefined";
         try {
-            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
+            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getSimpleName();
             System.out.println(renderer);
         } catch (Throwable th) {
             // may fail with JDK9 jigsaw (jake)
@@ -33,8 +42,8 @@ public class FillClipBugTest {
         }
 
         if (true) {
-            createFrame("Test", new PanelPath(false));
-            createFrame("Test Clip", new PanelPath(true));
+            createFrame("Test", new PanelPath(false, renderer));
+//            createFrame("Test Clip", new PanelPath(true));
         } else {
             createFrame("Test", new PanelRects());
             createFrame("Test", new PanelRect2());
@@ -58,8 +67,11 @@ public class FillClipBugTest {
 
         private Path2D.Double path = createPath();
 
-        PanelPath(final boolean showClip) {
+        private String rdr;
+
+        PanelPath(final boolean showClip, final String rdr) {
             this.showClip = showClip;
+            this.rdr = rdr;
             setPreferredSize(new Dimension(computeSize(), computeSize()));
             setBorder(new LineBorder(Color.GREEN));
         }
@@ -70,7 +82,7 @@ public class FillClipBugTest {
 
         @Override
         protected void paintComponent(Graphics g) {
-            System.out.println("paintComponent() ---");
+            System.out.println("paintComponent() showClip: "+showClip+" ---");
 
             super.paintComponent(g);
 
@@ -78,36 +90,68 @@ public class FillClipBugTest {
 
             final BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB_PRE);
             final Graphics2D g2d = (Graphics2D) bi.getGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-            g2d.setBackground(Color.WHITE);
-            g2d.clearRect(0, 0, size, size);
+            final AffineTransform tx = g2d.getTransform();
 
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            for (int n = 0; n < PASS; n++) {
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+                g2d.setBackground(Color.WHITE);
+                g2d.clearRect(0, 0, size, size);
 
-            if (showClip) {
-                g2d.setColor(Color.RED);
-                g2d.drawRect(max, max, max, max);
-                g2d.translate(max, max);
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                if (showClip) {
+                    g2d.setColor(Color.RED);
+                    g2d.drawRect(max, max, max, max);
+                    g2d.translate(max, max);
+                }
+
+                setAttributes(g2d);
+                // g2d.fill(path);
+                g2d.draw(path);
+
+                g2d.setTransform(tx);
             }
-
-            g2d.setColor(Color.BLACK);
-            g2d.fill(path);
 
             g.drawImage(bi, 0, 0, this);
 
-            g2d.dispose();
+            try {
+                if (SAVE) {
+                    SAVE = false; // only once
+                    final File file = new File("FillClipBugTest-"+rdr+".png");
+
+                    System.out.println("Writing file: " + file.getAbsolutePath());
+                    ImageIO.write(bi, "PNG", file);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                g2d.dispose();
+            }
+        }
+
+        private void setAttributes(final Graphics2D g2d) {
+            g2d.setColor(Color.GRAY);
+
+// TestSetup{id=91, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+
+            g2d.setStroke(new BasicStroke(10f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f,
+//                    new float[]{1f, 2f}, 0.0f));
+                    new float[]{13f, 7f}, 0.0f));
         }
 
         private static Path2D.Double createPath() {
             final Path2D.Double p2d = new Path2D.Double();
             // ClipShapeTests dumped shape code:
             // --- begin of pasted code ---
-            p2d.moveTo(-14.54943, 93.93557);
-            p2d.lineTo(51.435753, 35.81831);
-            p2d.lineTo(124.99598, 147.45825);
-            p2d.lineTo(-36.886967, 143.34232);
-            p2d.lineTo(-7.2472034, -16.372465);
-            p2d.closePath();
+if (false) {
+p2d.moveTo(136.64645, 1.4918735);
+p2d.curveTo(-25.203772, 126.223206, -20.010153, 131.30772, 117.95181, -27.589094);
+} else {
+p2d.moveTo(74.466354, 49.791237);
+p2d.curveTo(66.91898, 55.68379, 60.10631, 61.002728, 54.017857, 65.7345);
+}
             // --- end of pasted code ---
             return p2d;
         }
@@ -184,6 +228,7 @@ public class FillClipBugTest {
     }
 
     static final class PanelRect2 extends JPanel {
+
         final static int max = 200 - 1;
         final static int decalX = -100;
         final static int decalY = -100;
@@ -192,7 +237,6 @@ public class FillClipBugTest {
             setPreferredSize(new Dimension(max, max));
             setBorder(new LineBorder(Color.GREEN));
         }
-
 
         @Override
         protected void paintComponent(Graphics g) {
@@ -210,11 +254,11 @@ public class FillClipBugTest {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             Path2D.Double shape = new Path2D.Double();
-            shape.moveTo(0+decalX, 300+decalY);
-            shape.lineTo(0+decalX, 0+decalY);
-            shape.lineTo(300+decalX, 0+decalY);
-            shape.lineTo(300+decalX, 300+decalY);
-            shape.lineTo(0+decalX, 300+decalY);
+            shape.moveTo(0 + decalX, 300 + decalY);
+            shape.lineTo(0 + decalX, 0 + decalY);
+            shape.lineTo(300 + decalX, 0 + decalY);
+            shape.lineTo(300 + decalX, 300 + decalY);
+            shape.lineTo(0 + decalX, 300 + decalY);
 
             g2d.setColor(Color.red);
             g2d.fill(shape);
