@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -38,7 +38,6 @@ import static org.marlin.pisces.MarlinUtils.logInfo;
 import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.Monitor;
 import org.marlin.pisces.stats.StatLong;
-// import sun.misc.ThreadGroupUtils;
 
 /**
  * This class gathers global rendering statistics for debugging purposes only
@@ -300,8 +299,6 @@ public final class RendererStats implements MarlinConst {
         }
 
         if (DO_STATS) {
-            logInfo("addLines: "+ stat_rdr_addLine.count + " edges: "+stat_rdr_edges_count.sum);
-
             for (StatLong stat : statistics) {
                 if (stat.count != 0) {
                     logInfo(stat.toString());
@@ -365,7 +362,6 @@ public final class RendererStats implements MarlinConst {
                 @Override
                 public Void run() {
                     final Thread hook = new Thread(
-//                        ThreadGroupUtils.getRootThreadGroup(),
                         MarlinUtils.getRootThreadGroup(),
                         new Runnable() {
                             @Override
@@ -402,7 +398,6 @@ public final class RendererStats implements MarlinConst {
                      * Make its parent the top-level thread group.
                      */
                     final ThreadGroup rootTG
-//                        = ThreadGroupUtils.getRootThreadGroup();
                         = MarlinUtils.getRootThreadGroup();
                     final Thread t = new Thread(rootTG, new RendererStatsDisposer(),
                         "MarlinRenderer Disposer");
