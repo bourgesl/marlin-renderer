@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -335,14 +335,11 @@ final class Helpers implements MarlinConst {
                           final int type)
     {
         switch(type) {
-        case 4:
-            subdivideLine(src, left, right);
+        case 8:
+            subdivideCubic(src, left, right);
             return;
         case 6:
             subdivideQuad(src, left, right);
-            return;
-        case 8:
-            subdivideCubic(src, left, right);
             return;
         default:
             throw new InternalError("Unsupported curve type");
@@ -481,31 +478,6 @@ final class Helpers implements MarlinConst {
         pts[offR + 3] = cy2;
         pts[offR + 4] = x2;
         pts[offR + 5] = y2;
-    }
-
-    static void subdivideLine(final float[] src,
-                              final float[] left,
-                              final float[] right)
-    {
-        float x1 = src[0];
-        float y1 = src[1];
-        float x2 = src[2];
-        float y2 = src[3];
-
-        left[0]  = x1;
-        left[1]  = y1;
-
-        right[2] = x2;
-        right[3] = y2;
-
-        float cx = (x1 + x2) / 2.0f;
-        float cy = (y1 + y2) / 2.0f;
-
-        left[2] = cx;
-        left[3] = cy;
-
-        right[0] = cx;
-        right[1] = cy;
     }
 
     static void subdivideQuad(final float[] src,

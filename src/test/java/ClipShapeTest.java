@@ -54,11 +54,19 @@ import javax.imageio.stream.ImageOutputStream;
  * @bug 8191814
  * @summary Verifies that Marlin rendering generates the same
  * images with and without clipping optimization with all possible
- * stroke (cap/join) and fill modes (EO rules)
+ * stroke (cap/join) and/or dashes or fill modes (EO rules)
+ * for paths made of either 9 lines, 4 quads, 2 cubics (random)
  * Note: Use the argument -slow to run more intensive tests (too much time)
- * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest
- * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest
- */
+ *
+ * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -poly
+ * @run main/othervm/timeout=180 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -poly -doDash
+ * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -cubic
+ * @run main/othervm/timeout=180 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -cubic -doDash
+ * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -poly
+ * @run main/othervm/timeout=180 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -poly -doDash
+ * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -cubic
+ * @run main/othervm/timeout=180 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -cubic -doDash
+*/
 public final class ClipShapeTest {
 
     static boolean TX_SCALE = false;
@@ -244,8 +252,8 @@ public final class ClipShapeTest {
             default:
                 // Define uncertainty for lines:
                 // float variant have higher uncertainty
-                THRESHOLD_DELTA = 4;
-                THRESHOLD_NBPIX = 4;
+                THRESHOLD_DELTA = 8;
+                THRESHOLD_NBPIX = 8;
         }
 
         System.out.println("THRESHOLD_DELTA: "+THRESHOLD_DELTA);
