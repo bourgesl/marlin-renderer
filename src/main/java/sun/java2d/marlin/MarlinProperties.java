@@ -110,7 +110,7 @@ public final class MarlinProperties {
     /**
      * Return the log(2) corresponding to the tile width in pixels
      *
-     * @return 3 (8 pixels) < tile width < 8 (1024 pixels)
+     * @return 3 (8 pixels) < tile width < 10 (1024 pixels)
      * (7 by default ie 128x64 pixels)
      */
     public static int getTileWidth_Log2() {

@@ -52,8 +52,6 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
     static final boolean DO_TRACE_PATH = false;
 
-    static final boolean TEST_CLIP = false;
-
     static final boolean DO_CLIP = MarlinProperties.isDoClip();
     static final boolean DO_CLIP_FILL = true;
     static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
@@ -836,21 +834,10 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 // Define the initial clip bounds:
                 final double[] clipRect = rdrCtx.clipRect;
 
-                if (TEST_CLIP) {
-                    double small = clip.getHeight() / 8.0d;
-                    double half = (clip.getLoY() + clip.getHeight()) / 2.0d;
-                    clipRect[0] = half - small;
-                    clipRect[1] = half + small;
-                    small = clip.getWidth() / 4.0d;
-                    half = (clip.getLoX() + clip.getWidth()) / 2.0d;
-                    clipRect[2] = half - small;
-                    clipRect[3] = half + small;
-                } else {
-                    clipRect[0] = clip.getLoY();
-                    clipRect[1] = clip.getLoY() + clip.getHeight();
-                    clipRect[2] = clip.getLoX();
-                    clipRect[3] = clip.getLoX() + clip.getWidth();
-                }
+                clipRect[0] = clip.getLoY();
+                clipRect[1] = clip.getLoY() + clip.getHeight();
+                clipRect[2] = clip.getLoX();
+                clipRect[3] = clip.getLoX() + clip.getWidth();
 
                 // Enable clipping:
                 rdrCtx.doClip = true;

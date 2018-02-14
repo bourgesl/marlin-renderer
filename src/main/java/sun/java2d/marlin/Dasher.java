@@ -303,15 +303,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final int index = off + type;
         final float x = pts[index - 4];
         final float y = pts[index - 3];
-/*
-        if (type == 8) {
-            System.out.println("seg["+on+"] len: "
-                    +Helpers.curvelen(pts[off - 2], pts[off - 1],
-                            pts[off    ], pts[off + 1],
-                        pts[off + 2], pts[off + 3],
-                        pts[off + 4], pts[off + 5]));
-        }
-*/
+
         if (on) {
             if (starting) {
                 goTo_starting(pts, off, type);
@@ -922,11 +914,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
             final float lineLen = Helpers.linelen(curve[0], curve[1], x0, y0);
 
             if ((polyLen - lineLen) < CURVE_LEN_ERR || recLevel == REC_LIMIT) {
-/*
-                if (recLevel == REC_LIMIT) {
-                    System.out.println("REC_LIMIT[" + recLevel + "] reached !");
-                }
-*/
                 return (polyLen + lineLen) / 2.0f;
             }
             return -1.0f;

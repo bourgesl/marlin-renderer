@@ -25,9 +25,6 @@
 
 package sun.java2d.marlin;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import static sun.java2d.marlin.MarlinConst.LOG_UNSAFE_MALLOC;
 import jdk.internal.misc.Unsafe;
 import jdk.internal.ref.CleanerFactory;
