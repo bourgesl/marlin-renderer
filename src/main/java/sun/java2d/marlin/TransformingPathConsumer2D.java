@@ -25,10 +25,10 @@
 
 package sun.java2d.marlin;
 
-import java.util.Arrays;
 import sun.awt.geom.PathConsumer2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import java.util.Arrays;
 import sun.java2d.marlin.Helpers.IndexStack;
 import sun.java2d.marlin.Helpers.PolyStack;
 

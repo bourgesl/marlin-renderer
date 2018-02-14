@@ -25,7 +25,6 @@ import org.junit.Test;
 
 /**
  * Simple wrapper on Marlin tests
- * @author bourgesl
  */
 public class RunJUnitTest {
 
