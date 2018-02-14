@@ -59,13 +59,13 @@ import javax.imageio.stream.ImageOutputStream;
  * Note: Use the argument -slow to run more intensive tests (too much time)
  *
  * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -poly
- * @run main/othervm/timeout=180 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -poly -doDash
+ * @run main/othervm/timeout=240 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -poly -doDash
  * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -cubic
- * @run main/othervm/timeout=180 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -cubic -doDash
+ * @run main/othervm/timeout=240 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine ClipShapeTest -cubic -doDash
  * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -poly
- * @run main/othervm/timeout=180 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -poly -doDash
+ * @run main/othervm/timeout=240 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -poly -doDash
  * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -cubic
- * @run main/othervm/timeout=180 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -cubic -doDash
+ * @run main/othervm/timeout=240 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -cubic -doDash
 */
 public final class ClipShapeTest {
 
