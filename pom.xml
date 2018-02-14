@@ -20,7 +20,8 @@
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
         <integration.skip>false</integration.skip>
-        <integration.skip.long>false</integration.skip.long>
+        <integration.skip.long.float>false</integration.skip.long.float>
+        <integration.skip.long.double>true</integration.skip.long.double>
         <javadoc.skip>true</javadoc.skip>
     </properties>
 
@@ -229,7 +230,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <skip>${integration.skip.long}</skip>
+                            <skip>${integration.skip.long.double}</skip>
                             <includes>
                                 <include>**/RunJUnitLongTest.java</include>
                             </includes>
@@ -250,7 +251,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <skip>${integration.skip.long}</skip>
+                            <skip>${integration.skip.long.float}</skip>
                             <includes>
                                 <include>**/RunJUnitLongTest.java</include>
                             </includes>
