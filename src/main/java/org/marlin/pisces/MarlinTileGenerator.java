@@ -45,10 +45,10 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
             throw new IllegalStateException("Invalid MAX_TILE_ALPHA_SUM: " + MAX_TILE_ALPHA_SUM);
         }
         if (DO_TRACE) {
-            System.out.println("MAX_AA_ALPHA           : " + MAX_AA_ALPHA);
-            System.out.println("TH_AA_ALPHA_FILL_EMPTY : " + TH_AA_ALPHA_FILL_EMPTY);
-            System.out.println("TH_AA_ALPHA_FILL_FULL  : " + TH_AA_ALPHA_FILL_FULL);
-            System.out.println("FILL_TILE_W            : " + FILL_TILE_W);
+            MarlinUtils.logInfo("MAX_AA_ALPHA           : " + MAX_AA_ALPHA);
+            MarlinUtils.logInfo("TH_AA_ALPHA_FILL_EMPTY : " + TH_AA_ALPHA_FILL_EMPTY);
+            MarlinUtils.logInfo("TH_AA_ALPHA_FILL_FULL  : " + TH_AA_ALPHA_FILL_FULL);
+            MarlinUtils.logInfo("FILL_TILE_W            : " + FILL_TILE_W);
         }
     }
 

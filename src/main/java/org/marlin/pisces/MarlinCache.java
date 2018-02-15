@@ -292,11 +292,11 @@ public final class MarlinCache implements MarlinConst {
             // ensure values are in [0; MAX_AA_ALPHA] range
             if (DO_AA_RANGE_CHECK) {
                 if (val < 0) {
-                    System.out.println("Invalid coverage = " + val);
+                    MarlinUtils.logInfo("Invalid coverage = " + val);
                     val = 0;
                 }
                 if (val > MAX_AA_ALPHA) {
-                    System.out.println("Invalid coverage = " + val);
+                    MarlinUtils.logInfo("Invalid coverage = " + val);
                     val = MAX_AA_ALPHA;
                 }
             }
@@ -460,11 +460,11 @@ public final class MarlinCache implements MarlinConst {
                         // ensure values are in [0; MAX_AA_ALPHA] range
                         if (DO_AA_RANGE_CHECK) {
                             if (val < 0) {
-                                System.out.println("Invalid coverage = " + val);
+                                MarlinUtils.logInfo("Invalid coverage = " + val);
                                 val = 0;
                             }
                             if (val > MAX_AA_ALPHA) {
-                                System.out.println("Invalid coverage = " + val);
+                                MarlinUtils.logInfo("Invalid coverage = " + val);
                                 val = MAX_AA_ALPHA;
                             }
                         }
@@ -630,8 +630,6 @@ public final class MarlinCache implements MarlinConst {
         final int halfmaxalpha = maxalpha >> 2;
         for (int i = 0; i <= maxalpha; i++) {
             alMap[i] = (byte) ((i * 255 + halfmaxalpha) / maxalpha);
-//            System.out.println("alphaMap[" + i + "] = "
-//                               + Byte.toUnsignedInt(alMap[i]));
         }
         return alMap;
     }

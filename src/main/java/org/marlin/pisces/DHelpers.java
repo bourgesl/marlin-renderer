@@ -41,15 +41,15 @@ final class DHelpers implements MarlinConst {
         return (d <= err && d >= -err);
     }
 
-    public static double evalCubic(final double a, final double b,
-                                   final double c, final double d,
-                                   final double t)
+    static double evalCubic(final double a, final double b,
+                            final double c, final double d,
+                            final double t)
     {
         return t * (t * (t * a + b) + c) + d;
     }
 
-    public static double evalQuad(final double a, final double b,
-                                  final double c, final double t)
+    static double evalQuad(final double a, final double b,
+                           final double c, final double t)
     {
         return t * (t * a + b) + c;
     }
