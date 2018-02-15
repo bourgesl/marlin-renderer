@@ -73,8 +73,8 @@ final class OffHeapArray  {
                  * Make its parent the top-level thread group.
                  */
                 final Thread t = new Thread(
-                                    MarlinUtils.getRootThreadGroup(), 
-                                    new OffHeapDisposer(),
+                    MarlinUtils.getRootThreadGroup(), 
+                    new OffHeapDisposer(),
                     "MarlinRenderer Disposer");
                 t.setContextClassLoader(null);
                 t.setDaemon(true);
