@@ -46,15 +46,15 @@ final class Helpers implements MarlinConst {
         return (d <= err && d >= -err);
     }
 
-    public static float evalCubic(final float a, final float b,
-                                  final float c, final float d,
-                                  final float t)
+    static float evalCubic(final float a, final float b,
+                           final float c, final float d,
+                           final float t)
     {
         return t * (t * (t * a + b) + c) + d;
     }
 
-    public static float evalQuad(final float a, final float b,
-                                 final float c, final float t)
+    static float evalQuad(final float a, final float b,
+                          final float c, final float t)
     {
         return t * (t * a + b) + c;
     }
@@ -88,7 +88,7 @@ final class Helpers implements MarlinConst {
     }
 
     // find the roots of g(t) = d*t^3 + a*t^2 + b*t + c in [A,B)
-    public static int cubicRootsInAB(final float d0, float a0, float b0, float c0,
+    static int cubicRootsInAB(final float d0, float a0, float b0, float c0,
                               final float[] pts, final int off,
                               final float A, final float B)
     {

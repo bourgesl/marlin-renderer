@@ -397,10 +397,10 @@ public final class RendererStats implements MarlinConst {
                      * which will not get GCed before VM exit.
                      * Make its parent the top-level thread group.
                      */
-                    final ThreadGroup rootTG
-                        = MarlinUtils.getRootThreadGroup();
-                    final Thread t = new Thread(rootTG, new RendererStatsDisposer(),
-                        "MarlinRenderer Disposer");
+                    final Thread t = new Thread(
+                                        MarlinUtils.getRootThreadGroup(), 
+                                        new RendererStatsDisposer(),
+                                        "MarlinRenderer Disposer");
                     t.setContextClassLoader(null);
                     t.setDaemon(true);
                     t.setPriority(Thread.MAX_PRIORITY - 2);
