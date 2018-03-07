@@ -341,16 +341,13 @@ final class Helpers implements MarlinConst {
             final float x3 = cos * pts[4] + sin * pts[5];
             final float y3 = cos * pts[5] - sin * pts[4];
 
-            switch(type) {
-            case 8:
+            // if instead of switch (perf + most probable cases first)
+            if (type == 8) {
                 final float x4 = cos * pts[6] + sin * pts[7];
                 final float y4 = cos * pts[7] - sin * pts[6];
                 c.set(x1, y1, x2, y2, x3, y3, x4, y4);
-                break;
-            case 6:
+            } else {
                 c.set(x1, y1, x2, y2, x3, y3);
-                break;
-            default:
             }
         } else {
             c.set(pts, type);
@@ -410,19 +407,13 @@ final class Helpers implements MarlinConst {
                           final float[] left, final float[] right,
                           final int type)
     {
-        switch(type) {
-        case 4:
-            subdivideLine(src, left, right);
-            return;
-        case 6:
-            subdivideQuad(src, left, right);
-            return;
-        case 8:
+        // if instead of switch (perf + most probable cases first)
+        if (type == 8) {
             subdivideCubic(src, left, right);
-            return;
-        default:
-            throw new InternalError("Unsupported curve type");
+        } else {
+            subdivideQuad(src, left, right);
         }
+//            throw new InternalError("Unsupported curve type");
     }
 
     static void isort(final float[] a, final int len) {
@@ -557,31 +548,6 @@ final class Helpers implements MarlinConst {
         pts[offR + 3] = cy2;
         pts[offR + 4] = x2;
         pts[offR + 5] = y2;
-    }
-
-    static void subdivideLine(final float[] src,
-                              final float[] left,
-                              final float[] right)
-    {
-        float x1 = src[0];
-        float y1 = src[1];
-        float x2 = src[2];
-        float y2 = src[3];
-
-        left[0]  = x1;
-        left[1]  = y1;
-
-        right[2] = x2;
-        right[3] = y2;
-
-        float cx = (x1 + x2) / 2.0f;
-        float cy = (y1 + y2) / 2.0f;
-
-        left[2] = cx;
-        left[3] = cy;
-
-        right[0] = cx;
-        right[1] = cy;
     }
 
     static void subdivideQuad(final float[] src,
@@ -871,23 +837,19 @@ final class Helpers implements MarlinConst {
             int e = 0;
 
             for (int i = 0; i < nc; i++) {
-                switch(_curveTypes[i]) {
-                case TYPE_LINETO:
+                // if instead of switch (perf + most probable cases first)
+                if (_curveTypes[i] == TYPE_LINETO) {
                     io.lineTo(_curves[e], _curves[e+1]);
                     e += 2;
-                    continue;
-                case TYPE_QUADTO:
-                    io.quadTo(_curves[e],   _curves[e+1],
-                              _curves[e+2], _curves[e+3]);
-                    e += 4;
-                    continue;
-                case TYPE_CUBICTO:
+                } else if (_curveTypes[i] == TYPE_CUBICTO) {
                     io.curveTo(_curves[e],   _curves[e+1],
                                _curves[e+2], _curves[e+3],
                                _curves[e+4], _curves[e+5]);
                     e += 6;
-                    continue;
-                default:
+                } else {
+                    io.quadTo(_curves[e],   _curves[e+1],
+                              _curves[e+2], _curves[e+3]);
+                    e += 4;
                 }
             }
             numCurves = 0;
@@ -913,23 +875,20 @@ final class Helpers implements MarlinConst {
             int e  = end;
 
             while (nc != 0) {
-                switch(_curveTypes[--nc]) {
-                case TYPE_LINETO:
+                // if instead of switch (perf + most probable cases first)
+                nc--;
+                if (_curveTypes[nc] == TYPE_LINETO) {
                     e -= 2;
                     io.lineTo(_curves[e], _curves[e+1]);
-                    continue;
-                case TYPE_QUADTO:
-                    e -= 4;
-                    io.quadTo(_curves[e],   _curves[e+1],
-                              _curves[e+2], _curves[e+3]);
-                    continue;
-                case TYPE_CUBICTO:
+                } else if (_curveTypes[nc] == TYPE_CUBICTO) {
                     e -= 6;
                     io.curveTo(_curves[e],   _curves[e+1],
                                _curves[e+2], _curves[e+3],
                                _curves[e+4], _curves[e+5]);
-                    continue;
-                default:
+                } else {
+                    e -= 4;
+                    io.quadTo(_curves[e],   _curves[e+1],
+                              _curves[e+2], _curves[e+3]);
                 }
             }
             numCurves = 0;

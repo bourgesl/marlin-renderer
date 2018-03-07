@@ -304,13 +304,11 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         // If it is >=0, we know that abs(ext) is <= 90 degrees, so we only
         // need 1 curve to approximate the circle section that joins omx,omy
         // and mx,my.
-        final int numCurves = (cosext >= 0.0d) ? 1 : 2;
 
-        switch (numCurves) {
-        case 1:
+        // if instead of switch (perf + most probable cases first)
+        if (cosext >= 0.0d) {
             drawBezApproxForArc(cx, cy, omx, omy, mx, my, rev);
-            break;
-        case 2:
+        } else {
             // we need to split the arc into 2 arcs spanning the same angle.
             // The point we want will be one of the 2 intersections of the
             // perpendicular bisector of the chord (omx,omy)->(mx,my) and the
@@ -339,8 +337,6 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             }
             drawBezApproxForArc(cx, cy, omx, omy, mmx, mmy, rev);
             drawBezApproxForArc(cx, cy, mmx, mmy, mx, my, rev);
-            break;
-        default:
         }
     }
 
@@ -1177,16 +1173,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
             emitLineTo(l[0], l[1]);
 
-            switch(kind) {
-            case 8:
+            // if instead of switch (perf + most probable cases first)
+            if (kind == 8) {
                 emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
                 emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
-                break;
-            case 4:
+            } else {
                 emitLineTo(l[2], l[3]);
                 emitLineToRev(r[0], r[1]);
-                break;
-            default:
             }
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }
@@ -1308,16 +1301,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
             emitLineTo(l[0], l[1]);
 
-            switch(kind) {
-            case 6:
+            // if instead of switch (perf + most probable cases first)
+            if (kind == 6) {
                 emitQuadTo(l[2], l[3], l[4], l[5]);
                 emitQuadToRev(r[0], r[1], r[2], r[3]);
-                break;
-            case 4:
+            } else {
                 emitLineTo(l[2], l[3]);
                 emitLineToRev(r[0], r[1]);
-                break;
-            default:
             }
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }

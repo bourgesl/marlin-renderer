@@ -267,20 +267,16 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     }
 
     private void emitSeg(double[] buf, int off, int type) {
-        switch (type) {
-        case 8:
+        // if instead of switch (perf + most probable cases first)
+        if (type == 4) {
+            out.lineTo(buf[off    ], buf[off + 1]);
+        } else if (type == 8) {
             out.curveTo(buf[off    ], buf[off + 1],
                         buf[off + 2], buf[off + 3],
                         buf[off + 4], buf[off + 5]);
-            return;
-        case 6:
+        } else {
             out.quadTo(buf[off    ], buf[off + 1],
                        buf[off + 2], buf[off + 3]);
-            return;
-        case 4:
-            out.lineTo(buf[off], buf[off + 1]);
-            return;
-        default:
         }
     }
 
