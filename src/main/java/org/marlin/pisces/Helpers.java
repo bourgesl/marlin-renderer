@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -47,15 +47,15 @@ final class Helpers implements MarlinConst {
         return (d <= err && d >= -err);
     }
 
-    public static float evalCubic(final float a, final float b,
-                                  final float c, final float d,
-                                  final float t)
+    static float evalCubic(final float a, final float b,
+                           final float c, final float d,
+                           final float t)
     {
         return t * (t * (t * a + b) + c) + d;
     }
 
-    public static float evalQuad(final float a, final float b,
-                                 final float c, final float t)
+    static float evalQuad(final float a, final float b,
+                          final float c, final float t)
     {
         return t * (t * a + b) + c;
     }
@@ -89,7 +89,7 @@ final class Helpers implements MarlinConst {
     }
 
     // find the roots of g(t) = d*t^3 + a*t^2 + b*t + c in [A,B)
-    public static int cubicRootsInAB(final float d0, float a0, float b0, float c0,
+    static int cubicRootsInAB(final float d0, float a0, float b0, float c0,
                               final float[] pts, final int off,
                               final float A, final float B)
     {
@@ -153,81 +153,6 @@ final class Helpers implements MarlinConst {
                 pts[off + 1] = (float)((-1.0d / 2.0d) * (u + v) - sub);
                 num = 2;
             }
-        }
-
-        return filterOutNotInAB(pts, off, num, A, B) - off;
-    }
-
-// TODO: KILL
-    // find the roots of g(t) = d*t^3 + a*t^2 + b*t + c in [A,B)
-    static int cubicRootsInAB_OLD(final float d, float a, float b, float c,
-                              final float[] pts, final int off,
-                              final float A, final float B)
-    {
-        if (d == 0.0f) {
-            final int num = quadraticRoots(a, b, c, pts, off);
-            return filterOutNotInAB(pts, off, num, A, B) - off;
-        }
-        // From Graphics Gems:
-        // http://tog.acm.org/resources/GraphicsGems/gems/Roots3And4.c
-        // (also from awt.geom.CubicCurve2D. But here we don't need as
-        // much accuracy and we don't want to create arrays so we use
-        // our own customized version).
-
-        if (Math.abs(d) < 1e-4f) {
-            System.out.println("small coefficients: d: "+ d + " a: "+a + " b: " +b + " c: "+c);
-        }
-
-        // normal form: x^3 + ax^2 + bx + c = 0
-        a /= d;
-        b /= d;
-        c /= d;
-
-        //  substitute x = y - A/3 to eliminate quadratic term:
-        //     x^3 +Px + Q = 0
-        //
-        // Since we actually need P/3 and Q/2 for all of the
-        // calculations that follow, we will calculate
-        // p = P/3
-        // q = Q/2
-        // instead and use those values for simplicity of the code.
-        final double sq_A = a * a;
-        final double p = (1.0d/3.0d) * ((-1.0d/3.0d) * sq_A + b);
-        final double q = (1.0d/2.0d) * ((2.0d/27.0d) * a * sq_A - (1.0d/3.0d) * a * b + c);
-
-        // use Cardano's formula
-
-        final double cb_p = p * p * p;
-        final double D = q * q + cb_p;
-
-        int num;
-        if (D < 0.0d) {
-            // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = (1.0d/3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
-            final double t = 2.0d * Math.sqrt(-p);
-
-            pts[off    ] = (float) ( t * FastMath.cos(phi));
-            pts[off + 1] = (float) (-t * FastMath.cos(phi + (Math.PI / 3.0d)));
-            pts[off + 2] = (float) (-t * FastMath.cos(phi - (Math.PI / 3.0d)));
-            num = 3;
-        } else {
-            final double sqrt_D = Math.sqrt(D);
-            final double u =   FastMath.cbrt(sqrt_D - q);
-            final double v = - FastMath.cbrt(sqrt_D + q);
-
-            pts[off    ] = (float) (u + v);
-            num = 1;
-
-            if (within(D, 0.0d, 1e-8d)) {
-                pts[off + 1] = -(pts[off] / 2.0f);
-                num = 2;
-            }
-        }
-
-        final float sub = (1.0f/3.0f) * a;
-
-        for (int i = 0; i < num; ++i) {
-            pts[off + i] -= sub;
         }
 
         return filterOutNotInAB(pts, off, num, A, B) - off;
@@ -413,7 +338,6 @@ final class Helpers implements MarlinConst {
         } else {
             subdivideQuad(src, left, right);
         }
-//            throw new InternalError("Unsupported curve type");
     }
 
     static void isort(final float[] a, final int len) {

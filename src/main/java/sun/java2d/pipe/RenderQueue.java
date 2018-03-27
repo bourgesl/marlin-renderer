@@ -78,7 +78,7 @@ public abstract class RenderQueue {
     private static final int BUFFER_SIZE;
 
     static {
-        BUFFER_SIZE = align(getInteger("sun.java2d.opengl.bufferSize", 4 * 1024 * 1024, 32 * 1024, 16 * 1024 * 1024), 1024);
+        BUFFER_SIZE = align(getInteger("sun.java2d.opengl.bufferSize", 1024 * 1024, 32 * 1024, 16 * 1024 * 1024), 1024);
         // 6400000 in https://github.com/JetBrains/jdk8u_jdk/commit/68ca9f00ded004c970b94bd047a04b9f09237047
 
         System.out.println("RenderQueue: sun.java2d.opengl.bufferSize = "+BUFFER_SIZE);

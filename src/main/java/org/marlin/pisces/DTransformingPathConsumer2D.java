@@ -903,7 +903,7 @@ final class DTransformingPathConsumer2D {
             _clipRectPad[3] = _clipRect[3] + CLIP_RECT_PADDING;
 
             if (TRACE) {
-                System.out.println("clip: X [" + _clipRectPad[2] + " .. " + _clipRectPad[3] +"] "
+                MarlinUtils.logInfo("clip: X [" + _clipRectPad[2] + " .. " + _clipRectPad[3] +"] "
                                         + "Y ["+ _clipRectPad[0] + " .. " + _clipRectPad[1] +"]");
             }
         }
@@ -914,7 +914,7 @@ final class DTransformingPathConsumer2D {
                           final DPathConsumer2D out)
         {
             if (TRACE) {
-                System.out.println("divLine P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ")");
+                MarlinUtils.logInfo("divLine P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ")");
             }
 
             if (DO_CHECK_LENGTH && DHelpers.fastLineLen(x0, y0, x1, y1) <= LEN_TH) {
@@ -935,7 +935,7 @@ final class DTransformingPathConsumer2D {
                           final DPathConsumer2D out)
         {
             if (TRACE) {
-                System.out.println("divQuad P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ")");
+                MarlinUtils.logInfo("divQuad P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ")");
             }
 
             if (DO_CHECK_LENGTH && DHelpers.fastQuadLen(x0, y0, x1, y1, x2, y2) <= LEN_TH) {
@@ -958,7 +958,7 @@ final class DTransformingPathConsumer2D {
                            final DPathConsumer2D out)
         {
             if (TRACE) {
-                System.out.println("divCurve P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ") P3(" + x3 + ", " + y3 + ")");
+                MarlinUtils.logInfo("divCurve P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ") P3(" + x3 + ", " + y3 + ")");
             }
 
             if (DO_CHECK_LENGTH && DHelpers.fastCurvelen(x0, y0, x1, y1, x2, y2, x3, y3) <= LEN_TH) {
@@ -989,8 +989,8 @@ final class DTransformingPathConsumer2D {
                                                         outCodeOR, clipRectPad);
 
             if (TRACE) {
-                System.out.println("nSplits: "+ nSplits);
-                System.out.println("subTs: "+Arrays.toString(Arrays.copyOfRange(subTs, 0, nSplits)));
+                MarlinUtils.logInfo("nSplits: "+ nSplits);
+                MarlinUtils.logInfo("subTs: "+Arrays.toString(Arrays.copyOfRange(subTs, 0, nSplits)));
             }
             if (nSplits == 0) {
                 // only curve support shortcut
@@ -1004,13 +1004,12 @@ final class DTransformingPathConsumer2D {
                 DHelpers.subdivideAt((t - prevT) / (1.0d - prevT),
                                      mid, off, mid, off, type);
                 prevT = t;
-
-                if (TRACE) {
-                    System.out.println("Part Curve "+Arrays.toString(Arrays.copyOfRange(mid, off, off + type)));
-                }
             }
 
             for (int i = 0, off = 0; i <= nSplits; i++, off += type) {
+                if (TRACE) {
+                    MarlinUtils.logInfo("Part Curve "+Arrays.toString(Arrays.copyOfRange(mid, off, off + type)));
+                }
                 emitCurrent(type, mid, off, out);
             }
             return true;
@@ -1165,7 +1164,7 @@ final class DTransformingPathConsumer2D {
         }
 
         private void log(final String message) {
-            System.out.println(prefix + message);
+            MarlinUtils.logInfo(prefix + message);
         }
 
         @Override

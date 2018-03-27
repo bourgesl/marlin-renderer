@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -51,8 +51,6 @@ public final class MarlinRenderingEngine extends RenderingEngine
     static final boolean DISABLE_2ND_STROKER_CLIPPING = true;
 
     static final boolean DO_TRACE_PATH = false;
-
-    static final boolean TEST_CLIP = false;
 
     static final boolean DO_CLIP = MarlinProperties.isDoClip();
     static final boolean DO_CLIP_FILL = true;
@@ -833,21 +831,10 @@ public final class MarlinRenderingEngine extends RenderingEngine
                 // Define the initial clip bounds:
                 final float[] clipRect = rdrCtx.clipRect;
 
-                if (TEST_CLIP) {
-                    float small = clip.getHeight() / 8.0f;
-                    float half = (clip.getLoY() + clip.getHeight()) / 2.0f;
-                    clipRect[0] = half - small;
-                    clipRect[1] = half + small;
-                    small = clip.getWidth() / 4.0f;
-                    half = (clip.getLoX() + clip.getWidth()) / 2.0f;
-                    clipRect[2] = half - small;
-                    clipRect[3] = half + small;
-                } else {
-                    clipRect[0] = clip.getLoY();
-                    clipRect[1] = clip.getLoY() + clip.getHeight();
-                    clipRect[2] = clip.getLoX();
-                    clipRect[3] = clip.getLoX() + clip.getWidth();
-                }
+                clipRect[0] = clip.getLoY();
+                clipRect[1] = clip.getLoY() + clip.getHeight();
+                clipRect[2] = clip.getLoX();
+                clipRect[3] = clip.getLoX() + clip.getWidth();
 
                 // Enable clipping:
                 rdrCtx.doClip = true;
@@ -883,8 +870,6 @@ public final class MarlinRenderingEngine extends RenderingEngine
                     // trace Input:
                     pc2d = rdrCtx.transformerPC2D.traceInput(pc2d);
                 }
-
-                // TODO: subdivide quad/cubic curves into monotonic curves ?
                 pathTo(rdrCtx, pi, pc2d);
 
             } else {

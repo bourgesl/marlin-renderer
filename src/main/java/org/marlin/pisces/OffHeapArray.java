@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -33,7 +33,6 @@ import java.security.PrivilegedAction;
 import java.util.Vector;
 import static org.marlin.pisces.MarlinConst.LOG_UNSAFE_MALLOC;
 import sun.misc.Unsafe;
-// import sun.misc.ThreadGroupUtils;
 
 /**
  *
@@ -73,10 +72,9 @@ final class OffHeapArray  {
                  * which will not get GCed before VM exit.
                  * Make its parent the top-level thread group.
                  */
-                final ThreadGroup rootTG
-//                    = ThreadGroupUtils.getRootThreadGroup();
-                    = MarlinUtils.getRootThreadGroup();
-                final Thread t = new Thread(rootTG, new OffHeapDisposer(),
+                final Thread t = new Thread(
+                    MarlinUtils.getRootThreadGroup(), 
+                    new OffHeapDisposer(),
                     "MarlinRenderer Disposer");
                 t.setContextClassLoader(null);
                 t.setDaemon(true);

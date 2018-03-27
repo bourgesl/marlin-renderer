@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,15 +41,15 @@ final class DHelpers implements MarlinConst {
         return (d <= err && d >= -err);
     }
 
-    public static double evalCubic(final double a, final double b,
-                                   final double c, final double d,
-                                   final double t)
+    static double evalCubic(final double a, final double b,
+                            final double c, final double d,
+                            final double t)
     {
         return t * (t * (t * a + b) + c) + d;
     }
 
-    public static double evalQuad(final double a, final double b,
-                                  final double c, final double t)
+    static double evalQuad(final double a, final double b,
+                           final double c, final double t)
     {
         return t * (t * a + b) + c;
     }
@@ -330,7 +330,6 @@ final class DHelpers implements MarlinConst {
         } else {
             subdivideQuad(src, left, right);
         }
-//            throw new InternalError("Unsupported curve type");
     }
 
     static void isort(final double[] a, final int len) {

@@ -32,8 +32,8 @@ public class RunJUnitLongTest {
     @Test
     public void clipTests() {
         ClipShapeTest.main(new String[]{"-poly"});                    // OK
-/*
         ClipShapeTest.main(new String[]{"-poly", "-doDash"});         // OK
+/*
         ClipShapeTest.main(new String[]{"-quad"});                    // OK (offsets are slightly fixed)
         ClipShapeTest.main(new String[]{"-quad", "-doDash"});         // OK (offsets are less different)
 */
@@ -41,20 +41,20 @@ public class RunJUnitLongTest {
         ClipShapeTest.main(new String[]{"-cubic", "-doDash"});        // OK
     }
 
-    @Test
     @Ignore
+    @Test
     public void clipTestsDoScale() {
         ClipShapeTest.main(new String[]{"-doScale"});
     }
 
-    @Test
     @Ignore
+    @Test
     public void clipTestsDoShear() {
         ClipShapeTest.main(new String[]{"-doScale", "-doShear"});
     }
 
-    @Test
     @Ignore
+    @Test
     public void clipTestsSlow() {
         ClipShapeTest.main(new String[]{"-slow"});
     }

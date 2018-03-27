@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,12 +28,10 @@ package org.marlin.pisces;
 
 public final class MarlinUtils {
     // Marlin logger
-//    private static final sun.util.logging.PlatformLogger LOG;
     private static final java.util.logging.Logger LOG;
 
     static {
         if (MarlinConst.USE_LOGGER) {
-//            log = sun.util.logging.PlatformLogger.getLogger("sun.java2d.marlin");
             LOG = java.util.logging.Logger.getLogger("sun.java2d.marlin");
         } else {
             LOG = null;
@@ -55,7 +53,6 @@ public final class MarlinUtils {
 
     public static void logException(final String msg, final Throwable th) {
         if (MarlinConst.USE_LOGGER) {
-//            log.warning(msg, th);
             LOG.log(java.util.logging.Level.WARNING, msg, th);
         } else if (MarlinConst.ENABLE_LOGS) {
             System.out.print("WARNING: ");
