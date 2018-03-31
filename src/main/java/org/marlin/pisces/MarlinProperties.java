@@ -78,6 +78,25 @@ public final class MarlinProperties {
     }
 
     /**
+     * Return true if the profile is 'quality' (default) over 'speed'
+     *
+     * @return true if the profile is 'quality' (default), false otherwise
+     */
+    public static boolean isProfileQuality() {
+        final String key = "sun.java2d.renderer.profile";
+        final String profile = getString(key, "quality");
+        if ("quality".equals(profile)) {
+            return true;
+        }
+        if ("speed".equals(profile)) {
+            return false;
+        }
+        logInfo("Invalid value for " + key + " = " + profile
+                    + "; expect value in [quality, speed] !");
+        return true;
+    }
+
+    /**
      * Return the log(2) corresponding to subpixel on x-axis
      *
      * @return 0 (1 subpixels) < initial pixel size < 8 (256 subpixels)
@@ -91,10 +110,12 @@ public final class MarlinProperties {
      * Return the log(2) corresponding to subpixel on y-axis
      *
      * @return 0 (1 subpixels) < initial pixel size < 8 (256 subpixels)
-     * (3 by default ie 8 subpixels)
+     * (3 by default ie 8 subpixels for the quality profile)
+     * (2 by default ie 4 subpixels for the speed profile)
      */
     public static int getSubPixel_Log2_Y() {
-        return getInteger("sun.java2d.renderer.subPixel_log2_Y", 3, 0, 8);
+        final int def = isProfileQuality() ? 3 : 2;
+        return getInteger("sun.java2d.renderer.subPixel_log2_Y", def, 0, 8);
     }
 
     /**
@@ -221,24 +242,31 @@ public final class MarlinProperties {
     }
 
     // quality settings
-
     public static float getCurveLengthError() {
         return getFloat("sun.java2d.renderer.curve_len_err", 0.01f, 1e-6f, 1.0f);
     }
 
     public static float getCubicDecD2() {
-        return getFloat("sun.java2d.renderer.cubic_dec_d2", 1.0f, 1e-5f, 4.0f);
+        final float def = isProfileQuality() ? 1.0f : 2.5f;
+        return getFloat("sun.java2d.renderer.cubic_dec_d2", def, 1e-5f, 4.0f);
     }
 
     public static float getCubicIncD1() {
-        return getFloat("sun.java2d.renderer.cubic_inc_d1", 0.2f, 1e-6f, 1.0f);
+        final float def = isProfileQuality() ? 0.2f : 0.5f;
+        return getFloat("sun.java2d.renderer.cubic_inc_d1", def, 1e-6f, 1.0f);
     }
 
     public static float getQuadDecD2() {
-        return getFloat("sun.java2d.renderer.quad_dec_d2", 0.5f, 1e-5f, 4.0f);
+        final float def = isProfileQuality() ? 0.5f : 1.0f;
+        return getFloat("sun.java2d.renderer.quad_dec_d2", def, 1e-5f, 4.0f);
     }
 
     // system property utilities
+    static String getString(final String key, final String def) {
+        return AccessController.doPrivileged(
+                  new GetPropertyAction(key, def));
+    }
+
     static boolean getBoolean(final String key, final String def) {
         return Boolean.valueOf(AccessController.doPrivileged(
                   new GetPropertyAction(key, def)));
