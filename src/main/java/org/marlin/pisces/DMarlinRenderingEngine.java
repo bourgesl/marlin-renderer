@@ -375,7 +375,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
             // a*b == -c*d && a*a+c*c == b*b+d*d. In the actual check below, we
             // leave a bit of room for error.
             if (nearZero(a*b + c*d) && nearZero(a*a + c*c - (b*b + d*d))) {
-                scale =  Math.sqrt(a*a + c*c);
+                scale = Math.sqrt(a*a + c*c);
 
                 if (dashesD != null) {
                     for (int i = 0; i < dashLen; i++) {
