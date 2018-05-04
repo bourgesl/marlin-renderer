@@ -88,4 +88,9 @@ public class RunJUnitTest {
     public void imageWriterCompressionTest() {
         ImageWriterCompressionTest.main(NO_ARGS);
     }
+
+    @Test
+    public void dashedRectTest() {
+        DashedRectTest.main(NO_ARGS);
+    }
 }
