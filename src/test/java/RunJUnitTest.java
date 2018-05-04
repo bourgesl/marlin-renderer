@@ -84,4 +84,9 @@ public class RunJUnitTest {
     public void CeilAndFloorTest() {
         CeilAndFloorTests.main(NO_ARGS);
     }
+
+    @Test
+    public void dashedRectTest() {
+        DashedRectTest.main(NO_ARGS);
+    }
 }
