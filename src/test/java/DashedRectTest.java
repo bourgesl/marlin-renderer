@@ -35,6 +35,10 @@ import javax.imageio.ImageIO;
 
 /**
  * Simple Dashed Rect rendering test
+ *
+ * @test
+ * @summary verify that dashed rectangle is properly rasterized
+ * @bug 8202580
  */
 public class DashedRectTest {
 

@@ -306,7 +306,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // If it is >=0, we know that abs(ext) is <= 90 degrees, so we only
         // need 1 curve to approximate the circle section that joins omx,omy
         // and mx,my.
-        if (cosext >= 0.0d) {
+        if (cosext >= 0.0f) {
             drawBezApproxForArc(cx, cy, omx, omy, mx, my, rev);
         } else {
             // we need to split the arc into 2 arcs spanning the same angle.
