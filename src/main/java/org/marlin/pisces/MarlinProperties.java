@@ -26,13 +26,80 @@
 package org.marlin.pisces;
 
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import static org.marlin.pisces.MarlinUtils.logInfo;
 import sun.security.action.GetPropertyAction;
 
 public final class MarlinProperties {
 
+    private static Boolean SUPPORT_LARGE_TILES = null;
+
     private MarlinProperties() {
         // no-op
+    }
+
+    // Specific AWT / Java2D Graphics Environment checks
+
+    private static boolean supportsLargeTiles() {
+        if (SUPPORT_LARGE_TILES != null) {
+            return SUPPORT_LARGE_TILES.booleanValue();
+        }
+        boolean useLargeTiles = false;
+        try {
+            // Due to bootstrapping issue with GraphicsEnvironment static initializers,
+            // Try detecting the awt / java2d pipeline in action using only
+            // system & env properties:
+            if (isHeadless()) {
+                useLargeTiles = true;
+            } else {
+                final String osName = getString("os.name", "");
+                // Ignore Windows / Mac, only Linux:
+                if ("Linux".equals(osName)) {
+                    final boolean useGL = getBoolean("sun.java2d.opengl", "false");
+                    final boolean useXR = getBoolean("sun.java2d.xrender", "true");
+                    if (!useGL && useXR) {
+                        // !OpenGL AND XRender on Linux:
+                        useLargeTiles = true;
+                    }
+                }
+            }
+        } finally {
+            SUPPORT_LARGE_TILES = Boolean.valueOf(useLargeTiles);
+        }
+        return useLargeTiles;
+    }
+
+    private static boolean isHeadless() {
+        // Mimics java.awt.GraphicsEnvironment.getHeadlessProperty():
+        return AccessController.doPrivileged(
+            new PrivilegedAction<Boolean>() {
+                @Override
+                public Boolean run() {
+                    String nm = System.getProperty("java.awt.headless");
+
+                    if (nm == null) {
+                        String osName = System.getProperty("os.name");
+                        if (osName.contains("OS X") && "sun.awt.HToolkit".equals(
+                                System.getProperty("awt.toolkit")))
+                        {
+                            return Boolean.TRUE;
+                        } else {
+                            final String display = System.getenv("DISPLAY");
+                            return Boolean.valueOf(
+                                ("Linux".equals(osName) ||
+                                 "SunOS".equals(osName) ||
+                                 "FreeBSD".equals(osName) ||
+                                 "NetBSD".equals(osName) ||
+                                 "OpenBSD".equals(osName) ||
+                                 "AIX".equals(osName)) &&
+                                 (display == null || display.trim().isEmpty()));
+                        }
+                    } else {
+                        return Boolean.valueOf(nm);
+                    }
+                }
+            }
+        );
     }
 
     // marlin system properties
@@ -125,7 +192,8 @@ public final class MarlinProperties {
      * (5 by default ie 32x32 pixels)
      */
     public static int getTileSize_Log2() {
-        return getInteger("sun.java2d.renderer.tileSize_log2", 5, 3, 10);
+        final int def = supportsLargeTiles() ? 6 : 5;
+        return getInteger("sun.java2d.renderer.tileSize_log2", def, 3, 10);
     }
 
     /**
@@ -135,7 +203,8 @@ public final class MarlinProperties {
      * (5 by default ie 32x32 pixels)
      */
     public static int getTileWidth_Log2() {
-        return getInteger("sun.java2d.renderer.tileWidth_log2", 5, 3, 10);
+        final int def = supportsLargeTiles() ? 7 : 5;
+        return getInteger("sun.java2d.renderer.tileWidth_log2", def, 3, 10);
     }
 
     /**
