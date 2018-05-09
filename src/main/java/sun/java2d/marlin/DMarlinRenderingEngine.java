@@ -1096,6 +1096,10 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         logInfo("sun.java2d.renderer.pixelHeight      = "
                 + MarlinConst.INITIAL_PIXEL_HEIGHT);
 
+        logInfo("sun.java2d.renderer.profile          = "
+                + (MarlinProperties.isProfileQuality() ?
+                    "quality" : "speed"));
+
         logInfo("sun.java2d.renderer.subPixel_log2_X  = "
                 + MarlinConst.SUBPIXEL_LG_POSITIONS_X);
         logInfo("sun.java2d.renderer.subPixel_log2_Y  = "

@@ -270,6 +270,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
     private void emitSeg(float[] buf, int off, int type) {
         switch (type) {
+        case 4:
+            out.lineTo(buf[off], buf[off + 1]);
+            return;
         case 8:
             out.curveTo(buf[off    ], buf[off + 1],
                         buf[off + 2], buf[off + 3],
@@ -278,9 +281,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         case 6:
             out.quadTo(buf[off    ], buf[off + 1],
                        buf[off + 2], buf[off + 3]);
-            return;
-        case 4:
-            out.lineTo(buf[off], buf[off + 1]);
             return;
         default:
         }
