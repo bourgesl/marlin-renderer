@@ -41,10 +41,10 @@ import org.marlin.pisces.MarlinUtils;
  * OpenGL libraries for the entire process.
  */
 public final class OGLRenderQueue extends RenderQueue {
-    final static long FLUSH_DELAY = getInteger("sun.java2d.opengl.flushDelay", 20, 1, 1000); // 100 in jdk
+    final static long FLUSH_DELAY = getInteger("sun.java2d.opengl.flushDelay", 100, 1, 1000); // 100 in jdk
 
     static {
-        System.out.println("RenderQueue: sun.java2d.opengl.flushDelay = "+FLUSH_DELAY);
+        System.out.println("RenderQueue: sun.java2d.opengl.flushDelay = " + FLUSH_DELAY);
     }
 
     private static OGLRenderQueue theInstance;

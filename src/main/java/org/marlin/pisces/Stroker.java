@@ -1173,13 +1173,16 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
             emitLineTo(l[0], l[1]);
 
-            // if instead of switch (perf + most probable cases first)
-            if (kind == 8) {
+            switch(kind) {
+            case 8:
                 emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
                 emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
-            } else {
+                break;
+            case 4:
                 emitLineTo(l[2], l[3]);
                 emitLineToRev(r[0], r[1]);
+                break;
+            default:
             }
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }
@@ -1301,13 +1304,16 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
             emitLineTo(l[0], l[1]);
 
-            // if instead of switch (perf + most probable cases first)
-            if (kind == 6) {
+            switch(kind) {
+            case 6:
                 emitQuadTo(l[2], l[3], l[4], l[5]);
                 emitQuadToRev(r[0], r[1], r[2], r[3]);
-            } else {
+                break;
+            case 4:
                 emitLineTo(l[2], l[3]);
                 emitLineToRev(r[0], r[1]);
+                break;
+            default:
             }
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }

@@ -707,22 +707,24 @@ final class TransformingPathConsumer2D {
                 final int off = (lrCode == MarlinConst.OUTCODE_LEFT) ? 0 : 2;
 
                 // add corners to outside stack:
-                // if instead of switch (perf + most probable cases first)
-                if (tbCode == MarlinConst.OUTCODE_TOP) {
-                    stack.push(off); // top
-                } else if (tbCode == MarlinConst.OUTCODE_BOTTOM) {
-                    stack.push(off + 1); // bottom
-                } else {
-                    // both TOP / BOTTOM:
-                    if ((outcode0 & MarlinConst.OUTCODE_TOP) != 0) {
-                        // top to bottom
+                switch (tbCode) {
+                    case MarlinConst.OUTCODE_TOP:
                         stack.push(off); // top
+                        return;
+                    case MarlinConst.OUTCODE_BOTTOM:
                         stack.push(off + 1); // bottom
-                    } else {
-                        // bottom to top
-                        stack.push(off + 1); // bottom
-                        stack.push(off); // top
-                    }
+                        return;
+                    default:
+                        // both TOP / BOTTOM:
+                        if ((outcode0 & MarlinConst.OUTCODE_TOP) != 0) {
+                            // top to bottom
+                            stack.push(off); // top
+                            stack.push(off + 1); // bottom
+                        } else {
+                            // bottom to top
+                            stack.push(off + 1); // bottom
+                            stack.push(off); // top
+                        }
                 }
             }
         }

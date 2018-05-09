@@ -266,13 +266,16 @@ final class Helpers implements MarlinConst {
             final float x3 = cos * pts[4] + sin * pts[5];
             final float y3 = cos * pts[5] - sin * pts[4];
 
-            // if instead of switch (perf + most probable cases first)
-            if (type == 8) {
+            switch(type) {
+            case 8:
                 final float x4 = cos * pts[6] + sin * pts[7];
                 final float y4 = cos * pts[7] - sin * pts[6];
                 c.set(x1, y1, x2, y2, x3, y3, x4, y4);
-            } else {
+                break;
+            case 6:
                 c.set(x1, y1, x2, y2, x3, y3);
+                break;
+            default:
             }
         } else {
             c.set(pts, type);
@@ -332,11 +335,15 @@ final class Helpers implements MarlinConst {
                           final float[] left, final float[] right,
                           final int type)
     {
-        // if instead of switch (perf + most probable cases first)
-        if (type == 8) {
+        switch(type) {
+        case 8:
             subdivideCubic(src, left, right);
-        } else {
+            return;
+        case 6:
             subdivideQuad(src, left, right);
+            return;
+        default:
+            throw new InternalError("Unsupported curve type");
         }
     }
 
@@ -761,19 +768,23 @@ final class Helpers implements MarlinConst {
             int e = 0;
 
             for (int i = 0; i < nc; i++) {
-                // if instead of switch (perf + most probable cases first)
-                if (_curveTypes[i] == TYPE_LINETO) {
+                switch(_curveTypes[i]) {
+                case TYPE_LINETO:
                     io.lineTo(_curves[e], _curves[e+1]);
                     e += 2;
-                } else if (_curveTypes[i] == TYPE_CUBICTO) {
+                    continue;
+                case TYPE_CUBICTO:
                     io.curveTo(_curves[e],   _curves[e+1],
                                _curves[e+2], _curves[e+3],
                                _curves[e+4], _curves[e+5]);
                     e += 6;
-                } else {
+                    continue;
+                case TYPE_QUADTO:
                     io.quadTo(_curves[e],   _curves[e+1],
                               _curves[e+2], _curves[e+3]);
                     e += 4;
+                    continue;
+                default:
                 }
             }
             numCurves = 0;
@@ -799,20 +810,23 @@ final class Helpers implements MarlinConst {
             int e  = end;
 
             while (nc != 0) {
-                // if instead of switch (perf + most probable cases first)
-                nc--;
-                if (_curveTypes[nc] == TYPE_LINETO) {
+                switch(_curveTypes[--nc]) {
+                case TYPE_LINETO:
                     e -= 2;
                     io.lineTo(_curves[e], _curves[e+1]);
-                } else if (_curveTypes[nc] == TYPE_CUBICTO) {
+                    continue;
+                case TYPE_CUBICTO:
                     e -= 6;
                     io.curveTo(_curves[e],   _curves[e+1],
                                _curves[e+2], _curves[e+3],
                                _curves[e+4], _curves[e+5]);
-                } else {
+                    continue;
+                case TYPE_QUADTO:
                     e -= 4;
                     io.quadTo(_curves[e],   _curves[e+1],
                               _curves[e+2], _curves[e+3]);
+                    continue;
+                default:
                 }
             }
             numCurves = 0;

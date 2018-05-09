@@ -189,7 +189,8 @@ public final class MarlinProperties {
      * Return the log(2) corresponding to the square tile size in pixels
      *
      * @return 3 (8x8 pixels) < tile size < 10 (1024x1024 pixels)
-     * (5 by default ie 32x32 pixels)
+     * (6 by default ie 128x64 pixels if large tile supported)
+     * (5 by default ie 32x32 pixels otherwise)
      */
     public static int getTileSize_Log2() {
         final int def = supportsLargeTiles() ? 6 : 5;
@@ -200,7 +201,8 @@ public final class MarlinProperties {
      * Return the log(2) corresponding to the tile width in pixels
      *
      * @return 3 (8 pixels) < tile width < 10 (1024 pixels)
-     * (5 by default ie 32x32 pixels)
+     * (7 by default ie 128x64 pixels if large tile supported)
+     * (5 by default ie 32x32 pixels otherwise)
      */
     public static int getTileWidth_Log2() {
         final int def = supportsLargeTiles() ? 7 : 5;
