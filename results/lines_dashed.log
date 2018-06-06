@@ -1,463 +1,76 @@
-[INFO] -------------------------------------------------------
-[INFO]  T E S T S
-[INFO] -------------------------------------------------------
-[INFO] Running RunJUnitLongTest
 doDash: enabled.
 Shape mode: NINE_LINE_POLYS
 THRESHOLD_DELTA: 2
-THRESHOLD_NBPIX: 2
+THRESHOLD_NBPIX: 0
 ClipShapeTests: image = 100 x 100
 dashes: [[13.0, 7.0]]
 stroke widths: [10.0]
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=1, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Marlin software rasterizer           = ENABLED
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Version                              = [marlin-0.9.1-Unsafe]
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer                  = org.marlin.pisces.MarlinRenderingEngine
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useThreadLocal   = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useRef           = soft
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.edges            = 4096
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelWidth       = 4096
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelHeight      = 2176
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_X  = 8
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_Y  = 3
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileSize_log2    = 6
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileWidth_log2   = 7
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.blockSize_log2   = 5
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceRLE         = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceNoRLE       = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags     = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags.useHeuristics = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.rleMinWidth      = 64
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useSimplifier    = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.usePathSimplifier= false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pathSimplifier.pixTol = 0.125
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip             = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.runtime.enable = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider  = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider.minLength = -1.0
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doStats          = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doMonitors       = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doChecks         = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useLogger        = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logCreateContext = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logUnsafeMalloc  = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.curve_len_err    = 1.0E-5
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_dec_d2     = 0.001
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_inc_d1     = 2.0E-4
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.quad_dec_d2      = 5.0E-4
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Renderer settings:
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_DEC_BND  = 0.256
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_INC_BND  = 0.0512
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: QUAD_DEC_BND = 0.128
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_EDGES_CAPACITY               = 98304
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_CROSSING_COUNT               = 1024
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Marlin software rasterizer           = ENABLED
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Version                              = [marlin-0.9.1-Unsafe]
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer                  = org.marlin.pisces.DMarlinRenderingEngine
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useThreadLocal   = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useRef           = soft
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.edges            = 4096
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelWidth       = 4096
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelHeight      = 2176
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_X  = 8
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_Y  = 3
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileSize_log2    = 6
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileWidth_log2   = 7
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.blockSize_log2   = 5
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceRLE         = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceNoRLE       = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags     = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags.useHeuristics = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.rleMinWidth      = 64
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useSimplifier    = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.usePathSimplifier= false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pathSimplifier.pixTol = 0.125
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip             = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.runtime.enable = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider  = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider.minLength = -1.0
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doStats          = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doMonitors       = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doChecks         = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useLogger        = true
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logCreateContext = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logUnsafeMalloc  = false
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.curve_len_err    = 1.0E-5
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_dec_d2     = 0.001
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_inc_d1     = 2.0E-4
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.quad_dec_d2      = 5.0E-4
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Renderer settings:
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_DEC_BND  = 0.25600001215934753
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_INC_BND  = 0.05119999870657921
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: QUAD_DEC_BND = 0.12800000607967377
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_EDGES_CAPACITY               = 98304
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_CROSSING_COUNT               = 1024
-Jan 30, 2018 9:33:03 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-INFO: AAShapePipe: overriding JDK implementation: marlin-renderer TILE patch enabled.
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2716.366827 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=2, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2129.461759 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=3, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2000.498032 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=4, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2128.206595 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=5, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 1782.562592 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=6, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 1935.414069 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=7, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 12679.224648 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=8, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 14277.855206999999 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=9, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 10110.420417 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=10, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 11400.237154999999 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=11, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 10022.176565 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=12, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 11206.299388 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=13, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2397.478178 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=14, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2613.3268359999997 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=15, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2306.8202 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=16, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2549.347571 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=17, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2139.53365 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=18, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 2327.926149 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=19, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_NON_ZERO}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 1130.792622 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=20, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_NON_ZERO}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 1094.345618 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=21, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_EVEN_ODD}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 1266.951139 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=22, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_EVEN_ODD}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 1109.1052049999998 ms.
-main: duration= 101326.293116 ms.
-[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 3, Time elapsed: 101.397 s - in RunJUnitLongTest
-[INFO] 
-[INFO] Results:
-[INFO] 
-[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 3
-[INFO] 
-[INFO] 
-[INFO] --- maven-failsafe-plugin:2.20.1:verify (integration-long-test-double) @ marlin ---
-[INFO] Failsafe report directory: /home/bourgesl/libs/marlin/branches/marlin-unsafe-dev/target/failsafe-reports
-[INFO] 
-[INFO] --- maven-failsafe-plugin:2.20.1:integration-test (integration-long-test-float) @ marlin ---
-[INFO] Failsafe report directory: /home/bourgesl/libs/marlin/branches/marlin-unsafe-dev/target/failsafe-reports
-[INFO] 
-[INFO] -------------------------------------------------------
-[INFO]  T E S T S
-[INFO] -------------------------------------------------------
-[INFO] Running RunJUnitLongTest
-doDash: enabled.
-Shape mode: NINE_LINE_POLYS
-THRESHOLD_DELTA: 2
-THRESHOLD_NBPIX: 2
-ClipShapeTests: image = 100 x 100
-dashes: [[13.0, 7.0]]
-stroke widths: [10.0]
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=1, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Marlin software rasterizer           = ENABLED
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Version                              = [marlin-0.9.1-Unsafe]
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer                  = org.marlin.pisces.MarlinRenderingEngine
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useThreadLocal   = true
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useRef           = soft
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.edges            = 4096
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelWidth       = 4096
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelHeight      = 2176
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_X  = 8
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_Y  = 3
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileSize_log2    = 6
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileWidth_log2   = 7
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.blockSize_log2   = 5
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceRLE         = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceNoRLE       = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags     = true
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags.useHeuristics = true
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.rleMinWidth      = 64
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useSimplifier    = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.usePathSimplifier= false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pathSimplifier.pixTol = 0.125
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip             = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.runtime.enable = true
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider  = true
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider.minLength = -1.0
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doStats          = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doMonitors       = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doChecks         = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useLogger        = true
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logCreateContext = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logUnsafeMalloc  = false
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.curve_len_err    = 1.0E-5
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_dec_d2     = 0.001
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_inc_d1     = 2.0E-4
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.quad_dec_d2      = 5.0E-4
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Renderer settings:
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_DEC_BND  = 0.256
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_INC_BND  = 0.0512
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: QUAD_DEC_BND = 0.128
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_EDGES_CAPACITY               = 98304
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_CROSSING_COUNT               = 1024
-Jan 30, 2018 9:34:44 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-INFO: AAShapePipe: overriding JDK implementation: marlin-renderer TILE patch enabled.
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 575.7820899999999 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=2, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 445.598664 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=3, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 416.072001 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=4, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 418.155534 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=5, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 427.44602699999996 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=6, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 417.656749 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=7, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 466.483791 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=8, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 453.670098 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=9, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 436.43467 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=10, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 431.552502 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=11, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 423.23742799999997 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=12, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 431.548201 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=13, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 433.351348 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=14, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 424.714303 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=15, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 412.03723199999996 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=16, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 417.17598999999996 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=17, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 410.94733299999996 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=18, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
-No difference for [All  Pixels [All tests]].
-paintPaths: duration= 413.859855 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=19, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_NON_ZERO}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 315 avg: 0.0 [0 | 1] { 
-            0 ..     1[n: 49999685] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 315] sum: 315 avg: 1.0 [1 | 1] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 315] sum: 315 avg: 1.0 [1 | 1] { 
-            1 ..     2[n: 315] sum: 315 avg: 1.0 [1 | 1] }
-paintPaths: duration= 1547.4802809999999 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=20, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_NON_ZERO}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 283 avg: 0.0 [0 | 1] { 
-            0 ..     1[n: 49999717] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 283] sum: 283 avg: 1.0 [1 | 1] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 283] sum: 283 avg: 1.0 [1 | 1] { 
-            1 ..     2[n: 283] sum: 283 avg: 1.0 [1 | 1] }
-paintPaths: duration= 1298.519241 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=21, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_EVEN_ODD}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 498 avg: 0.0 [0 | 1] { 
-            0 ..     1[n: 49999502] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 498] sum: 498 avg: 1.0 [1 | 1] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 498] sum: 498 avg: 1.0 [1 | 1] { 
-            1 ..     2[n: 498] sum: 498 avg: 1.0 [1 | 1] }
-paintPaths: duration= 1376.304831 ms.
-paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=22, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_EVEN_ODD}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 484 avg: 0.0 [0 | 1] { 
-            0 ..     1[n: 49999516] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 484] sum: 484 avg: 1.0 [1 | 1] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 484] sum: 484 avg: 1.0 [1 | 1] { 
-            1 ..     2[n: 484] sum: 484 avg: 1.0 [1 | 1] }
-paintPaths: duration= 1312.9484639999998 ms.
-main: duration= 13392.729867 ms.
-[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 3, Time elapsed: 13.443 s - in RunJUnitLongTest
-[INFO] 
-[INFO] Results:
-[INFO] 
-[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 3
-
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=23, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2208.80489 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=24, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2086.365479 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=25, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 1905.597577 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=26, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2091.306999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=27, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 1746.162864 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=28, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 1891.32596 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=29, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 13830.589108 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=30, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 15665.267639 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=31, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 10962.616955 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=32, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 12556.65185 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=33, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 10839.796766 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=34, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 12233.606139 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=35, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2394.260661 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=36, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2626.881366 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=37, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2298.637944 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=38, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2537.575403 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=39, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2124.6573869999997 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=40, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 2317.992585 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=41, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_NON_ZERO}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 1059.1226649999999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=42, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_NON_ZERO}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 1056.737868 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=43, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_EVEN_ODD}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 1097.155436 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=44, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_EVEN_ODD}
+No difference for [Diff Pixels [Test setup]].
+paintPaths: duration= 1095.958656 ms.
+main: duration= 106629.41394 ms.
+No difference for [Diff Pixels [Worst(All Test setups)]].
+No difference for [Diff Pixels [All Test setups]].

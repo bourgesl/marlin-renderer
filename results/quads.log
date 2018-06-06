@@ -1,1205 +1,431 @@
-[INFO] -------------------------------------------------------
-[INFO]  T E S T S
-[INFO] -------------------------------------------------------
-[INFO] Running RunJUnitLongTest
 Shape mode: FOUR_QUADS
 THRESHOLD_DELTA: 64
-THRESHOLD_NBPIX: 256
+THRESHOLD_NBPIX: 180
 ClipShapeTests: image = 100 x 100
-dashes: [null]
+dashes: [[13.0, 7.0]]
 stroke widths: [10.0]
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=1, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER}
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Marlin software rasterizer           = ENABLED
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Version                              = [marlin-0.9.1-Unsafe]
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer                  = org.marlin.pisces.MarlinRenderingEngine
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useThreadLocal   = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useRef           = soft
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.edges            = 4096
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelWidth       = 4096
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelHeight      = 2176
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_X  = 8
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_Y  = 3
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileSize_log2    = 6
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileWidth_log2   = 7
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.blockSize_log2   = 5
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceRLE         = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceNoRLE       = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags     = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags.useHeuristics = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.rleMinWidth      = 64
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useSimplifier    = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.usePathSimplifier= false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pathSimplifier.pixTol = 0.125
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip             = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.runtime.enable = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider  = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider.minLength = -1.0
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doStats          = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doMonitors       = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doChecks         = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useLogger        = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logCreateContext = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logUnsafeMalloc  = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.curve_len_err    = 1.0E-5
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_dec_d2     = 0.001
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_inc_d1     = 1.0E-6
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.quad_dec_d2      = 5.0E-4
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Renderer settings:
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_DEC_BND  = 0.256
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_INC_BND  = 2.56E-4
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: QUAD_DEC_BND = 0.128
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_EDGES_CAPACITY               = 98304
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_CROSSING_COUNT               = 1024
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Marlin software rasterizer           = ENABLED
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Version                              = [marlin-0.9.1-Unsafe]
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer                  = org.marlin.pisces.DMarlinRenderingEngine
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useThreadLocal   = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useRef           = soft
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.edges            = 4096
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelWidth       = 4096
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelHeight      = 2176
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_X  = 8
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_Y  = 3
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileSize_log2    = 6
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileWidth_log2   = 7
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.blockSize_log2   = 5
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceRLE         = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceNoRLE       = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags     = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags.useHeuristics = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.rleMinWidth      = 64
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useSimplifier    = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.usePathSimplifier= false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pathSimplifier.pixTol = 0.125
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip             = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.runtime.enable = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider  = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider.minLength = -1.0
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doStats          = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doMonitors       = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doChecks         = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useLogger        = true
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logCreateContext = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logUnsafeMalloc  = false
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.curve_len_err    = 1.0E-5
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_dec_d2     = 0.001
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_inc_d1     = 1.0E-6
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.quad_dec_d2      = 5.0E-4
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Renderer settings:
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_DEC_BND  = 0.25600001215934753
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_INC_BND  = 2.5599999935366213E-4
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: QUAD_DEC_BND = 0.12800000607967377
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_EDGES_CAPACITY               = 98304
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_CROSSING_COUNT               = 1024
-Jan 30, 2018 10:45:22 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-INFO: AAShapePipe: overriding JDK implementation: marlin-renderer TILE patch enabled.
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 11989043 avg: 0.239 [0 | 110] { 
-            0 ..     1[n: 48185073] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 439755] sum: 439755 avg: 1.0 [1 | 1]
-            2 ..     4[n: 422991] sum: 1022845 avg: 2.418 [2 | 3]
-            4 ..     8[n: 414143] sum: 2180105 avg: 5.264 [4 | 7]
-            8 ..    16[n: 342605] sum: 3712657 avg: 10.836 [8 | 15]
-           16 ..    32[n: 167233] sum: 3445361 avg: 20.602 [16 | 31]
-           32 ..    64[n: 26434] sum: 1057726 avg: 40.013 [32 | 63]
-           64 ..   128[n: 1766] sum: 130594 avg: 73.949 [64 | 110] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1814927] sum: 11989043 avg: 6.605 [1 | 110] { 
-            1 ..     2[n: 439755] sum: 439755 avg: 1.0 [1 | 1]
-            2 ..     4[n: 422991] sum: 1022845 avg: 2.418 [2 | 3]
-            4 ..     8[n: 414143] sum: 2180105 avg: 5.264 [4 | 7]
-            8 ..    16[n: 342605] sum: 3712657 avg: 10.836 [8 | 15]
-           16 ..    32[n: 167233] sum: 3445361 avg: 20.602 [16 | 31]
-           32 ..    64[n: 26434] sum: 1057726 avg: 40.013 [32 | 63]
-           64 ..   128[n: 1766] sum: 130594 avg: 73.949 [64 | 110] }
-paintPaths: duration= 5462.257616 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=2, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 11183639 avg: 0.223 [0 | 104] { 
-            0 ..     1[n: 48300032] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 414854] sum: 414854 avg: 1.0 [1 | 1]
-            2 ..     4[n: 397472] sum: 960492 avg: 2.416 [2 | 3]
-            4 ..     8[n: 386808] sum: 2034992 avg: 5.26 [4 | 7]
-            8 ..    16[n: 318435] sum: 3443344 avg: 10.813 [8 | 15]
-           16 ..    32[n: 155492] sum: 3206274 avg: 20.62 [16 | 31]
-           32 ..    64[n: 25417] sum: 1014943 avg: 39.931 [32 | 63]
-           64 ..   128[n: 1490] sum: 108740 avg: 72.979 [64 | 104] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1699968] sum: 11183639 avg: 6.578 [1 | 104] { 
-            1 ..     2[n: 414854] sum: 414854 avg: 1.0 [1 | 1]
-            2 ..     4[n: 397472] sum: 960492 avg: 2.416 [2 | 3]
-            4 ..     8[n: 386808] sum: 2034992 avg: 5.26 [4 | 7]
-            8 ..    16[n: 318435] sum: 3443344 avg: 10.813 [8 | 15]
-           16 ..    32[n: 155492] sum: 3206274 avg: 20.62 [16 | 31]
-           32 ..    64[n: 25417] sum: 1014943 avg: 39.931 [32 | 63]
-           64 ..   128[n: 1490] sum: 108740 avg: 72.979 [64 | 104] }
-paintPaths: duration= 5242.778799 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=3, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 39611833 avg: 0.792 [0 | 127] { 
-            0 ..     1[n: 46922065] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 482757] sum: 482757 avg: 1.0 [1 | 1]
-            2 ..     4[n: 520999] sum: 1265420 avg: 2.428 [2 | 3]
-            4 ..     8[n: 580944] sum: 3086978 avg: 5.313 [4 | 7]
-            8 ..    16[n: 612499] sum: 6766286 avg: 11.047 [8 | 15]
-           16 ..    32[n: 551793] sum: 12145736 avg: 22.011 [16 | 31]
-           32 ..    64[n: 277325] sum: 11815512 avg: 42.605 [32 | 63]
-           64 ..   128[n: 51618] sum: 4049144 avg: 78.444 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3077935] sum: 39611833 avg: 12.869 [1 | 127] { 
-            1 ..     2[n: 482757] sum: 482757 avg: 1.0 [1 | 1]
-            2 ..     4[n: 520999] sum: 1265420 avg: 2.428 [2 | 3]
-            4 ..     8[n: 580944] sum: 3086978 avg: 5.313 [4 | 7]
-            8 ..    16[n: 612499] sum: 6766286 avg: 11.047 [8 | 15]
-           16 ..    32[n: 551793] sum: 12145736 avg: 22.011 [16 | 31]
-           32 ..    64[n: 277325] sum: 11815512 avg: 42.605 [32 | 63]
-           64 ..   128[n: 51618] sum: 4049144 avg: 78.444 [64 | 127] }
-paintPaths: duration= 4408.490100999999 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=4, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36627386 avg: 0.732 [0 | 127] { 
-            0 ..     1[n: 47154455] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 453322] sum: 453322 avg: 1.0 [1 | 1]
-            2 ..     4[n: 482837] sum: 1171814 avg: 2.426 [2 | 3]
-            4 ..     8[n: 536390] sum: 2849214 avg: 5.311 [4 | 7]
-            8 ..    16[n: 559056] sum: 6181971 avg: 11.057 [8 | 15]
-           16 ..    32[n: 507437] sum: 11169216 avg: 22.011 [16 | 31]
-           32 ..    64[n: 258272] sum: 11022919 avg: 42.679 [32 | 63]
-           64 ..   128[n: 48231] sum: 3778930 avg: 78.35 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2845545] sum: 36627386 avg: 12.871 [1 | 127] { 
-            1 ..     2[n: 453322] sum: 453322 avg: 1.0 [1 | 1]
-            2 ..     4[n: 482837] sum: 1171814 avg: 2.426 [2 | 3]
-            4 ..     8[n: 536390] sum: 2849214 avg: 5.311 [4 | 7]
-            8 ..    16[n: 559056] sum: 6181971 avg: 11.057 [8 | 15]
-           16 ..    32[n: 507437] sum: 11169216 avg: 22.011 [16 | 31]
-           32 ..    64[n: 258272] sum: 11022919 avg: 42.679 [32 | 63]
-           64 ..   128[n: 48231] sum: 3778930 avg: 78.35 [64 | 127] }
-paintPaths: duration= 4588.064425 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=5, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 39371118 avg: 0.787 [0 | 127] { 
-            0 ..     1[n: 46941215] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 488616] sum: 488616 avg: 1.0 [1 | 1]
-            2 ..     4[n: 517855] sum: 1256361 avg: 2.426 [2 | 3]
-            4 ..     8[n: 575787] sum: 3061620 avg: 5.317 [4 | 7]
-            8 ..    16[n: 604502] sum: 6678555 avg: 11.048 [8 | 15]
-           16 ..    32[n: 541586] sum: 11909895 avg: 21.99 [16 | 31]
-           32 ..    64[n: 278271] sum: 11864230 avg: 42.635 [32 | 63]
-           64 ..   128[n: 52168] sum: 4111841 avg: 78.819 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3058785] sum: 39371118 avg: 12.871 [1 | 127] { 
-            1 ..     2[n: 488616] sum: 488616 avg: 1.0 [1 | 1]
-            2 ..     4[n: 517855] sum: 1256361 avg: 2.426 [2 | 3]
-            4 ..     8[n: 575787] sum: 3061620 avg: 5.317 [4 | 7]
-            8 ..    16[n: 604502] sum: 6678555 avg: 11.048 [8 | 15]
-           16 ..    32[n: 541586] sum: 11909895 avg: 21.99 [16 | 31]
-           32 ..    64[n: 278271] sum: 11864230 avg: 42.635 [32 | 63]
-           64 ..   128[n: 52168] sum: 4111841 avg: 78.819 [64 | 127] }
-paintPaths: duration= 4179.737423 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=6, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36890826 avg: 0.737 [0 | 127] { 
-            0 ..     1[n: 47135039] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 453947] sum: 453947 avg: 1.0 [1 | 1]
-            2 ..     4[n: 488572] sum: 1186957 avg: 2.429 [2 | 3]
-            4 ..     8[n: 541196] sum: 2872166 avg: 5.307 [4 | 7]
-            8 ..    16[n: 564049] sum: 6228238 avg: 11.042 [8 | 15]
-           16 ..    32[n: 509703] sum: 11216634 avg: 22.006 [16 | 31]
-           32 ..    64[n: 257282] sum: 10967162 avg: 42.627 [32 | 63]
-           64 ..   128[n: 50212] sum: 3965722 avg: 78.979 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2864961] sum: 36890826 avg: 12.876 [1 | 127] { 
-            1 ..     2[n: 453947] sum: 453947 avg: 1.0 [1 | 1]
-            2 ..     4[n: 488572] sum: 1186957 avg: 2.429 [2 | 3]
-            4 ..     8[n: 541196] sum: 2872166 avg: 5.307 [4 | 7]
-            8 ..    16[n: 564049] sum: 6228238 avg: 11.042 [8 | 15]
-           16 ..    32[n: 509703] sum: 11216634 avg: 22.006 [16 | 31]
-           32 ..    64[n: 257282] sum: 10967162 avg: 42.627 [32 | 63]
-           64 ..   128[n: 50212] sum: 3965722 avg: 78.979 [64 | 127] }
-paintPaths: duration= 4423.342712 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=7, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 11894198 avg: 0.237 [0 | 111] { 
-            0 ..     1[n: 48186297] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 443680] sum: 443680 avg: 1.0 [1 | 1]
-            2 ..     4[n: 423359] sum: 1022825 avg: 2.415 [2 | 3]
-            4 ..     8[n: 412716] sum: 2172332 avg: 5.263 [4 | 7]
-            8 ..    16[n: 339338] sum: 3671084 avg: 10.818 [8 | 15]
-           16 ..    32[n: 167430] sum: 3463670 avg: 20.687 [16 | 31]
-           32 ..    64[n: 25845] sum: 1023647 avg: 39.607 [32 | 63]
-           64 ..   128[n: 1335] sum: 96960 avg: 72.629 [64 | 111] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1813703] sum: 11894198 avg: 6.557 [1 | 111] { 
-            1 ..     2[n: 443680] sum: 443680 avg: 1.0 [1 | 1]
-            2 ..     4[n: 423359] sum: 1022825 avg: 2.415 [2 | 3]
-            4 ..     8[n: 412716] sum: 2172332 avg: 5.263 [4 | 7]
-            8 ..    16[n: 339338] sum: 3671084 avg: 10.818 [8 | 15]
-           16 ..    32[n: 167430] sum: 3463670 avg: 20.687 [16 | 31]
-           32 ..    64[n: 25845] sum: 1023647 avg: 39.607 [32 | 63]
-           64 ..   128[n: 1335] sum: 96960 avg: 72.629 [64 | 111] }
-paintPaths: duration= 5017.391821 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=8, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 10983524 avg: 0.219 [0 | 109] { 
-            0 ..     1[n: 48315403] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 410413] sum: 410413 avg: 1.0 [1 | 1]
-            2 ..     4[n: 394864] sum: 953825 avg: 2.415 [2 | 3]
-            4 ..     8[n: 385575] sum: 2027777 avg: 5.259 [4 | 7]
-            8 ..    16[n: 315846] sum: 3414245 avg: 10.809 [8 | 15]
-           16 ..    32[n: 153797] sum: 3159993 avg: 20.546 [16 | 31]
-           32 ..    64[n: 22538] sum: 901037 avg: 39.978 [32 | 63]
-           64 ..   128[n: 1564] sum: 116234 avg: 74.318 [64 | 109] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1684597] sum: 10983524 avg: 6.519 [1 | 109] { 
-            1 ..     2[n: 410413] sum: 410413 avg: 1.0 [1 | 1]
-            2 ..     4[n: 394864] sum: 953825 avg: 2.415 [2 | 3]
-            4 ..     8[n: 385575] sum: 2027777 avg: 5.259 [4 | 7]
-            8 ..    16[n: 315846] sum: 3414245 avg: 10.809 [8 | 15]
-           16 ..    32[n: 153797] sum: 3159993 avg: 20.546 [16 | 31]
-           32 ..    64[n: 22538] sum: 901037 avg: 39.978 [32 | 63]
-           64 ..   128[n: 1564] sum: 116234 avg: 74.318 [64 | 109] }
-paintPaths: duration= 5259.808973 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=9, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 39555575 avg: 0.791 [0 | 127] { 
-            0 ..     1[n: 46932714] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 486222] sum: 486222 avg: 1.0 [1 | 1]
-            2 ..     4[n: 519303] sum: 1262452 avg: 2.431 [2 | 3]
-            4 ..     8[n: 582694] sum: 3093866 avg: 5.309 [4 | 7]
-            8 ..    16[n: 605285] sum: 6681407 avg: 11.038 [8 | 15]
-           16 ..    32[n: 544143] sum: 11986823 avg: 22.028 [16 | 31]
-           32 ..    64[n: 275029] sum: 11747491 avg: 42.713 [32 | 63]
-           64 ..   128[n: 54610] sum: 4297314 avg: 78.69 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3067286] sum: 39555575 avg: 12.895 [1 | 127] { 
-            1 ..     2[n: 486222] sum: 486222 avg: 1.0 [1 | 1]
-            2 ..     4[n: 519303] sum: 1262452 avg: 2.431 [2 | 3]
-            4 ..     8[n: 582694] sum: 3093866 avg: 5.309 [4 | 7]
-            8 ..    16[n: 605285] sum: 6681407 avg: 11.038 [8 | 15]
-           16 ..    32[n: 544143] sum: 11986823 avg: 22.028 [16 | 31]
-           32 ..    64[n: 275029] sum: 11747491 avg: 42.713 [32 | 63]
-           64 ..   128[n: 54610] sum: 4297314 avg: 78.69 [64 | 127] }
-paintPaths: duration= 4358.9986739999995 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=10, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36493979 avg: 0.729 [0 | 127] { 
-            0 ..     1[n: 47160766] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 455131] sum: 455131 avg: 1.0 [1 | 1]
-            2 ..     4[n: 479931] sum: 1165178 avg: 2.427 [2 | 3]
-            4 ..     8[n: 529758] sum: 2814527 avg: 5.312 [4 | 7]
-            8 ..    16[n: 562492] sum: 6220109 avg: 11.058 [8 | 15]
-           16 ..    32[n: 508018] sum: 11178368 avg: 22.003 [16 | 31]
-           32 ..    64[n: 255730] sum: 10874239 avg: 42.522 [32 | 63]
-           64 ..   128[n: 48174] sum: 3786427 avg: 78.598 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2839234] sum: 36493979 avg: 12.853 [1 | 127] { 
-            1 ..     2[n: 455131] sum: 455131 avg: 1.0 [1 | 1]
-            2 ..     4[n: 479931] sum: 1165178 avg: 2.427 [2 | 3]
-            4 ..     8[n: 529758] sum: 2814527 avg: 5.312 [4 | 7]
-            8 ..    16[n: 562492] sum: 6220109 avg: 11.058 [8 | 15]
-           16 ..    32[n: 508018] sum: 11178368 avg: 22.003 [16 | 31]
-           32 ..    64[n: 255730] sum: 10874239 avg: 42.522 [32 | 63]
-           64 ..   128[n: 48174] sum: 3786427 avg: 78.598 [64 | 127] }
-paintPaths: duration= 4541.6018859999995 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=11, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 39785818 avg: 0.795 [0 | 127] { 
-            0 ..     1[n: 46933540] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 487381] sum: 487381 avg: 1.0 [1 | 1]
-            2 ..     4[n: 521539] sum: 1266347 avg: 2.428 [2 | 3]
-            4 ..     8[n: 572277] sum: 3039987 avg: 5.312 [4 | 7]
-            8 ..    16[n: 603484] sum: 6676926 avg: 11.063 [8 | 15]
-           16 ..    32[n: 545166] sum: 11980125 avg: 21.975 [16 | 31]
-           32 ..    64[n: 282045] sum: 12043100 avg: 42.699 [32 | 63]
-           64 ..   128[n: 54568] sum: 4291952 avg: 78.653 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3066460] sum: 39785818 avg: 12.974 [1 | 127] { 
-            1 ..     2[n: 487381] sum: 487381 avg: 1.0 [1 | 1]
-            2 ..     4[n: 521539] sum: 1266347 avg: 2.428 [2 | 3]
-            4 ..     8[n: 572277] sum: 3039987 avg: 5.312 [4 | 7]
-            8 ..    16[n: 603484] sum: 6676926 avg: 11.063 [8 | 15]
-           16 ..    32[n: 545166] sum: 11980125 avg: 21.975 [16 | 31]
-           32 ..    64[n: 282045] sum: 12043100 avg: 42.699 [32 | 63]
-           64 ..   128[n: 54568] sum: 4291952 avg: 78.653 [64 | 127] }
-paintPaths: duration= 4277.788946 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=12, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36925340 avg: 0.738 [0 | 127] { 
-            0 ..     1[n: 47144035] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 454263] sum: 454263 avg: 1.0 [1 | 1]
-            2 ..     4[n: 484166] sum: 1176656 avg: 2.43 [2 | 3]
-            4 ..     8[n: 539488] sum: 2866734 avg: 5.313 [4 | 7]
-            8 ..    16[n: 561579] sum: 6210558 avg: 11.059 [8 | 15]
-           16 ..    32[n: 506797] sum: 11150602 avg: 22.002 [16 | 31]
-           32 ..    64[n: 258393] sum: 11034611 avg: 42.704 [32 | 63]
-           64 ..   128[n: 51279] sum: 4031916 avg: 78.627 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2855965] sum: 36925340 avg: 12.929 [1 | 127] { 
-            1 ..     2[n: 454263] sum: 454263 avg: 1.0 [1 | 1]
-            2 ..     4[n: 484166] sum: 1176656 avg: 2.43 [2 | 3]
-            4 ..     8[n: 539488] sum: 2866734 avg: 5.313 [4 | 7]
-            8 ..    16[n: 561579] sum: 6210558 avg: 11.059 [8 | 15]
-           16 ..    32[n: 506797] sum: 11150602 avg: 22.002 [16 | 31]
-           32 ..    64[n: 258393] sum: 11034611 avg: 42.704 [32 | 63]
-           64 ..   128[n: 51279] sum: 4031916 avg: 78.627 [64 | 127] }
-paintPaths: duration= 4404.441766 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=13, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 12226283 avg: 0.244 [0 | 115] { 
-            0 ..     1[n: 48170836] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 433100] sum: 433100 avg: 1.0 [1 | 1]
-            2 ..     4[n: 425441] sum: 1028488 avg: 2.417 [2 | 3]
-            4 ..     8[n: 419144] sum: 2204292 avg: 5.259 [4 | 7]
-            8 ..    16[n: 350485] sum: 3792889 avg: 10.821 [8 | 15]
-           16 ..    32[n: 171676] sum: 3547652 avg: 20.664 [16 | 31]
-           32 ..    64[n: 27739] sum: 1103417 avg: 39.778 [32 | 63]
-           64 ..   128[n: 1579] sum: 116445 avg: 73.746 [64 | 115] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1829164] sum: 12226283 avg: 6.684 [1 | 115] { 
-            1 ..     2[n: 433100] sum: 433100 avg: 1.0 [1 | 1]
-            2 ..     4[n: 425441] sum: 1028488 avg: 2.417 [2 | 3]
-            4 ..     8[n: 419144] sum: 2204292 avg: 5.259 [4 | 7]
-            8 ..    16[n: 350485] sum: 3792889 avg: 10.821 [8 | 15]
-           16 ..    32[n: 171676] sum: 3547652 avg: 20.664 [16 | 31]
-           32 ..    64[n: 27739] sum: 1103417 avg: 39.778 [32 | 63]
-           64 ..   128[n: 1579] sum: 116445 avg: 73.746 [64 | 115] }
-paintPaths: duration= 4833.880271999999 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=14, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 11062515 avg: 0.221 [0 | 110] { 
-            0 ..     1[n: 48293151] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 418397] sum: 418397 avg: 1.0 [1 | 1]
-            2 ..     4[n: 400214] sum: 967888 avg: 2.418 [2 | 3]
-            4 ..     8[n: 391344] sum: 2058963 avg: 5.261 [4 | 7]
-            8 ..    16[n: 319250] sum: 3447665 avg: 10.799 [8 | 15]
-           16 ..    32[n: 153575] sum: 3167124 avg: 20.622 [16 | 31]
-           32 ..    64[n: 22718] sum: 902332 avg: 39.718 [32 | 63]
-           64 ..   128[n: 1351] sum: 100146 avg: 74.127 [64 | 110] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1706849] sum: 11062515 avg: 6.481 [1 | 110] { 
-            1 ..     2[n: 418397] sum: 418397 avg: 1.0 [1 | 1]
-            2 ..     4[n: 400214] sum: 967888 avg: 2.418 [2 | 3]
-            4 ..     8[n: 391344] sum: 2058963 avg: 5.261 [4 | 7]
-            8 ..    16[n: 319250] sum: 3447665 avg: 10.799 [8 | 15]
-           16 ..    32[n: 153575] sum: 3167124 avg: 20.622 [16 | 31]
-           32 ..    64[n: 22718] sum: 902332 avg: 39.718 [32 | 63]
-           64 ..   128[n: 1351] sum: 100146 avg: 74.127 [64 | 110] }
-paintPaths: duration= 5161.0928189999995 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=15, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 38146516 avg: 0.762 [0 | 127] { 
-            0 ..     1[n: 46982050] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 480003] sum: 480003 avg: 1.0 [1 | 1]
-            2 ..     4[n: 511569] sum: 1243055 avg: 2.429 [2 | 3]
-            4 ..     8[n: 573058] sum: 3043322 avg: 5.31 [4 | 7]
-            8 ..    16[n: 603564] sum: 6676184 avg: 11.061 [8 | 15]
-           16 ..    32[n: 540508] sum: 11890455 avg: 21.998 [16 | 31]
-           32 ..    64[n: 262927] sum: 11173761 avg: 42.497 [32 | 63]
-           64 ..   128[n: 46321] sum: 3639736 avg: 78.576 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3017950] sum: 38146516 avg: 12.639 [1 | 127] { 
-            1 ..     2[n: 480003] sum: 480003 avg: 1.0 [1 | 1]
-            2 ..     4[n: 511569] sum: 1243055 avg: 2.429 [2 | 3]
-            4 ..     8[n: 573058] sum: 3043322 avg: 5.31 [4 | 7]
-            8 ..    16[n: 603564] sum: 6676184 avg: 11.061 [8 | 15]
-           16 ..    32[n: 540508] sum: 11890455 avg: 21.998 [16 | 31]
-           32 ..    64[n: 262927] sum: 11173761 avg: 42.497 [32 | 63]
-           64 ..   128[n: 46321] sum: 3639736 avg: 78.576 [64 | 127] }
-paintPaths: duration= 4281.855858 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=16, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 35621784 avg: 0.712 [0 | 127] { 
-            0 ..     1[n: 47169710] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 452769] sum: 452769 avg: 1.0 [1 | 1]
-            2 ..     4[n: 479139] sum: 1162523 avg: 2.426 [2 | 3]
-            4 ..     8[n: 536844] sum: 2856293 avg: 5.32 [4 | 7]
-            8 ..    16[n: 567455] sum: 6270628 avg: 11.05 [8 | 15]
-           16 ..    32[n: 505716] sum: 11093374 avg: 21.935 [16 | 31]
-           32 ..    64[n: 245206] sum: 10421049 avg: 42.499 [32 | 63]
-           64 ..   128[n: 43161] sum: 3365148 avg: 77.967 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2830290] sum: 35621784 avg: 12.585 [1 | 127] { 
-            1 ..     2[n: 452769] sum: 452769 avg: 1.0 [1 | 1]
-            2 ..     4[n: 479139] sum: 1162523 avg: 2.426 [2 | 3]
-            4 ..     8[n: 536844] sum: 2856293 avg: 5.32 [4 | 7]
-            8 ..    16[n: 567455] sum: 6270628 avg: 11.05 [8 | 15]
-           16 ..    32[n: 505716] sum: 11093374 avg: 21.935 [16 | 31]
-           32 ..    64[n: 245206] sum: 10421049 avg: 42.499 [32 | 63]
-           64 ..   128[n: 43161] sum: 3365148 avg: 77.967 [64 | 127] }
-paintPaths: duration= 4574.217081 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=17, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 37728868 avg: 0.754 [0 | 127] { 
-            0 ..     1[n: 46992029] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 484550] sum: 484550 avg: 1.0 [1 | 1]
-            2 ..     4[n: 516400] sum: 1254720 avg: 2.429 [2 | 3]
-            4 ..     8[n: 572345] sum: 3041624 avg: 5.314 [4 | 7]
-            8 ..    16[n: 596957] sum: 6594798 avg: 11.047 [8 | 15]
-           16 ..    32[n: 529780] sum: 11637763 avg: 21.967 [16 | 31]
-           32 ..    64[n: 261615] sum: 11103250 avg: 42.441 [32 | 63]
-           64 ..   128[n: 46324] sum: 3612163 avg: 77.976 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3007971] sum: 37728868 avg: 12.542 [1 | 127] { 
-            1 ..     2[n: 484550] sum: 484550 avg: 1.0 [1 | 1]
-            2 ..     4[n: 516400] sum: 1254720 avg: 2.429 [2 | 3]
-            4 ..     8[n: 572345] sum: 3041624 avg: 5.314 [4 | 7]
-            8 ..    16[n: 596957] sum: 6594798 avg: 11.047 [8 | 15]
-           16 ..    32[n: 529780] sum: 11637763 avg: 21.967 [16 | 31]
-           32 ..    64[n: 261615] sum: 11103250 avg: 42.441 [32 | 63]
-           64 ..   128[n: 46324] sum: 3612163 avg: 77.976 [64 | 127] }
-paintPaths: duration= 4223.043592999999 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=18, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36207792 avg: 0.724 [0 | 127] { 
-            0 ..     1[n: 47165845] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 452835] sum: 452835 avg: 1.0 [1 | 1]
-            2 ..     4[n: 482761] sum: 1173700 avg: 2.431 [2 | 3]
-            4 ..     8[n: 538149] sum: 2857206 avg: 5.309 [4 | 7]
-            8 ..    16[n: 559422] sum: 6181064 avg: 11.049 [8 | 15]
-           16 ..    32[n: 499847] sum: 11009826 avg: 22.026 [16 | 31]
-           32 ..    64[n: 254288] sum: 10865704 avg: 42.729 [32 | 63]
-           64 ..   128[n: 46853] sum: 3667457 avg: 78.275 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2834155] sum: 36207792 avg: 12.775 [1 | 127] { 
-            1 ..     2[n: 452835] sum: 452835 avg: 1.0 [1 | 1]
-            2 ..     4[n: 482761] sum: 1173700 avg: 2.431 [2 | 3]
-            4 ..     8[n: 538149] sum: 2857206 avg: 5.309 [4 | 7]
-            8 ..    16[n: 559422] sum: 6181064 avg: 11.049 [8 | 15]
-           16 ..    32[n: 499847] sum: 11009826 avg: 22.026 [16 | 31]
-           32 ..    64[n: 254288] sum: 10865704 avg: 42.729 [32 | 63]
-           64 ..   128[n: 46853] sum: 3667457 avg: 78.275 [64 | 127] }
-paintPaths: duration= 4474.623104 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=19, shapeMode=FOUR_QUADS, closed=false, fill, windingRule=WIND_NON_ZERO}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 1188 avg: 0.0 [0 | 1] { 
-            0 ..     1[n: 49998812] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 1188] sum: 1188 avg: 1.0 [1 | 1] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1188] sum: 1188 avg: 1.0 [1 | 1] { 
-            1 ..     2[n: 1188] sum: 1188 avg: 1.0 [1 | 1] }
-paintPaths: duration= 2515.9472579999997 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=20, shapeMode=FOUR_QUADS, closed=true, fill, windingRule=WIND_NON_ZERO}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 1270 avg: 0.0 [0 | 2] { 
-            0 ..     1[n: 49998731] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 1268] sum: 1268 avg: 1.0 [1 | 1]
-            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1269] sum: 1270 avg: 1.0 [1 | 2] { 
-            1 ..     2[n: 1268] sum: 1268 avg: 1.0 [1 | 1]
-            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
-paintPaths: duration= 2487.947046 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=21, shapeMode=FOUR_QUADS, closed=false, fill, windingRule=WIND_EVEN_ODD}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 1781 avg: 0.0 [0 | 1] { 
-            0 ..     1[n: 49998219] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 1781] sum: 1781 avg: 1.0 [1 | 1] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1781] sum: 1781 avg: 1.0 [1 | 1] { 
-            1 ..     2[n: 1781] sum: 1781 avg: 1.0 [1 | 1] }
-paintPaths: duration= 2623.9801549999997 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=22, shapeMode=FOUR_QUADS, closed=true, fill, windingRule=WIND_EVEN_ODD}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 1768 avg: 0.0 [0 | 1] { 
-            0 ..     1[n: 49998232] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 1768] sum: 1768 avg: 1.0 [1 | 1] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1768] sum: 1768 avg: 1.0 [1 | 1] { 
-            1 ..     2[n: 1768] sum: 1768 avg: 1.0 [1 | 1] }
-paintPaths: duration= 2543.229108 ms.
-main: duration= 93887.197245 ms.
-[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 3, Time elapsed: 93.924 s - in RunJUnitLongTest
-[INFO] 
-[INFO] Results:
-[INFO] 
-[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 3
-[INFO] 
-[INFO] 
-[INFO] --- maven-failsafe-plugin:2.20.1:verify (integration-long-test-double) @ marlin ---
-[INFO] Failsafe report directory: /home/bourgesl/libs/marlin/branches/marlin-unsafe-dev/target/failsafe-reports
-[INFO] 
-[INFO] --- maven-failsafe-plugin:2.20.1:integration-test (integration-long-test-float) @ marlin ---
-[INFO] Failsafe report directory: /home/bourgesl/libs/marlin/branches/marlin-unsafe-dev/target/failsafe-reports
-[INFO] 
-[INFO] -------------------------------------------------------
-[INFO]  T E S T S
-[INFO] -------------------------------------------------------
-[INFO] Running RunJUnitLongTest
-Shape mode: FOUR_QUADS
-THRESHOLD_DELTA: 64
-THRESHOLD_NBPIX: 256
-ClipShapeTests: image = 100 x 100
-dashes: [null]
-stroke widths: [10.0]
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=1, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER}
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Marlin software rasterizer           = ENABLED
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Version                              = [marlin-0.9.1-Unsafe]
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer                  = org.marlin.pisces.MarlinRenderingEngine
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useThreadLocal   = true
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useRef           = soft
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.edges            = 4096
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelWidth       = 4096
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pixelHeight      = 2176
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_X  = 8
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.subPixel_log2_Y  = 3
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileSize_log2    = 6
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.tileWidth_log2   = 7
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.blockSize_log2   = 5
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceRLE         = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.forceNoRLE       = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags     = true
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useTileFlags.useHeuristics = true
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.rleMinWidth      = 64
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useSimplifier    = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.usePathSimplifier= false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.pathSimplifier.pixTol = 0.125
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip             = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.runtime.enable = true
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider  = true
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.clip.subdivider.minLength = -1.0
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doStats          = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doMonitors       = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.doChecks         = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.useLogger        = true
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logCreateContext = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.logUnsafeMalloc  = false
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.curve_len_err    = 1.0E-5
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_dec_d2     = 0.001
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.cubic_inc_d1     = 1.0E-6
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: sun.java2d.renderer.quad_dec_d2      = 5.0E-4
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: Renderer settings:
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_DEC_BND  = 0.256
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: CUB_INC_BND  = 2.56E-4
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: QUAD_DEC_BND = 0.128
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_EDGES_CAPACITY               = 98304
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: INITIAL_CROSSING_COUNT               = 1024
-Jan 30, 2018 10:46:56 PM org.marlin.pisces.MarlinUtils logInfo
-INFO: ===============================================================================
-INFO: AAShapePipe: overriding JDK implementation: marlin-renderer TILE patch enabled.
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 11797362 avg: 0.235 [0 | 127] { 
-            0 ..     1[n: 48197136] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 443354] sum: 443354 avg: 1.0 [1 | 1]
-            2 ..     4[n: 420867] sum: 1017347 avg: 2.417 [2 | 3]
-            4 ..     8[n: 410542] sum: 2160133 avg: 5.261 [4 | 7]
-            8 ..    16[n: 337973] sum: 3661805 avg: 10.834 [8 | 15]
-           16 ..    32[n: 162827] sum: 3351380 avg: 20.582 [16 | 31]
-           32 ..    64[n: 25415] sum: 1017967 avg: 40.053 [32 | 63]
-           64 ..   128[n: 1886] sum: 145376 avg: 77.081 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1802864] sum: 11797362 avg: 6.543 [1 | 127] { 
-            1 ..     2[n: 443354] sum: 443354 avg: 1.0 [1 | 1]
-            2 ..     4[n: 420867] sum: 1017347 avg: 2.417 [2 | 3]
-            4 ..     8[n: 410542] sum: 2160133 avg: 5.261 [4 | 7]
-            8 ..    16[n: 337973] sum: 3661805 avg: 10.834 [8 | 15]
-           16 ..    32[n: 162827] sum: 3351380 avg: 20.582 [16 | 31]
-           32 ..    64[n: 25415] sum: 1017967 avg: 40.053 [32 | 63]
-           64 ..   128[n: 1886] sum: 145376 avg: 77.081 [64 | 127] }
-paintPaths: duration= 5580.933824 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=2, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 10998809 avg: 0.219 [0 | 127] { 
-            0 ..     1[n: 48310174] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 419341] sum: 419341 avg: 1.0 [1 | 1]
-            2 ..     4[n: 395769] sum: 955931 avg: 2.415 [2 | 3]
-            4 ..     8[n: 383609] sum: 2018619 avg: 5.262 [4 | 7]
-            8 ..    16[n: 313760] sum: 3392718 avg: 10.813 [8 | 15]
-           16 ..    32[n: 151256] sum: 3115901 avg: 20.6 [16 | 31]
-           32 ..    64[n: 24540] sum: 979970 avg: 39.933 [32 | 63]
-           64 ..   128[n: 1551] sum: 116329 avg: 75.002 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1689826] sum: 10998809 avg: 6.508 [1 | 127] { 
-            1 ..     2[n: 419341] sum: 419341 avg: 1.0 [1 | 1]
-            2 ..     4[n: 395769] sum: 955931 avg: 2.415 [2 | 3]
-            4 ..     8[n: 383609] sum: 2018619 avg: 5.262 [4 | 7]
-            8 ..    16[n: 313760] sum: 3392718 avg: 10.813 [8 | 15]
-           16 ..    32[n: 151256] sum: 3115901 avg: 20.6 [16 | 31]
-           32 ..    64[n: 24540] sum: 979970 avg: 39.933 [32 | 63]
-           64 ..   128[n: 1551] sum: 116329 avg: 75.002 [64 | 127] }
-paintPaths: duration= 5303.431234 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=3, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 39290083 avg: 0.785 [0 | 127] { 
-            0 ..     1[n: 46927784] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 485445] sum: 485445 avg: 1.0 [1 | 1]
-            2 ..     4[n: 521254] sum: 1265817 avg: 2.428 [2 | 3]
-            4 ..     8[n: 580896] sum: 3086415 avg: 5.313 [4 | 7]
-            8 ..    16[n: 610833] sum: 6746076 avg: 11.044 [8 | 15]
-           16 ..    32[n: 549524] sum: 12091947 avg: 22.004 [16 | 31]
-           32 ..    64[n: 273835] sum: 11659771 avg: 42.579 [32 | 63]
-           64 ..   128[n: 50429] sum: 3954612 avg: 78.419 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3072216] sum: 39290083 avg: 12.788 [1 | 127] { 
-            1 ..     2[n: 485445] sum: 485445 avg: 1.0 [1 | 1]
-            2 ..     4[n: 521254] sum: 1265817 avg: 2.428 [2 | 3]
-            4 ..     8[n: 580896] sum: 3086415 avg: 5.313 [4 | 7]
-            8 ..    16[n: 610833] sum: 6746076 avg: 11.044 [8 | 15]
-           16 ..    32[n: 549524] sum: 12091947 avg: 22.004 [16 | 31]
-           32 ..    64[n: 273835] sum: 11659771 avg: 42.579 [32 | 63]
-           64 ..   128[n: 50429] sum: 3954612 avg: 78.419 [64 | 127] }
-paintPaths: duration= 4376.967102 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=4, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36353349 avg: 0.727 [0 | 127] { 
-            0 ..     1[n: 47158941] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 456522] sum: 456522 avg: 1.0 [1 | 1]
-            2 ..     4[n: 483374] sum: 1172926 avg: 2.426 [2 | 3]
-            4 ..     8[n: 535930] sum: 2846454 avg: 5.311 [4 | 7]
-            8 ..    16[n: 557531] sum: 6163947 avg: 11.055 [8 | 15]
-           16 ..    32[n: 505074] sum: 11111991 avg: 22.0 [16 | 31]
-           32 ..    64[n: 255337] sum: 10889513 avg: 42.647 [32 | 63]
-           64 ..   128[n: 47291] sum: 3711996 avg: 78.492 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2841059] sum: 36353349 avg: 12.795 [1 | 127] { 
-            1 ..     2[n: 456522] sum: 456522 avg: 1.0 [1 | 1]
-            2 ..     4[n: 483374] sum: 1172926 avg: 2.426 [2 | 3]
-            4 ..     8[n: 535930] sum: 2846454 avg: 5.311 [4 | 7]
-            8 ..    16[n: 557531] sum: 6163947 avg: 11.055 [8 | 15]
-           16 ..    32[n: 505074] sum: 11111991 avg: 22.0 [16 | 31]
-           32 ..    64[n: 255337] sum: 10889513 avg: 42.647 [32 | 63]
-           64 ..   128[n: 47291] sum: 3711996 avg: 78.492 [64 | 127] }
-paintPaths: duration= 4729.2781589999995 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=5, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 39037860 avg: 0.78 [0 | 127] { 
-            0 ..     1[n: 46946426] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 492416] sum: 492416 avg: 1.0 [1 | 1]
-            2 ..     4[n: 517404] sum: 1255564 avg: 2.426 [2 | 3]
-            4 ..     8[n: 575654] sum: 3060801 avg: 5.317 [4 | 7]
-            8 ..    16[n: 603114] sum: 6662319 avg: 11.046 [8 | 15]
-           16 ..    32[n: 539421] sum: 11859518 avg: 21.985 [16 | 31]
-           32 ..    64[n: 274881] sum: 11713097 avg: 42.611 [32 | 63]
-           64 ..   128[n: 50684] sum: 3994145 avg: 78.804 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3053574] sum: 39037860 avg: 12.784 [1 | 127] { 
-            1 ..     2[n: 492416] sum: 492416 avg: 1.0 [1 | 1]
-            2 ..     4[n: 517404] sum: 1255564 avg: 2.426 [2 | 3]
-            4 ..     8[n: 575654] sum: 3060801 avg: 5.317 [4 | 7]
-            8 ..    16[n: 603114] sum: 6662319 avg: 11.046 [8 | 15]
-           16 ..    32[n: 539421] sum: 11859518 avg: 21.985 [16 | 31]
-           32 ..    64[n: 274881] sum: 11713097 avg: 42.611 [32 | 63]
-           64 ..   128[n: 50684] sum: 3994145 avg: 78.804 [64 | 127] }
-paintPaths: duration= 4301.849722999999 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=6, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36601294 avg: 0.732 [0 | 127] { 
-            0 ..     1[n: 47140738] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 456090] sum: 456090 avg: 1.0 [1 | 1]
-            2 ..     4[n: 488934] sum: 1187958 avg: 2.429 [2 | 3]
-            4 ..     8[n: 540917] sum: 2870504 avg: 5.306 [4 | 7]
-            8 ..    16[n: 562680] sum: 6211700 avg: 11.039 [8 | 15]
-           16 ..    32[n: 507257] sum: 11157286 avg: 21.995 [16 | 31]
-           32 ..    64[n: 254202] sum: 10831031 avg: 42.607 [32 | 63]
-           64 ..   128[n: 49182] sum: 3886725 avg: 79.027 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2859262] sum: 36601294 avg: 12.8 [1 | 127] { 
-            1 ..     2[n: 456090] sum: 456090 avg: 1.0 [1 | 1]
-            2 ..     4[n: 488934] sum: 1187958 avg: 2.429 [2 | 3]
-            4 ..     8[n: 540917] sum: 2870504 avg: 5.306 [4 | 7]
-            8 ..    16[n: 562680] sum: 6211700 avg: 11.039 [8 | 15]
-           16 ..    32[n: 507257] sum: 11157286 avg: 21.995 [16 | 31]
-           32 ..    64[n: 254202] sum: 10831031 avg: 42.607 [32 | 63]
-           64 ..   128[n: 49182] sum: 3886725 avg: 79.027 [64 | 127] }
-paintPaths: duration= 4413.3727389999995 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=7, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 11701325 avg: 0.234 [0 | 127] { 
-            0 ..     1[n: 48199220] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 446958] sum: 446958 avg: 1.0 [1 | 1]
-            2 ..     4[n: 420806] sum: 1016327 avg: 2.415 [2 | 3]
-            4 ..     8[n: 408837] sum: 2151521 avg: 5.262 [4 | 7]
-            8 ..    16[n: 334474] sum: 3616998 avg: 10.813 [8 | 15]
-           16 ..    32[n: 163503] sum: 3379597 avg: 20.669 [16 | 31]
-           32 ..    64[n: 24776] sum: 982577 avg: 39.658 [32 | 63]
-           64 ..   128[n: 1426] sum: 107347 avg: 75.278 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1800780] sum: 11701325 avg: 6.497 [1 | 127] { 
-            1 ..     2[n: 446958] sum: 446958 avg: 1.0 [1 | 1]
-            2 ..     4[n: 420806] sum: 1016327 avg: 2.415 [2 | 3]
-            4 ..     8[n: 408837] sum: 2151521 avg: 5.262 [4 | 7]
-            8 ..    16[n: 334474] sum: 3616998 avg: 10.813 [8 | 15]
-           16 ..    32[n: 163503] sum: 3379597 avg: 20.669 [16 | 31]
-           32 ..    64[n: 24776] sum: 982577 avg: 39.658 [32 | 63]
-           64 ..   128[n: 1426] sum: 107347 avg: 75.278 [64 | 127] }
-paintPaths: duration= 4954.42081 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=8, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 10799512 avg: 0.215 [0 | 127] { 
-            0 ..     1[n: 48325764] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 413720] sum: 413720 avg: 1.0 [1 | 1]
-            2 ..     4[n: 393212] sum: 949900 avg: 2.415 [2 | 3]
-            4 ..     8[n: 383210] sum: 2014638 avg: 5.257 [4 | 7]
-            8 ..    16[n: 311201] sum: 3363037 avg: 10.806 [8 | 15]
-           16 ..    32[n: 149690] sum: 3070637 avg: 20.513 [16 | 31]
-           32 ..    64[n: 21568] sum: 863371 avg: 40.03 [32 | 63]
-           64 ..   128[n: 1635] sum: 124209 avg: 75.968 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1674236] sum: 10799512 avg: 6.45 [1 | 127] { 
-            1 ..     2[n: 413720] sum: 413720 avg: 1.0 [1 | 1]
-            2 ..     4[n: 393212] sum: 949900 avg: 2.415 [2 | 3]
-            4 ..     8[n: 383210] sum: 2014638 avg: 5.257 [4 | 7]
-            8 ..    16[n: 311201] sum: 3363037 avg: 10.806 [8 | 15]
-           16 ..    32[n: 149690] sum: 3070637 avg: 20.513 [16 | 31]
-           32 ..    64[n: 21568] sum: 863371 avg: 40.03 [32 | 63]
-           64 ..   128[n: 1635] sum: 124209 avg: 75.968 [64 | 127] }
-paintPaths: duration= 5141.152723 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=9, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 39204713 avg: 0.784 [0 | 127] { 
-            0 ..     1[n: 46939716] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 489467] sum: 489467 avg: 1.0 [1 | 1]
-            2 ..     4[n: 519202] sum: 1262407 avg: 2.431 [2 | 3]
-            4 ..     8[n: 581569] sum: 3088134 avg: 5.31 [4 | 7]
-            8 ..    16[n: 603827] sum: 6664605 avg: 11.037 [8 | 15]
-           16 ..    32[n: 541435] sum: 11922185 avg: 22.019 [16 | 31]
-           32 ..    64[n: 271543] sum: 11592402 avg: 42.69 [32 | 63]
-           64 ..   128[n: 53241] sum: 4185513 avg: 78.614 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3060284] sum: 39204713 avg: 12.81 [1 | 127] { 
-            1 ..     2[n: 489467] sum: 489467 avg: 1.0 [1 | 1]
-            2 ..     4[n: 519202] sum: 1262407 avg: 2.431 [2 | 3]
-            4 ..     8[n: 581569] sum: 3088134 avg: 5.31 [4 | 7]
-            8 ..    16[n: 603827] sum: 6664605 avg: 11.037 [8 | 15]
-           16 ..    32[n: 541435] sum: 11922185 avg: 22.019 [16 | 31]
-           32 ..    64[n: 271543] sum: 11592402 avg: 42.69 [32 | 63]
-           64 ..   128[n: 53241] sum: 4185513 avg: 78.614 [64 | 127] }
-paintPaths: duration= 4318.8888799999995 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=10, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36211460 avg: 0.724 [0 | 127] { 
-            0 ..     1[n: 47166947] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 457176] sum: 457176 avg: 1.0 [1 | 1]
-            2 ..     4[n: 479878] sum: 1164914 avg: 2.427 [2 | 3]
-            4 ..     8[n: 529231] sum: 2811294 avg: 5.312 [4 | 7]
-            8 ..    16[n: 561370] sum: 6205765 avg: 11.054 [8 | 15]
-           16 ..    32[n: 505526] sum: 11120270 avg: 21.997 [16 | 31]
-           32 ..    64[n: 252596] sum: 10731176 avg: 42.483 [32 | 63]
-           64 ..   128[n: 47276] sum: 3720865 avg: 78.705 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2833053] sum: 36211460 avg: 12.781 [1 | 127] { 
-            1 ..     2[n: 457176] sum: 457176 avg: 1.0 [1 | 1]
-            2 ..     4[n: 479878] sum: 1164914 avg: 2.427 [2 | 3]
-            4 ..     8[n: 529231] sum: 2811294 avg: 5.312 [4 | 7]
-            8 ..    16[n: 561370] sum: 6205765 avg: 11.054 [8 | 15]
-           16 ..    32[n: 505526] sum: 11120270 avg: 21.997 [16 | 31]
-           32 ..    64[n: 252596] sum: 10731176 avg: 42.483 [32 | 63]
-           64 ..   128[n: 47276] sum: 3720865 avg: 78.705 [64 | 127] }
-paintPaths: duration= 4528.914562999999 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=11, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 39472022 avg: 0.789 [0 | 127] { 
-            0 ..     1[n: 46938850] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 490806] sum: 490806 avg: 1.0 [1 | 1]
-            2 ..     4[n: 521441] sum: 1266096 avg: 2.428 [2 | 3]
-            4 ..     8[n: 572118] sum: 3039323 avg: 5.312 [4 | 7]
-            8 ..    16[n: 602183] sum: 6661623 avg: 11.062 [8 | 15]
-           16 ..    32[n: 542431] sum: 11916304 avg: 21.968 [16 | 31]
-           32 ..    64[n: 278727] sum: 11894704 avg: 42.675 [32 | 63]
-           64 ..   128[n: 53444] sum: 4203166 avg: 78.646 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3061150] sum: 39472022 avg: 12.894 [1 | 127] { 
-            1 ..     2[n: 490806] sum: 490806 avg: 1.0 [1 | 1]
-            2 ..     4[n: 521441] sum: 1266096 avg: 2.428 [2 | 3]
-            4 ..     8[n: 572118] sum: 3039323 avg: 5.312 [4 | 7]
-            8 ..    16[n: 602183] sum: 6661623 avg: 11.062 [8 | 15]
-           16 ..    32[n: 542431] sum: 11916304 avg: 21.968 [16 | 31]
-           32 ..    64[n: 278727] sum: 11894704 avg: 42.675 [32 | 63]
-           64 ..   128[n: 53444] sum: 4203166 avg: 78.646 [64 | 127] }
-paintPaths: duration= 4255.786728 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=12, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 36589076 avg: 0.731 [0 | 127] { 
-            0 ..     1[n: 47149683] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 457997] sum: 457997 avg: 1.0 [1 | 1]
-            2 ..     4[n: 484031] sum: 1176265 avg: 2.43 [2 | 3]
-            4 ..     8[n: 538822] sum: 2863366 avg: 5.314 [4 | 7]
-            8 ..    16[n: 560096] sum: 6193717 avg: 11.058 [8 | 15]
-           16 ..    32[n: 504308] sum: 11090562 avg: 21.991 [16 | 31]
-           32 ..    64[n: 255283] sum: 10897171 avg: 42.686 [32 | 63]
-           64 ..   128[n: 49780] sum: 3909998 avg: 78.545 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2850317] sum: 36589076 avg: 12.836 [1 | 127] { 
-            1 ..     2[n: 457997] sum: 457997 avg: 1.0 [1 | 1]
-            2 ..     4[n: 484031] sum: 1176265 avg: 2.43 [2 | 3]
-            4 ..     8[n: 538822] sum: 2863366 avg: 5.314 [4 | 7]
-            8 ..    16[n: 560096] sum: 6193717 avg: 11.058 [8 | 15]
-           16 ..    32[n: 504308] sum: 11090562 avg: 21.991 [16 | 31]
-           32 ..    64[n: 255283] sum: 10897171 avg: 42.686 [32 | 63]
-           64 ..   128[n: 49780] sum: 3909998 avg: 78.545 [64 | 127] }
-paintPaths: duration= 4387.337149999999 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=13, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 12013201 avg: 0.24 [0 | 119] { 
-            0 ..     1[n: 48180053] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 439428] sum: 439428 avg: 1.0 [1 | 1]
-            2 ..     4[n: 423773] sum: 1024209 avg: 2.416 [2 | 3]
-            4 ..     8[n: 415328] sum: 2184373 avg: 5.259 [4 | 7]
-            8 ..    16[n: 345990] sum: 3741645 avg: 10.814 [8 | 15]
-           16 ..    32[n: 167234] sum: 3449800 avg: 20.628 [16 | 31]
-           32 ..    64[n: 26640] sum: 1058747 avg: 39.742 [32 | 63]
-           64 ..   128[n: 1554] sum: 114999 avg: 74.001 [64 | 119] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1819947] sum: 12013201 avg: 6.6 [1 | 119] { 
-            1 ..     2[n: 439428] sum: 439428 avg: 1.0 [1 | 1]
-            2 ..     4[n: 423773] sum: 1024209 avg: 2.416 [2 | 3]
-            4 ..     8[n: 415328] sum: 2184373 avg: 5.259 [4 | 7]
-            8 ..    16[n: 345990] sum: 3741645 avg: 10.814 [8 | 15]
-           16 ..    32[n: 167234] sum: 3449800 avg: 20.628 [16 | 31]
-           32 ..    64[n: 26640] sum: 1058747 avg: 39.742 [32 | 63]
-           64 ..   128[n: 1554] sum: 114999 avg: 74.001 [64 | 119] }
-paintPaths: duration= 4828.54196 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=14, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 10882352 avg: 0.217 [0 | 127] { 
-            0 ..     1[n: 48304371] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 421727] sum: 421727 avg: 1.0 [1 | 1]
-            2 ..     4[n: 398530] sum: 963276 avg: 2.417 [2 | 3]
-            4 ..     8[n: 388221] sum: 2042983 avg: 5.262 [4 | 7]
-            8 ..    16[n: 314362] sum: 3392347 avg: 10.791 [8 | 15]
-           16 ..    32[n: 149536] sum: 3079577 avg: 20.594 [16 | 31]
-           32 ..    64[n: 21733] sum: 864121 avg: 39.76 [32 | 63]
-           64 ..   128[n: 1520] sum: 118321 avg: 77.842 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 1695629] sum: 10882352 avg: 6.417 [1 | 127] { 
-            1 ..     2[n: 421727] sum: 421727 avg: 1.0 [1 | 1]
-            2 ..     4[n: 398530] sum: 963276 avg: 2.417 [2 | 3]
-            4 ..     8[n: 388221] sum: 2042983 avg: 5.262 [4 | 7]
-            8 ..    16[n: 314362] sum: 3392347 avg: 10.791 [8 | 15]
-           16 ..    32[n: 149536] sum: 3079577 avg: 20.594 [16 | 31]
-           32 ..    64[n: 21733] sum: 864121 avg: 39.76 [32 | 63]
-           64 ..   128[n: 1520] sum: 118321 avg: 77.842 [64 | 127] }
-paintPaths: duration= 5147.292511 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=15, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 37831559 avg: 0.756 [0 | 127] { 
-            0 ..     1[n: 46987042] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 483422] sum: 483422 avg: 1.0 [1 | 1]
-            2 ..     4[n: 512023] sum: 1244195 avg: 2.429 [2 | 3]
-            4 ..     8[n: 572763] sum: 3040838 avg: 5.309 [4 | 7]
-            8 ..    16[n: 602541] sum: 6664402 avg: 11.06 [8 | 15]
-           16 ..    32[n: 537698] sum: 11826340 avg: 21.994 [16 | 31]
-           32 ..    64[n: 259282] sum: 11012972 avg: 42.474 [32 | 63]
-           64 ..   128[n: 45229] sum: 3559390 avg: 78.697 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3012958] sum: 37831559 avg: 12.556 [1 | 127] { 
-            1 ..     2[n: 483422] sum: 483422 avg: 1.0 [1 | 1]
-            2 ..     4[n: 512023] sum: 1244195 avg: 2.429 [2 | 3]
-            4 ..     8[n: 572763] sum: 3040838 avg: 5.309 [4 | 7]
-            8 ..    16[n: 602541] sum: 6664402 avg: 11.06 [8 | 15]
-           16 ..    32[n: 537698] sum: 11826340 avg: 21.994 [16 | 31]
-           32 ..    64[n: 259282] sum: 11012972 avg: 42.474 [32 | 63]
-           64 ..   128[n: 45229] sum: 3559390 avg: 78.697 [64 | 127] }
-paintPaths: duration= 4371.979891 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=16, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 35326652 avg: 0.706 [0 | 127] { 
-            0 ..     1[n: 47174150] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 456153] sum: 456153 avg: 1.0 [1 | 1]
-            2 ..     4[n: 479698] sum: 1164135 avg: 2.426 [2 | 3]
-            4 ..     8[n: 535928] sum: 2850111 avg: 5.318 [4 | 7]
-            8 ..    16[n: 566918] sum: 6262491 avg: 11.046 [8 | 15]
-           16 ..    32[n: 502966] sum: 11027379 avg: 21.924 [16 | 31]
-           32 ..    64[n: 242063] sum: 10281881 avg: 42.476 [32 | 63]
-           64 ..   128[n: 42124] sum: 3284502 avg: 77.972 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2825850] sum: 35326652 avg: 12.501 [1 | 127] { 
-            1 ..     2[n: 456153] sum: 456153 avg: 1.0 [1 | 1]
-            2 ..     4[n: 479698] sum: 1164135 avg: 2.426 [2 | 3]
-            4 ..     8[n: 535928] sum: 2850111 avg: 5.318 [4 | 7]
-            8 ..    16[n: 566918] sum: 6262491 avg: 11.046 [8 | 15]
-           16 ..    32[n: 502966] sum: 11027379 avg: 21.924 [16 | 31]
-           32 ..    64[n: 242063] sum: 10281881 avg: 42.476 [32 | 63]
-           64 ..   128[n: 42124] sum: 3284502 avg: 77.972 [64 | 127] }
-paintPaths: duration= 4660.520646 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=17, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 37368540 avg: 0.747 [0 | 127] { 
-            0 ..     1[n: 46998277] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 487884] sum: 487884 avg: 1.0 [1 | 1]
-            2 ..     4[n: 516798] sum: 1255402 avg: 2.429 [2 | 3]
-            4 ..     8[n: 571991] sum: 3039371 avg: 5.313 [4 | 7]
-            8 ..    16[n: 595153] sum: 6574687 avg: 11.047 [8 | 15]
-           16 ..    32[n: 527175] sum: 11579106 avg: 21.964 [16 | 31]
-           32 ..    64[n: 257792] sum: 10934106 avg: 42.414 [32 | 63]
-           64 ..   128[n: 44930] sum: 3497984 avg: 77.854 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 3001723] sum: 37368540 avg: 12.449 [1 | 127] { 
-            1 ..     2[n: 487884] sum: 487884 avg: 1.0 [1 | 1]
-            2 ..     4[n: 516798] sum: 1255402 avg: 2.429 [2 | 3]
-            4 ..     8[n: 571991] sum: 3039371 avg: 5.313 [4 | 7]
-            8 ..    16[n: 595153] sum: 6574687 avg: 11.047 [8 | 15]
-           16 ..    32[n: 527175] sum: 11579106 avg: 21.964 [16 | 31]
-           32 ..    64[n: 257792] sum: 10934106 avg: 42.414 [32 | 63]
-           64 ..   128[n: 44930] sum: 3497984 avg: 77.854 [64 | 127] }
-paintPaths: duration= 4270.307331999999 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=18, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 35880040 avg: 0.717 [0 | 127] { 
-            0 ..     1[n: 47171484] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 456188] sum: 456188 avg: 1.0 [1 | 1]
-            2 ..     4[n: 483156] sum: 1174600 avg: 2.431 [2 | 3]
-            4 ..     8[n: 537056] sum: 2851203 avg: 5.308 [4 | 7]
-            8 ..    16[n: 558033] sum: 6165247 avg: 11.048 [8 | 15]
-           16 ..    32[n: 497738] sum: 10960103 avg: 22.019 [16 | 31]
-           32 ..    64[n: 250801] sum: 10709150 avg: 42.699 [32 | 63]
-           64 ..   128[n: 45544] sum: 3563549 avg: 78.244 [64 | 127] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 2828516] sum: 35880040 avg: 12.685 [1 | 127] { 
-            1 ..     2[n: 456188] sum: 456188 avg: 1.0 [1 | 1]
-            2 ..     4[n: 483156] sum: 1174600 avg: 2.431 [2 | 3]
-            4 ..     8[n: 537056] sum: 2851203 avg: 5.308 [4 | 7]
-            8 ..    16[n: 558033] sum: 6165247 avg: 11.048 [8 | 15]
-           16 ..    32[n: 497738] sum: 10960103 avg: 22.019 [16 | 31]
-           32 ..    64[n: 250801] sum: 10709150 avg: 42.699 [32 | 63]
-           64 ..   128[n: 45544] sum: 3563549 avg: 78.244 [64 | 127] }
-paintPaths: duration= 4485.115495999999 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=19, shapeMode=FOUR_QUADS, closed=false, fill, windingRule=WIND_NON_ZERO}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 152275 avg: 0.003 [0 | 16] { 
-            0 ..     1[n: 49849169] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 150091] sum: 150091 avg: 1.0 [1 | 1]
-            2 ..     4[n: 597] sum: 1290 avg: 2.16 [2 | 3]
-            4 ..     8[n: 111] sum: 528 avg: 4.756 [4 | 7]
-            8 ..    16[n: 29] sum: 318 avg: 10.965 [8 | 15]
-           16 ..    32[n: 3] sum: 48 avg: 16.0 [16 | 16] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 150831] sum: 152275 avg: 1.009 [1 | 16] { 
-            1 ..     2[n: 150091] sum: 150091 avg: 1.0 [1 | 1]
-            2 ..     4[n: 597] sum: 1290 avg: 2.16 [2 | 3]
-            4 ..     8[n: 111] sum: 528 avg: 4.756 [4 | 7]
-            8 ..    16[n: 29] sum: 318 avg: 10.965 [8 | 15]
-           16 ..    32[n: 3] sum: 48 avg: 16.0 [16 | 16] }
-paintPaths: duration= 2449.600481 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=20, shapeMode=FOUR_QUADS, closed=true, fill, windingRule=WIND_NON_ZERO}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 150300 avg: 0.003 [0 | 15] { 
-            0 ..     1[n: 49850638] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 148757] sum: 148757 avg: 1.0 [1 | 1]
-            2 ..     4[n: 544] sum: 1176 avg: 2.161 [2 | 3]
-            4 ..     8[n: 51] sum: 257 avg: 5.039 [4 | 7]
-            8 ..    16[n: 10] sum: 110 avg: 11.0 [8 | 15] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 149362] sum: 150300 avg: 1.006 [1 | 15] { 
-            1 ..     2[n: 148757] sum: 148757 avg: 1.0 [1 | 1]
-            2 ..     4[n: 544] sum: 1176 avg: 2.161 [2 | 3]
-            4 ..     8[n: 51] sum: 257 avg: 5.039 [4 | 7]
-            8 ..    16[n: 10] sum: 110 avg: 11.0 [8 | 15] }
-paintPaths: duration= 2547.6779979999997 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=21, shapeMode=FOUR_QUADS, closed=false, fill, windingRule=WIND_EVEN_ODD}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 213073 avg: 0.004 [0 | 16] { 
-            0 ..     1[n: 49788404] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 210721] sum: 210721 avg: 1.0 [1 | 1]
-            2 ..     4[n: 746] sum: 1610 avg: 2.158 [2 | 3]
-            4 ..     8[n: 108] sum: 528 avg: 4.888 [4 | 7]
-            8 ..    16[n: 20] sum: 198 avg: 9.9 [8 | 15]
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=45, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 273] sum: 11579 avg: 42.413 [1 | 182] { 
+            1 ..     2[n: 28] sum: 28 avg: 1.0 [1 | 1]
+            2 ..     4[n: 39] sum: 94 avg: 2.41 [2 | 3]
+            4 ..     8[n: 30] sum: 157 avg: 5.233 [4 | 7]
+            8 ..    16[n: 27] sum: 269 avg: 9.962 [8 | 15]
+           16 ..    32[n: 25] sum: 551 avg: 22.04 [16 | 31]
+           32 ..    64[n: 42] sum: 1943 avg: 46.261 [32 | 63]
+           64 ..   128[n: 63] sum: 5711 avg: 90.65 [64 | 126]
+          128 ..   256[n: 19] sum: 2826 avg: 148.736 [131 | 182] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 563254] sum: 1289900 avg: 2.29 [1 | 182] { 
+            1 ..     2[n: 348542] sum: 348542 avg: 1.0 [1 | 1]
+            2 ..     4[n: 128279] sum: 295565 avg: 2.304 [2 | 3]
+            4 ..     8[n: 58319] sum: 297667 avg: 5.104 [4 | 7]
+            8 ..    16[n: 23265] sum: 237003 avg: 10.187 [8 | 15]
+           16 ..    32[n: 4338] sum: 86747 avg: 19.997 [16 | 31]
+           32 ..    64[n: 425] sum: 15560 avg: 36.611 [32 | 63]
+           64 ..   128[n: 67] sum: 5990 avg: 89.402 [64 | 126]
+          128 ..   256[n: 19] sum: 2826 avg: 148.736 [131 | 182] }
+paintPaths: duration= 5159.481827 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=46, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 273] sum: 11579 avg: 42.413 [1 | 182] { 
+            1 ..     2[n: 28] sum: 28 avg: 1.0 [1 | 1]
+            2 ..     4[n: 39] sum: 94 avg: 2.41 [2 | 3]
+            4 ..     8[n: 30] sum: 157 avg: 5.233 [4 | 7]
+            8 ..    16[n: 27] sum: 269 avg: 9.962 [8 | 15]
+           16 ..    32[n: 25] sum: 551 avg: 22.04 [16 | 31]
+           32 ..    64[n: 42] sum: 1943 avg: 46.261 [32 | 63]
+           64 ..   128[n: 63] sum: 5711 avg: 90.65 [64 | 126]
+          128 ..   256[n: 19] sum: 2826 avg: 148.736 [131 | 182] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 544580] sum: 1236936 avg: 2.271 [1 | 182] { 
+            1 ..     2[n: 340196] sum: 340196 avg: 1.0 [1 | 1]
+            2 ..     4[n: 122164] sum: 281395 avg: 2.303 [2 | 3]
+            4 ..     8[n: 55432] sum: 282956 avg: 5.104 [4 | 7]
+            8 ..    16[n: 22148] sum: 225644 avg: 10.188 [8 | 15]
+           16 ..    32[n: 4146] sum: 82945 avg: 20.006 [16 | 31]
+           32 ..    64[n: 408] sum: 14984 avg: 36.725 [32 | 63]
+           64 ..   128[n: 67] sum: 5990 avg: 89.402 [64 | 126]
+          128 ..   256[n: 19] sum: 2826 avg: 148.736 [131 | 182] }
+paintPaths: duration= 5514.055095 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=47, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 364] sum: 29951 avg: 82.282 [1 | 254] { 
+            1 ..     2[n: 27] sum: 27 avg: 1.0 [1 | 1]
+            2 ..     4[n: 44] sum: 109 avg: 2.477 [2 | 3]
+            4 ..     8[n: 29] sum: 143 avg: 4.931 [4 | 7]
+            8 ..    16[n: 32] sum: 317 avg: 9.906 [8 | 15]
+           16 ..    32[n: 25] sum: 550 avg: 22.0 [16 | 31]
+           32 ..    64[n: 40] sum: 1727 avg: 43.175 [32 | 62]
+           64 ..   128[n: 55] sum: 5152 avg: 93.672 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 862807] sum: 1938782 avg: 2.247 [1 | 254] { 
+            1 ..     2[n: 518152] sum: 518152 avg: 1.0 [1 | 1]
+            2 ..     4[n: 215956] sum: 501056 avg: 2.32 [2 | 3]
+            4 ..     8[n: 92462] sum: 463292 avg: 5.01 [4 | 7]
+            8 ..    16[n: 30480] sum: 309290 avg: 10.147 [8 | 15]
+           16 ..    32[n: 5137] sum: 102308 avg: 19.915 [16 | 31]
+           32 ..    64[n: 431] sum: 15892 avg: 36.872 [32 | 62]
+           64 ..   128[n: 77] sum: 6866 avg: 89.168 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+paintPaths: duration= 4452.318835 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=48, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 364] sum: 29951 avg: 82.282 [1 | 254] { 
+            1 ..     2[n: 27] sum: 27 avg: 1.0 [1 | 1]
+            2 ..     4[n: 44] sum: 109 avg: 2.477 [2 | 3]
+            4 ..     8[n: 29] sum: 143 avg: 4.931 [4 | 7]
+            8 ..    16[n: 32] sum: 317 avg: 9.906 [8 | 15]
+           16 ..    32[n: 25] sum: 550 avg: 22.0 [16 | 31]
+           32 ..    64[n: 40] sum: 1727 avg: 43.175 [32 | 62]
+           64 ..   128[n: 55] sum: 5152 avg: 93.672 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 831646] sum: 1856927 avg: 2.232 [1 | 254] { 
+            1 ..     2[n: 503802] sum: 503802 avg: 1.0 [1 | 1]
+            2 ..     4[n: 205626] sum: 477121 avg: 2.32 [2 | 3]
+            4 ..     8[n: 87731] sum: 439678 avg: 5.011 [4 | 7]
+            8 ..    16[n: 28971] sum: 294021 avg: 10.148 [8 | 15]
+           16 ..    32[n: 4907] sum: 97994 avg: 19.97 [16 | 31]
+           32 ..    64[n: 420] sum: 15519 avg: 36.95 [32 | 62]
+           64 ..   128[n: 77] sum: 6866 avg: 89.168 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+paintPaths: duration= 4783.426813 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=49, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 364] sum: 29951 avg: 82.282 [1 | 254] { 
+            1 ..     2[n: 27] sum: 27 avg: 1.0 [1 | 1]
+            2 ..     4[n: 44] sum: 109 avg: 2.477 [2 | 3]
+            4 ..     8[n: 29] sum: 143 avg: 4.931 [4 | 7]
+            8 ..    16[n: 32] sum: 317 avg: 9.906 [8 | 15]
+           16 ..    32[n: 25] sum: 550 avg: 22.0 [16 | 31]
+           32 ..    64[n: 40] sum: 1727 avg: 43.175 [32 | 62]
+           64 ..   128[n: 55] sum: 5152 avg: 93.672 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 863233] sum: 1939712 avg: 2.247 [1 | 254] { 
+            1 ..     2[n: 518429] sum: 518429 avg: 1.0 [1 | 1]
+            2 ..     4[n: 216050] sum: 501285 avg: 2.32 [2 | 3]
+            4 ..     8[n: 92496] sum: 463460 avg: 5.01 [4 | 7]
+            8 ..    16[n: 30497] sum: 309468 avg: 10.147 [8 | 15]
+           16 ..    32[n: 5141] sum: 102386 avg: 19.915 [16 | 31]
+           32 ..    64[n: 431] sum: 15892 avg: 36.872 [32 | 62]
+           64 ..   128[n: 77] sum: 6866 avg: 89.168 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+paintPaths: duration= 4376.848245 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=50, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 364] sum: 29951 avg: 82.282 [1 | 254] { 
+            1 ..     2[n: 27] sum: 27 avg: 1.0 [1 | 1]
+            2 ..     4[n: 44] sum: 109 avg: 2.477 [2 | 3]
+            4 ..     8[n: 29] sum: 143 avg: 4.931 [4 | 7]
+            8 ..    16[n: 32] sum: 317 avg: 9.906 [8 | 15]
+           16 ..    32[n: 25] sum: 550 avg: 22.0 [16 | 31]
+           32 ..    64[n: 40] sum: 1727 avg: 43.175 [32 | 62]
+           64 ..   128[n: 55] sum: 5152 avg: 93.672 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 832333] sum: 1858325 avg: 2.232 [1 | 254] { 
+            1 ..     2[n: 504239] sum: 504239 avg: 1.0 [1 | 1]
+            2 ..     4[n: 205794] sum: 477517 avg: 2.32 [2 | 3]
+            4 ..     8[n: 87792] sum: 439976 avg: 5.011 [4 | 7]
+            8 ..    16[n: 28987] sum: 294193 avg: 10.149 [8 | 15]
+           16 ..    32[n: 4912] sum: 98089 avg: 19.969 [16 | 31]
+           32 ..    64[n: 420] sum: 15519 avg: 36.95 [32 | 62]
+           64 ..   128[n: 77] sum: 6866 avg: 89.168 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+paintPaths: duration= 4683.707665 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=51, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 152] sum: 2679 avg: 17.625 [1 | 78] { 
+            1 ..     2[n: 34] sum: 34 avg: 1.0 [1 | 1]
+            2 ..     4[n: 25] sum: 56 avg: 2.24 [2 | 3]
+            4 ..     8[n: 12] sum: 56 avg: 4.666 [4 | 6]
+            8 ..    16[n: 18] sum: 212 avg: 11.777 [8 | 15]
+           16 ..    32[n: 31] sum: 680 avg: 21.935 [16 | 31]
+           32 ..    64[n: 25] sum: 1138 avg: 45.52 [32 | 59]
+           64 ..   128[n: 7] sum: 503 avg: 71.857 [65 | 78] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 190756] sum: 304032 avg: 1.593 [1 | 78] { 
+            1 ..     2[n: 144442] sum: 144442 avg: 1.0 [1 | 1]
+            2 ..     4[n: 32777] sum: 75412 avg: 2.3 [2 | 3]
+            4 ..     8[n: 10882] sum: 53045 avg: 4.874 [4 | 7]
+            8 ..    16[n: 2283] sum: 22704 avg: 9.944 [8 | 15]
+           16 ..    32[n: 334] sum: 6592 avg: 19.736 [16 | 31]
+           32 ..    64[n: 31] sum: 1334 avg: 43.032 [32 | 59]
+           64 ..   128[n: 7] sum: 503 avg: 71.857 [65 | 78] }
+paintPaths: duration= 13021.820593999999 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=52, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 152] sum: 2679 avg: 17.625 [1 | 78] { 
+            1 ..     2[n: 34] sum: 34 avg: 1.0 [1 | 1]
+            2 ..     4[n: 25] sum: 56 avg: 2.24 [2 | 3]
+            4 ..     8[n: 12] sum: 56 avg: 4.666 [4 | 6]
+            8 ..    16[n: 18] sum: 212 avg: 11.777 [8 | 15]
+           16 ..    32[n: 31] sum: 680 avg: 21.935 [16 | 31]
+           32 ..    64[n: 25] sum: 1138 avg: 45.52 [32 | 59]
+           64 ..   128[n: 7] sum: 503 avg: 71.857 [65 | 78] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 179481] sum: 285029 avg: 1.588 [1 | 78] { 
+            1 ..     2[n: 136420] sum: 136420 avg: 1.0 [1 | 1]
+            2 ..     4[n: 30485] sum: 70147 avg: 2.301 [2 | 3]
+            4 ..     8[n: 10102] sum: 49224 avg: 4.872 [4 | 7]
+            8 ..    16[n: 2113] sum: 21013 avg: 9.944 [8 | 15]
+           16 ..    32[n: 323] sum: 6388 avg: 19.777 [16 | 31]
+           32 ..    64[n: 31] sum: 1334 avg: 43.032 [32 | 59]
+           64 ..   128[n: 7] sum: 503 avg: 71.857 [65 | 78] }
+paintPaths: duration= 15075.707154 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=53, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 190] sum: 6409 avg: 33.731 [1 | 159] { 
+            1 ..     2[n: 39] sum: 39 avg: 1.0 [1 | 1]
+            2 ..     4[n: 25] sum: 57 avg: 2.28 [2 | 3]
+            4 ..     8[n: 18] sum: 94 avg: 5.222 [4 | 7]
+            8 ..    16[n: 15] sum: 178 avg: 11.866 [8 | 15]
+           16 ..    32[n: 23] sum: 501 avg: 21.782 [16 | 31]
+           32 ..    64[n: 26] sum: 1175 avg: 45.192 [32 | 63]
+           64 ..   128[n: 36] sum: 3219 avg: 89.416 [64 | 127]
+          128 ..   256[n: 8] sum: 1146 avg: 143.25 [128 | 159] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 301469] sum: 478016 avg: 1.585 [1 | 159] { 
+            1 ..     2[n: 227119] sum: 227119 avg: 1.0 [1 | 1]
+            2 ..     4[n: 54968] sum: 125350 avg: 2.28 [2 | 3]
+            4 ..     8[n: 15498] sum: 75384 avg: 4.864 [4 | 7]
+            8 ..    16[n: 3270] sum: 32753 avg: 10.016 [8 | 15]
+           16 ..    32[n: 501] sum: 10184 avg: 20.327 [16 | 31]
+           32 ..    64[n: 68] sum: 2788 avg: 41.0 [32 | 63]
+           64 ..   128[n: 37] sum: 3292 avg: 88.972 [64 | 127]
+          128 ..   256[n: 8] sum: 1146 avg: 143.25 [128 | 159] }
+paintPaths: duration= 10564.295525 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=54, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 190] sum: 6409 avg: 33.731 [1 | 159] { 
+            1 ..     2[n: 39] sum: 39 avg: 1.0 [1 | 1]
+            2 ..     4[n: 25] sum: 57 avg: 2.28 [2 | 3]
+            4 ..     8[n: 18] sum: 94 avg: 5.222 [4 | 7]
+            8 ..    16[n: 15] sum: 178 avg: 11.866 [8 | 15]
+           16 ..    32[n: 23] sum: 501 avg: 21.782 [16 | 31]
+           32 ..    64[n: 26] sum: 1175 avg: 45.192 [32 | 63]
+           64 ..   128[n: 36] sum: 3219 avg: 89.416 [64 | 127]
+          128 ..   256[n: 8] sum: 1146 avg: 143.25 [128 | 159] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 282761] sum: 447058 avg: 1.581 [1 | 159] { 
+            1 ..     2[n: 213733] sum: 213733 avg: 1.0 [1 | 1]
+            2 ..     4[n: 51019] sum: 116330 avg: 2.28 [2 | 3]
+            4 ..     8[n: 14392] sum: 69919 avg: 4.858 [4 | 7]
+            8 ..    16[n: 3046] sum: 30604 avg: 10.047 [8 | 15]
+           16 ..    32[n: 462] sum: 9388 avg: 20.32 [16 | 31]
+           32 ..    64[n: 64] sum: 2646 avg: 41.343 [32 | 63]
+           64 ..   128[n: 37] sum: 3292 avg: 88.972 [64 | 127]
+          128 ..   256[n: 8] sum: 1146 avg: 143.25 [128 | 159] }
+paintPaths: duration= 12133.602616 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=55, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 190] sum: 6409 avg: 33.731 [1 | 159] { 
+            1 ..     2[n: 39] sum: 39 avg: 1.0 [1 | 1]
+            2 ..     4[n: 25] sum: 57 avg: 2.28 [2 | 3]
+            4 ..     8[n: 18] sum: 94 avg: 5.222 [4 | 7]
+            8 ..    16[n: 15] sum: 178 avg: 11.866 [8 | 15]
+           16 ..    32[n: 23] sum: 501 avg: 21.782 [16 | 31]
+           32 ..    64[n: 26] sum: 1175 avg: 45.192 [32 | 63]
+           64 ..   128[n: 36] sum: 3219 avg: 89.416 [64 | 127]
+          128 ..   256[n: 8] sum: 1146 avg: 143.25 [128 | 159] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 301600] sum: 478238 avg: 1.585 [1 | 159] { 
+            1 ..     2[n: 227213] sum: 227213 avg: 1.0 [1 | 1]
+            2 ..     4[n: 54995] sum: 125419 avg: 2.28 [2 | 3]
+            4 ..     8[n: 15506] sum: 75421 avg: 4.863 [4 | 7]
+            8 ..    16[n: 3272] sum: 32775 avg: 10.016 [8 | 15]
+           16 ..    32[n: 501] sum: 10184 avg: 20.327 [16 | 31]
+           32 ..    64[n: 68] sum: 2788 avg: 41.0 [32 | 63]
+           64 ..   128[n: 37] sum: 3292 avg: 88.972 [64 | 127]
+          128 ..   256[n: 8] sum: 1146 avg: 143.25 [128 | 159] }
+paintPaths: duration= 10506.912228 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=56, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 190] sum: 6409 avg: 33.731 [1 | 159] { 
+            1 ..     2[n: 39] sum: 39 avg: 1.0 [1 | 1]
+            2 ..     4[n: 25] sum: 57 avg: 2.28 [2 | 3]
+            4 ..     8[n: 18] sum: 94 avg: 5.222 [4 | 7]
+            8 ..    16[n: 15] sum: 178 avg: 11.866 [8 | 15]
+           16 ..    32[n: 23] sum: 501 avg: 21.782 [16 | 31]
+           32 ..    64[n: 26] sum: 1175 avg: 45.192 [32 | 63]
+           64 ..   128[n: 36] sum: 3219 avg: 89.416 [64 | 127]
+          128 ..   256[n: 8] sum: 1146 avg: 143.25 [128 | 159] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 282984] sum: 447371 avg: 1.58 [1 | 159] { 
+            1 ..     2[n: 213907] sum: 213907 avg: 1.0 [1 | 1]
+            2 ..     4[n: 51059] sum: 116422 avg: 2.28 [2 | 3]
+            4 ..     8[n: 14400] sum: 69956 avg: 4.858 [4 | 7]
+            8 ..    16[n: 3047] sum: 30614 avg: 10.047 [8 | 15]
+           16 ..    32[n: 462] sum: 9388 avg: 20.32 [16 | 31]
+           32 ..    64[n: 64] sum: 2646 avg: 41.343 [32 | 63]
+           64 ..   128[n: 37] sum: 3292 avg: 88.972 [64 | 127]
+          128 ..   256[n: 8] sum: 1146 avg: 143.25 [128 | 159] }
+paintPaths: duration= 12056.759151 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=57, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 14] sum: 125 avg: 8.928 [1 | 16] { 
+            1 ..     2[n: 2] sum: 2 avg: 1.0 [1 | 1]
+            2 ..     4[n: 2] sum: 6 avg: 3.0 [3 | 3]
+            4 ..     8[n: 2] sum: 14 avg: 7.0 [7 | 7]
+            8 ..    16[n: 7] sum: 87 avg: 12.428 [9 | 15]
            16 ..    32[n: 1] sum: 16 avg: 16.0 [16 | 16] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 211596] sum: 213073 avg: 1.006 [1 | 16] { 
-            1 ..     2[n: 210721] sum: 210721 avg: 1.0 [1 | 1]
-            2 ..     4[n: 746] sum: 1610 avg: 2.158 [2 | 3]
-            4 ..     8[n: 108] sum: 528 avg: 4.888 [4 | 7]
-            8 ..    16[n: 20] sum: 198 avg: 9.9 [8 | 15]
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 9809] sum: 10752 avg: 1.096 [1 | 18] { 
+            1 ..     2[n: 9347] sum: 9347 avg: 1.0 [1 | 1]
+            2 ..     4[n: 371] sum: 810 avg: 2.183 [2 | 3]
+            4 ..     8[n: 65] sum: 309 avg: 4.753 [4 | 7]
+            8 ..    16[n: 24] sum: 252 avg: 10.5 [8 | 15]
+           16 ..    32[n: 2] sum: 34 avg: 17.0 [16 | 18] }
+paintPaths: duration= 6071.045800999999 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=58, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 14] sum: 125 avg: 8.928 [1 | 16] { 
+            1 ..     2[n: 2] sum: 2 avg: 1.0 [1 | 1]
+            2 ..     4[n: 2] sum: 6 avg: 3.0 [3 | 3]
+            4 ..     8[n: 2] sum: 14 avg: 7.0 [7 | 7]
+            8 ..    16[n: 7] sum: 87 avg: 12.428 [9 | 15]
            16 ..    32[n: 1] sum: 16 avg: 16.0 [16 | 16] }
-paintPaths: duration= 2636.4683219999997 ms.
-paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=22, shapeMode=FOUR_QUADS, closed=true, fill, windingRule=WIND_EVEN_ODD}
-Differences [All  Pixels [All tests]]:
-Total [all pixels]:
-All  Pixels [All tests][n: 50000000] sum: 211465 avg: 0.004 [0 | 16] { 
-            0 ..     1[n: 49790197] sum: 0 avg: 0.0 [0 | 0]
-            1 ..     2[n: 208889] sum: 208889 avg: 1.0 [1 | 1]
-            2 ..     4[n: 772] sum: 1702 avg: 2.204 [2 | 3]
-            4 ..     8[n: 109] sum: 519 avg: 4.761 [4 | 7]
-            8 ..    16[n: 28] sum: 275 avg: 9.821 [8 | 14]
-           16 ..    32[n: 5] sum: 80 avg: 16.0 [16 | 16] }
-Total [different pixels]:
-Diff Pixels [All tests][n: 209803] sum: 211465 avg: 1.007 [1 | 16] { 
-            1 ..     2[n: 208889] sum: 208889 avg: 1.0 [1 | 1]
-            2 ..     4[n: 772] sum: 1702 avg: 2.204 [2 | 3]
-            4 ..     8[n: 109] sum: 519 avg: 4.761 [4 | 7]
-            8 ..    16[n: 28] sum: 275 avg: 9.821 [8 | 14]
-           16 ..    32[n: 5] sum: 80 avg: 16.0 [16 | 16] }
-paintPaths: duration= 2512.157265 ms.
-main: duration= 94203.54600599999 ms.
-[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 3, Time elapsed: 94.249 s - in RunJUnitLongTest
-[INFO] 
-[INFO] Results:
-[INFO] 
-[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 3
-
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 8973] sum: 9762 avg: 1.087 [1 | 18] { 
+            1 ..     2[n: 8586] sum: 8586 avg: 1.0 [1 | 1]
+            2 ..     4[n: 310] sum: 681 avg: 2.196 [2 | 3]
+            4 ..     8[n: 58] sum: 276 avg: 4.758 [4 | 7]
+            8 ..    16[n: 17] sum: 185 avg: 10.882 [8 | 15]
+           16 ..    32[n: 2] sum: 34 avg: 17.0 [16 | 18] }
+paintPaths: duration= 6588.666193 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=59, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 17] sum: 356 avg: 20.941 [1 | 72] { 
+            1 ..     2[n: 3] sum: 3 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2]
+            4 ..     8[n: 4] sum: 24 avg: 6.0 [5 | 7]
+            8 ..    16[n: 1] sum: 8 avg: 8.0 [8 | 8]
+           16 ..    32[n: 4] sum: 91 avg: 22.75 [18 | 29]
+           32 ..    64[n: 2] sum: 89 avg: 44.5 [38 | 51]
+           64 ..   128[n: 2] sum: 139 avg: 69.5 [67 | 72] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 27537] sum: 44999 avg: 1.634 [1 | 72] { 
+            1 ..     2[n: 21800] sum: 21800 avg: 1.0 [1 | 1]
+            2 ..     4[n: 3786] sum: 8715 avg: 2.301 [2 | 3]
+            4 ..     8[n: 1339] sum: 6682 avg: 4.99 [4 | 7]
+            8 ..    16[n: 488] sum: 5052 avg: 10.352 [8 | 15]
+           16 ..    32[n: 112] sum: 2258 avg: 20.16 [16 | 31]
+           32 ..    64[n: 10] sum: 353 avg: 35.3 [32 | 51]
+           64 ..   128[n: 2] sum: 139 avg: 69.5 [67 | 72] }
+paintPaths: duration= 5211.915973 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=60, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 17] sum: 356 avg: 20.941 [1 | 72] { 
+            1 ..     2[n: 3] sum: 3 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2]
+            4 ..     8[n: 4] sum: 24 avg: 6.0 [5 | 7]
+            8 ..    16[n: 1] sum: 8 avg: 8.0 [8 | 8]
+           16 ..    32[n: 4] sum: 91 avg: 22.75 [18 | 29]
+           32 ..    64[n: 2] sum: 89 avg: 44.5 [38 | 51]
+           64 ..   128[n: 2] sum: 139 avg: 69.5 [67 | 72] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 25263] sum: 40801 avg: 1.615 [1 | 72] { 
+            1 ..     2[n: 20120] sum: 20120 avg: 1.0 [1 | 1]
+            2 ..     4[n: 3408] sum: 7853 avg: 2.304 [2 | 3]
+            4 ..     8[n: 1187] sum: 5913 avg: 4.981 [4 | 7]
+            8 ..    16[n: 445] sum: 4587 avg: 10.307 [8 | 15]
+           16 ..    32[n: 92] sum: 1868 avg: 20.304 [16 | 31]
+           32 ..    64[n: 9] sum: 321 avg: 35.666 [32 | 51]
+           64 ..   128[n: 2] sum: 139 avg: 69.5 [67 | 72] }
+paintPaths: duration= 5647.293355 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=61, shapeMode=FOUR_QUADS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 17] sum: 356 avg: 20.941 [1 | 72] { 
+            1 ..     2[n: 3] sum: 3 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2]
+            4 ..     8[n: 4] sum: 24 avg: 6.0 [5 | 7]
+            8 ..    16[n: 1] sum: 8 avg: 8.0 [8 | 8]
+           16 ..    32[n: 4] sum: 91 avg: 22.75 [18 | 29]
+           32 ..    64[n: 2] sum: 89 avg: 44.5 [38 | 51]
+           64 ..   128[n: 2] sum: 139 avg: 69.5 [67 | 72] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 27556] sum: 45056 avg: 1.635 [1 | 72] { 
+            1 ..     2[n: 21811] sum: 21811 avg: 1.0 [1 | 1]
+            2 ..     4[n: 3788] sum: 8720 avg: 2.302 [2 | 3]
+            4 ..     8[n: 1344] sum: 6713 avg: 4.994 [4 | 7]
+            8 ..    16[n: 489] sum: 5062 avg: 10.351 [8 | 15]
+           16 ..    32[n: 112] sum: 2258 avg: 20.16 [16 | 31]
+           32 ..    64[n: 10] sum: 353 avg: 35.3 [32 | 51]
+           64 ..   128[n: 2] sum: 139 avg: 69.5 [67 | 72] }
+paintPaths: duration= 5148.821507 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=62, shapeMode=FOUR_QUADS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 17] sum: 356 avg: 20.941 [1 | 72] { 
+            1 ..     2[n: 3] sum: 3 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2]
+            4 ..     8[n: 4] sum: 24 avg: 6.0 [5 | 7]
+            8 ..    16[n: 1] sum: 8 avg: 8.0 [8 | 8]
+           16 ..    32[n: 4] sum: 91 avg: 22.75 [18 | 29]
+           32 ..    64[n: 2] sum: 89 avg: 44.5 [38 | 51]
+           64 ..   128[n: 2] sum: 139 avg: 69.5 [67 | 72] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 25280] sum: 40838 avg: 1.615 [1 | 72] { 
+            1 ..     2[n: 20133] sum: 20133 avg: 1.0 [1 | 1]
+            2 ..     4[n: 3409] sum: 7854 avg: 2.303 [2 | 3]
+            4 ..     8[n: 1189] sum: 5926 avg: 4.984 [4 | 7]
+            8 ..    16[n: 446] sum: 4597 avg: 10.307 [8 | 15]
+           16 ..    32[n: 92] sum: 1868 avg: 20.304 [16 | 31]
+           32 ..    64[n: 9] sum: 321 avg: 35.666 [32 | 51]
+           64 ..   128[n: 2] sum: 139 avg: 69.5 [67 | 72] }
+paintPaths: duration= 5543.889271999999 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=63, shapeMode=FOUR_QUADS, closed=false, fill, windingRule=WIND_NON_ZERO}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 6] sum: 6 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 2487] sum: 2487 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 2487] sum: 2487 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2370.794304 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=64, shapeMode=FOUR_QUADS, closed=true, fill, windingRule=WIND_NON_ZERO}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 6] sum: 6 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 2487] sum: 2487 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 2487] sum: 2487 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2303.597036 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=65, shapeMode=FOUR_QUADS, closed=false, fill, windingRule=WIND_EVEN_ODD}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 6] sum: 6 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 3476] sum: 3476 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 3476] sum: 3476 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2345.74818 ms.
+paintPaths: 5000 paths (FOUR_QUADS) - setup: TestSetup{id=66, shapeMode=FOUR_QUADS, closed=true, fill, windingRule=WIND_EVEN_ODD}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 6] sum: 6 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 3476] sum: 3476 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 3476] sum: 3476 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2349.197823 ms.
+main: duration= 145911.573214 ms.
+Differences [Diff Pixels [Worst(All Test setups)]]:
+Diff Pixels [Worst(All Test setups)][n: 364] sum: 29951 avg: 82.282 [1 | 254] { 
+            1 ..     2[n: 27] sum: 27 avg: 1.0 [1 | 1]
+            2 ..     4[n: 44] sum: 109 avg: 2.477 [2 | 3]
+            4 ..     8[n: 29] sum: 143 avg: 4.931 [4 | 7]
+            8 ..    16[n: 32] sum: 317 avg: 9.906 [8 | 15]
+           16 ..    32[n: 25] sum: 550 avg: 22.0 [16 | 31]
+           32 ..    64[n: 40] sum: 1727 avg: 43.175 [32 | 62]
+           64 ..   128[n: 55] sum: 5152 avg: 93.672 [64 | 127]
+          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+Differences [Diff Pixels [All Test setups]]:
+Diff Pixels [All Test setups][n: 6173248] sum: 12764460 avg: 2.067 [1 | 254] { 
+            1 ..     2[n: 4009917] sum: 4009917 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1384244] sum: 3197652 avg: 2.31 [2 | 3]
+            4 ..     8[n: 560194] sum: 2805797 avg: 5.008 [4 | 7]
+            8 ..    16[n: 183288] sum: 1859817 avg: 10.146 [8 | 15]
+           16 ..    32[n: 31576] sum: 630913 avg: 19.98 [16 | 31]
+           32 ..    64[n: 2899] sum: 108250 avg: 37.34 [32 | 63]
+           64 ..   128[n: 612] sum: 54174 avg: 88.519 [64 | 127]
+          128 ..   256[n: 518] sum: 97940 avg: 189.073 [128 | 254] }
