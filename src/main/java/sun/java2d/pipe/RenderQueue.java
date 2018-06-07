@@ -94,7 +94,7 @@ public abstract class RenderQueue {
     protected final Set<Object> refSet;
 
     protected RenderQueue() {
-        refSet = new HashSet<Object>(1024); // large enough (LBO) ?
+        refSet = new HashSet<Object>(64); // large enough (LBO) ?
         buf = RenderBuffer.allocate(BUFFER_SIZE);
     }
 
