@@ -69,24 +69,26 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public final class ClipShapeTest {
 
-    static final boolean TEST_STROKER = true;
-    static final boolean TEST_FILLER = true;
-
-    static final boolean DO_FAIL = true;
-
-    // complementary tests in slow mode:
-    static boolean USE_DASHES = false;
-    static boolean USE_VAR_STROKE = false;
-
-    static int NUM_TESTS = 5000;
-    static final int TESTW = 100;
-    static final int TESTH = 100;
+    // test options:
+    static int NUM_TESTS;
 
     // shape settings:
-    static ShapeMode SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
+    static ShapeMode SHAPE_MODE;
+
+    static boolean USE_DASHES;
+    static boolean USE_VAR_STROKE;
 
     static int THRESHOLD_DELTA;
     static long THRESHOLD_NBPIX;
+
+    // constants:
+    static final boolean DO_FAIL = true;
+    
+    static final boolean TEST_STROKER = true;
+    static final boolean TEST_FILLER = true;
+    
+    static final int TESTW = 100;
+    static final int TESTH = 100;
 
     static final boolean SHAPE_REPEAT = true;
 
@@ -98,7 +100,6 @@ public final class ClipShapeTest {
     static final boolean SHOW_POINTS = true;
     static final boolean SHOW_INFO = false;
 
-    static final boolean SHOW_TEST = false;
     static final int MAX_SHOW_FRAMES = 10;
     static final int MAX_SAVE_FRAMES = 100;
 
@@ -195,22 +196,34 @@ public final class ClipShapeTest {
         System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
     }
 
+    private static void resetOptions() {
+        NUM_TESTS = 5000;
+
+        // shape settings:
+        SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
+
+        USE_DASHES = false;
+        USE_VAR_STROKE = false;
+    }
+    
     /**
      * Test
      * @param args
      */
     public static void main(String[] args) {
+        System.out.println("---------------------------------------");
+        System.out.println("ClipShapeTest: image = " + TESTW + " x " + TESTH);
+
+        resetOptions();
+        
         boolean runSlowTests = false;
 
         for (String arg : args) {
             if ("-slow".equals(arg)) {
-                System.out.println("slow: enabled.");
                 runSlowTests = true;
             } else if ("-doDash".equals(arg)) {
-                System.out.println("doDash: enabled.");
                 USE_DASHES = true;
             } else if ("-doVarStroke".equals(arg)) {
-                System.out.println("doVarStroke: enabled.");
                 USE_VAR_STROKE = true;
             } else {
                 // shape mode:
@@ -235,27 +248,28 @@ public final class ClipShapeTest {
             case TWO_CUBICS:
                 // Define uncertainty for curves:
 /*
-Diff Pixels [Worst(All Test setups)][n: 641] sum: 15124 avg: 23.594 [1 | 175] {
-            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
-            2 ..     4[n: 88] sum: 214 avg: 2.431 [2 | 3]
-            4 ..     8[n: 137] sum: 743 avg: 5.423 [4 | 7]
-            8 ..    16[n: 107] sum: 1204 avg: 11.252 [8 | 15]
-           16 ..    32[n: 82] sum: 1778 avg: 21.682 [16 | 31]
-           32 ..    64[n: 59] sum: 2586 avg: 43.83 [32 | 62]
-           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
-          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Diff Pixels [Worst(All Test setups)][n: 647] sum: 15130 avg: 23.384 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
+            4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
+            8 ..    16[n: 109] sum: 1235 avg: 11.33 [8 | 15]
+           16 ..    32[n: 82] sum: 1782 avg: 21.731 [16 | 31]
+           32 ..    64[n: 59] sum: 2584 avg: 43.796 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
 
-DASH: Diff Pixels [Worst(All Test setups)][n: 67] sum: 1208 avg: 18.029 [1 | 107] {
-            1 ..     2[n: 11] sum: 11 avg: 1.0 [1 | 1]
-            2 ..     4[n: 8] sum: 18 avg: 2.25 [2 | 3]
-            4 ..     8[n: 10] sum: 54 avg: 5.4 [4 | 7]
-            8 ..    16[n: 12] sum: 141 avg: 11.75 [9 | 15]
-           16 ..    32[n: 15] sum: 338 avg: 22.533 [16 | 31]
-           32 ..    64[n: 7] sum: 311 avg: 44.428 [34 | 56]
-           64 ..   128[n: 4] sum: 335 avg: 83.75 [67 | 107] }
+DASH: Diff Pixels [Worst(All Test setups)][n: 128] sum: 5399 avg: 42.179 [1 | 255] { 
+            1 ..     2[n: 54] sum: 54 avg: 1.0 [1 | 1]
+            2 ..     4[n: 28] sum: 63 avg: 2.25 [2 | 3]
+            4 ..     8[n: 6] sum: 33 avg: 5.5 [4 | 7]
+            8 ..    16[n: 3] sum: 33 avg: 11.0 [9 | 15]
+           16 ..    32[n: 4] sum: 87 avg: 21.75 [16 | 25]
+           32 ..    64[n: 6] sum: 276 avg: 46.0 [37 | 60]
+           64 ..   128[n: 6] sum: 568 avg: 94.666 [71 | 118]
+          128 ..   256[n: 21] sum: 4285 avg: 204.047 [128 | 255] }
 */
                 THRESHOLD_DELTA = 32;
-                THRESHOLD_NBPIX = (USE_DASHES) ? 16 : 150;
+                THRESHOLD_NBPIX = (USE_DASHES) ? 40 : 150;
                 break;
             case FOUR_QUADS:
             case MIXED:
@@ -273,15 +287,15 @@ Diff Pixels [Worst(All Test setups)][n: 775] sum: 57659 avg: 74.398 [1 | 251] {
            64 ..   128[n: 274] sum: 25741 avg: 93.945 [64 | 127]
           128 ..   256[n: 137] sum: 22124 avg: 161.489 [128 | 251] }
 
-DASH: Diff Pixels [Worst(All Test setups)][n: 364] sum: 29951 avg: 82.282 [1 | 254] {
-            1 ..     2[n: 27] sum: 27 avg: 1.0 [1 | 1]
-            2 ..     4[n: 44] sum: 109 avg: 2.477 [2 | 3]
-            4 ..     8[n: 29] sum: 143 avg: 4.931 [4 | 7]
-            8 ..    16[n: 32] sum: 317 avg: 9.906 [8 | 15]
-           16 ..    32[n: 25] sum: 550 avg: 22.0 [16 | 31]
-           32 ..    64[n: 40] sum: 1727 avg: 43.175 [32 | 62]
-           64 ..   128[n: 55] sum: 5152 avg: 93.672 [64 | 127]
-          128 ..   256[n: 112] sum: 21926 avg: 195.767 [128 | 254] }
+DASH: Diff Pixels [Worst(All Test setups)][n: 354] sum: 29638 avg: 83.723 [1 | 254] { 
+            1 ..     2[n: 31] sum: 31 avg: 1.0 [1 | 1]
+            2 ..     4[n: 45] sum: 111 avg: 2.466 [2 | 3]
+            4 ..     8[n: 22] sum: 113 avg: 5.136 [4 | 7]
+            8 ..    16[n: 25] sum: 247 avg: 9.88 [8 | 15]
+           16 ..    32[n: 26] sum: 579 avg: 22.269 [16 | 31]
+           32 ..    64[n: 39] sum: 1698 avg: 43.538 [32 | 62]
+           64 ..   128[n: 56] sum: 5284 avg: 94.357 [64 | 127]
+          128 ..   256[n: 110] sum: 21575 avg: 196.136 [128 | 254] }
 */
                 THRESHOLD_DELTA = 64;
                 THRESHOLD_NBPIX = (USE_DASHES) ? 180 : 420;
@@ -290,15 +304,12 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 364] sum: 29951 avg: 82.282 [1 | 2
                 // Define uncertainty for lines:
                 // float variant have higher uncertainty
 /*
-
-Diff Pixels [All Test setups][n: 24170] sum: 24170 avg: 1.0 [1 | 1] {
-            1 ..     2[n: 24170] sum: 24170 avg: 1.0 [1 | 1] }
-DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
+DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] { 
             1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1]
             2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
 */
                 THRESHOLD_DELTA = 2;
-                THRESHOLD_NBPIX = (USE_DASHES) ? 2 : 8;
+                THRESHOLD_NBPIX = 4; // very low
         }
 
         // TODO: define one more threshold on total result (total sum) ?
@@ -312,7 +323,16 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
             USE_VAR_STROKE = true;
         }
 
-        System.out.println("ClipShapeTests: image = " + TESTW + " x " + TESTH);
+        System.out.println("NUM_TESTS: " + NUM_TESTS);
+
+        if (USE_DASHES) {
+            System.out.println("USE_DASHES: enabled.");
+        }
+        if (USE_VAR_STROKE) {
+            System.out.println("USE_VAR_STROKE: enabled.");
+        }
+
+        System.out.println("---------------------------------------");
 
         final DiffContext allCtx = new DiffContext("All Test setups");
         final DiffContext allWorstCtx = new DiffContext("Worst(All Test setups)");
@@ -451,27 +471,25 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
                 if (diffImage != null) {
                     nd++;
 
-                    if (SHOW_TEST) {
-                        testThCtx.dump();
-                        testCtx.dump();
+                    testThCtx.dump();
+                    testCtx.dump();
 
-                        if (nd < MAX_SHOW_FRAMES) {
-                            if (SHOW_DETAILS) {
-                                paintShapeDetails(g2dOff, p2d);
-                                paintShapeDetails(g2dOn, p2d);
+                    if (nd < MAX_SHOW_FRAMES) {
+                        if (SHOW_DETAILS) {
+                            paintShapeDetails(g2dOff, p2d);
+                            paintShapeDetails(g2dOn, p2d);
+                        }
+
+                        if (nd < MAX_SAVE_FRAMES) {
+                            if (DUMP_SHAPE) {
+                                dumpShape(p2d);
                             }
 
-                            if (nd < MAX_SAVE_FRAMES) {
-                                if (DUMP_SHAPE) {
-                                    dumpShape(p2d);
-                                }
+                            final String testName = "Setup_" + ts.id + "_test_" + n;
 
-                                final String testName = "Setup_" + ts.id + "_test_" + n;
-
-                                saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
-                                saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
-                                saveImage(imgDiff, OUTPUT_DIR, testName + "-diff.png");
-                            }
+                            saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
+                            saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
+                            saveImage(imgDiff, OUTPUT_DIR, testName + "-diff.png");
                         }
                     }
                 }

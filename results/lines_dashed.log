@@ -1,76 +1,287 @@
-doDash: enabled.
+---------------------------------------
+ClipShapeTest: image = 100 x 100
 Shape mode: NINE_LINE_POLYS
 THRESHOLD_DELTA: 2
-THRESHOLD_NBPIX: 0
-ClipShapeTests: image = 100 x 100
+THRESHOLD_NBPIX: 2
+NUM_TESTS: 5000
+USE_DASHES: enabled.
+---------------------------------------
 dashes: [[13.0, 7.0]]
 stroke widths: [10.0]
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=23, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2208.80489 ms.
+paintPaths: duration= 2054.6348009999997 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=24, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2086.365479 ms.
+paintPaths: duration= 2064.787613 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=25, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 1905.597577 ms.
+paintPaths: duration= 1881.8999199999998 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=26, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2091.306999 ms.
+paintPaths: duration= 2076.112561 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=27, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 1746.162864 ms.
+paintPaths: duration= 1726.03981 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=28, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 1891.32596 ms.
+paintPaths: duration= 1864.671154 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=29, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 13830.589108 ms.
+paintPaths: duration= 13729.479142 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=30, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 15665.267639 ms.
+paintPaths: duration= 15565.787290999999 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=31, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 10962.616955 ms.
+paintPaths: duration= 10893.500014 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=32, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 12556.65185 ms.
+paintPaths: duration= 12320.481488 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=33, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 10839.796766 ms.
+paintPaths: duration= 10758.909942999999 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=34, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 12233.606139 ms.
+paintPaths: duration= 12129.832015 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=35, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2394.260661 ms.
+paintPaths: duration= 2400.450535 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=36, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2626.881366 ms.
+paintPaths: duration= 2633.355177 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=37, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2298.637944 ms.
+paintPaths: duration= 2297.557874 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=38, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2537.575403 ms.
+paintPaths: duration= 2551.746476 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=39, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2124.6573869999997 ms.
+paintPaths: duration= 2128.924239 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=40, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 2317.992585 ms.
+paintPaths: duration= 2322.446188 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=41, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_NON_ZERO}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 1059.1226649999999 ms.
+paintPaths: duration= 1050.65611 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=42, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_NON_ZERO}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 1056.737868 ms.
+paintPaths: duration= 1050.78692 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=43, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_EVEN_ODD}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 1097.155436 ms.
+paintPaths: duration= 1146.679234 ms.
 paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=44, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_EVEN_ODD}
 No difference for [Diff Pixels [Test setup]].
-paintPaths: duration= 1095.958656 ms.
-main: duration= 106629.41394 ms.
+paintPaths: duration= 1097.26612 ms.
+main: duration= 105750.38049499999 ms.
 No difference for [Diff Pixels [Worst(All Test setups)]].
 No difference for [Diff Pixels [All Test setups]].
+
+
+---------------------------------------
+ClipShapeTest: image = 100 x 100
+Shape mode: NINE_LINE_POLYS
+THRESHOLD_DELTA: 2
+THRESHOLD_NBPIX: 2
+NUM_TESTS: 5000
+USE_DASHES: enabled.
+---------------------------------------
+dashes: [[13.0, 7.0]]
+stroke widths: [10.0]
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=23, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 14] sum: 14 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 14] sum: 14 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 9198] sum: 9198 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 9198] sum: 9198 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2040.944589 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=24, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 12] sum: 12 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 12] sum: 12 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 10407] sum: 10407 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 10407] sum: 10407 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2060.287986 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=25, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 12] sum: 12 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 12] sum: 12 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Worst(>threshold)]]:
+Diff Pixels [Worst(>threshold)][n: 7] sum: 8 avg: 1.142 [1 | 2] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 11917] sum: 11918 avg: 1.0 [1 | 2] { 
+            1 ..     2[n: 11916] sum: 11916 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+paintPaths: duration= 1893.6025439999999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=26, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 13] sum: 13 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 13] sum: 13 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Worst(>threshold)]]:
+Diff Pixels [Worst(>threshold)][n: 8] sum: 9 avg: 1.125 [1 | 2] { 
+            1 ..     2[n: 7] sum: 7 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 13365] sum: 13366 avg: 1.0 [1 | 2] { 
+            1 ..     2[n: 13364] sum: 13364 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+paintPaths: duration= 2081.217142 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=27, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 12] sum: 12 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 12] sum: 12 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 11957] sum: 11957 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 11957] sum: 11957 avg: 1.0 [1 | 1] }
+paintPaths: duration= 1732.9139579999999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=28, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 13] sum: 13 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 13] sum: 13 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 13417] sum: 13417 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 13417] sum: 13417 avg: 1.0 [1 | 1] }
+paintPaths: duration= 1877.5216719999999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=29, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 10] sum: 10 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 10] sum: 10 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 4575] sum: 4575 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 4575] sum: 4575 avg: 1.0 [1 | 1] }
+paintPaths: duration= 13956.706635999999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=30, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 10] sum: 10 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 10] sum: 10 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 4934] sum: 4934 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 4934] sum: 4934 avg: 1.0 [1 | 1] }
+paintPaths: duration= 15705.652021 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=31, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 7] sum: 7 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 7] sum: 7 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 5907] sum: 5907 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 5907] sum: 5907 avg: 1.0 [1 | 1] }
+paintPaths: duration= 11029.638691999999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=32, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 9] sum: 9 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 9] sum: 9 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 6363] sum: 6363 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6363] sum: 6363 avg: 1.0 [1 | 1] }
+paintPaths: duration= 12888.716745 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=33, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 9] sum: 9 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 9] sum: 9 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 5947] sum: 5947 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 5947] sum: 5947 avg: 1.0 [1 | 1] }
+paintPaths: duration= 11258.841607 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=34, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 9] sum: 9 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 9] sum: 9 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 6414] sum: 6414 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6414] sum: 6414 avg: 1.0 [1 | 1] }
+paintPaths: duration= 12783.524325999999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=35, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 10] sum: 10 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 10] sum: 10 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 3649] sum: 3649 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 3649] sum: 3649 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2440.893812 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=36, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 10] sum: 10 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 10] sum: 10 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 3818] sum: 3818 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 3818] sum: 3818 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2719.792121 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=37, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 11] sum: 11 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 11] sum: 11 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 4709] sum: 4709 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 4709] sum: 4709 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2337.25177 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=38, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 10] sum: 10 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 10] sum: 10 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 4910] sum: 4910 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 4910] sum: 4910 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2627.885672 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=39, shapeMode=NINE_LINE_POLYS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 11] sum: 11 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 11] sum: 11 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 4742] sum: 4742 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 4742] sum: 4742 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2170.8483499999998 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=40, shapeMode=NINE_LINE_POLYS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL, dashes: [13.0, 7.0]}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 10] sum: 10 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 10] sum: 10 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 4950] sum: 4950 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 4950] sum: 4950 avg: 1.0 [1 | 1] }
+paintPaths: duration= 2405.0959669999997 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=41, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_NON_ZERO}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 3] sum: 3 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 3] sum: 3 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 580] sum: 580 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 580] sum: 580 avg: 1.0 [1 | 1] }
+paintPaths: duration= 1068.737818 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=42, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_NON_ZERO}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 3] sum: 3 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 3] sum: 3 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 580] sum: 580 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 580] sum: 580 avg: 1.0 [1 | 1] }
+paintPaths: duration= 1073.7238499999999 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=43, shapeMode=NINE_LINE_POLYS, closed=false, fill, windingRule=WIND_EVEN_ODD}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 3] sum: 3 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 3] sum: 3 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 899] sum: 899 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 899] sum: 899 avg: 1.0 [1 | 1] }
+paintPaths: duration= 1127.129531 ms.
+paintPaths: 5000 paths (NINE_LINE_POLYS) - setup: TestSetup{id=44, shapeMode=NINE_LINE_POLYS, closed=true, fill, windingRule=WIND_EVEN_ODD}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 3] sum: 3 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 3] sum: 3 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 899] sum: 899 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 899] sum: 899 avg: 1.0 [1 | 1] }
+paintPaths: duration= 1111.74901 ms.
+main: duration= 108393.919025 ms.
+Differences [Diff Pixels [Worst(All Test setups)]]:
+Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+Differences [Diff Pixels [All Test setups]]:
+Diff Pixels [All Test setups][n: 134137] sum: 134139 avg: 1.0 [1 | 2] { 
+            1 ..     2[n: 134135] sum: 134135 avg: 1.0 [1 | 1]
+            2 ..     4[n: 2] sum: 4 avg: 2.0 [2 | 2] }
+
