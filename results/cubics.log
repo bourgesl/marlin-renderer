@@ -1,0 +1,968 @@
+---------------------------------------
+ClipShapeTest: image = 100 x 100
+Shape mode: TWO_CUBICS
+THRESHOLD_DELTA: 32
+THRESHOLD_NBPIX: 220
+NUM_TESTS: 5000
+---------------------------------------
+dashes: [null]
+stroke widths: [10.0]
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=89, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 596] sum: 10570 avg: 17.734 [1 | 99] { 
+            1 ..     2[n: 55] sum: 55 avg: 1.0 [1 | 1]
+            2 ..     4[n: 87] sum: 220 avg: 2.528 [2 | 3]
+            4 ..     8[n: 141] sum: 762 avg: 5.404 [4 | 7]
+            8 ..    16[n: 123] sum: 1424 avg: 11.577 [8 | 15]
+           16 ..    32[n: 78] sum: 1499 avg: 19.217 [16 | 31]
+           32 ..    64[n: 62] sum: 2773 avg: 44.725 [32 | 63]
+           64 ..   128[n: 50] sum: 3837 avg: 76.74 [64 | 99] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 841931] sum: 3779386 avg: 4.488 [1 | 255] { 
+            1 ..     2[n: 316518] sum: 316518 avg: 1.0 [1 | 1]
+            2 ..     4[n: 221876] sum: 530122 avg: 2.389 [2 | 3]
+            4 ..     8[n: 167494] sum: 866810 avg: 5.175 [4 | 7]
+            8 ..    16[n: 96150] sum: 1007773 avg: 10.481 [8 | 15]
+           16 ..    32[n: 32049] sum: 665750 avg: 20.772 [16 | 31]
+           32 ..    64[n: 6500] sum: 259161 avg: 39.87 [32 | 63]
+           64 ..   128[n: 1111] sum: 92780 avg: 83.51 [64 | 127]
+          128 ..   256[n: 233] sum: 40472 avg: 173.699 [128 | 255] }
+paintPaths: duration= 3353.854105 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=90, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 556] sum: 10570 avg: 19.01 [1 | 228] { 
+            1 ..     2[n: 85] sum: 85 avg: 1.0 [1 | 1]
+            2 ..     4[n: 68] sum: 168 avg: 2.47 [2 | 3]
+            4 ..     8[n: 80] sum: 427 avg: 5.337 [4 | 7]
+            8 ..    16[n: 135] sum: 1495 avg: 11.074 [8 | 15]
+           16 ..    32[n: 109] sum: 2232 avg: 20.477 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2620 avg: 97.037 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 784697] sum: 3525207 avg: 4.492 [1 | 255] { 
+            1 ..     2[n: 295457] sum: 295457 avg: 1.0 [1 | 1]
+            2 ..     4[n: 206784] sum: 494187 avg: 2.389 [2 | 3]
+            4 ..     8[n: 155805] sum: 805883 avg: 5.172 [4 | 7]
+            8 ..    16[n: 89431] sum: 938016 avg: 10.488 [8 | 15]
+           16 ..    32[n: 29804] sum: 619333 avg: 20.78 [16 | 31]
+           32 ..    64[n: 6132] sum: 244556 avg: 39.881 [32 | 63]
+           64 ..   128[n: 1057] sum: 88258 avg: 83.498 [64 | 127]
+          128 ..   256[n: 227] sum: 39517 avg: 174.083 [128 | 255] }
+paintPaths: duration= 3546.0381319999997 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=91, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 641] sum: 15124 avg: 23.594 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 88] sum: 214 avg: 2.431 [2 | 3]
+            4 ..     8[n: 137] sum: 743 avg: 5.423 [4 | 7]
+            8 ..    16[n: 107] sum: 1204 avg: 11.252 [8 | 15]
+           16 ..    32[n: 82] sum: 1778 avg: 21.682 [16 | 31]
+           32 ..    64[n: 59] sum: 2586 avg: 43.83 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1625913] sum: 9955159 avg: 6.122 [1 | 255] { 
+            1 ..     2[n: 480806] sum: 480806 avg: 1.0 [1 | 1]
+            2 ..     4[n: 402916] sum: 969281 avg: 2.405 [2 | 3]
+            4 ..     8[n: 354576] sum: 1855584 avg: 5.233 [4 | 7]
+            8 ..    16[n: 251179] sum: 2668168 avg: 10.622 [8 | 15]
+           16 ..    32[n: 103140] sum: 2178918 avg: 21.125 [16 | 31]
+           32 ..    64[n: 25710] sum: 1053619 avg: 40.98 [32 | 63]
+           64 ..   128[n: 6294] sum: 533320 avg: 84.734 [64 | 127]
+          128 ..   256[n: 1292] sum: 215463 avg: 166.767 [128 | 255] }
+paintPaths: duration= 2922.754227 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=92, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 618] sum: 14488 avg: 23.443 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 90] sum: 219 avg: 2.433 [2 | 3]
+            4 ..     8[n: 139] sum: 755 avg: 5.431 [4 | 7]
+            8 ..    16[n: 103] sum: 1156 avg: 11.223 [8 | 15]
+           16 ..    32[n: 63] sum: 1308 avg: 20.761 [16 | 31]
+           32 ..    64[n: 55] sum: 2451 avg: 44.563 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1512285] sum: 9294564 avg: 6.146 [1 | 255] { 
+            1 ..     2[n: 446212] sum: 446212 avg: 1.0 [1 | 1]
+            2 ..     4[n: 374878] sum: 901936 avg: 2.405 [2 | 3]
+            4 ..     8[n: 329964] sum: 1727004 avg: 5.233 [4 | 7]
+            8 ..    16[n: 233766] sum: 2483626 avg: 10.624 [8 | 15]
+           16 ..    32[n: 96159] sum: 2031809 avg: 21.129 [16 | 31]
+           32 ..    64[n: 24068] sum: 987795 avg: 41.041 [32 | 63]
+           64 ..   128[n: 5983] sum: 507026 avg: 84.744 [64 | 127]
+          128 ..   256[n: 1255] sum: 209156 avg: 166.658 [128 | 255] }
+paintPaths: duration= 3197.465495 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=93, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 641] sum: 15124 avg: 23.594 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 88] sum: 214 avg: 2.431 [2 | 3]
+            4 ..     8[n: 137] sum: 743 avg: 5.423 [4 | 7]
+            8 ..    16[n: 107] sum: 1204 avg: 11.252 [8 | 15]
+           16 ..    32[n: 82] sum: 1778 avg: 21.682 [16 | 31]
+           32 ..    64[n: 59] sum: 2586 avg: 43.83 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1626318] sum: 9957834 avg: 6.122 [1 | 255] { 
+            1 ..     2[n: 480891] sum: 480891 avg: 1.0 [1 | 1]
+            2 ..     4[n: 403019] sum: 969517 avg: 2.405 [2 | 3]
+            4 ..     8[n: 354690] sum: 1856198 avg: 5.233 [4 | 7]
+            8 ..    16[n: 251238] sum: 2668785 avg: 10.622 [8 | 15]
+           16 ..    32[n: 103180] sum: 2179790 avg: 21.126 [16 | 31]
+           32 ..    64[n: 25712] sum: 1053699 avg: 40.98 [32 | 63]
+           64 ..   128[n: 6296] sum: 533491 avg: 84.734 [64 | 127]
+          128 ..   256[n: 1292] sum: 215463 avg: 166.767 [128 | 255] }
+paintPaths: duration= 2912.637961 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=94, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 618] sum: 14488 avg: 23.443 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 90] sum: 219 avg: 2.433 [2 | 3]
+            4 ..     8[n: 139] sum: 755 avg: 5.431 [4 | 7]
+            8 ..    16[n: 103] sum: 1156 avg: 11.223 [8 | 15]
+           16 ..    32[n: 63] sum: 1308 avg: 20.761 [16 | 31]
+           32 ..    64[n: 55] sum: 2451 avg: 44.563 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1513499] sum: 9301895 avg: 6.145 [1 | 255] { 
+            1 ..     2[n: 446550] sum: 446550 avg: 1.0 [1 | 1]
+            2 ..     4[n: 375168] sum: 902610 avg: 2.405 [2 | 3]
+            4 ..     8[n: 330273] sum: 1728662 avg: 5.234 [4 | 7]
+            8 ..    16[n: 233934] sum: 2485420 avg: 10.624 [8 | 15]
+           16 ..    32[n: 96248] sum: 2033670 avg: 21.129 [16 | 31]
+           32 ..    64[n: 24085] sum: 988537 avg: 41.043 [32 | 63]
+           64 ..   128[n: 5986] sum: 507290 avg: 84.746 [64 | 127]
+          128 ..   256[n: 1255] sum: 209156 avg: 166.658 [128 | 255] }
+paintPaths: duration= 3121.467456 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=95, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 596] sum: 10570 avg: 17.734 [1 | 99] { 
+            1 ..     2[n: 55] sum: 55 avg: 1.0 [1 | 1]
+            2 ..     4[n: 87] sum: 220 avg: 2.528 [2 | 3]
+            4 ..     8[n: 141] sum: 762 avg: 5.404 [4 | 7]
+            8 ..    16[n: 123] sum: 1424 avg: 11.577 [8 | 15]
+           16 ..    32[n: 78] sum: 1499 avg: 19.217 [16 | 31]
+           32 ..    64[n: 62] sum: 2773 avg: 44.725 [32 | 63]
+           64 ..   128[n: 50] sum: 3837 avg: 76.74 [64 | 99] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 840613] sum: 3772803 avg: 4.488 [1 | 255] { 
+            1 ..     2[n: 316038] sum: 316038 avg: 1.0 [1 | 1]
+            2 ..     4[n: 221553] sum: 529346 avg: 2.389 [2 | 3]
+            4 ..     8[n: 167204] sum: 865320 avg: 5.175 [4 | 7]
+            8 ..    16[n: 95991] sum: 1006090 avg: 10.481 [8 | 15]
+           16 ..    32[n: 32005] sum: 664817 avg: 20.772 [16 | 31]
+           32 ..    64[n: 6482] sum: 258389 avg: 39.862 [32 | 63]
+           64 ..   128[n: 1109] sum: 92616 avg: 83.513 [64 | 127]
+          128 ..   256[n: 231] sum: 40187 avg: 173.969 [128 | 255] }
+paintPaths: duration= 3418.4440179999997 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=96, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 556] sum: 10570 avg: 19.01 [1 | 228] { 
+            1 ..     2[n: 85] sum: 85 avg: 1.0 [1 | 1]
+            2 ..     4[n: 68] sum: 168 avg: 2.47 [2 | 3]
+            4 ..     8[n: 80] sum: 427 avg: 5.337 [4 | 7]
+            8 ..    16[n: 135] sum: 1495 avg: 11.074 [8 | 15]
+           16 ..    32[n: 109] sum: 2232 avg: 20.477 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2620 avg: 97.037 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 784697] sum: 3525207 avg: 4.492 [1 | 255] { 
+            1 ..     2[n: 295457] sum: 295457 avg: 1.0 [1 | 1]
+            2 ..     4[n: 206784] sum: 494187 avg: 2.389 [2 | 3]
+            4 ..     8[n: 155805] sum: 805883 avg: 5.172 [4 | 7]
+            8 ..    16[n: 89431] sum: 938016 avg: 10.488 [8 | 15]
+           16 ..    32[n: 29804] sum: 619333 avg: 20.78 [16 | 31]
+           32 ..    64[n: 6132] sum: 244556 avg: 39.881 [32 | 63]
+           64 ..   128[n: 1057] sum: 88258 avg: 83.498 [64 | 127]
+          128 ..   256[n: 227] sum: 39517 avg: 174.083 [128 | 255] }
+paintPaths: duration= 3544.853229 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=97, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 641] sum: 15124 avg: 23.594 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 88] sum: 214 avg: 2.431 [2 | 3]
+            4 ..     8[n: 137] sum: 743 avg: 5.423 [4 | 7]
+            8 ..    16[n: 107] sum: 1204 avg: 11.252 [8 | 15]
+           16 ..    32[n: 82] sum: 1778 avg: 21.682 [16 | 31]
+           32 ..    64[n: 59] sum: 2586 avg: 43.83 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1623264] sum: 9938401 avg: 6.122 [1 | 255] { 
+            1 ..     2[n: 480063] sum: 480063 avg: 1.0 [1 | 1]
+            2 ..     4[n: 402256] sum: 967700 avg: 2.405 [2 | 3]
+            4 ..     8[n: 353987] sum: 1852490 avg: 5.233 [4 | 7]
+            8 ..    16[n: 250724] sum: 2663309 avg: 10.622 [8 | 15]
+           16 ..    32[n: 103004] sum: 2176041 avg: 21.125 [16 | 31]
+           32 ..    64[n: 25659] sum: 1051447 avg: 40.977 [32 | 63]
+           64 ..   128[n: 6282] sum: 532349 avg: 84.741 [64 | 127]
+          128 ..   256[n: 1289] sum: 215002 avg: 166.797 [128 | 255] }
+paintPaths: duration= 3020.324855 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=98, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 618] sum: 14488 avg: 23.443 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 90] sum: 219 avg: 2.433 [2 | 3]
+            4 ..     8[n: 139] sum: 755 avg: 5.431 [4 | 7]
+            8 ..    16[n: 103] sum: 1156 avg: 11.223 [8 | 15]
+           16 ..    32[n: 63] sum: 1308 avg: 20.761 [16 | 31]
+           32 ..    64[n: 55] sum: 2451 avg: 44.563 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1512285] sum: 9294564 avg: 6.146 [1 | 255] { 
+            1 ..     2[n: 446212] sum: 446212 avg: 1.0 [1 | 1]
+            2 ..     4[n: 374878] sum: 901936 avg: 2.405 [2 | 3]
+            4 ..     8[n: 329964] sum: 1727004 avg: 5.233 [4 | 7]
+            8 ..    16[n: 233766] sum: 2483626 avg: 10.624 [8 | 15]
+           16 ..    32[n: 96159] sum: 2031809 avg: 21.129 [16 | 31]
+           32 ..    64[n: 24068] sum: 987795 avg: 41.041 [32 | 63]
+           64 ..   128[n: 5983] sum: 507026 avg: 84.744 [64 | 127]
+          128 ..   256[n: 1255] sum: 209156 avg: 166.658 [128 | 255] }
+paintPaths: duration= 3194.971952 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=99, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 641] sum: 15124 avg: 23.594 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 88] sum: 214 avg: 2.431 [2 | 3]
+            4 ..     8[n: 137] sum: 743 avg: 5.423 [4 | 7]
+            8 ..    16[n: 107] sum: 1204 avg: 11.252 [8 | 15]
+           16 ..    32[n: 82] sum: 1778 avg: 21.682 [16 | 31]
+           32 ..    64[n: 59] sum: 2586 avg: 43.83 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1623666] sum: 9941055 avg: 6.122 [1 | 255] { 
+            1 ..     2[n: 480148] sum: 480148 avg: 1.0 [1 | 1]
+            2 ..     4[n: 402358] sum: 967933 avg: 2.405 [2 | 3]
+            4 ..     8[n: 354100] sum: 1853095 avg: 5.233 [4 | 7]
+            8 ..    16[n: 250782] sum: 2663917 avg: 10.622 [8 | 15]
+           16 ..    32[n: 103044] sum: 2176913 avg: 21.126 [16 | 31]
+           32 ..    64[n: 25661] sum: 1051527 avg: 40.977 [32 | 63]
+           64 ..   128[n: 6284] sum: 532520 avg: 84.742 [64 | 127]
+          128 ..   256[n: 1289] sum: 215002 avg: 166.797 [128 | 255] }
+paintPaths: duration= 3005.686096 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=100, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 618] sum: 14488 avg: 23.443 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 90] sum: 219 avg: 2.433 [2 | 3]
+            4 ..     8[n: 139] sum: 755 avg: 5.431 [4 | 7]
+            8 ..    16[n: 103] sum: 1156 avg: 11.223 [8 | 15]
+           16 ..    32[n: 63] sum: 1308 avg: 20.761 [16 | 31]
+           32 ..    64[n: 55] sum: 2451 avg: 44.563 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1513499] sum: 9301895 avg: 6.145 [1 | 255] { 
+            1 ..     2[n: 446550] sum: 446550 avg: 1.0 [1 | 1]
+            2 ..     4[n: 375168] sum: 902610 avg: 2.405 [2 | 3]
+            4 ..     8[n: 330273] sum: 1728662 avg: 5.234 [4 | 7]
+            8 ..    16[n: 233934] sum: 2485420 avg: 10.624 [8 | 15]
+           16 ..    32[n: 96248] sum: 2033670 avg: 21.129 [16 | 31]
+           32 ..    64[n: 24085] sum: 988537 avg: 41.043 [32 | 63]
+           64 ..   128[n: 5986] sum: 507290 avg: 84.746 [64 | 127]
+          128 ..   256[n: 1255] sum: 209156 avg: 166.658 [128 | 255] }
+paintPaths: duration= 3113.46881 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=101, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 596] sum: 10570 avg: 17.734 [1 | 99] { 
+            1 ..     2[n: 55] sum: 55 avg: 1.0 [1 | 1]
+            2 ..     4[n: 87] sum: 220 avg: 2.528 [2 | 3]
+            4 ..     8[n: 141] sum: 762 avg: 5.404 [4 | 7]
+            8 ..    16[n: 123] sum: 1424 avg: 11.577 [8 | 15]
+           16 ..    32[n: 78] sum: 1499 avg: 19.217 [16 | 31]
+           32 ..    64[n: 62] sum: 2773 avg: 44.725 [32 | 63]
+           64 ..   128[n: 50] sum: 3837 avg: 76.74 [64 | 99] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 840301] sum: 3771488 avg: 4.488 [1 | 255] { 
+            1 ..     2[n: 315936] sum: 315936 avg: 1.0 [1 | 1]
+            2 ..     4[n: 221457] sum: 529117 avg: 2.389 [2 | 3]
+            4 ..     8[n: 167130] sum: 864927 avg: 5.175 [4 | 7]
+            8 ..    16[n: 95965] sum: 1005838 avg: 10.481 [8 | 15]
+           16 ..    32[n: 31994] sum: 664581 avg: 20.772 [16 | 31]
+           32 ..    64[n: 6479] sum: 258286 avg: 39.865 [32 | 63]
+           64 ..   128[n: 1109] sum: 92616 avg: 83.513 [64 | 127]
+          128 ..   256[n: 231] sum: 40187 avg: 173.969 [128 | 255] }
+paintPaths: duration= 3315.203263 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=102, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 556] sum: 10570 avg: 19.01 [1 | 228] { 
+            1 ..     2[n: 85] sum: 85 avg: 1.0 [1 | 1]
+            2 ..     4[n: 68] sum: 168 avg: 2.47 [2 | 3]
+            4 ..     8[n: 80] sum: 427 avg: 5.337 [4 | 7]
+            8 ..    16[n: 135] sum: 1495 avg: 11.074 [8 | 15]
+           16 ..    32[n: 109] sum: 2232 avg: 20.477 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2620 avg: 97.037 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 784697] sum: 3525207 avg: 4.492 [1 | 255] { 
+            1 ..     2[n: 295457] sum: 295457 avg: 1.0 [1 | 1]
+            2 ..     4[n: 206784] sum: 494187 avg: 2.389 [2 | 3]
+            4 ..     8[n: 155805] sum: 805883 avg: 5.172 [4 | 7]
+            8 ..    16[n: 89431] sum: 938016 avg: 10.488 [8 | 15]
+           16 ..    32[n: 29804] sum: 619333 avg: 20.78 [16 | 31]
+           32 ..    64[n: 6132] sum: 244556 avg: 39.881 [32 | 63]
+           64 ..   128[n: 1057] sum: 88258 avg: 83.498 [64 | 127]
+          128 ..   256[n: 227] sum: 39517 avg: 174.083 [128 | 255] }
+paintPaths: duration= 3546.4178159999997 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=103, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 638] sum: 15076 avg: 23.63 [1 | 172] { 
+            1 ..     2[n: 85] sum: 85 avg: 1.0 [1 | 1]
+            2 ..     4[n: 90] sum: 222 avg: 2.466 [2 | 3]
+            4 ..     8[n: 132] sum: 706 avg: 5.348 [4 | 7]
+            8 ..    16[n: 111] sum: 1239 avg: 11.162 [8 | 15]
+           16 ..    32[n: 84] sum: 1815 avg: 21.607 [16 | 31]
+           32 ..    64[n: 59] sum: 2583 avg: 43.779 [32 | 62]
+           64 ..   128[n: 52] sum: 4907 avg: 94.365 [64 | 126]
+          128 ..   256[n: 25] sum: 3519 avg: 140.76 [128 | 172] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1601068] sum: 9690514 avg: 6.052 [1 | 255] { 
+            1 ..     2[n: 477513] sum: 477513 avg: 1.0 [1 | 1]
+            2 ..     4[n: 398189] sum: 957258 avg: 2.404 [2 | 3]
+            4 ..     8[n: 348593] sum: 1822396 avg: 5.227 [4 | 7]
+            8 ..    16[n: 244724] sum: 2598685 avg: 10.618 [8 | 15]
+           16 ..    32[n: 100081] sum: 2111884 avg: 21.101 [16 | 31]
+           32 ..    64[n: 24808] sum: 1015707 avg: 40.942 [32 | 63]
+           64 ..   128[n: 5941] sum: 502197 avg: 84.53 [64 | 127]
+          128 ..   256[n: 1219] sum: 204874 avg: 168.067 [128 | 255] }
+paintPaths: duration= 2962.015406 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=104, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 615] sum: 14440 avg: 23.479 [1 | 172] { 
+            1 ..     2[n: 85] sum: 85 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 227 avg: 2.467 [2 | 3]
+            4 ..     8[n: 134] sum: 718 avg: 5.358 [4 | 7]
+            8 ..    16[n: 107] sum: 1192 avg: 11.14 [8 | 15]
+           16 ..    32[n: 65] sum: 1344 avg: 20.676 [16 | 31]
+           32 ..    64[n: 55] sum: 2448 avg: 44.509 [32 | 62]
+           64 ..   128[n: 52] sum: 4907 avg: 94.365 [64 | 126]
+          128 ..   256[n: 25] sum: 3519 avg: 140.76 [128 | 172] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1492616] sum: 9070033 avg: 6.076 [1 | 255] { 
+            1 ..     2[n: 443871] sum: 443871 avg: 1.0 [1 | 1]
+            2 ..     4[n: 371324] sum: 892778 avg: 2.404 [2 | 3]
+            4 ..     8[n: 325238] sum: 1700441 avg: 5.228 [4 | 7]
+            8 ..    16[n: 228496] sum: 2426429 avg: 10.619 [8 | 15]
+           16 ..    32[n: 93566] sum: 1974570 avg: 21.103 [16 | 31]
+           32 ..    64[n: 23276] sum: 954499 avg: 41.007 [32 | 63]
+           64 ..   128[n: 5657] sum: 478004 avg: 84.497 [64 | 127]
+          128 ..   256[n: 1188] sum: 199441 avg: 167.879 [128 | 255] }
+paintPaths: duration= 3218.342369 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=105, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 638] sum: 15076 avg: 23.63 [1 | 172] { 
+            1 ..     2[n: 85] sum: 85 avg: 1.0 [1 | 1]
+            2 ..     4[n: 90] sum: 222 avg: 2.466 [2 | 3]
+            4 ..     8[n: 132] sum: 706 avg: 5.348 [4 | 7]
+            8 ..    16[n: 111] sum: 1239 avg: 11.162 [8 | 15]
+           16 ..    32[n: 84] sum: 1815 avg: 21.607 [16 | 31]
+           32 ..    64[n: 59] sum: 2583 avg: 43.779 [32 | 62]
+           64 ..   128[n: 52] sum: 4907 avg: 94.365 [64 | 126]
+          128 ..   256[n: 25] sum: 3519 avg: 140.76 [128 | 172] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1601469] sum: 9693136 avg: 6.052 [1 | 255] { 
+            1 ..     2[n: 477609] sum: 477609 avg: 1.0 [1 | 1]
+            2 ..     4[n: 398292] sum: 957493 avg: 2.403 [2 | 3]
+            4 ..     8[n: 348689] sum: 1822902 avg: 5.227 [4 | 7]
+            8 ..    16[n: 244788] sum: 2599349 avg: 10.618 [8 | 15]
+           16 ..    32[n: 100118] sum: 2112707 avg: 21.102 [16 | 31]
+           32 ..    64[n: 24811] sum: 1015821 avg: 40.942 [32 | 63]
+           64 ..   128[n: 5943] sum: 502381 avg: 84.533 [64 | 127]
+          128 ..   256[n: 1219] sum: 204874 avg: 168.067 [128 | 255] }
+paintPaths: duration= 2935.252715 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=106, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 615] sum: 14440 avg: 23.479 [1 | 172] { 
+            1 ..     2[n: 85] sum: 85 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 227 avg: 2.467 [2 | 3]
+            4 ..     8[n: 134] sum: 718 avg: 5.358 [4 | 7]
+            8 ..    16[n: 107] sum: 1192 avg: 11.14 [8 | 15]
+           16 ..    32[n: 65] sum: 1344 avg: 20.676 [16 | 31]
+           32 ..    64[n: 55] sum: 2448 avg: 44.509 [32 | 62]
+           64 ..   128[n: 52] sum: 4907 avg: 94.365 [64 | 126]
+          128 ..   256[n: 25] sum: 3519 avg: 140.76 [128 | 172] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1493809] sum: 9077217 avg: 6.076 [1 | 255] { 
+            1 ..     2[n: 444208] sum: 444208 avg: 1.0 [1 | 1]
+            2 ..     4[n: 371624] sum: 893484 avg: 2.404 [2 | 3]
+            4 ..     8[n: 325520] sum: 1701959 avg: 5.228 [4 | 7]
+            8 ..    16[n: 228665] sum: 2428251 avg: 10.619 [8 | 15]
+           16 ..    32[n: 93650] sum: 1976336 avg: 21.103 [16 | 31]
+           32 ..    64[n: 23294] sum: 955258 avg: 41.008 [32 | 63]
+           64 ..   128[n: 5660] sum: 478280 avg: 84.501 [64 | 127]
+          128 ..   256[n: 1188] sum: 199441 avg: 167.879 [128 | 255] }
+paintPaths: duration= 3138.400198 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=107, shapeMode=TWO_CUBICS, closed=false, fill, windingRule=WIND_NON_ZERO}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 6] sum: 6 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Worst(>threshold)]]:
+Diff Pixels [Worst(>threshold)][n: 2] sum: 3 avg: 1.5 [1 | 2] { 
+            1 ..     2[n: 1] sum: 1 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 3148] sum: 3149 avg: 1.0 [1 | 2] { 
+            1 ..     2[n: 3147] sum: 3147 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+paintPaths: duration= 1822.520628 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=108, shapeMode=TWO_CUBICS, closed=true, fill, windingRule=WIND_NON_ZERO}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 6] sum: 6 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Worst(>threshold)]]:
+Diff Pixels [Worst(>threshold)][n: 2] sum: 3 avg: 1.5 [1 | 2] { 
+            1 ..     2[n: 1] sum: 1 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 3148] sum: 3149 avg: 1.0 [1 | 2] { 
+            1 ..     2[n: 3147] sum: 3147 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+paintPaths: duration= 1816.704945 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=109, shapeMode=TWO_CUBICS, closed=false, fill, windingRule=WIND_EVEN_ODD}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 6] sum: 6 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Worst(>threshold)]]:
+Diff Pixels [Worst(>threshold)][n: 2] sum: 3 avg: 1.5 [1 | 2] { 
+            1 ..     2[n: 1] sum: 1 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 3915] sum: 3916 avg: 1.0 [1 | 2] { 
+            1 ..     2[n: 3914] sum: 3914 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+paintPaths: duration= 1827.182754 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=110, shapeMode=TWO_CUBICS, closed=true, fill, windingRule=WIND_EVEN_ODD}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 6] sum: 6 avg: 1.0 [1 | 1] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1] }
+Differences [Diff Pixels [Worst(>threshold)]]:
+Diff Pixels [Worst(>threshold)][n: 2] sum: 3 avg: 1.5 [1 | 2] { 
+            1 ..     2[n: 1] sum: 1 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 3915] sum: 3916 avg: 1.0 [1 | 2] { 
+            1 ..     2[n: 3914] sum: 3914 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+paintPaths: duration= 1828.980904 ms.
+main: duration= 64763.354524999995 ms.
+Differences [Diff Pixels [Worst(All Test setups)]]:
+Diff Pixels [Worst(All Test setups)][n: 641] sum: 15124 avg: 23.594 [1 | 175] { 
+            1 ..     2[n: 91] sum: 91 avg: 1.0 [1 | 1]
+            2 ..     4[n: 88] sum: 214 avg: 2.431 [2 | 3]
+            4 ..     8[n: 137] sum: 743 avg: 5.423 [4 | 7]
+            8 ..    16[n: 107] sum: 1204 avg: 11.252 [8 | 15]
+           16 ..    32[n: 82] sum: 1778 avg: 21.682 [16 | 31]
+           32 ..    64[n: 59] sum: 2586 avg: 43.83 [32 | 62]
+           64 ..   128[n: 52] sum: 4940 avg: 95.0 [64 | 127]
+          128 ..   256[n: 25] sum: 3568 avg: 142.72 [130 | 175] }
+Differences [Diff Pixels [All Test setups]]:
+Diff Pixels [All Test setups][n: 23630753] sum: 136429695 avg: 5.773 [1 | 255] { 
+            1 ..     2[n: 7399618] sum: 7399618 avg: 1.0 [1 | 1]
+            2 ..     4[n: 5935312] sum: 14255690 avg: 2.401 [2 | 3]
+            4 ..     8[n: 5055110] sum: 26391103 avg: 5.22 [4 | 7]
+            8 ..    16[n: 3442395] sum: 36488734 avg: 10.599 [8 | 15]
+           16 ..    32[n: 1370057] sum: 28871264 avg: 21.073 [16 | 31]
+           32 ..    64[n: 333094] sum: 13613745 avg: 40.87 [32 | 63]
+           64 ..   128[n: 78795] sum: 6663960 avg: 84.573 [64 | 127]
+          128 ..   256[n: 16372] sum: 2745581 avg: 167.699 [128 | 255] }
+
+---------------------------------------
+ClipShapeTest: image = 100 x 100
+Shape mode: TWO_CUBICS
+THRESHOLD_DELTA: 32
+THRESHOLD_NBPIX: 220
+NUM_TESTS: 5000
+---------------------------------------
+dashes: [null]
+stroke widths: [10.0]
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=89, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 558] sum: 10510 avg: 18.835 [1 | 228] { 
+            1 ..     2[n: 89] sum: 89 avg: 1.0 [1 | 1]
+            2 ..     4[n: 70] sum: 171 avg: 2.442 [2 | 3]
+            4 ..     8[n: 75] sum: 400 avg: 5.333 [4 | 7]
+            8 ..    16[n: 139] sum: 1527 avg: 10.985 [8 | 15]
+           16 ..    32[n: 106] sum: 2163 avg: 20.405 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2617 avg: 96.925 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 835754] sum: 3714225 avg: 4.444 [1 | 255] { 
+            1 ..     2[n: 319880] sum: 319880 avg: 1.0 [1 | 1]
+            2 ..     4[n: 218541] sum: 521904 avg: 2.388 [2 | 3]
+            4 ..     8[n: 164554] sum: 851460 avg: 5.174 [4 | 7]
+            8 ..    16[n: 93737] sum: 982063 avg: 10.476 [8 | 15]
+           16 ..    32[n: 31346] sum: 651044 avg: 20.769 [16 | 31]
+           32 ..    64[n: 6352] sum: 253376 avg: 39.889 [32 | 63]
+           64 ..   128[n: 1095] sum: 91624 avg: 83.674 [64 | 127]
+          128 ..   256[n: 249] sum: 42874 avg: 172.184 [128 | 255] }
+paintPaths: duration= 3548.257067 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=90, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 558] sum: 10510 avg: 18.835 [1 | 228] { 
+            1 ..     2[n: 89] sum: 89 avg: 1.0 [1 | 1]
+            2 ..     4[n: 70] sum: 171 avg: 2.442 [2 | 3]
+            4 ..     8[n: 75] sum: 400 avg: 5.333 [4 | 7]
+            8 ..    16[n: 139] sum: 1527 avg: 10.985 [8 | 15]
+           16 ..    32[n: 106] sum: 2163 avg: 20.405 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2617 avg: 96.925 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 778879] sum: 3464067 avg: 4.447 [1 | 255] { 
+            1 ..     2[n: 298575] sum: 298575 avg: 1.0 [1 | 1]
+            2 ..     4[n: 203597] sum: 486278 avg: 2.388 [2 | 3]
+            4 ..     8[n: 153094] sum: 791643 avg: 5.17 [4 | 7]
+            8 ..    16[n: 87174] sum: 913670 avg: 10.48 [8 | 15]
+           16 ..    32[n: 29164] sum: 605824 avg: 20.773 [16 | 31]
+           32 ..    64[n: 5990] sum: 239019 avg: 39.903 [32 | 63]
+           64 ..   128[n: 1042] sum: 87140 avg: 83.627 [64 | 127]
+          128 ..   256[n: 243] sum: 41918 avg: 172.502 [128 | 255] }
+paintPaths: duration= 3618.8412449999996 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=91, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 647] sum: 15130 avg: 23.384 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
+            4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
+            8 ..    16[n: 109] sum: 1235 avg: 11.33 [8 | 15]
+           16 ..    32[n: 82] sum: 1782 avg: 21.731 [16 | 31]
+           32 ..    64[n: 59] sum: 2584 avg: 43.796 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1623342] sum: 9877308 avg: 6.084 [1 | 255] { 
+            1 ..     2[n: 484145] sum: 484145 avg: 1.0 [1 | 1]
+            2 ..     4[n: 402118] sum: 967260 avg: 2.405 [2 | 3]
+            4 ..     8[n: 352821] sum: 1845576 avg: 5.23 [4 | 7]
+            8 ..    16[n: 249418] sum: 2648948 avg: 10.62 [8 | 15]
+           16 ..    32[n: 102004] sum: 2155202 avg: 21.128 [16 | 31]
+           32 ..    64[n: 25357] sum: 1038165 avg: 40.941 [32 | 63]
+           64 ..   128[n: 6196] sum: 523685 avg: 84.519 [64 | 127]
+          128 ..   256[n: 1283] sum: 214327 avg: 167.051 [128 | 255] }
+paintPaths: duration= 3077.757807 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=92, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 624] sum: 14493 avg: 23.225 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 94] sum: 228 avg: 2.425 [2 | 3]
+            4 ..     8[n: 137] sum: 744 avg: 5.43 [4 | 7]
+            8 ..    16[n: 105] sum: 1188 avg: 11.314 [8 | 15]
+           16 ..    32[n: 63] sum: 1311 avg: 20.809 [16 | 31]
+           32 ..    64[n: 55] sum: 2448 avg: 44.509 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1509824] sum: 9223845 avg: 6.109 [1 | 255] { 
+            1 ..     2[n: 449044] sum: 449044 avg: 1.0 [1 | 1]
+            2 ..     4[n: 374085] sum: 899932 avg: 2.405 [2 | 3]
+            4 ..     8[n: 328454] sum: 1718244 avg: 5.231 [4 | 7]
+            8 ..    16[n: 232212] sum: 2466591 avg: 10.622 [8 | 15]
+           16 ..    32[n: 95152] sum: 2010588 avg: 21.13 [16 | 31]
+           32 ..    64[n: 23733] sum: 972993 avg: 40.997 [32 | 63]
+           64 ..   128[n: 5897] sum: 498285 avg: 84.498 [64 | 127]
+          128 ..   256[n: 1247] sum: 208168 avg: 166.935 [128 | 255] }
+paintPaths: duration= 3278.8309569999997 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=93, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 647] sum: 15130 avg: 23.384 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
+            4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
+            8 ..    16[n: 109] sum: 1235 avg: 11.33 [8 | 15]
+           16 ..    32[n: 82] sum: 1782 avg: 21.731 [16 | 31]
+           32 ..    64[n: 59] sum: 2584 avg: 43.796 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1623768] sum: 9880956 avg: 6.085 [1 | 255] { 
+            1 ..     2[n: 484242] sum: 484242 avg: 1.0 [1 | 1]
+            2 ..     4[n: 402228] sum: 967519 avg: 2.405 [2 | 3]
+            4 ..     8[n: 352921] sum: 1846117 avg: 5.23 [4 | 7]
+            8 ..    16[n: 249482] sum: 2649609 avg: 10.62 [8 | 15]
+           16 ..    32[n: 102047] sum: 2156155 avg: 21.129 [16 | 31]
+           32 ..    64[n: 25360] sum: 1038306 avg: 40.942 [32 | 63]
+           64 ..   128[n: 6202] sum: 524164 avg: 84.515 [64 | 127]
+          128 ..   256[n: 1286] sum: 214844 avg: 167.063 [128 | 255] }
+paintPaths: duration= 3006.357403 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=94, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 624] sum: 14493 avg: 23.225 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 94] sum: 228 avg: 2.425 [2 | 3]
+            4 ..     8[n: 137] sum: 744 avg: 5.43 [4 | 7]
+            8 ..    16[n: 105] sum: 1188 avg: 11.314 [8 | 15]
+           16 ..    32[n: 63] sum: 1311 avg: 20.809 [16 | 31]
+           32 ..    64[n: 55] sum: 2448 avg: 44.509 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1511068] sum: 9232035 avg: 6.109 [1 | 255] { 
+            1 ..     2[n: 449395] sum: 449395 avg: 1.0 [1 | 1]
+            2 ..     4[n: 374396] sum: 900674 avg: 2.405 [2 | 3]
+            4 ..     8[n: 328738] sum: 1719773 avg: 5.231 [4 | 7]
+            8 ..    16[n: 232390] sum: 2468467 avg: 10.622 [8 | 15]
+           16 ..    32[n: 95243] sum: 2012511 avg: 21.13 [16 | 31]
+           32 ..    64[n: 23754] sum: 973926 avg: 41.0 [32 | 63]
+           64 ..   128[n: 5903] sum: 498759 avg: 84.492 [64 | 127]
+          128 ..   256[n: 1249] sum: 208530 avg: 166.957 [128 | 255] }
+paintPaths: duration= 3185.0499259999997 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=95, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 558] sum: 10510 avg: 18.835 [1 | 228] { 
+            1 ..     2[n: 89] sum: 89 avg: 1.0 [1 | 1]
+            2 ..     4[n: 70] sum: 171 avg: 2.442 [2 | 3]
+            4 ..     8[n: 75] sum: 400 avg: 5.333 [4 | 7]
+            8 ..    16[n: 139] sum: 1527 avg: 10.985 [8 | 15]
+           16 ..    32[n: 106] sum: 2163 avg: 20.405 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2617 avg: 96.925 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 834412] sum: 3707543 avg: 4.443 [1 | 255] { 
+            1 ..     2[n: 319389] sum: 319389 avg: 1.0 [1 | 1]
+            2 ..     4[n: 218215] sum: 521133 avg: 2.388 [2 | 3]
+            4 ..     8[n: 164253] sum: 849913 avg: 5.174 [4 | 7]
+            8 ..    16[n: 93585] sum: 980466 avg: 10.476 [8 | 15]
+           16 ..    32[n: 31296] sum: 649985 avg: 20.768 [16 | 31]
+           32 ..    64[n: 6334] sum: 252608 avg: 39.881 [32 | 63]
+           64 ..   128[n: 1093] sum: 91460 avg: 83.677 [64 | 127]
+          128 ..   256[n: 247] sum: 42589 avg: 172.425 [128 | 255] }
+paintPaths: duration= 3573.1258719999996 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=96, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 558] sum: 10510 avg: 18.835 [1 | 228] { 
+            1 ..     2[n: 89] sum: 89 avg: 1.0 [1 | 1]
+            2 ..     4[n: 70] sum: 171 avg: 2.442 [2 | 3]
+            4 ..     8[n: 75] sum: 400 avg: 5.333 [4 | 7]
+            8 ..    16[n: 139] sum: 1527 avg: 10.985 [8 | 15]
+           16 ..    32[n: 106] sum: 2163 avg: 20.405 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2617 avg: 96.925 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 778879] sum: 3464067 avg: 4.447 [1 | 255] { 
+            1 ..     2[n: 298575] sum: 298575 avg: 1.0 [1 | 1]
+            2 ..     4[n: 203597] sum: 486278 avg: 2.388 [2 | 3]
+            4 ..     8[n: 153094] sum: 791643 avg: 5.17 [4 | 7]
+            8 ..    16[n: 87174] sum: 913670 avg: 10.48 [8 | 15]
+           16 ..    32[n: 29164] sum: 605824 avg: 20.773 [16 | 31]
+           32 ..    64[n: 5990] sum: 239019 avg: 39.903 [32 | 63]
+           64 ..   128[n: 1042] sum: 87140 avg: 83.627 [64 | 127]
+          128 ..   256[n: 243] sum: 41918 avg: 172.502 [128 | 255] }
+paintPaths: duration= 3666.9851249999997 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=97, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 647] sum: 15130 avg: 23.384 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
+            4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
+            8 ..    16[n: 109] sum: 1235 avg: 11.33 [8 | 15]
+           16 ..    32[n: 82] sum: 1782 avg: 21.731 [16 | 31]
+           32 ..    64[n: 59] sum: 2584 avg: 43.796 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1620671] sum: 9860802 avg: 6.084 [1 | 255] { 
+            1 ..     2[n: 483381] sum: 483381 avg: 1.0 [1 | 1]
+            2 ..     4[n: 401443] sum: 965634 avg: 2.405 [2 | 3]
+            4 ..     8[n: 352242] sum: 1842544 avg: 5.23 [4 | 7]
+            8 ..    16[n: 248962] sum: 2644117 avg: 10.62 [8 | 15]
+           16 ..    32[n: 101870] sum: 2152358 avg: 21.128 [16 | 31]
+           32 ..    64[n: 25307] sum: 1036015 avg: 40.937 [32 | 63]
+           64 ..   128[n: 6186] sum: 522887 avg: 84.527 [64 | 127]
+          128 ..   256[n: 1280] sum: 213866 avg: 167.082 [128 | 255] }
+paintPaths: duration= 3208.206463 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=98, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 624] sum: 14493 avg: 23.225 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 94] sum: 228 avg: 2.425 [2 | 3]
+            4 ..     8[n: 137] sum: 744 avg: 5.43 [4 | 7]
+            8 ..    16[n: 105] sum: 1188 avg: 11.314 [8 | 15]
+           16 ..    32[n: 63] sum: 1311 avg: 20.809 [16 | 31]
+           32 ..    64[n: 55] sum: 2448 avg: 44.509 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1509824] sum: 9223845 avg: 6.109 [1 | 255] { 
+            1 ..     2[n: 449044] sum: 449044 avg: 1.0 [1 | 1]
+            2 ..     4[n: 374085] sum: 899932 avg: 2.405 [2 | 3]
+            4 ..     8[n: 328454] sum: 1718244 avg: 5.231 [4 | 7]
+            8 ..    16[n: 232212] sum: 2466591 avg: 10.622 [8 | 15]
+           16 ..    32[n: 95152] sum: 2010588 avg: 21.13 [16 | 31]
+           32 ..    64[n: 23733] sum: 972993 avg: 40.997 [32 | 63]
+           64 ..   128[n: 5897] sum: 498285 avg: 84.498 [64 | 127]
+          128 ..   256[n: 1247] sum: 208168 avg: 166.935 [128 | 255] }
+paintPaths: duration= 3347.728498 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=99, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 647] sum: 15130 avg: 23.384 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
+            4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
+            8 ..    16[n: 109] sum: 1235 avg: 11.33 [8 | 15]
+           16 ..    32[n: 82] sum: 1782 avg: 21.731 [16 | 31]
+           32 ..    64[n: 59] sum: 2584 avg: 43.796 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1621094] sum: 9864429 avg: 6.085 [1 | 255] { 
+            1 ..     2[n: 483478] sum: 483478 avg: 1.0 [1 | 1]
+            2 ..     4[n: 401552] sum: 965890 avg: 2.405 [2 | 3]
+            4 ..     8[n: 352341] sum: 1843076 avg: 5.23 [4 | 7]
+            8 ..    16[n: 249025] sum: 2644769 avg: 10.62 [8 | 15]
+           16 ..    32[n: 101913] sum: 2153311 avg: 21.128 [16 | 31]
+           32 ..    64[n: 25310] sum: 1036156 avg: 40.938 [32 | 63]
+           64 ..   128[n: 6192] sum: 523366 avg: 84.522 [64 | 127]
+          128 ..   256[n: 1283] sum: 214383 avg: 167.095 [128 | 255] }
+paintPaths: duration= 3085.696677 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=100, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_ROUND, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 624] sum: 14493 avg: 23.225 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 94] sum: 228 avg: 2.425 [2 | 3]
+            4 ..     8[n: 137] sum: 744 avg: 5.43 [4 | 7]
+            8 ..    16[n: 105] sum: 1188 avg: 11.314 [8 | 15]
+           16 ..    32[n: 63] sum: 1311 avg: 20.809 [16 | 31]
+           32 ..    64[n: 55] sum: 2448 avg: 44.509 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1511068] sum: 9232035 avg: 6.109 [1 | 255] { 
+            1 ..     2[n: 449395] sum: 449395 avg: 1.0 [1 | 1]
+            2 ..     4[n: 374396] sum: 900674 avg: 2.405 [2 | 3]
+            4 ..     8[n: 328738] sum: 1719773 avg: 5.231 [4 | 7]
+            8 ..    16[n: 232390] sum: 2468467 avg: 10.622 [8 | 15]
+           16 ..    32[n: 95243] sum: 2012511 avg: 21.13 [16 | 31]
+           32 ..    64[n: 23754] sum: 973926 avg: 41.0 [32 | 63]
+           64 ..   128[n: 5903] sum: 498759 avg: 84.492 [64 | 127]
+          128 ..   256[n: 1249] sum: 208530 avg: 166.957 [128 | 255] }
+paintPaths: duration= 3232.5838909999998 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=101, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 558] sum: 10510 avg: 18.835 [1 | 228] { 
+            1 ..     2[n: 89] sum: 89 avg: 1.0 [1 | 1]
+            2 ..     4[n: 70] sum: 171 avg: 2.442 [2 | 3]
+            4 ..     8[n: 75] sum: 400 avg: 5.333 [4 | 7]
+            8 ..    16[n: 139] sum: 1527 avg: 10.985 [8 | 15]
+           16 ..    32[n: 106] sum: 2163 avg: 20.405 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2617 avg: 96.925 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 834106] sum: 3706246 avg: 4.443 [1 | 255] { 
+            1 ..     2[n: 319293] sum: 319293 avg: 1.0 [1 | 1]
+            2 ..     4[n: 218111] sum: 520885 avg: 2.388 [2 | 3]
+            4 ..     8[n: 164184] sum: 849536 avg: 5.174 [4 | 7]
+            8 ..    16[n: 93563] sum: 980250 avg: 10.476 [8 | 15]
+           16 ..    32[n: 31284] sum: 649727 avg: 20.768 [16 | 31]
+           32 ..    64[n: 6331] sum: 252506 avg: 39.884 [32 | 63]
+           64 ..   128[n: 1093] sum: 91460 avg: 83.677 [64 | 127]
+          128 ..   256[n: 247] sum: 42589 avg: 172.425 [128 | 255] }
+paintPaths: duration= 3452.858848 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=102, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_MITER}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 558] sum: 10510 avg: 18.835 [1 | 228] { 
+            1 ..     2[n: 89] sum: 89 avg: 1.0 [1 | 1]
+            2 ..     4[n: 70] sum: 171 avg: 2.442 [2 | 3]
+            4 ..     8[n: 75] sum: 400 avg: 5.333 [4 | 7]
+            8 ..    16[n: 139] sum: 1527 avg: 10.985 [8 | 15]
+           16 ..    32[n: 106] sum: 2163 avg: 20.405 [16 | 31]
+           32 ..    64[n: 41] sum: 1679 avg: 40.951 [32 | 63]
+           64 ..   128[n: 27] sum: 2617 avg: 96.925 [64 | 124]
+          128 ..   256[n: 11] sum: 1864 avg: 169.454 [132 | 228] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 778879] sum: 3464067 avg: 4.447 [1 | 255] { 
+            1 ..     2[n: 298575] sum: 298575 avg: 1.0 [1 | 1]
+            2 ..     4[n: 203597] sum: 486278 avg: 2.388 [2 | 3]
+            4 ..     8[n: 153094] sum: 791643 avg: 5.17 [4 | 7]
+            8 ..    16[n: 87174] sum: 913670 avg: 10.48 [8 | 15]
+           16 ..    32[n: 29164] sum: 605824 avg: 20.773 [16 | 31]
+           32 ..    64[n: 5990] sum: 239019 avg: 39.903 [32 | 63]
+           64 ..   128[n: 1042] sum: 87140 avg: 83.627 [64 | 127]
+          128 ..   256[n: 243] sum: 41918 avg: 172.502 [128 | 255] }
+paintPaths: duration= 3628.4758739999997 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=103, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 648] sum: 15086 avg: 23.28 [1 | 170] { 
+            1 ..     2[n: 90] sum: 90 avg: 1.0 [1 | 1]
+            2 ..     4[n: 89] sum: 214 avg: 2.404 [2 | 3]
+            4 ..     8[n: 136] sum: 719 avg: 5.286 [4 | 7]
+            8 ..    16[n: 108] sum: 1183 avg: 10.953 [8 | 15]
+           16 ..    32[n: 91] sum: 1961 avg: 21.549 [16 | 31]
+           32 ..    64[n: 57] sum: 2519 avg: 44.192 [32 | 62]
+           64 ..   128[n: 54] sum: 5149 avg: 95.351 [64 | 127]
+          128 ..   256[n: 23] sum: 3251 avg: 141.347 [128 | 170] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1597642] sum: 9615755 avg: 6.018 [1 | 255] { 
+            1 ..     2[n: 480503] sum: 480503 avg: 1.0 [1 | 1]
+            2 ..     4[n: 397095] sum: 954463 avg: 2.403 [2 | 3]
+            4 ..     8[n: 347113] sum: 1815008 avg: 5.228 [4 | 7]
+            8 ..    16[n: 242354] sum: 2574186 avg: 10.621 [8 | 15]
+           16 ..    32[n: 98929] sum: 2086862 avg: 21.094 [16 | 31]
+           32 ..    64[n: 24576] sum: 1005964 avg: 40.932 [32 | 63]
+           64 ..   128[n: 5854] sum: 493887 avg: 84.367 [64 | 127]
+          128 ..   256[n: 1218] sum: 204882 avg: 168.211 [128 | 255] }
+paintPaths: duration= 2996.929478 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=104, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_ROUND}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 625] sum: 14448 avg: 23.116 [1 | 170] { 
+            1 ..     2[n: 90] sum: 90 avg: 1.0 [1 | 1]
+            2 ..     4[n: 91] sum: 219 avg: 2.406 [2 | 3]
+            4 ..     8[n: 138] sum: 731 avg: 5.297 [4 | 7]
+            8 ..    16[n: 104] sum: 1136 avg: 10.923 [8 | 15]
+           16 ..    32[n: 72] sum: 1489 avg: 20.68 [16 | 31]
+           32 ..    64[n: 53] sum: 2383 avg: 44.962 [32 | 62]
+           64 ..   128[n: 54] sum: 5149 avg: 95.351 [64 | 127]
+          128 ..   256[n: 23] sum: 3251 avg: 141.347 [128 | 170] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1489160] sum: 9001040 avg: 6.044 [1 | 255] { 
+            1 ..     2[n: 446355] sum: 446355 avg: 1.0 [1 | 1]
+            2 ..     4[n: 370288] sum: 890104 avg: 2.403 [2 | 3]
+            4 ..     8[n: 323854] sum: 1693511 avg: 5.229 [4 | 7]
+            8 ..    16[n: 226364] sum: 2404446 avg: 10.622 [8 | 15]
+           16 ..    32[n: 92470] sum: 1950863 avg: 21.097 [16 | 31]
+           32 ..    64[n: 23056] sum: 945335 avg: 41.001 [32 | 63]
+           64 ..   128[n: 5585] sum: 470847 avg: 84.305 [64 | 127]
+          128 ..   256[n: 1188] sum: 199579 avg: 167.995 [128 | 255] }
+paintPaths: duration= 3270.03383 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=105, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 648] sum: 15086 avg: 23.28 [1 | 170] { 
+            1 ..     2[n: 90] sum: 90 avg: 1.0 [1 | 1]
+            2 ..     4[n: 89] sum: 214 avg: 2.404 [2 | 3]
+            4 ..     8[n: 136] sum: 719 avg: 5.286 [4 | 7]
+            8 ..    16[n: 108] sum: 1183 avg: 10.953 [8 | 15]
+           16 ..    32[n: 91] sum: 1961 avg: 21.549 [16 | 31]
+           32 ..    64[n: 57] sum: 2519 avg: 44.192 [32 | 62]
+           64 ..   128[n: 54] sum: 5149 avg: 95.351 [64 | 127]
+          128 ..   256[n: 23] sum: 3251 avg: 141.347 [128 | 170] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1598050] sum: 9618340 avg: 6.018 [1 | 255] { 
+            1 ..     2[n: 480608] sum: 480608 avg: 1.0 [1 | 1]
+            2 ..     4[n: 397206] sum: 954732 avg: 2.403 [2 | 3]
+            4 ..     8[n: 347200] sum: 1815473 avg: 5.228 [4 | 7]
+            8 ..    16[n: 242419] sum: 2574853 avg: 10.621 [8 | 15]
+           16 ..    32[n: 98964] sum: 2087640 avg: 21.094 [16 | 31]
+           32 ..    64[n: 24579] sum: 1006077 avg: 40.932 [32 | 63]
+           64 ..   128[n: 5856] sum: 494075 avg: 84.37 [64 | 127]
+          128 ..   256[n: 1218] sum: 204882 avg: 168.211 [128 | 255] }
+paintPaths: duration= 2986.73627 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=106, shapeMode=TWO_CUBICS, closed=true, strokeWidth=10.0, strokeCap=CAP_SQUARE, strokeJoin=JOIN_BEVEL}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 625] sum: 14448 avg: 23.116 [1 | 170] { 
+            1 ..     2[n: 90] sum: 90 avg: 1.0 [1 | 1]
+            2 ..     4[n: 91] sum: 219 avg: 2.406 [2 | 3]
+            4 ..     8[n: 138] sum: 731 avg: 5.297 [4 | 7]
+            8 ..    16[n: 104] sum: 1136 avg: 10.923 [8 | 15]
+           16 ..    32[n: 72] sum: 1489 avg: 20.68 [16 | 31]
+           32 ..    64[n: 53] sum: 2383 avg: 44.962 [32 | 62]
+           64 ..   128[n: 54] sum: 5149 avg: 95.351 [64 | 127]
+          128 ..   256[n: 23] sum: 3251 avg: 141.347 [128 | 170] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 1490354] sum: 9008255 avg: 6.044 [1 | 255] { 
+            1 ..     2[n: 446699] sum: 446699 avg: 1.0 [1 | 1]
+            2 ..     4[n: 370594] sum: 890847 avg: 2.403 [2 | 3]
+            4 ..     8[n: 324116] sum: 1694924 avg: 5.229 [4 | 7]
+            8 ..    16[n: 226540] sum: 2406303 avg: 10.621 [8 | 15]
+           16 ..    32[n: 92553] sum: 1952598 avg: 21.097 [16 | 31]
+           32 ..    64[n: 23076] sum: 946179 avg: 41.002 [32 | 63]
+           64 ..   128[n: 5588] sum: 471126 avg: 84.31 [64 | 127]
+          128 ..   256[n: 1188] sum: 199579 avg: 167.995 [128 | 255] }
+paintPaths: duration= 3185.438253 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=107, shapeMode=TWO_CUBICS, closed=false, fill, windingRule=WIND_NON_ZERO}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 208] sum: 578 avg: 2.778 [1 | 6] { 
+            1 ..     2[n: 52] sum: 52 avg: 1.0 [1 | 1]
+            2 ..     4[n: 81] sum: 201 avg: 2.481 [2 | 3]
+            4 ..     8[n: 75] sum: 325 avg: 4.333 [4 | 6] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 299757] sum: 367792 avg: 1.226 [1 | 32] { 
+            1 ..     2[n: 254990] sum: 254990 avg: 1.0 [1 | 1]
+            2 ..     4[n: 40044] sum: 87961 avg: 2.196 [2 | 3]
+            4 ..     8[n: 4287] sum: 19831 avg: 4.625 [4 | 7]
+            8 ..    16[n: 370] sum: 3542 avg: 9.572 [8 | 15]
+           16 ..    32[n: 55] sum: 1116 avg: 20.29 [16 | 31]
+           32 ..    64[n: 11] sum: 352 avg: 32.0 [32 | 32] }
+paintPaths: duration= 1865.822001 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=108, shapeMode=TWO_CUBICS, closed=true, fill, windingRule=WIND_NON_ZERO}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 208] sum: 578 avg: 2.778 [1 | 6] { 
+            1 ..     2[n: 52] sum: 52 avg: 1.0 [1 | 1]
+            2 ..     4[n: 81] sum: 201 avg: 2.481 [2 | 3]
+            4 ..     8[n: 75] sum: 325 avg: 4.333 [4 | 6] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 299757] sum: 367792 avg: 1.226 [1 | 32] { 
+            1 ..     2[n: 254990] sum: 254990 avg: 1.0 [1 | 1]
+            2 ..     4[n: 40044] sum: 87961 avg: 2.196 [2 | 3]
+            4 ..     8[n: 4287] sum: 19831 avg: 4.625 [4 | 7]
+            8 ..    16[n: 370] sum: 3542 avg: 9.572 [8 | 15]
+           16 ..    32[n: 55] sum: 1116 avg: 20.29 [16 | 31]
+           32 ..    64[n: 11] sum: 352 avg: 32.0 [32 | 32] }
+paintPaths: duration= 1838.937187 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=109, shapeMode=TWO_CUBICS, closed=false, fill, windingRule=WIND_EVEN_ODD}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 310] sum: 798 avg: 2.574 [1 | 20] { 
+            1 ..     2[n: 170] sum: 170 avg: 1.0 [1 | 1]
+            2 ..     4[n: 77] sum: 171 avg: 2.22 [2 | 3]
+            4 ..     8[n: 34] sum: 170 avg: 5.0 [4 | 7]
+            8 ..    16[n: 27] sum: 249 avg: 9.222 [8 | 11]
+           16 ..    32[n: 2] sum: 38 avg: 19.0 [18 | 20] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 373870] sum: 459301 avg: 1.228 [1 | 32] { 
+            1 ..     2[n: 317634] sum: 317634 avg: 1.0 [1 | 1]
+            2 ..     4[n: 50380] sum: 110580 avg: 2.194 [2 | 3]
+            4 ..     8[n: 5271] sum: 24269 avg: 4.604 [4 | 7]
+            8 ..    16[n: 498] sum: 4846 avg: 9.73 [8 | 15]
+           16 ..    32[n: 71] sum: 1460 avg: 20.563 [16 | 31]
+           32 ..    64[n: 16] sum: 512 avg: 32.0 [32 | 32] }
+paintPaths: duration= 1874.6140429999998 ms.
+paintPaths: 5000 paths (TWO_CUBICS) - setup: TestSetup{id=110, shapeMode=TWO_CUBICS, closed=true, fill, windingRule=WIND_EVEN_ODD}
+Differences [Diff Pixels [Worst]]:
+Diff Pixels [Worst][n: 310] sum: 798 avg: 2.574 [1 | 20] { 
+            1 ..     2[n: 170] sum: 170 avg: 1.0 [1 | 1]
+            2 ..     4[n: 77] sum: 171 avg: 2.22 [2 | 3]
+            4 ..     8[n: 34] sum: 170 avg: 5.0 [4 | 7]
+            8 ..    16[n: 27] sum: 249 avg: 9.222 [8 | 11]
+           16 ..    32[n: 2] sum: 38 avg: 19.0 [18 | 20] }
+Differences [Diff Pixels [Test setup]]:
+Diff Pixels [Test setup][n: 373870] sum: 459301 avg: 1.228 [1 | 32] { 
+            1 ..     2[n: 317634] sum: 317634 avg: 1.0 [1 | 1]
+            2 ..     4[n: 50380] sum: 110580 avg: 2.194 [2 | 3]
+            4 ..     8[n: 5271] sum: 24269 avg: 4.604 [4 | 7]
+            8 ..    16[n: 498] sum: 4846 avg: 9.73 [8 | 15]
+           16 ..    32[n: 71] sum: 1460 avg: 20.563 [16 | 31]
+           32 ..    64[n: 16] sum: 512 avg: 32.0 [32 | 32] }
+paintPaths: duration= 1852.572993 ms.
+main: duration= 66782.38329 ms.
+Differences [Diff Pixels [Worst(All Test setups)]]:
+Diff Pixels [Worst(All Test setups)][n: 647] sum: 15130 avg: 23.384 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
+            4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
+            8 ..    16[n: 109] sum: 1235 avg: 11.33 [8 | 15]
+           16 ..    32[n: 82] sum: 1782 avg: 21.731 [16 | 31]
+           32 ..    64[n: 59] sum: 2584 avg: 43.796 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Differences [Diff Pixels [All Test setups]]:
+Diff Pixels [All Test setups][n: 24894028] sum: 136813046 avg: 5.495 [1 | 255] { 
+            1 ..     2[n: 8585824] sum: 8585824 avg: 1.0 [1 | 1]
+            2 ..     4[n: 6085992] sum: 14577499 avg: 2.395 [2 | 3]
+            4 ..     8[n: 5038381] sum: 26286301 avg: 5.217 [4 | 7]
+            8 ..    16[n: 3407911] sum: 36117912 avg: 10.598 [8 | 15]
+           16 ..    32[n: 1353210] sum: 28514567 avg: 21.071 [16 | 31]
+           32 ..    64[n: 328636] sum: 13423310 avg: 40.845 [32 | 63]
+           64 ..   128[n: 77666] sum: 6554089 avg: 84.388 [64 | 127]
+          128 ..   256[n: 16408] sum: 2753544 avg: 167.817 [128 | 255] }
+
+
