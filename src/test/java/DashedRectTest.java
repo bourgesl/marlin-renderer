@@ -59,7 +59,7 @@ public class DashedRectTest {
         // JDK9 only:
         System.setProperty("sun.java2d.renderer.verbose", "true");
 
-        System.out.println("DashedRectClipTest: size = " + size);
+        System.out.println("DashedRectTest: size = " + size);
 
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 
@@ -95,7 +95,7 @@ public class DashedRectTest {
 
             if (SAVE_IMAGE) {
                 try {
-                    final File file = new File("DashedRectClipTest-MAX-" + MAX + "-dashed.png");
+                    final File file = new File("DashedRectTest-MAX-" + MAX + "-dashed.png");
 
                     System.out.println("Writing file: " + file.getAbsolutePath());
                     ImageIO.write(image, "PNG", file);

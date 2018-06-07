@@ -66,28 +66,29 @@ import javax.imageio.stream.ImageOutputStream;
  * @run main/othervm/timeout=240 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -poly -doDash
  * @run main/othervm/timeout=120 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -cubic
  * @run main/othervm/timeout=240 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine ClipShapeTest -cubic -doDash
-*/
+ */
 public final class ClipShapeTest {
 
-    static boolean TX_SCALE = false;
-    static boolean TX_SHEAR = false;
-
-    static final boolean TEST_STROKER = true;
-    static final boolean TEST_FILLER = true;
-
-    // complementary tests in slow mode:
-    static boolean USE_DASHES = false;
-    static boolean USE_VAR_STROKE = false;
-
-    static int NUM_TESTS = 5000;
-    static final int TESTW = 100;
-    static final int TESTH = 100;
+    // test options:
+    static int NUM_TESTS;
 
     // shape settings:
-    static ShapeMode SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
+    static ShapeMode SHAPE_MODE;
+
+    static boolean USE_DASHES;
+    static boolean USE_VAR_STROKE;
 
     static int THRESHOLD_DELTA;
     static long THRESHOLD_NBPIX;
+
+    // constants:
+    static final boolean DO_FAIL = true;
+    
+    static final boolean TEST_STROKER = true;
+    static final boolean TEST_FILLER = true;
+    
+    static final int TESTW = 100;
+    static final int TESTH = 100;
 
     static final boolean SHAPE_REPEAT = true;
 
@@ -103,7 +104,8 @@ public final class ClipShapeTest {
     static final int MAX_SAVE_FRAMES = 100;
 
     // use fixed seed to reproduce always same polygons between tests
-    static final boolean FIXED_SEED = false;
+    static final boolean FIXED_SEED = true;
+
     static final double RAND_SCALE = 3.0;
     static final double RANDW = TESTW * RAND_SCALE;
     static final double OFFW = (TESTW - RANDW) / 2.0;
@@ -186,78 +188,134 @@ public final class ClipShapeTest {
         // curve length max error:
         System.setProperty("sun.java2d.renderer.curve_len_err", "1e-4");
 
-        // quad max error:
-        System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
-
         // cubic min/max error:
         System.setProperty("sun.java2d.renderer.cubic_dec_d2", "1e-3");
         System.setProperty("sun.java2d.renderer.cubic_inc_d1", "1e-4"); // or disabled ~ 1e-6
+
+        // quad max error:
+        System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
     }
 
+    private static void resetOptions() {
+        NUM_TESTS = 5000;
+
+        // shape settings:
+        SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
+
+        USE_DASHES = false;
+        USE_VAR_STROKE = false;
+    }
+    
     /**
      * Test
      * @param args
      */
     public static void main(String[] args) {
+        System.out.println("---------------------------------------");
+        System.out.println("ClipShapeTest: image = " + TESTW + " x " + TESTH);
+
+        resetOptions();
+        
         boolean runSlowTests = false;
 
         for (String arg : args) {
             if ("-slow".equals(arg)) {
-                System.out.println("slow: enabled.");
                 runSlowTests = true;
-            } else if ("-doScale".equals(arg)) {
-                System.out.println("doScale: enabled.");
-                TX_SCALE = true;
-            } else if ("-doShear".equals(arg)) {
-                System.out.println("doShear: enabled.");
-                TX_SHEAR = true;
             } else if ("-doDash".equals(arg)) {
-                System.out.println("doDash: enabled.");
                 USE_DASHES = true;
             } else if ("-doVarStroke".equals(arg)) {
-                System.out.println("doVarStroke: enabled.");
                 USE_VAR_STROKE = true;
-            }
-            // shape mode:
-            else if (arg.equalsIgnoreCase("-poly")) {
-                SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
-            } else if (arg.equalsIgnoreCase("-bigpoly")) {
-                SHAPE_MODE = ShapeMode.FIFTY_LINE_POLYS;
-            } else if (arg.equalsIgnoreCase("-quad")) {
-                SHAPE_MODE = ShapeMode.FOUR_QUADS;
-            } else if (arg.equalsIgnoreCase("-cubic")) {
-                SHAPE_MODE = ShapeMode.TWO_CUBICS;
-            } else if (arg.equalsIgnoreCase("-mixed")) {
-                SHAPE_MODE = ShapeMode.MIXED;
+            } else {
+                // shape mode:
+                if (arg.equalsIgnoreCase("-poly")) {
+                    SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
+                } else if (arg.equalsIgnoreCase("-bigpoly")) {
+                    SHAPE_MODE = ShapeMode.FIFTY_LINE_POLYS;
+                } else if (arg.equalsIgnoreCase("-quad")) {
+                    SHAPE_MODE = ShapeMode.FOUR_QUADS;
+                } else if (arg.equalsIgnoreCase("-cubic")) {
+                    SHAPE_MODE = ShapeMode.TWO_CUBICS;
+                } else if (arg.equalsIgnoreCase("-mixed")) {
+                    SHAPE_MODE = ShapeMode.MIXED;
+                }
             }
         }
 
         System.out.println("Shape mode: " + SHAPE_MODE);
 
         // adjust image comparison thresholds:
-        switch(SHAPE_MODE) {
+        switch (SHAPE_MODE) {
             case TWO_CUBICS:
                 // Define uncertainty for curves:
-                THRESHOLD_DELTA = 32; //  / 256
-                THRESHOLD_NBPIX = 128; //  / 10000
+/*
+Diff Pixels [Worst(All Test setups)][n: 647] sum: 15130 avg: 23.384 [1 | 174] { 
+            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
+            2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
+            4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
+            8 ..    16[n: 109] sum: 1235 avg: 11.33 [8 | 15]
+           16 ..    32[n: 82] sum: 1782 avg: 21.731 [16 | 31]
+           32 ..    64[n: 59] sum: 2584 avg: 43.796 [32 | 62]
+           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
+          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+
+DASH: Diff Pixels [Worst(All Test setups)][n: 128] sum: 5399 avg: 42.179 [1 | 255] { 
+            1 ..     2[n: 54] sum: 54 avg: 1.0 [1 | 1]
+            2 ..     4[n: 28] sum: 63 avg: 2.25 [2 | 3]
+            4 ..     8[n: 6] sum: 33 avg: 5.5 [4 | 7]
+            8 ..    16[n: 3] sum: 33 avg: 11.0 [9 | 15]
+           16 ..    32[n: 4] sum: 87 avg: 21.75 [16 | 25]
+           32 ..    64[n: 6] sum: 276 avg: 46.0 [37 | 60]
+           64 ..   128[n: 6] sum: 568 avg: 94.666 [71 | 118]
+          128 ..   256[n: 21] sum: 4285 avg: 204.047 [128 | 255] }
+*/
+                THRESHOLD_DELTA = 32;
+                THRESHOLD_NBPIX = (USE_DASHES) ? 40 : 150;
                 break;
             case FOUR_QUADS:
             case MIXED:
                 // Define uncertainty for quads:
                 // curve subdivision causes curves to be smaller
                 // then curve offsets are different (more accurate)
-                THRESHOLD_DELTA = 64;  // 64 / 256
-                THRESHOLD_NBPIX = 256; // 256 / 10000
+/*
+Diff Pixels [Worst(All Test setups)][n: 775] sum: 57659 avg: 74.398 [1 | 251] {
+            1 ..     2[n: 21] sum: 21 avg: 1.0 [1 | 1]
+            2 ..     4[n: 20] sum: 52 avg: 2.6 [2 | 3]
+            4 ..     8[n: 44] sum: 236 avg: 5.363 [4 | 7]
+            8 ..    16[n: 52] sum: 578 avg: 11.115 [8 | 15]
+           16 ..    32[n: 75] sum: 1729 avg: 23.053 [16 | 31]
+           32 ..    64[n: 152] sum: 7178 avg: 47.223 [32 | 63]
+           64 ..   128[n: 274] sum: 25741 avg: 93.945 [64 | 127]
+          128 ..   256[n: 137] sum: 22124 avg: 161.489 [128 | 251] }
+
+DASH: Diff Pixels [Worst(All Test setups)][n: 354] sum: 29638 avg: 83.723 [1 | 254] { 
+            1 ..     2[n: 31] sum: 31 avg: 1.0 [1 | 1]
+            2 ..     4[n: 45] sum: 111 avg: 2.466 [2 | 3]
+            4 ..     8[n: 22] sum: 113 avg: 5.136 [4 | 7]
+            8 ..    16[n: 25] sum: 247 avg: 9.88 [8 | 15]
+           16 ..    32[n: 26] sum: 579 avg: 22.269 [16 | 31]
+           32 ..    64[n: 39] sum: 1698 avg: 43.538 [32 | 62]
+           64 ..   128[n: 56] sum: 5284 avg: 94.357 [64 | 127]
+          128 ..   256[n: 110] sum: 21575 avg: 196.136 [128 | 254] }
+*/
+                THRESHOLD_DELTA = 64;
+                THRESHOLD_NBPIX = (USE_DASHES) ? 180 : 420;
                 break;
             default:
                 // Define uncertainty for lines:
                 // float variant have higher uncertainty
-                THRESHOLD_DELTA = 8;
-                THRESHOLD_NBPIX = 8;
+/*
+DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] { 
+            1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1]
+            2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+*/
+                THRESHOLD_DELTA = 2;
+                THRESHOLD_NBPIX = 4; // very low
         }
 
-        System.out.println("THRESHOLD_DELTA: "+THRESHOLD_DELTA);
-        System.out.println("THRESHOLD_NBPIX: "+THRESHOLD_NBPIX);
+        // TODO: define one more threshold on total result (total sum) ?
+
+        System.out.println("THRESHOLD_DELTA: " + THRESHOLD_DELTA);
+        System.out.println("THRESHOLD_NBPIX: " + THRESHOLD_NBPIX);
 
         if (runSlowTests) {
             NUM_TESTS = 10000; // or 100000 (very slow)
@@ -265,13 +323,23 @@ public final class ClipShapeTest {
             USE_VAR_STROKE = true;
         }
 
-        System.out.println("ClipShapeTests: image = " + TESTW + " x " + TESTH);
+        System.out.println("NUM_TESTS: " + NUM_TESTS);
+
+        if (USE_DASHES) {
+            System.out.println("USE_DASHES: enabled.");
+        }
+        if (USE_VAR_STROKE) {
+            System.out.println("USE_VAR_STROKE: enabled.");
+        }
+
+        System.out.println("---------------------------------------");
+
+        final DiffContext allCtx = new DiffContext("All Test setups");
+        final DiffContext allWorstCtx = new DiffContext("Worst(All Test setups)");
 
         int failures = 0;
         final long start = System.nanoTime();
         try {
-            // TODO: test affine transforms ?
-
             if (TEST_STROKER) {
                 final float[][] dashArrays = (USE_DASHES) ?
 // small
@@ -310,8 +378,8 @@ public final class ClipShapeTest {
 
                             for (int join = 0; join <= 2; join++) {
 
-                                failures += paintPaths(new TestSetup(SHAPE_MODE, false, width, cap, join, dashes));
-                                failures += paintPaths(new TestSetup(SHAPE_MODE, true, width, cap, join, dashes));
+                                failures += paintPaths(allCtx, allWorstCtx, new TestSetup(SHAPE_MODE, false, width, cap, join, dashes));
+                                failures += paintPaths(allCtx, allWorstCtx, new TestSetup(SHAPE_MODE, true, width, cap, join, dashes));
                             }
                         }
                     }
@@ -320,16 +388,19 @@ public final class ClipShapeTest {
 
             if (TEST_FILLER) {
                 // Filler tests:
-                failures += paintPaths(new TestSetup(SHAPE_MODE, false, Path2D.WIND_NON_ZERO));
-                failures += paintPaths(new TestSetup(SHAPE_MODE, true, Path2D.WIND_NON_ZERO));
+                failures += paintPaths(allCtx, allWorstCtx, new TestSetup(SHAPE_MODE, false, Path2D.WIND_NON_ZERO));
+                failures += paintPaths(allCtx, allWorstCtx, new TestSetup(SHAPE_MODE, true, Path2D.WIND_NON_ZERO));
 
-                failures += paintPaths(new TestSetup(SHAPE_MODE, false, Path2D.WIND_EVEN_ODD));
-                failures += paintPaths(new TestSetup(SHAPE_MODE, true, Path2D.WIND_EVEN_ODD));
+                failures += paintPaths(allCtx, allWorstCtx, new TestSetup(SHAPE_MODE, false, Path2D.WIND_EVEN_ODD));
+                failures += paintPaths(allCtx, allWorstCtx, new TestSetup(SHAPE_MODE, true, Path2D.WIND_EVEN_ODD));
             }
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
         System.out.println("main: duration= " + (1e-6 * (System.nanoTime() - start)) + " ms.");
+
+        allWorstCtx.dump();
+        allCtx.dump();
 
         if (!isMarlin.get()) {
             throw new RuntimeException("Marlin renderer not used at runtime !");
@@ -337,12 +408,12 @@ public final class ClipShapeTest {
         if (!isClipRuntime.get()) {
             throw new RuntimeException("Marlin clipping not enabled at runtime !");
         }
-        if (failures != 0) {
+        if (DO_FAIL && (failures != 0)) {
             throw new RuntimeException("Clip test failures : " + failures);
         }
     }
 
-    static int paintPaths(final TestSetup ts) throws IOException {
+    static int paintPaths(final DiffContext allCtx, final DiffContext allWorstCtx, final TestSetup ts) throws IOException {
         final long start = System.nanoTime();
 
         if (FIXED_SEED) {
@@ -364,32 +435,44 @@ public final class ClipShapeTest {
 
         final BufferedImage imgDiff = newImage(TESTW, TESTH);
 
-        final DiffContext globalCtx = new DiffContext("All tests");
+        final DiffContext testSetupCtx = new DiffContext("Test setup");
+        final DiffContext testWorstCtx = new DiffContext("Worst");
+        final DiffContext testWorstThCtx = new DiffContext("Worst(>threshold)");
 
         int nd = 0;
         try {
             final DiffContext testCtx = new DiffContext("Test");
+            final DiffContext testThCtx = new DiffContext("Test(>threshold)");
             BufferedImage diffImage;
 
             for (int n = 0; n < NUM_TESTS; n++) {
                 genShape(p2d, ts);
 
-                // Runtime clip setting OFF:
-                paintShape(p2d, g2dOff, fill, false);
-
                 // Runtime clip setting ON:
                 paintShape(p2d, g2dOn, fill, true);
 
+                // Runtime clip setting OFF:
+                paintShape(p2d, g2dOff, fill, false);
+
                 /* compute image difference if possible */
-                diffImage = computeDiffImage(testCtx, imgOn, imgOff, imgDiff, globalCtx);
+                diffImage = computeDiffImage(testCtx, testThCtx, imgOn, imgOff, imgDiff);
 
-                final String testName = "Setup_" + ts.id + "_test_" + n;
-
+                // Worst (total)
+                if (testCtx.isDiff()) {
+                    if (testWorstCtx.isWorse(testCtx, false)) {
+                        testWorstCtx.set(testCtx);
+                    }
+                    if (testWorstThCtx.isWorse(testCtx, true)) {
+                        testWorstThCtx.set(testCtx);
+                    }
+                    // accumulate data:
+                    testSetupCtx.add(testCtx);
+                }
                 if (diffImage != null) {
                     nd++;
 
-                    final double ratio = (100.0 * testCtx.histPix.count) / testCtx.histAll.count;
-                    System.out.println("Diff ratio: " + testName + " = " + trimTo3Digits(ratio) + " %");
+                    testThCtx.dump();
+                    testCtx.dump();
 
                     if (nd < MAX_SHOW_FRAMES) {
                         if (SHOW_DETAILS) {
@@ -401,9 +484,12 @@ public final class ClipShapeTest {
                             if (DUMP_SHAPE) {
                                 dumpShape(p2d);
                             }
+
+                            final String testName = "Setup_" + ts.id + "_test_" + n;
+
                             saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
                             saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
-                            saveImage(diffImage, OUTPUT_DIR, testName + "-diff.png");
+                            saveImage(imgDiff, OUTPUT_DIR, testName + "-diff.png");
                         }
                     }
                 }
@@ -418,7 +504,19 @@ public final class ClipShapeTest {
                         + " ratio = " + (100f * nd) / NUM_TESTS + " %");
             }
 
-            globalCtx.dump();
+            if (testWorstCtx.isDiff()) {
+                testWorstCtx.dump();
+                if (testWorstThCtx.isDiff() && testWorstThCtx.histPix.sum != testWorstCtx.histPix.sum) {
+                    testWorstThCtx.dump();
+                }
+                if (allWorstCtx.isWorse(testWorstThCtx, true)) {
+                    allWorstCtx.set(testWorstThCtx);
+                }
+            }
+            testSetupCtx.dump();
+
+            // accumulate data:
+            allCtx.add(testSetupCtx);
         }
         System.out.println("paintPaths: duration= " + (1e-6 * (System.nanoTime() - start)) + " ms.");
         return nd;
@@ -448,16 +546,7 @@ public final class ClipShapeTest {
         if (ts.isStroke()) {
             g2d.setStroke(createStroke(ts));
         }
-        g2d.setColor(Color.GRAY);
-
-        // Test scale
-        if (TX_SCALE) {
-            g2d.scale(1.2, 1.2);
-        }
-        // Test shear
-        if (TX_SHEAR) {
-            g2d.shear(0.1, 0.2);
-        }
+        g2d.setColor(Color.BLACK);
 
         return g2d;
     }
@@ -754,18 +843,19 @@ public final class ClipShapeTest {
         return new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB_PRE);
     }
 
-    public static BufferedImage computeDiffImage(final DiffContext localCtx,
+    public static BufferedImage computeDiffImage(final DiffContext testCtx,
+                                                 final DiffContext testThCtx,
                                                  final BufferedImage tstImage,
                                                  final BufferedImage refImage,
-                                                 final BufferedImage diffImage,
-                                                 final DiffContext globalCtx) {
+                                                 final BufferedImage diffImage) {
 
         final int[] aRefPix = ((DataBufferInt) refImage.getRaster().getDataBuffer()).getData();
         final int[] aTstPix = ((DataBufferInt) tstImage.getRaster().getDataBuffer()).getData();
         final int[] aDifPix = ((DataBufferInt) diffImage.getRaster().getDataBuffer()).getData();
 
-        // reset local diff context:
-        localCtx.reset();
+        // reset diff contexts:
+        testCtx.reset();
+        testThCtx.reset();
 
         int ref, tst, dg, v;
         for (int i = 0, len = aRefPix.length; i < len; i++) {
@@ -777,23 +867,21 @@ public final class ClipShapeTest {
 
             // max difference on grayscale values:
             v = (int) Math.ceil(Math.abs(dg / 3.0));
-
-// TODO: count warnings
             if (v <= THRESHOLD_DELTA) {
                 aDifPix[i] = 0;
             } else {
                 aDifPix[i] = toInt(v, v, v);
-
-                localCtx.add(v);
+                testThCtx.add(v);
             }
-            globalCtx.add(v);
+
+            if (v != 0) {
+                testCtx.add(v);
+            }
         }
 
-        if (!localCtx.isDiff() || (localCtx.histPix.count <= THRESHOLD_NBPIX)) {
+        if (!testThCtx.isDiff() || (testThCtx.histPix.count <= THRESHOLD_NBPIX)) {
             return null;
         }
-
-        localCtx.dump();
 
         return diffImage;
     }
@@ -895,6 +983,17 @@ public final class ClipShapeTest {
             }
         }
 
+        void add(StatInteger stat) {
+            count += stat.count;
+            sum += stat.sum;
+            if (stat.min < min) {
+                min = stat.min;
+            }
+            if (stat.max > max) {
+                max = stat.max;
+            }
+        }
+
         public final double average() {
             return ((double) sum) / count;
         }
@@ -921,6 +1020,7 @@ public final class ClipShapeTest {
         static final int MAX = 20;
         static final int LAST = MAX - 1;
         static final int[] STEPS = new int[MAX];
+        static final int BUCKET_TH;
 
         static {
             STEPS[0] = 0;
@@ -930,6 +1030,12 @@ public final class ClipShapeTest {
                 STEPS[i] = STEPS[i - 1] * BUCKET;
             }
 //            System.out.println("Histogram.STEPS = " + Arrays.toString(STEPS));
+
+            if (THRESHOLD_DELTA % 2 != 0) {
+                throw new IllegalStateException("THRESHOLD_DELTA must be odd");
+            }
+
+            BUCKET_TH = bucket(THRESHOLD_DELTA);
         }
 
         static int bucket(int val) {
@@ -969,6 +1075,37 @@ public final class ClipShapeTest {
             add((int) val);
         }
 
+        void add(Histogram hist) {
+            super.add(hist);
+            for (int i = 0; i < MAX; i++) {
+                stats[i].add(hist.stats[i]);
+            }
+        }
+
+        boolean isWorse(Histogram hist, boolean useTh) {
+            boolean worst = false;
+            if (!useTh && (hist.sum > sum)) {
+                worst = true;
+            } else {
+                long sumLoc = 0l;
+                long sumHist = 0l;
+                // use running sum:
+                for (int i = MAX - 1; i >= BUCKET_TH; i--) {
+                    sumLoc += stats[i].sum;
+                    sumHist += hist.stats[i].sum;
+                }
+                if (sumHist > sumLoc) {
+                    worst = true;
+                }
+            }
+            /*
+            System.out.println("running sum worst:");
+            System.out.println("this ? " + toString());
+            System.out.println("worst ? " + hist.toString());
+             */
+            return worst;
+        }
+
         @Override
         public final String toString() {
             final StringBuilder sb = new StringBuilder(2048);
@@ -995,38 +1132,43 @@ public final class ClipShapeTest {
 
     static final class DiffContext {
 
-        public final Histogram histAll;
         public final Histogram histPix;
 
         DiffContext(String name) {
-            histAll = new Histogram("All  Pixels [" + name + "]");
             histPix = new Histogram("Diff Pixels [" + name + "]");
         }
 
         void reset() {
-            histAll.reset();
             histPix.reset();
         }
 
         void dump() {
             if (isDiff()) {
-                System.out.println("Differences [" + histAll.name + "]:");
-                System.out.println("Total [all pixels]:\n" + histAll.toString());
-                System.out.println("Total [different pixels]:\n" + histPix.toString());
+                System.out.println("Differences [" + histPix.name + "]:\n" + histPix.toString());
             } else {
-                System.out.println("No difference for [" + histAll.name + "].");
+                System.out.println("No difference for [" + histPix.name + "].");
             }
         }
 
         void add(int val) {
-            histAll.add(val);
-            if (val != 0) {
-                histPix.add(val);
-            }
+            histPix.add(val);
+        }
+
+        void add(DiffContext ctx) {
+            histPix.add(ctx.histPix);
+        }
+
+        void set(DiffContext ctx) {
+            reset();
+            add(ctx);
+        }
+
+        boolean isWorse(DiffContext ctx, boolean useTh) {
+            return histPix.isWorse(ctx.histPix, useTh);
         }
 
         boolean isDiff() {
-            return histAll.sum != 0l;
+            return histPix.sum != 0l;
         }
     }
 }
