@@ -11,20 +11,19 @@ Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 
 | JDK | Default renderer | Available Marlin release |
 | --- | --- | --- |
-| Oracle JDK 6 - 8  | Ductus       | [Marlin-renderer 0.9.1](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_1) |
-| Open JDK   6 - 8  | Pisces       | [Marlin-renderer 0.9.1](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_1) |
-| Azul Zulu 8.20+   | Marlin 0.7.4 | [Marlin-renderer 0.9.1](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_1) |
-| Jetbrains JDK 8   | Marlin 0.7.4 | (coming) |
-| Oracle JDK 9      | Marlin 0.7.4 | [Marlin-renderer 0.9.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_1_jdk9) |
-| Open JDK 9        | Marlin 0.7.4 | [Marlin-renderer 0.9.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_1_jdk9)
-| Oracle JDK 10     | Marlin 0.8.2 | [Marlin-renderer 0.9.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_1_jdk9) |
-| Open JDK 10       | Marlin 0.8.2 | [Marlin-renderer 0.9.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_1_jdk9)
+| Oracle JDK 6 - 8  | Ductus       | [Marlin-renderer 0.9.2](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2) |
+| Open JDK   6 - 8  | Pisces       | [Marlin-renderer 0.9.2](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2) |
+| Azul Zulu 8.20+   | Marlin 0.7.4 | [Marlin-renderer 0.9.2](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2) |
+| Jetbrains JDK 8   | Marlin 0.7.4 / 0.9.2 | Marlin 0.9.2 integrated in may 2018 |
+| Oracle / Open JDK 9      | Marlin 0.7.4 | [Marlin-renderer 0.9.2 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2_jdk9) |
+| Oracle / Open JDK 10     | Marlin 0.8.2 | [Marlin-renderer 0.9.2 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2_jdk9) |
+| Oracle / Open JDK 11       | Marlin 0.9.1 | [Marlin-renderer 0.9.2 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2_jdk9)
 
 For JavaFX, see the [Marlin-FX](https://github.com/bourgesl/marlin-fx) project
 
 News
 ====
-
+* april 2018: Marlin 0.9.1 integrated in OpenJDK 11
 * dec 2017: Marlin & MarlinFX 0.8.2 integrated in OpenJDK & OpenJFX 10
 * nov 2017: Marlin rocks on [Geoserver benchmarks](https://gmf-test.sig.cloud.camptocamp.net/ms_perfs/): see geoserver (including Marlin 0.8.2) vs geoserver-jai results: it boosts geoserver to achieve MapServer performance !!
 * My personal point of view after javaone: it is your turn to contribute to OpenJDK & OpenJFX: see [openjdk thread](http://mail.openjdk.java.net/pipermail/openjfx-dev/2017-October/020900.html)
