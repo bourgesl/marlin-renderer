@@ -105,6 +105,10 @@ final class TransformingPathConsumer2D {
     PathConsumer2D deltaTransformConsumer(PathConsumer2D out,
                                           AffineTransform at)
     {
+        if (rdrCtx.doClip) {
+            adjustClipOffset(rdrCtx.clipRect);
+        }
+
         if (at == null) {
             return out;
         }
@@ -134,30 +138,51 @@ final class TransformingPathConsumer2D {
     }
 
     private static void adjustClipOffset(final float[] clipRect) {
-        clipRect[0] += Renderer.RDR_OFFSET_Y;
-        clipRect[1] += Renderer.RDR_OFFSET_Y;
-        clipRect[2] += Renderer.RDR_OFFSET_X;
-        clipRect[3] += Renderer.RDR_OFFSET_X;
+        // Adjust the clipping rectangle with the renderer offsets
+        final float rdrOffX = Renderer.RDR_OFFSET_X;
+        final float rdrOffY = Renderer.RDR_OFFSET_Y;
+
+        // add a small rounding error:
+        final float margin = 1e-3f;
+
+        clipRect[0] -= margin - rdrOffY;
+        clipRect[1] += margin + rdrOffY;
+        clipRect[2] -= margin - rdrOffX;
+        clipRect[3] += margin + rdrOffX;
     }
 
     private static void adjustClipScale(final float[] clipRect,
                                         final float mxx, final float myy)
     {
-        adjustClipOffset(clipRect);
-
         // Adjust the clipping rectangle (iv_DeltaScaleFilter):
         clipRect[0] /= myy;
         clipRect[1] /= myy;
+
+        if (clipRect[1] < clipRect[0]) {
+            float tmp = clipRect[0];
+            clipRect[0] = clipRect[1];
+            clipRect[1] = tmp;
+        }
+
         clipRect[2] /= mxx;
         clipRect[3] /= mxx;
+
+        if (clipRect[3] < clipRect[2]) {
+            float tmp = clipRect[2];
+            clipRect[2] = clipRect[3];
+            clipRect[3] = tmp;
+        }
+
+        if (MarlinConst.DO_LOG_CLIP) {
+                MarlinUtils.logInfo("clipRect (ClipScale): "
+                                    + Arrays.toString(clipRect));
+        }
     }
 
     private static void adjustClipInverseDelta(final float[] clipRect,
                                                final float mxx, final float mxy,
                                                final float myx, final float myy)
     {
-        adjustClipOffset(clipRect);
-
         // Adjust the clipping rectangle (iv_DeltaTransformFilter):
         final float det = mxx * myy - mxy * myx;
         final float imxx =  myy / det;
@@ -199,6 +224,11 @@ final class TransformingPathConsumer2D {
         clipRect[1] = ymax;
         clipRect[2] = xmin;
         clipRect[3] = xmax;
+
+        if (MarlinConst.DO_LOG_CLIP) {
+                MarlinUtils.logInfo("clipRect (ClipInverseDelta): "
+                                    + Arrays.toString(clipRect));
+        }
     }
 
     PathConsumer2D inverseDeltaTransformConsumer(PathConsumer2D out,
@@ -533,18 +563,12 @@ final class TransformingPathConsumer2D {
         PathClipFilter init(final PathConsumer2D out) {
             this.out = out;
 
-            // Adjust the clipping rectangle with the renderer offsets
-            final float rdrOffX = Renderer.RDR_OFFSET_X;
-            final float rdrOffY = Renderer.RDR_OFFSET_Y;
+            adjustClipOffset(this.clipRect);
 
-            // add a small rounding error:
-            final float margin = 1e-3f;
-
-            final float[] _clipRect = this.clipRect;
-            _clipRect[0] -= margin - rdrOffY;
-            _clipRect[1] += margin + rdrOffY;
-            _clipRect[2] -= margin - rdrOffX;
-            _clipRect[3] += margin + rdrOffX;
+            if (MarlinConst.DO_LOG_CLIP) {
+                MarlinUtils.logInfo("clipRect (PathClipFilter): "
+                                    + Arrays.toString(clipRect));
+            }
 
             if (MarlinConst.DO_CLIP_SUBDIVIDER) {
                 // adjust padded clip rectangle:
@@ -891,6 +915,8 @@ final class TransformingPathConsumer2D {
 
         void init() {
             this.init_clipRectPad = true;
+
+            // TODO: adjust LEN_TH by rough scale ?
         }
 
         private void initPaddedClip() {
@@ -907,7 +933,7 @@ final class TransformingPathConsumer2D {
 
             if (TRACE) {
                 MarlinUtils.logInfo("clip: X [" + _clipRectPad[2] + " .. " + _clipRectPad[3] +"] "
-                                        + "Y ["+ _clipRectPad[0] + " .. " + _clipRectPad[1] +"]");
+                                        + "Y [" + _clipRectPad[0] + " .. " + _clipRectPad[1] +"]");
             }
         }
 
@@ -992,7 +1018,7 @@ final class TransformingPathConsumer2D {
                                                         outCodeOR, clipRectPad);
 
             if (TRACE) {
-                MarlinUtils.logInfo("nSplits: "+ nSplits);
+                MarlinUtils.logInfo("nSplits: " + nSplits);
                 MarlinUtils.logInfo("subTs: " + Arrays.toString(Arrays.copyOfRange(subTs, 0, nSplits)));
             }
             if (nSplits == 0) {
