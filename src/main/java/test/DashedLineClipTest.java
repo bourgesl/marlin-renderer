@@ -38,7 +38,7 @@ import javax.imageio.ImageIO;
 
 - Diagonal line:
 
-* Float variant:
+ * Float variant:
 
 LINE_HZ = false + CLIPPING OFF:
 
@@ -83,7 +83,7 @@ Writing file: /home/marlin/branches/marlin-renderer-unsafe/DashedLineClipTest-MA
 
 
 ---
-* Double variant:
+ * Double variant:
 
 LINE_HZ = false + CLIPPING OFF:
 
@@ -215,7 +215,7 @@ public class DashedLineClipTest {
         }
 
         try {
-            final File file = new File("DashedLineClipTest-MAX-"+MAX
+            final File file = new File("DashedLineClipTest-MAX-" + MAX
                     + (DO_DASHED ? "-dashed" : "") + (DO_FILL ? "-filled" : "-stroked") + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());
