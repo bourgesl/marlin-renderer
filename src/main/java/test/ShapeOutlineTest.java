@@ -148,7 +148,7 @@ public class ShapeOutlineTest {
         }
 
         if (DO_DRAW_DASHED) {
-            System.out.println("dashes: "+Arrays.toString(DASHED.getDashArray()));
+            System.out.println("dashes: " + Arrays.toString(DASHED.getDashArray()));
         }
 
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
