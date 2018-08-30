@@ -83,10 +83,10 @@ public final class ClipShapeTest {
 
     // constants:
     static final boolean DO_FAIL = true;
-    
+
     static final boolean TEST_STROKER = true;
     static final boolean TEST_FILLER = true;
-    
+
     static final int TESTW = 100;
     static final int TESTH = 100;
 
@@ -205,7 +205,7 @@ public final class ClipShapeTest {
         USE_DASHES = false;
         USE_VAR_STROKE = false;
     }
-    
+
     /**
      * Test
      * @param args
@@ -215,7 +215,7 @@ public final class ClipShapeTest {
         System.out.println("ClipShapeTest: image = " + TESTW + " x " + TESTH);
 
         resetOptions();
-        
+
         boolean runSlowTests = false;
 
         for (String arg : args) {
@@ -248,7 +248,7 @@ public final class ClipShapeTest {
             case TWO_CUBICS:
                 // Define uncertainty for curves:
 /*
-Diff Pixels [Worst(All Test setups)][n: 647] sum: 15130 avg: 23.384 [1 | 174] { 
+Diff Pixels [Worst(All Test setups)][n: 647] sum: 15130 avg: 23.384 [1 | 174] {
             1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
             2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
             4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
@@ -258,7 +258,7 @@ Diff Pixels [Worst(All Test setups)][n: 647] sum: 15130 avg: 23.384 [1 | 174] {
            64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
           128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
 
-DASH: Diff Pixels [Worst(All Test setups)][n: 128] sum: 5399 avg: 42.179 [1 | 255] { 
+DASH: Diff Pixels [Worst(All Test setups)][n: 128] sum: 5399 avg: 42.179 [1 | 255] {
             1 ..     2[n: 54] sum: 54 avg: 1.0 [1 | 1]
             2 ..     4[n: 28] sum: 63 avg: 2.25 [2 | 3]
             4 ..     8[n: 6] sum: 33 avg: 5.5 [4 | 7]
@@ -287,7 +287,7 @@ Diff Pixels [Worst(All Test setups)][n: 775] sum: 57659 avg: 74.398 [1 | 251] {
            64 ..   128[n: 274] sum: 25741 avg: 93.945 [64 | 127]
           128 ..   256[n: 137] sum: 22124 avg: 161.489 [128 | 251] }
 
-DASH: Diff Pixels [Worst(All Test setups)][n: 354] sum: 29638 avg: 83.723 [1 | 254] { 
+DASH: Diff Pixels [Worst(All Test setups)][n: 354] sum: 29638 avg: 83.723 [1 | 254] {
             1 ..     2[n: 31] sum: 31 avg: 1.0 [1 | 1]
             2 ..     4[n: 45] sum: 111 avg: 2.466 [2 | 3]
             4 ..     8[n: 22] sum: 113 avg: 5.136 [4 | 7]
@@ -304,7 +304,7 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 354] sum: 29638 avg: 83.723 [1 | 2
                 // Define uncertainty for lines:
                 // float variant have higher uncertainty
 /*
-DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] { 
+DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
             1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1]
             2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
 */
