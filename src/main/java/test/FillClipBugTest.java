@@ -82,7 +82,7 @@ public class FillClipBugTest {
 
         @Override
         protected void paintComponent(Graphics g) {
-            System.out.println("paintComponent() showClip: "+showClip+" ---");
+            System.out.println("paintComponent() showClip: " + showClip + " ---");
 
             super.paintComponent(g);
 
@@ -119,7 +119,7 @@ public class FillClipBugTest {
             try {
                 if (SAVE) {
                     SAVE = false; // only once
-                    final File file = new File("FillClipBugTest-"+rdr+".png");
+                    final File file = new File("FillClipBugTest-" + rdr + ".png");
 
                     System.out.println("Writing file: " + file.getAbsolutePath());
                     ImageIO.write(bi, "PNG", file);
@@ -135,9 +135,8 @@ public class FillClipBugTest {
             g2d.setColor(Color.GRAY);
 
 // TestSetup{id=91, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
-
             g2d.setStroke(new BasicStroke(10f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f,
-//                    new float[]{1f, 2f}, 0.0f));
+                    //                    new float[]{1f, 2f}, 0.0f));
                     new float[]{13f, 7f}, 0.0f));
         }
 
@@ -145,13 +144,13 @@ public class FillClipBugTest {
             final Path2D.Double p2d = new Path2D.Double();
             // ClipShapeTests dumped shape code:
             // --- begin of pasted code ---
-if (false) {
-p2d.moveTo(136.64645, 1.4918735);
-p2d.curveTo(-25.203772, 126.223206, -20.010153, 131.30772, 117.95181, -27.589094);
-} else {
-p2d.moveTo(74.466354, 49.791237);
-p2d.curveTo(66.91898, 55.68379, 60.10631, 61.002728, 54.017857, 65.7345);
-}
+            if (false) {
+                p2d.moveTo(136.64645, 1.4918735);
+                p2d.curveTo(-25.203772, 126.223206, -20.010153, 131.30772, 117.95181, -27.589094);
+            } else {
+                p2d.moveTo(74.466354, 49.791237);
+                p2d.curveTo(66.91898, 55.68379, 60.10631, 61.002728, 54.017857, 65.7345);
+            }
             // --- end of pasted code ---
             return p2d;
         }
