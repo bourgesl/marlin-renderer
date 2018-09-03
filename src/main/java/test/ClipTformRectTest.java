@@ -82,10 +82,10 @@ public class ClipTformRectTest {
                         modelToScreenTransform
                                 .concatenate(AffineTransform.getScaleInstance(unitPerPixel, unitPerPixelY));
 // shear:
-                        if (false) {
+if (false) {
                             modelToScreenTransform
-                                    .concatenate(AffineTransform.getShearInstance(1e-3, 0.623));
-                        }
+                                    .concatenate(AffineTransform.getShearInstance(1e-2, 3e-3));
+}
                         modelToScreenTransform.concatenate(
                                 AffineTransform.getTranslateInstance(501923.5574694474, -1739426.9589435714));
                         graphics.transform(modelToScreenTransform);

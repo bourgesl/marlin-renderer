@@ -93,4 +93,10 @@ public class RunJUnitTest {
     public void dashedRectTest() {
         DashedRectTest.main(NO_ARGS);
     }
+
+    @Test
+    public void scaleClipTest() {
+        ScaleClipTest.main(NO_ARGS);
+    }
+
 }
