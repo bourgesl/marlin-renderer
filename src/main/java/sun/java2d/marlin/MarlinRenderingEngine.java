@@ -831,10 +831,21 @@ public final class MarlinRenderingEngine extends RenderingEngine
                 // Define the initial clip bounds:
                 final float[] clipRect = rdrCtx.clipRect;
 
-                clipRect[0] = clip.getLoY();
-                clipRect[1] = clip.getLoY() + clip.getHeight();
-                clipRect[2] = clip.getLoX();
-                clipRect[3] = clip.getLoX() + clip.getWidth();
+                // Adjust the clipping rectangle with the renderer offsets
+                final float rdrOffX = Renderer.RDR_OFFSET_X;
+                final float rdrOffY = Renderer.RDR_OFFSET_Y;
+
+                // add a small rounding error:
+                final float margin = 1e-3f;
+
+                clipRect[0] = clip.getLoY()
+                                - margin + rdrOffY;
+                clipRect[1] = clip.getLoY() + clip.getHeight()
+                                + margin + rdrOffY;
+                clipRect[2] = clip.getLoX()
+                                - margin + rdrOffX;
+                clipRect[3] = clip.getLoX() + clip.getWidth()
+                                + margin + rdrOffX;
 
                 if (MarlinConst.DO_LOG_CLIP) {
                     MarlinUtils.logInfo("clipRect (clip): "
