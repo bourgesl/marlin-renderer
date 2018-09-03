@@ -48,6 +48,7 @@ public class CrashTest {
         boolean runSlowTests = (args.length != 0 && "-slow".equals(args[0]));
 
         // First display which renderer is tested:
+        // JDK9 only:
         System.setProperty("sun.java2d.renderer.verbose", "true");
 
         // try insane image sizes:
