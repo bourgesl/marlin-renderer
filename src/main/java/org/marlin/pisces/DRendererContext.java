@@ -107,7 +107,6 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
 
     final PathConsumer2DAdapter p2dAdapter = new PathConsumer2DAdapter();
 
-
     /**
      * Constructor
      *
