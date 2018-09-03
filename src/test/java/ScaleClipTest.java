@@ -35,6 +35,10 @@ import javax.imageio.ImageIO;
 
 /**
  * Scaled Line Clipping rendering test
+ *
+ * @test
+ * @summary verify that scaled line is properly rendered
+ * @bug 8210335
  */
 public class ScaleClipTest {
 
