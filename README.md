@@ -11,9 +11,9 @@ Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 
 | JDK | Default renderer | Available Marlin release |
 | --- | --- | --- |
-| Oracle JDK 6 - 8  | Ductus       | [Marlin-renderer 0.9.2](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2) |
-| Open JDK   6 - 8  | Pisces       | [Marlin-renderer 0.9.2](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2) |
-| Azul Zulu 8.20+   | Marlin 0.7.4 | [Marlin-renderer 0.9.2](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2) |
+| Oracle JDK 6 - 8  | Ductus       | [Marlin-renderer 0.9.3](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3) |
+| Open JDK   6 - 8  | Pisces       | [Marlin-renderer 0.9.3](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3) |
+| Azul Zulu 8.20+   | Marlin 0.7.4 | [Marlin-renderer 0.9.3](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3) |
 | Jetbrains JDK 8   | Marlin 0.7.4 / 0.9.2 | Marlin 0.9.2 integrated in may 2018 |
 | Oracle / Open JDK 9      | Marlin 0.7.4 | [Marlin-renderer 0.9.2 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2_jdk9) |
 | Oracle / Open JDK 10     | Marlin 0.8.2 | [Marlin-renderer 0.9.2 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_2_jdk9) |
@@ -23,6 +23,7 @@ For JavaFX, see the [Marlin-FX](https://github.com/bourgesl/marlin-fx) project
 
 News
 ====
+* june 2018: MarlinFX 0.9.2 integrated in OpenJFX 11
 * april 2018: Marlin 0.9.1 integrated in OpenJDK 11
 * dec 2017: Marlin & MarlinFX 0.8.2 integrated in OpenJDK & OpenJFX 10
 * nov 2017: Marlin rocks on [Geoserver benchmarks](https://gmf-test.sig.cloud.camptocamp.net/ms_perfs/): see geoserver (including Marlin 0.8.2) vs geoserver-jai results: it boosts geoserver to achieve MapServer performance !!
@@ -91,7 +92,7 @@ Since we contribute this renderer into OpenJDK, we accept contributions from peo
 Support our work
 ================
 
-To support our efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, please contribute to the gofundme campaign 'Marlin renderer 0.9 dev & FX port': https://www.gofundme.com/marlin-09
+To support my efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, please contribute to the gofundme campaign 'Marlin renderer 0.9 dev & FX port': https://www.gofundme.com/marlin-09 or for long-term support, you can become my patron: https://www.patreon.com/user?u=9339017
 
 Please help if you appreciate the Marlin project:
    * share your benchmark & test results (quality ?)
@@ -108,10 +109,9 @@ Related projects
 
 Acknowledgments:
 ================
+The Marlin renderer project benefits from the following tools:
+* <a href="https://www.ej-technologies.com/products/jprofiler/overview.html">EJ-technologies Java Profiler <img src="https://www.ej-technologies.com/images/product_banners/jprofiler_medium.png" alt="JProfiler logo"></a> 
 
-YourKit supports open source projects with its full-featured Java Profiler.
+* <img src="https://www.yourkit.com/images/yklogo.png" alt="Yourkit"> supports open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>
-and <a href="https://www.yourkit.com/.net/profiler/">YourKit .NET Profiler</a>,
-innovative and intelligent tools for profiling Java and .NET applications.
-
-<img src="https://www.yourkit.com/images/yklogo.png" alt="Yourkit logo">
+and <a href="https://www.yourkit.com/.net/profiler/">YourKit .NET Profiler</a>, innovative and intelligent tools for profiling Java and .NET applications.
