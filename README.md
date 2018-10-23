@@ -17,14 +17,18 @@ Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 | Jetbrains JDK 8   | Marlin 0.7.4 / 0.9.3 | Marlin 0.9.3 integrated in sep 2018 |
 | Oracle / Open JDK 9      | Marlin 0.7.4 | [Marlin-renderer 0.9.3 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3_jdk9) |
 | Oracle / Open JDK 10     | Marlin 0.8.2 | [Marlin-renderer 0.9.3 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3_jdk9) |
-| Oracle / Open JDK 11       | Marlin 0.9.1 | [Marlin-renderer 0.9.3 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3_jdk9)
+| Open JDK 11       | Marlin 0.9.1 | [Marlin-renderer 0.9.3 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3_jdk9)
+| Open JDK 11.0.2   | Marlin 0.9.1.1 | [Marlin-renderer 0.9.3 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3_jdk9)
+| Open JDK 12       | Marlin 0.9.1.1 | [Marlin-renderer 0.9.3 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_3_jdk9)
 
 For JavaFX, see the [Marlin-FX](https://github.com/bourgesl/marlin-fx) project
 
 News
 ====
-* june 2018: MarlinFX 0.9.2 integrated in OpenJFX 11
-* april 2018: Marlin 0.9.1 integrated in OpenJDK 11
+* oct 2018: Marlin 0.9.1.1 backported to OpenJDK 11 updates (11.0.2)
+* sep 2018: Marlin 0.9.1.1 integrated in OpenJDK 12
+* jun 2018: MarlinFX 0.9.2 integrated in OpenJFX 11
+* apr 2018: Marlin 0.9.1 integrated in OpenJDK 11
 * dec 2017: Marlin & MarlinFX 0.8.2 integrated in OpenJDK & OpenJFX 10
 * nov 2017: Marlin rocks on [Geoserver benchmarks](https://gmf-test.sig.cloud.camptocamp.net/ms_perfs/): see geoserver (including Marlin 0.8.2) vs geoserver-jai results: it boosts geoserver to achieve MapServer performance !!
 * My personal point of view after javaone: it is your turn to contribute to OpenJDK & OpenJFX: see [openjdk thread](http://mail.openjdk.java.net/pipermail/openjfx-dev/2017-October/020900.html)
