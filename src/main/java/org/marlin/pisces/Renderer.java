@@ -1130,7 +1130,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
                     // use Mergesort using auxiliary arrays (sort only right part)
                     MergeSort.mergeSortNoCopy(_crossings,     _edgePtrs,
                                               _aux_crossings, _aux_edgePtrs,
-                                              numCrossings,   prevNumCrossings);
+                                              numCrossings,   prevNumCrossings, false);
                 }
 
                 // reset ptrLen
