@@ -14,42 +14,13 @@ package org.marlin.pisces;
  * @version 2018.02.18
  * @since 1.7
  */
+
 public final class DualPivotQuicksort2018Ext/* implements Sorter */ {
-/*
-    // avoid alloc
-    // fake B (ancillary data ie indices)
-    private int[] B = null;
-    private int[] auxA = null;
-    private int[] auxB = null;
-    private int[] run = null;
 
-//    @Override
-    public void sort(final int[] A, final int low, final int high) {
-        final int length = high - low + 1;
-        if (auxA == null || auxA.length < length) {
-            auxA = new int[length];
-        }
-        if (auxB == null || auxB.length < A.length) {
-            auxB = new int[A.length];
-        }
-        if (B == null || B.length < A.length) {
-            B = new int[A.length];
-        }
-        int max = SortingAlgorithms2018Ext.getMaxRunCount(length) + 1;
-        if (run == null || run.length < max) {
-            run = new int[max];
-        }
-        sort(A, B, LEFTMOST_BITS, low, high + 1, auxA, auxB, run);
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName();
-    }
-*/    
-    /* 
+    private static final boolean DO_CHECKS = false;
+    /*
     From OpenJDK12 source code
-     */    
+     */
 
     /**
      * Prevents instantiation.
@@ -87,7 +58,7 @@ public final class DualPivotQuicksort2018Ext/* implements Sorter */ {
      * array is considered as the leftmost part.
      */
     private static final int LEFTMOST_BITS = MAX_RECURSION_DEPTH << 1;
-    
+
     /**
      * Sorts the specified range of the array.
      *
@@ -96,15 +67,15 @@ public final class DualPivotQuicksort2018Ext/* implements Sorter */ {
      * @param high the index of the last element, exclusive, to be sorted
      */
     static void sort(int[] a, int[] b, int low, int high, int[] auxA, int[] auxB, int[] run) {
-        if (low < 0) {
+        if (DO_CHECKS && (low < 0)) {
             throw new IllegalStateException("Invalid low !");
         }
-        if (a.length < high || b.length < high || auxA.length < high || auxB.length < high) {
+        if (DO_CHECKS && (a.length < high || b.length < high || auxA.length < high || auxB.length < high)) {
             throw new IllegalStateException("Invalid size for arrays !");
         }
         sort(a, b, LEFTMOST_BITS, low, high, auxA, auxB, run);
     }
-    
+
     /**
      * Sorts the specified range of the array by the Dual-Pivot Quicksort.
      *
@@ -391,7 +362,7 @@ public final class DualPivotQuicksort2018Ext/* implements Sorter */ {
                     if (ak != pivotA) {
                         final int bk = b[k];
 
-                        if (ak < pivotA) { 
+                        if (ak < pivotA) {
                             // Move a[k] to the left side
                             while (a[++lower] < pivotA);
 
@@ -412,7 +383,7 @@ public final class DualPivotQuicksort2018Ext/* implements Sorter */ {
                             }
                             a[lower] = ak;
                             b[lower] = bk;
-                        } else { 
+                        } else {
                             // ak > pivot - Move a[k] to the right side
                             a[k] = a[--upper];
                             a[upper] = ak;

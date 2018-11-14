@@ -737,9 +737,8 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
         throw new InternalError("Renderer does not use a native consumer.");
     }
 
-    private final static boolean DEBUG_SORT = false;
     private final static int ISORT_THRESHOLD = 1000; // 3000
-    
+
     private void _endRendering(final int ymin, final int ymax) {
         if (DISABLE_RENDER) {
             return;
@@ -828,6 +827,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
         boolean useBlkFlags = this.prevUseBlkFlags;
 
         final int stroking = rdrCtx.stroking;
+        final int[] mergeSortRuns = rdrCtx.mergeSortRuns;
 
         int lastY = -1; // last emited row
 
@@ -950,7 +950,6 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
                  * thresholds to switch to optimized merge sort
                  * for newly added edges + final merge pass.
                  */
-                
                 if (((numCrossings <= 40) || ((ptrLen <= 10) && (numCrossings <= ISORT_THRESHOLD)))) {
                     if (DO_STATS) {
                         rdrCtx.stats.hist_rdr_crossings.add(numCrossings);
@@ -1066,8 +1065,6 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
 
                     skipISort = (prevNumCrossings >= ISORT_THRESHOLD);
 
-//                    final long start = (SORT_TIME) ? System.nanoTime() : 0;
-                    
                     lastCross = _MIN_VALUE;
 
                     for (i = 0; i < numCrossings; i++) {
@@ -1087,8 +1084,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
 
                         // update crossing with orientation at last bit:
                         cross = curx;
-                        
-if (!DEBUG_SORT) {
+
                         // Increment x using DDA (fixed point):
                         curx += _unsafe.getInt(addr + _OFF_BUMP_X);
 
@@ -1100,17 +1096,23 @@ if (!DEBUG_SORT) {
                         // keep sign and carry bit only and ignore last bit (preserve orientation):
                         _unsafe.putInt(addr,               curx - ((err >> 30) & _ALL_BUT_LSB));
                         _unsafe.putInt(addr + _OFF_ERROR, (err & _ERR_STEP_MAX));
-}
+
                         if (DO_STATS) {
                             rdrCtx.stats.stat_rdr_crossings_updates.add(numCrossings);
                         }
 
-                        if (skipISort || (i >= prevNumCrossings)) {
+                        if (skipISort) {
                             // simply store crossing as edgePtrs is in-place:
-                            // will be copied and sorted efficiently by mergesort later:
-                            if (skipISort) {
+                            // will be sorted efficiently by quicksort later:
+                            _crossings[i]      = cross;
+                        } else if (i >= prevNumCrossings) {
+                            if (!MergeSort.SORT_IN_PLACE) {
+                                // simply store crossing as edgePtrs is in-place:
+                                // will be sorted efficiently by mergesort later:
                                 _crossings[i]      = cross;
                             } else {
+                                // simply store crossing/edgePtrs in auxiliary arrays:
+                                // will be sorted efficiently by mergesort later:
                                 _aux_crossings[i] = cross;
                                 _aux_edgePtrs [i] = ecur;
                             }
@@ -1137,58 +1139,13 @@ if (!DEBUG_SORT) {
                             }
                         }
                     }
-/*
-                    if ((SORT_TIME)) {
-                        System.out.println("update [0 - " + numCrossings + "] + iSort[" + 0 + " - " + prevNumCrossings + "] "
-                                + "skipISort: " + skipISort + " = "
-                                + (1e-6d * (System.nanoTime() - start)) + " ms");
-                    }
-*/
-                    if (DEBUG_SORT) {
-                        System.out.println("mergeSortNoCopy[" + y + "]: enter:\n"
-                                + MergeSort.dump(_crossings, _edgePtrs, numCrossings));
-                    }
-                    
+
                     // use Mergesort using auxiliary arrays (sort only right part)
                     MergeSort.mergeSortNoCopy(_crossings,     _edgePtrs,
                                               _aux_crossings, _aux_edgePtrs,
-                                              numCrossings,  
-                                              prevNumCrossings,
-                                              skipISort
+                                              numCrossings, prevNumCrossings,
+                                              skipISort, mergeSortRuns
                                             );
-
-                    if (DEBUG_SORT) {
-                        System.out.println("mergeSortNoCopy[" + y + "]: exit:\n"
-                                + MergeSort.dump(_crossings, _edgePtrs, numCrossings));
-
-                        // check sorted:
-                        for (i = 0; i < numCrossings; i++) {
-                            if (i > 1 && _crossings[i - 1] > _crossings[i]) {
-                                System.out.println("Bad sorted _crossings [" + (i - 1) + "]" 
-                                        + Arrays.toString(Arrays.copyOf(_crossings, numCrossings)));
-                            }
-                            // get the pointer to the edge
-                            ecur = _edgePtrs[i];
-                            
-                            // random access so use unsafe:
-                            addr = addr0 + ecur; // ecur + OFF_F_CURX
-
-                            // get current crossing:
-                            curx = _unsafe.getInt(addr);
-
-                            if (_crossings[i] != curx) {
-                                System.out.println("Bad sorted _edgePtrs [" + (i) + "] ("+curx + " <> "+_crossings[i]+")" 
-                                        + Arrays.toString(Arrays.copyOf(_edgePtrs, numCrossings)));
-                            }
-                            
-                            // check duplicates:
-                            for (i = 1; i < numCrossings; i++) {
-                                if (_edgePtrs[i - 1] == _edgePtrs[i]) {
-                                    System.out.println("Duplicated _edgePtrs("+_edgePtrs[i]+")");
-                                }
-                            }
-                        }
-                    }
                 }
 
                 // reset ptrLen

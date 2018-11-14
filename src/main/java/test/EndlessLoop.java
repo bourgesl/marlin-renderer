@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 
 /**
  * JDK8:
- * - noAA ie not Marlin renderer (native C renderer ?) 
+ * - noAA ie not Marlin renderer (native C renderer ?)
  * drawLine(1.0E8) [AA=false]: 3631.4947909999996 ms.
  * - AA org.marlin.pisces.DMarlinRenderingEngine:
 drawLine(1.0E8) [AA=true]: 42.381105 ms.

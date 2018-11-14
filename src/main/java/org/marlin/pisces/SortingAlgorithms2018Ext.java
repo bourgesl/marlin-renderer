@@ -12,6 +12,8 @@ package org.marlin.pisces;
  */
 final class SortingAlgorithms2018Ext {
 
+    private static final boolean DO_CHECKS = false;
+
     /**
      * Prevents instantiation.
      */
@@ -48,14 +50,14 @@ final class SortingAlgorithms2018Ext {
         if (length < MERGING_SORT_THRESHOLD) {
             return false;
         }
-        
+
         /*
          * Index run[i] is the start of i-th run.
          * A run is a subsequence of elements
          * in ascending or descending order.
          */
         int max = getMaxRunCount(length);
-        int[] run = (_run.length < max + 1) ? new int[max + 1] : _run; // LBO: FIX ALLOC
+        int[] run = (DO_CHECKS && (_run.length < max + 1)) ? new int[max + 1] : _run;
         int count = 0, last = low;
         run[0] = low;
 
@@ -100,8 +102,9 @@ final class SortingAlgorithms2018Ext {
             /*
              * The array is highly structured, therefore merge all runs.
              */
-            int[] auxA = (_auxA.length < a.length) ? new int[length] : _auxA;
-            int[] auxB = (_auxB.length < b.length) ? new int[length] : _auxB;
+            int[] auxA = (DO_CHECKS && (_auxA.length < a.length)) ? new int[length] : _auxA;
+            int[] auxB = (DO_CHECKS && (_auxB.length < b.length)) ? new int[length] : _auxB;
+
             merge(a, auxA, b, auxB, true, low, run, 0, count);
         }
         return count < max;
@@ -171,18 +174,21 @@ final class SortingAlgorithms2018Ext {
             if (a1[i] < a2[j]) {
                 dstA[k] = a1[i];
                 dstB[k] = b1[i];
-                k++; i++;
+                k++;
+                i++;
             } else {
                 dstA[k] = a2[j];
                 dstB[k] = b2[j];
-                k++; j++;
+                k++;
+                j++;
             }
 
             if (i == hi) {
                 while (j < hj) {
                     dstA[k] = a2[j];
                     dstB[k] = b2[j];
-                    k++; j++;
+                    k++;
+                    j++;
                 }
                 return dstA;
             }
@@ -190,7 +196,8 @@ final class SortingAlgorithms2018Ext {
                 while (i < hi) {
                     dstA[k] = a1[i];
                     dstB[k] = b1[j];
-                    k++; i++;
+                    k++;
+                    i++;
                 }
                 return dstA;
             }
@@ -251,7 +258,7 @@ final class SortingAlgorithms2018Ext {
 
             if (a[k - 2] > a[k - 1]) {
                 int a2 = a[--k];
-                int b2 = b[  k];
+                int b2 = b[k];
 
                 if (a1 > a2) {
                     a2 = a1;
@@ -264,7 +271,7 @@ final class SortingAlgorithms2018Ext {
                     b[k + 2] = b[k];
                 }
                 a[++k + 1] = a2;
-                b[  k + 1] = b2;
+                b[k + 1] = b2;
             }
             while (a1 < a[--k]) {
                 a[k + 1] = a[k];

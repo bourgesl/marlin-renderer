@@ -740,6 +740,8 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
         throw new InternalError("Renderer does not use a native consumer.");
     }
 
+    private final static int ISORT_THRESHOLD = 1000; // 3000
+
     private void _endRendering(final int ymin, final int ymax) {
         if (DISABLE_RENDER) {
             return;
@@ -828,9 +830,11 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
         boolean useBlkFlags = this.prevUseBlkFlags;
 
         final int stroking = rdrCtx.stroking;
+        final int[] mergeSortRuns = rdrCtx.mergeSortRuns;
 
         int lastY = -1; // last emited row
 
+        boolean skipISort;
 
         // Iteration on scanlines
         for (; y < ymax; y++, bucket++) {
@@ -843,7 +847,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
             // bucketCount indicates new edge / edge end:
             if (bucketcount != 0) {
                 if (DO_STATS) {
-                    rdrCtx.stats.stat_rdr_activeEdges_updates.add(numCrossings);
+                    rdrCtx.stats.stat_rdr_activeEdges_updates.add(prevNumCrossings);
                 }
 
                 // last bit set to 1 means that edges ends
@@ -852,7 +856,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
                     // cache edges[] address + offset
                     addr = addr0 + _OFF_YMAX;
 
-                    for (i = 0, newCount = 0; i < numCrossings; i++) {
+                    for (i = 0, newCount = 0; i < prevNumCrossings; i++) {
                         // get the pointer to the edge
                         ecur = _edgePtrs[i];
                         // random access so use unsafe:
@@ -949,7 +953,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
                  * thresholds to switch to optimized merge sort
                  * for newly added edges + final merge pass.
                  */
-                if ((ptrLen < 10) || (numCrossings < 40)) {
+                if (((numCrossings <= 40) || ((ptrLen <= 10) && (numCrossings <= ISORT_THRESHOLD)))) {
                     if (DO_STATS) {
                         rdrCtx.stats.hist_rdr_crossings.add(numCrossings);
                         rdrCtx.stats.hist_rdr_crossings_adds.add(ptrLen);
@@ -1062,6 +1066,8 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
                     // and perform insertion sort on almost sorted data
                     // (ie i < prevNumCrossings):
 
+                    skipISort = (prevNumCrossings >= ISORT_THRESHOLD);
+
                     lastCross = _MIN_VALUE;
 
                     for (i = 0; i < numCrossings; i++) {
@@ -1098,39 +1104,51 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
                             rdrCtx.stats.stat_rdr_crossings_updates.add(numCrossings);
                         }
 
-                        if (i >= prevNumCrossings) {
+                        if (skipISort) {
                             // simply store crossing as edgePtrs is in-place:
-                            // will be copied and sorted efficiently by mergesort later:
-                            _crossings[i]     = cross;
-
-                        } else if (cross < lastCross) {
-                            if (DO_STATS) {
-                                rdrCtx.stats.stat_rdr_crossings_sorts.add(i);
+                            // will be sorted efficiently by quicksort later:
+                            _crossings[i]      = cross;
+                        } else if (i >= prevNumCrossings) {
+                            if (!MergeSort.SORT_IN_PLACE) {
+                                // simply store crossing as edgePtrs is in-place:
+                                // will be sorted efficiently by mergesort later:
+                                _crossings[i]      = cross;
+                            } else {
+                                // simply store crossing/edgePtrs in auxiliary arrays:
+                                // will be sorted efficiently by mergesort later:
+                                _aux_crossings[i] = cross;
+                                _aux_edgePtrs [i] = ecur;
                             }
-
-                            // (straight) insertion sort of crossings:
-                            j = i - 1;
-                            _aux_crossings[i] = _aux_crossings[j];
-                            _aux_edgePtrs[i] = _aux_edgePtrs[j];
-
-                            while ((--j >= 0) && (_aux_crossings[j] > cross)) {
-                                _aux_crossings[j + 1] = _aux_crossings[j];
-                                _aux_edgePtrs [j + 1] = _aux_edgePtrs[j];
-                            }
-                            _aux_crossings[j + 1] = cross;
-                            _aux_edgePtrs [j + 1] = ecur;
-
                         } else {
-                            // auxiliary storage:
-                            _aux_crossings[i] = lastCross = cross;
-                            _aux_edgePtrs [i] = ecur;
+                            if (cross < lastCross) {
+                                if (DO_STATS) {
+                                    rdrCtx.stats.stat_rdr_crossings_sorts.add(i);
+                                }
+                                // (straight) insertion sort of crossings:
+                                j = i - 1;
+                                _aux_crossings[i] = _aux_crossings[j];
+                                _aux_edgePtrs [i]  = _aux_edgePtrs[j];
+
+                                while ((--j >= 0) && (_aux_crossings[j] > cross)) {
+                                    _aux_crossings[j + 1] = _aux_crossings[j];
+                                    _aux_edgePtrs [j + 1] = _aux_edgePtrs[j];
+                                }
+                                _aux_crossings[j + 1] = cross;
+                                _aux_edgePtrs [j + 1] = ecur;
+                            } else {
+                                // auxiliary storage:
+                                _aux_crossings[i] = lastCross = cross;
+                                _aux_edgePtrs [i] = ecur;
+                            }
                         }
                     }
 
                     // use Mergesort using auxiliary arrays (sort only right part)
                     MergeSort.mergeSortNoCopy(_crossings,     _edgePtrs,
                                               _aux_crossings, _aux_edgePtrs,
-                                              numCrossings,   prevNumCrossings, false);
+                                              numCrossings, prevNumCrossings,
+                                              skipISort, mergeSortRuns
+                                            );
                 }
 
                 // reset ptrLen
