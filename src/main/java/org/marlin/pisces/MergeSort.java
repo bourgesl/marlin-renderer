@@ -78,14 +78,16 @@ final class MergeSort {
         }
         if (USE_DPQS) {
             if (skipISort) {
-                DualPivotQuicksort2018Ext.sort(x, y, 0, toIndex, auxX, auxY, run);
+                DualPivotQuicksort201811211Ext.sort(x, y, 0, toIndex);
+//                DualPivotQuicksort2018Ext.sort(x, y, 0, toIndex, auxX, auxY, run);
 
                 if (CHECK_SORTED) {
                     checkRange(x, 0, toIndex);
                 }
                 return;
             } else {
-                DualPivotQuicksort2018Ext.sort(auxX, auxY, insertionSortIndex, toIndex, x, y, run);
+                DualPivotQuicksort201811211Ext.sort(auxX, auxY, insertionSortIndex, toIndex);
+//                DualPivotQuicksort2018Ext.sort(auxX, auxY, insertionSortIndex, toIndex, x, y, run);
             }
         } else {
             // sort second part only using merge / insertion sort

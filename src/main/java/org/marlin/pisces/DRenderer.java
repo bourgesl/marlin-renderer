@@ -737,7 +737,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
         throw new InternalError("Renderer does not use a native consumer.");
     }
 
-    private final static int ISORT_THRESHOLD = 1000; // 3000
+    private final static int ISORT_THRESHOLD = 2000; // 2000
 
     private void _endRendering(final int ymin, final int ymax) {
         if (DISABLE_RENDER) {
