@@ -51,8 +51,9 @@ import java.util.Arrays; // TODO
 public final class DualPivotQuicksort20181121Ext {
 
     private static final boolean LOG_ALLOC = false;
+    private static final boolean CHECK_ALLOC = false && LOG_ALLOC;
 
-    /* 
+    /*
     From OpenJDK12 source code
      */
     /**
@@ -99,7 +100,8 @@ public final class DualPivotQuicksort20181121Ext {
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
-    public static void sort(Sorter sorter, int[] a, int b[], int low, int high) {
+    public static void sort(Sorter sorter, int[] a, int[] auxA, int b[], int[] auxB, int low, int high) {
+        sorter.initBuffers(high, auxA, auxB);
         sort(sorter, a, b, 0, low, high);
     }
 
@@ -727,7 +729,7 @@ public final class DualPivotQuicksort20181121Ext {
             int offset = low;
 
             // LBO: prealloc
-            if (auxA.length < size || auxB.length < size) {
+            if (CHECK_ALLOC && (auxA.length < size || auxB.length < size)) {
                 if (LOG_ALLOC) {
                     MarlinUtils.logInfo("alloc auxA/auxB: " + size);
                 }
@@ -861,14 +863,14 @@ public final class DualPivotQuicksort20181121Ext {
 
         public void initBuffers(final int length, final int[] a, final int[] b) {
             auxA = a;
-            if (auxA.length < length) {
+            if (CHECK_ALLOC && (auxA.length < length)) {
                 if (LOG_ALLOC) {
                     MarlinUtils.logInfo("alloc auxA: " + length);
                 }
                 auxA = new int[length];
             }
             auxB = b;
-            if (auxB.length < length) {
+            if (CHECK_ALLOC && (auxB.length < length)) {
                 if (LOG_ALLOC) {
                     MarlinUtils.logInfo("alloc auxB: " + length);
                 }

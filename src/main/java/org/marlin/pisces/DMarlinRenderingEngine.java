@@ -1184,6 +1184,8 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinProperties.getQuadDecD2());
 
         logInfo("Renderer settings:");
+        logInfo("SORT         = " + (MergeSort.USE_DPQS ? " DPQS_20181121" : "MERGE"));
+        logInfo("QUAD_DEC_BND = " + DRenderer.QUAD_DEC_BND);
         logInfo("CUB_DEC_BND  = " + DRenderer.CUB_DEC_BND);
         logInfo("CUB_INC_BND  = " + DRenderer.CUB_INC_BND);
         logInfo("QUAD_DEC_BND = " + DRenderer.QUAD_DEC_BND);

@@ -35,15 +35,10 @@ import org.marlin.pisces.DualPivotQuicksort20181121Ext.Sorter;
 final class MergeSort {
 
     static final boolean USE_DPQS = true;
-    
+
     static final int DISABLE_ISORT_THRESHOLD = 1000;
 
     private static final boolean CHECK_SORTED = false;
-
-    static {
-        MarlinUtils.logInfo("SORT          : " + (USE_DPQS ? " DPQS 20181121" : "MERGE"));
-        MarlinUtils.logInfo("CHECK_SORTED  : " + CHECK_SORTED);
-    }
 
     static int[] prepareRuns() {
         if (USE_DPQS) {
@@ -73,16 +68,14 @@ final class MergeSort {
         }
         if (USE_DPQS) {
             if (skipISort) {
-                sorter.initBuffers(toIndex, auxX, auxY);
-                DualPivotQuicksort20181121Ext.sort(sorter, x, y, 0, toIndex);
+                DualPivotQuicksort20181121Ext.sort(sorter, x, auxX, y, auxY, 0, toIndex);
 
                 if (CHECK_SORTED) {
                     checkRange(x, 0, toIndex);
                 }
                 return;
             } else {
-                sorter.initBuffers(toIndex, x, y);
-                DualPivotQuicksort20181121Ext.sort(sorter, auxX, auxY, insertionSortIndex, toIndex);
+                DualPivotQuicksort20181121Ext.sort(sorter, auxX, x, auxY, y, insertionSortIndex, toIndex);
             }
         } else {
             // sort second part only using merge / insertion sort
