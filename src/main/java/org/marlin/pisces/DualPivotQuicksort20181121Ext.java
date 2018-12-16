@@ -49,9 +49,8 @@ import java.util.Arrays; // TODO
  * @since 1.7 * 12
  */
 public final class DualPivotQuicksort20181121Ext {
-// TODO
 
-    private final static Sorter sorter = new Sorter();
+    private static final boolean LOG_ALLOC = false;
 
     /* 
     From OpenJDK12 source code
@@ -96,17 +95,11 @@ public final class DualPivotQuicksort20181121Ext {
      * Sorts the specified range of the array.
      *
      * @param a the array to be sorted
+     * @param b the permutation array to be handled
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
-    public static void sort(int[] a, int[] b, int low, int high /*, int[] auxA, int[] auxB, int[] run */) {
-        // preallocation of temporary arrays into custom Sorter class
-        sorter.initLength(high - low);
-
-        sort(sorter, a, b, 0, low, high);
-    }
-
-    static void sort(Sorter sorter, int[] a, int b[], int low, int high) {
+    public static void sort(Sorter sorter, int[] a, int b[], int low, int high) {
         sort(sorter, a, b, 0, low, high);
     }
 
@@ -703,7 +696,6 @@ public final class DualPivotQuicksort20181121Ext {
                     return false;
                 }
 
-//                System.out.println("alloc run");
 //                run = new int[INITIAL_RUN_CAPACITY];
                 run = sorter.run; // LBO: prealloc
                 run[0] = low;
@@ -730,14 +722,15 @@ public final class DualPivotQuicksort20181121Ext {
          * Check if array is highly structured and then merge runs.
          */
         if (count < max && count > 1) {
-            int[] auxA, auxB;
+            int[] auxA = sorter.auxA;
+            int[] auxB = sorter.auxB;
             int offset = low;
 
             // LBO: prealloc
-            if (sorter == null
-                    || (auxA = sorter.auxA) == null || auxA.length < size
-                    || (auxB = sorter.auxB) == null || auxB.length < size) {
-                System.out.println("alloc b: " + size);
+            if (auxA.length < size || auxB.length < size) {
+                if (LOG_ALLOC) {
+                    MarlinUtils.logInfo("alloc auxA/auxB: " + size);
+                }
                 auxA = new int[size];
                 auxB = new int[size];
             }
@@ -850,7 +843,7 @@ public final class DualPivotQuicksort20181121Ext {
         }
     }
 
-    static final class Sorter {
+    public static final class Sorter {
 
         final int[] run;
         int[] auxA;
@@ -860,14 +853,25 @@ public final class DualPivotQuicksort20181121Ext {
         Sorter() {
             // preallocate max runs:
             final int max = getMaxRunCount(Integer.MAX_VALUE) + 1;
+            if (LOG_ALLOC) {
+                MarlinUtils.logInfo("alloc run: " + max);
+            }
             run = new int[max];
         }
 
-        void initLength(int length) {
-            if (auxA == null || auxA.length < length) {
+        public void initBuffers(final int length, final int[] a, final int[] b) {
+            auxA = a;
+            if (auxA.length < length) {
+                if (LOG_ALLOC) {
+                    MarlinUtils.logInfo("alloc auxA: " + length);
+                }
                 auxA = new int[length];
             }
-            if (auxB == null || auxB.length < length) {
+            auxB = b;
+            if (auxB.length < length) {
+                if (LOG_ALLOC) {
+                    MarlinUtils.logInfo("alloc auxB: " + length);
+                }
                 auxB = new int[length];
             }
             runInit = true;

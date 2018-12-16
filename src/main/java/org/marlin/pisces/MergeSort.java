@@ -25,6 +25,7 @@
 package org.marlin.pisces;
 
 import java.util.Arrays;
+import org.marlin.pisces.DualPivotQuicksort20181121Ext.Sorter;
 
 /**
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[])
@@ -33,20 +34,14 @@ import java.util.Arrays;
  */
 final class MergeSort {
 
-    private static final boolean USE_DPQS = true;
-    private static final boolean USE_BOTTOM_UP = false;
-
-    static final boolean SORT_IN_PLACE = USE_DPQS || USE_BOTTOM_UP;
+    static final boolean USE_DPQS = true;
+    
+    static final int DISABLE_ISORT_THRESHOLD = 1000;
 
     private static final boolean CHECK_SORTED = false;
 
-    // insertion sort threshold for MergeSort()
-    private static final int INSERTION_SORT_THRESHOLD = 14;
-
     static {
-        MarlinUtils.logInfo("USE_DPQS      : " + USE_DPQS);
-        MarlinUtils.logInfo("USE_MERGE_SORT: " + !SORT_IN_PLACE);
-        MarlinUtils.logInfo("USE_BOTTOM_UP : " + USE_BOTTOM_UP);
+        MarlinUtils.logInfo("SORT          : " + (USE_DPQS ? " DPQS 20181121" : "MERGE"));
         MarlinUtils.logInfo("CHECK_SORTED  : " + CHECK_SORTED);
     }
 
@@ -68,7 +63,7 @@ final class MergeSort {
                                 final int toIndex,
                                 final int insertionSortIndex,
                                 final boolean skipISort,
-                                final int[] run) {
+                                final Sorter sorter) {
 
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
@@ -78,35 +73,21 @@ final class MergeSort {
         }
         if (USE_DPQS) {
             if (skipISort) {
-                DualPivotQuicksort20181121Ext.sort(x, y, 0, toIndex);
+                sorter.initBuffers(toIndex, auxX, auxY);
+                DualPivotQuicksort20181121Ext.sort(sorter, x, y, 0, toIndex);
 
                 if (CHECK_SORTED) {
                     checkRange(x, 0, toIndex);
                 }
                 return;
             } else {
-                DualPivotQuicksort20181121Ext.sort(auxX, auxY, insertionSortIndex, toIndex);
+                sorter.initBuffers(toIndex, x, y);
+                DualPivotQuicksort20181121Ext.sort(sorter, auxX, auxY, insertionSortIndex, toIndex);
             }
         } else {
             // sort second part only using merge / insertion sort
             // in auxiliary storage (auxX/auxY)
-            if (USE_BOTTOM_UP) {
-                if (skipISort) {
-                    // merge at same place (x/y)
-                    bottomUpMergesort(x, auxX, y, auxY, 0, toIndex);
-
-                    if (CHECK_SORTED) {
-                        checkRange(x, 0, toIndex);
-                    }
-                    return;
-                } else {
-                    // merge at same place (auxX/auxY)
-                    bottomUpMergesort(auxX, x, auxY, y, insertionSortIndex, toIndex);
-                }
-            } else {
-                // Original's Marlin merge sort:
-                mergeSort(x, y, x, auxX, y, auxY, (skipISort) ? 0 : insertionSortIndex, toIndex);
-            }
+            mergeSort(x, y, x, auxX, y, auxY, (skipISort) ? 0 : insertionSortIndex, toIndex);
         }
 
         // final pass to merge both
@@ -142,6 +123,9 @@ final class MergeSort {
             checkRange(x, 0, toIndex);
         }
     }
+
+    // insertion sort threshold for MergeSort()
+    private static final int INSERTION_SORT_THRESHOLD = 14;
 
     /**
      * Src is the source array that starts at index 0
@@ -228,85 +212,6 @@ final class MergeSort {
     }
 
     private MergeSort() {
-    }
-
-    private static final int MIN_RUN_LEN = 16;
-
-    private static void bottomUpMergesort(final int[] srcX, final int[] auxX,
-                                          final int[] srcY, final int[] auxY,
-                                          final int low, final int high) {
-
-        for (int len = MIN_RUN_LEN, left = low, right; left < high; left += len) {
-            insertionsort(srcX, srcY, left, Math.min(left + len, high));
-        }
-        for (int len = MIN_RUN_LEN, maxLen = high - low; len < maxLen; len *= 2) {
-            for (int left = low, mid, right, i, j; left < high - len; left += len + len) {
-                mid = left + len;
-                if (srcX[mid - 1] > srcX[mid]) {
-                    right = Math.min(mid + len, high);
-                    mergeRuns(srcX, auxX, srcY, auxY, left, mid - 1, right);
-                }
-            }
-        }
-        if (CHECK_SORTED) {
-            // validate:
-            checkRange(srcX, low, high);
-        }
-    }
-
-    /** Sort A[left..right] by straight-insertion sort */
-    private static void insertionsort(final int[] srcX, final int[] srcY, final int low, final int high) {
-        for (int i = low + 1, j, x, y, curx = srcX[low]; i < high; ++i) {
-            x = srcX[i];
-
-            if (x < curx) {
-                y = srcY[i];
-
-                for (j = i - 1; x < srcX[j];) {
-                    srcX[j + 1] = srcX[j];
-                    srcY[j + 1] = srcY[j];
-                    if (--j < low) {
-                        break;
-                    }
-                }
-                srcX[j + 1] = x;
-                srcY[j + 1] = y;
-            } else {
-                curx = x;
-            }
-        }
-    }
-
-    /**
-     * Merges runs A[l..m-1] and A[m..r] in-place into A[l..r]
-     * with Sedgewick's bitonic merge (Program 8.2 in Algorithms in C++)
-     * using B as temporary storage.
-     * B.length must be at least r+1.
-     */
-    private static void mergeRuns(final int[] srcX, final int[] auxX,
-                                  final int[] srcY, final int[] auxY,
-                                  final int low, final int middle, final int high) {
-        int i, j;
-        for (i = middle + 1; i > low; --i) {
-            auxX[i - 1] = srcX[i - 1];
-            auxY[i - 1] = srcY[i - 1];
-        }
-        final int r = high - 1;
-        for (j = middle; j < r; ++j) {
-            auxX[r + middle - j] = srcX[j + 1];
-            auxY[r + middle - j] = srcY[j + 1];
-        }
-        for (int k = low; k <= r; ++k) {
-            if (auxX[j] < auxX[i]) {
-                srcX[k] = auxX[j];
-                srcY[k] = auxY[j];
-                j--;
-            } else {
-                srcX[k] = auxX[i];
-                srcY[k] = auxY[i];
-                i++;
-            }
-        }
     }
 
     private static void checkRange(int[] x, int lo, int hi) {

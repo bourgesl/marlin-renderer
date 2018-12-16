@@ -25,7 +25,7 @@
 
 package org.marlin.pisces;
 
-import java.util.Arrays;
+import org.marlin.pisces.DualPivotQuicksort20181121Ext.Sorter;
 import static org.marlin.pisces.OffHeapArray.SIZE_INT;
 import sun.misc.Unsafe;
 
@@ -825,7 +825,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
         boolean useBlkFlags = this.prevUseBlkFlags;
 
         final int stroking = rdrCtx.stroking;
-        final int[] mergeSortRuns = rdrCtx.mergeSortRuns;
+        final Sorter sorter = rdrCtx.sorterCtx;
 
         int lastY = -1; // last emited row
 
@@ -948,7 +948,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
                  * thresholds to switch to optimized merge sort
                  * for newly added edges + final merge pass.
                  */
-                if (((numCrossings <= 40) || ((ptrLen <= 10) && (numCrossings <= ISORT_THRESHOLD)))) {
+                if (((numCrossings <= 40) || ((ptrLen <= 10) && (numCrossings <= MergeSort.DISABLE_ISORT_THRESHOLD)))) {
                     if (DO_STATS) {
                         rdrCtx.stats.hist_rdr_crossings.add(numCrossings);
                         rdrCtx.stats.hist_rdr_crossings_adds.add(ptrLen);
@@ -1061,7 +1061,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
                     // and perform insertion sort on almost sorted data
                     // (ie i < prevNumCrossings):
 
-                    skipISort = (prevNumCrossings >= ISORT_THRESHOLD);
+                    skipISort = (prevNumCrossings >= MergeSort.DISABLE_ISORT_THRESHOLD);
 
                     lastCross = _MIN_VALUE;
 
@@ -1101,18 +1101,18 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
 
                         if (skipISort) {
                             // simply store crossing as edgePtrs is in-place:
-                            // will be sorted efficiently by quicksort later:
+                            // will be sorted efficiently by DPQS later:
                             _crossings[i]      = cross;
                         } else if (i >= prevNumCrossings) {
-                            if (!MergeSort.SORT_IN_PLACE) {
-                                // simply store crossing as edgePtrs is in-place:
-                                // will be sorted efficiently by mergesort later:
-                                _crossings[i]      = cross;
-                            } else {
-                                // simply store crossing/edgePtrs in auxiliary arrays:
-                                // will be sorted efficiently by mergesort later:
+                            if (MergeSort.USE_DPQS) {
+                                // store crossing/edgePtrs in auxiliary arrays:
+                                // will be sorted efficiently by DPQS later:
                                 _aux_crossings[i] = cross;
                                 _aux_edgePtrs [i] = ecur;
+                            } else {
+                                // simply store crossing as edgePtrs is in-place:
+                                // will be sorted efficiently by MergeSort later:
+                                _crossings[i]      = cross;
                             }
                         } else {
                             if (cross < lastCross) {
@@ -1142,7 +1142,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
                     MergeSort.mergeSortNoCopy(_crossings,     _edgePtrs,
                                               _aux_crossings, _aux_edgePtrs,
                                               numCrossings, prevNumCrossings,
-                                              skipISort, mergeSortRuns
+                                              skipISort, sorter
                                             );
                 }
 

@@ -91,8 +91,8 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     final CurveBasicMonotonizer monotonizer;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
-    // MergeSort runs
-    final int[] mergeSortRuns;
+    // DPQS Sorter context
+    final DualPivotQuicksort20181121Ext.Sorter sorterCtx;
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
@@ -150,7 +150,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         stroker = new DStroker(this);
         dasher = new DDasher(this);
 
-        mergeSortRuns = MergeSort.prepareRuns();
+        sorterCtx = (MergeSort.USE_DPQS) ? new DualPivotQuicksort20181121Ext.Sorter() : null;
     }
 
     /**

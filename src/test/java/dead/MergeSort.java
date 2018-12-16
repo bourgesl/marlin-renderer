@@ -80,14 +80,14 @@ final class MergeSort {
         }
         if (USE_DPQS) {
             if (skipISort) {
-                DualPivotQuicksort20181121Ext.sort(x, y, 0, toIndex);
+//                DualPivotQuicksort20181121Ext.sort(x, y, 0, toIndex);
 
                 if (CHECK_SORTED) {
                     checkRange(x, 0, toIndex);
                 }
                 return;
             } else {
-                DualPivotQuicksort20181121Ext.sort(auxX, auxY, insertionSortIndex, toIndex);
+//                DualPivotQuicksort20181121Ext.sort(auxX, auxY, insertionSortIndex, toIndex);
             }
         } else {
             // sort second part only using merge / insertion sort
