@@ -183,4 +183,6 @@ interface MarlinConst {
     static final int OUTCODE_MASK_T_B = OUTCODE_TOP  | OUTCODE_BOTTOM;
     static final int OUTCODE_MASK_L_R = OUTCODE_LEFT | OUTCODE_RIGHT;
     static final int OUTCODE_MASK_T_B_L_R = OUTCODE_MASK_T_B | OUTCODE_MASK_L_R;
+    
+    static final int ISORT_THRESHOLD = 1000;
 }

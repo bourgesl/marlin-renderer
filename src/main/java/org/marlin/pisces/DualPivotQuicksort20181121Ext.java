@@ -22,7 +22,6 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-
 package org.marlin.pisces;
 
 import java.util.Arrays; // TODO
@@ -49,23 +48,19 @@ import java.util.Arrays; // TODO
  *
  * @since 1.7 * 12
  */
-public final class DualPivotQuicksort201811211Ext {
+public final class DualPivotQuicksort20181121Ext {
 // TODO
+
     private final static Sorter sorter = new Sorter();
 
     /* 
     From OpenJDK12 source code
      */
-
     /**
      * Prevents instantiation.
      */
-//  private DualPivotQuicksort() {} // TODO
-
-    /**
-     * Max array size to use insertion sort.
-     */
-    private static final int MAX_INSERTION_SORT_SIZE = 26;
+    private DualPivotQuicksort20181121Ext() {
+    }
 
     /**
      * Max array size to use pair insertion sort.
@@ -78,19 +73,9 @@ public final class DualPivotQuicksort201811211Ext {
     private static final int MAX_HEAP_SORT_SIZE = 69;
 
     /**
-     * Min array size for performing sorting in parallel.
-     */
-    private static final int MIN_PARALLEL_SORT_SIZE = 1 << 12;
-
-    /**
      * Min array size to try merging of runs.
      */
     private static final int MIN_TRY_MERGE_SIZE = 1 << 12;
-
-    /**
-     * Initial capacity of the index array for tracking runs.
-     */
-    private static final int INITIAL_RUN_CAPACITY = 32;
 
     /**
      * Min size of the first run to continue with scanning.
@@ -101,26 +86,6 @@ public final class DualPivotQuicksort201811211Ext {
      * Min factor for the first runs to continue scanning.
      */
     private static final int MIN_FIRST_RUNS_FACTOR = 6;
-
-    /**
-     * Min number of runs, required by parallel merging.
-     */
-    private static final int MIN_RUN_COUNT = 4;
-
-    /**
-     * Min array size to use parallel merging of parts.
-     */
-    private static final int MIN_PARALLEL_PART_MERGE_SIZE = 1 << 12;
-
-    /**
-     * Min size of a byte array to use counting sort.
-     */
-    private static final int MIN_BYTE_COUNTING_SORT_SIZE = 41;
-
-    /**
-     * Min size of a short or char array to use counting sort.
-     */
-    private static final int MIN_SHORT_OR_CHAR_COUNTING_SORT_SIZE = 2180;
 
     /**
      * Max double recursive partitioning depth before using heap sort.
@@ -134,7 +99,7 @@ public final class DualPivotQuicksort201811211Ext {
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
-    static void sort(int[] a, int[] b, int low, int high /*, int[] auxA, int[] auxB, int[] run */) {
+    public static void sort(int[] a, int[] b, int low, int high /*, int[] auxA, int[] auxB, int[] run */) {
         // preallocation of temporary arrays into custom Sorter class
         sorter.initLength(high - low);
 
@@ -144,7 +109,7 @@ public final class DualPivotQuicksort201811211Ext {
     static void sort(Sorter sorter, int[] a, int b[], int low, int high) {
         sort(sorter, a, b, 0, low, high);
     }
-        
+
     /**
      * Sorts the specified array using the Dual-Pivot Quicksort and/or
      * other sorts in special-cases, possibly with parallel partitions.
@@ -173,7 +138,7 @@ public final class DualPivotQuicksort201811211Ext {
              * Switch to heap sort on the leftmost part or // TODO
              * if the execution time is becoming quadratic.
              */
-            if (size < 69) {
+            if (size < MAX_HEAP_SORT_SIZE) {
                 insertionSort(a, b, low, high);
                 return;
             }
@@ -218,18 +183,70 @@ public final class DualPivotQuicksort201811211Ext {
              * Sort these elements in place by the combination
              * of 5-element sorting network and insertion sort.
              */
-            if (a[e5] < a[e3]) { int t = a[e5]; a[e5] = a[e3]; a[e3] = t; t = b[e5]; b[e5] = b[e3]; b[e3] = t; }
-            if (a[e4] < a[e2]) { int t = a[e4]; a[e4] = a[e2]; a[e2] = t; t = b[e4]; b[e4] = b[e2]; b[e2] = t; }
-            if (a[e5] < a[e4]) { int t = a[e5]; a[e5] = a[e4]; a[e4] = t; t = b[e5]; b[e5] = b[e4]; b[e4] = t; }
-            if (a[e3] < a[e2]) { int t = a[e3]; a[e3] = a[e2]; a[e2] = t; t = b[e3]; b[e3] = b[e2]; b[e2] = t; }
-            if (a[e4] < a[e3]) { int t = a[e4]; a[e4] = a[e3]; a[e3] = t; t = b[e4]; b[e4] = b[e3]; b[e3] = t;}
+            if (a[e5] < a[e3]) {
+                int t = a[e5];
+                a[e5] = a[e3];
+                a[e3] = t;
+                t = b[e5];
+                b[e5] = b[e3];
+                b[e3] = t;
+            }
+            if (a[e4] < a[e2]) {
+                int t = a[e4];
+                a[e4] = a[e2];
+                a[e2] = t;
+                t = b[e4];
+                b[e4] = b[e2];
+                b[e2] = t;
+            }
+            if (a[e5] < a[e4]) {
+                int t = a[e5];
+                a[e5] = a[e4];
+                a[e4] = t;
+                t = b[e5];
+                b[e5] = b[e4];
+                b[e4] = t;
+            }
+            if (a[e3] < a[e2]) {
+                int t = a[e3];
+                a[e3] = a[e2];
+                a[e2] = t;
+                t = b[e3];
+                b[e3] = b[e2];
+                b[e2] = t;
+            }
+            if (a[e4] < a[e3]) {
+                int t = a[e4];
+                a[e4] = a[e3];
+                a[e3] = t;
+                t = b[e4];
+                b[e4] = b[e3];
+                b[e3] = t;
+            }
 
-            if (a[e1] > a[e2]) { 
-                final int ta = a[e1]; a[e1] = a[e2]; a[e2] = ta; 
-                final int tb = b[e1]; b[e1] = b[e2]; b[e2] = tb;
-                if (ta > a[e3]) { a[e2] = a[e3]; a[e3] = ta; b[e2] = b[e3]; b[e3] = tb;
-                    if (ta > a[e4]) { a[e3] = a[e4]; a[e4] = ta; b[e3] = b[e4]; b[e4] = tb;
-                        if (ta > a[e5]) { a[e4] = a[e5]; a[e5] = ta; b[e4] = b[e5]; b[e5] = tb; }
+            if (a[e1] > a[e2]) {
+                final int ta = a[e1];
+                a[e1] = a[e2];
+                a[e2] = ta;
+                final int tb = b[e1];
+                b[e1] = b[e2];
+                b[e2] = tb;
+                if (ta > a[e3]) {
+                    a[e2] = a[e3];
+                    a[e3] = ta;
+                    b[e2] = b[e3];
+                    b[e3] = tb;
+                    if (ta > a[e4]) {
+                        a[e3] = a[e4];
+                        a[e4] = ta;
+                        b[e3] = b[e4];
+                        b[e4] = tb;
+                        if (ta > a[e5]) {
+                            a[e4] = a[e5];
+                            a[e5] = ta;
+                            b[e4] = b[e5];
+                            b[e5] = tb;
+                        }
                     }
                 }
             }
@@ -252,7 +269,7 @@ public final class DualPivotQuicksort201811211Ext {
                 final int pivotA2 = a[e5];
                 final int pivotB1 = b[e1];
                 final int pivotB2 = b[e5];
-            
+
                 /*
                  * The first and the last elements to be sorted are moved
                  * to the locations formerly occupied by the pivots. When
@@ -290,7 +307,7 @@ public final class DualPivotQuicksort201811211Ext {
                  *
                  * Pointer k is the last index of ?-part
                  */
-                for (int unused = --lower, k = ++upper; --k > lower; ) {
+                for (int unused = --lower, k = ++upper; --k > lower;) {
                     int ak = a[k];
                     int bk = b[k];
 
@@ -300,7 +317,7 @@ public final class DualPivotQuicksort201811211Ext {
                                 if (a[lower] > pivotA2) {
                                     a[k] = a[--upper];
                                     a[upper] = a[lower];
-                                    b[k] = b[  upper];
+                                    b[k] = b[upper];
                                     b[upper] = b[lower];
                                 } else {
                                     a[k] = a[lower];
@@ -314,7 +331,7 @@ public final class DualPivotQuicksort201811211Ext {
                     } else if (ak > pivotA2) { // Move a[k] to the right side
                         a[k] = a[--upper];
                         a[upper] = ak;
-                        b[k] = b[  upper];
+                        b[k] = b[upper];
                         b[upper] = bk;
                     }
                 }
@@ -322,11 +339,15 @@ public final class DualPivotQuicksort201811211Ext {
                 /*
                  * Swap the pivots into their final positions.
                  */
-                a[low] = a[lower]; a[lower] = pivotA1;
-                a[end] = a[upper]; a[upper] = pivotA2;
+                a[low] = a[lower];
+                a[lower] = pivotA1;
+                a[end] = a[upper];
+                a[upper] = pivotA2;
 
-                b[low] = b[lower]; b[lower] = pivotB1;
-                b[end] = b[upper]; b[upper] = pivotB2;
+                b[low] = b[lower];
+                b[lower] = pivotB1;
+                b[end] = b[upper];
+                b[upper] = pivotB2;
 
                 /*
                  * Sort non-left parts recursively (possibly in parallel),
@@ -381,20 +402,20 @@ public final class DualPivotQuicksort201811211Ext {
                         if (ak != pivotA) {
                             final int bk = b[k];
 
-                            if (ak < pivotA) { 
+                            if (ak < pivotA) {
                                 // Move a[k] to the left side
                                 while (a[++lower] < pivotA);
-/*
+                                /*
                                 // LBO: restored range check:
                                 if (lower > k) {
                                     lower = k;
                                     break;
                                 }
-*/
+                                 */
                                 if (a[lower] > pivotA) {
                                     a[k] = a[--upper];
                                     a[upper] = a[lower];
-                                    b[k] = b[  upper];
+                                    b[k] = b[upper];
                                     b[upper] = b[lower];
                                 } else {
                                     a[k] = a[lower];
@@ -402,18 +423,18 @@ public final class DualPivotQuicksort201811211Ext {
                                 }
                                 a[lower] = ak;
                                 b[lower] = bk;
-                            } else { 
+                            } else {
                                 // ak > pivot - Move a[k] to the right side
                                 a[k] = a[--upper];
                                 a[upper] = ak;
-                                b[k] = b[  upper];
+                                b[k] = b[upper];
                                 b[upper] = bk;
                             }
                         }
                     }
 
                 } else {
-                    for (int k = ++upper; --k > lower; ) {
+                    for (int k = ++upper; --k > lower;) {
                         int ak = a[k];
 
                         if (ak != pivotA) {
@@ -435,8 +456,10 @@ public final class DualPivotQuicksort201811211Ext {
                 /*
                  * Swap the pivot into its final position.
                  */
-                a[low] = a[lower]; a[lower] = pivotA;
-                b[low] = b[lower]; b[lower] = pivotB;
+                a[low] = a[lower];
+                a[lower] = pivotA;
+                b[low] = b[lower];
+                b[lower] = pivotB;
 
                 /*
                  * Sort the right part (possibly in parallel), excluding
@@ -451,10 +474,10 @@ public final class DualPivotQuicksort201811211Ext {
 
     // todo javadoc, todo byte
     private static void insertionSort(int[] a, int b[], int low, int high) {
-        for (int i, k = low; ++k < high; ) {
+        for (int i, k = low; ++k < high;) {
             int ak = a[i = k];
             int bk = b[k];
-    
+
             if (ak < a[low]) {
                 while (--i >= low) {
                     a[i + 1] = a[i];
@@ -493,7 +516,7 @@ public final class DualPivotQuicksort201811211Ext {
         /*
          * Start with classic insertion sort on tiny part.
          */
-        for (int k; left < end; ) {
+        for (int k; left < end;) {
             int ak = a[k = ++left];
             int bk = b[k];
 
@@ -508,7 +531,7 @@ public final class DualPivotQuicksort201811211Ext {
         /*
          * Continue with pair insertion sort on remain part.
          */
-        for (int k; ++left < last; ) {
+        for (int k; ++left < last;) {
             int a1 = a[k = left], a2 = a[++left];
             int b1 = b[k], b2 = b[left];
 
@@ -519,7 +542,7 @@ public final class DualPivotQuicksort201811211Ext {
                     b[k + 2] = b[k];
                 }
                 a[++k + 1] = a1;
-                b[  k + 1] = b1;
+                b[k + 1] = b1;
 
                 while (a2 < a[--k]) {
                     a[k + 1] = a[k];
@@ -535,7 +558,7 @@ public final class DualPivotQuicksort201811211Ext {
                     b[k + 2] = b[k];
                 }
                 a[++k + 1] = a2;
-                b[  k + 1] = b2;
+                b[k + 1] = b2;
 
                 while (a1 < a[--k]) {
                     a[k + 1] = a[k];
@@ -555,7 +578,7 @@ public final class DualPivotQuicksort201811211Ext {
      * @param right the index of the last element, inclusive, to be sorted
      */
     private static void heapSort(int[] a, int b[], int left, int right) {
-        for (int k = (left + 1 + right) >>> 1; k > left; ) {
+        for (int k = (left + 1 + right) >>> 1; k > left;) {
             pushDown(a, b, --k, a[k], b[k], left, right);
         }
         for (int k = right; k > left; --k) {
@@ -577,7 +600,7 @@ public final class DualPivotQuicksort201811211Ext {
      * @param right the index of the last element, inclusive, of the range
      */
     private static void pushDown(int[] a, int b[], int p, int valueA, int valueB, int left, int right) {
-        for (int k ;; a[p] = a[k], b[p] = b[k], p = k) {
+        for (int k;; a[p] = a[k], b[p] = b[k], p = k) {
             k = (p << 1) - left + 2; // Index of the right child
 
             if (k > right || a[k - 1] > a[k]) {
@@ -597,7 +620,7 @@ public final class DualPivotQuicksort201811211Ext {
      * @param size the array size
      * @return the max number of runs
      */
-    private static int getMaxRunCount(int size) {
+    public static int getMaxRunCount(int size) {
         return size > 2048000 ? 2000 : size >> 10 | 5;
     }
 
@@ -624,7 +647,7 @@ public final class DualPivotQuicksort201811211Ext {
         /*
          * Identify all possible runs.
          */
-        for (int k = low + 1; k < high && count < max; ) {
+        for (int k = low + 1; k < high && count < max;) {
 
             /*
              * Find the end index of the current run.
@@ -640,12 +663,16 @@ public final class DualPivotQuicksort201811211Ext {
                 while (++k < high && a[k - 1] >= a[k]);
 
                 // Reverse into ascending order
-                for (int i = last - 1, j = k; ++i < --j && a[i] > a[j]; ) {
-                    int t = a[i]; a[i] = a[j]; a[j] = t;
-                        t = b[i]; b[i] = b[j]; b[j] = t;
+                for (int i = last - 1, j = k; ++i < --j && a[i] > a[j];) {
+                    int t = a[i];
+                    a[i] = a[j];
+                    a[j] = t;
+                    t = b[i];
+                    b[i] = b[j];
+                    b[j] = t;
                 }
             } else { // Identify equal elements
-                for (int ak = a[k]; ++k < high && ak == a[k]; );
+                for (int ak = a[k]; ++k < high && ak == a[k];);
 
                 if (k < high) {
                     continue;
@@ -657,7 +684,7 @@ public final class DualPivotQuicksort201811211Ext {
              */
             if (sorter.runInit || run == null) {
                 sorter.runInit = false; // LBO
-                
+
                 if (k == high) {
 
                     /*
@@ -678,7 +705,6 @@ public final class DualPivotQuicksort201811211Ext {
 
 //                System.out.println("alloc run");
 //                run = new int[INITIAL_RUN_CAPACITY];
-
                 run = sorter.run; // LBO: prealloc
                 run[0] = low;
 
@@ -704,14 +730,14 @@ public final class DualPivotQuicksort201811211Ext {
          * Check if array is highly structured and then merge runs.
          */
         if (count < max && count > 1) {
-            int[] auxA, auxB; 
+            int[] auxA, auxB;
             int offset = low;
 
             // LBO: prealloc
-            if (sorter == null 
+            if (sorter == null
                     || (auxA = sorter.auxA) == null || auxA.length < size
                     || (auxB = sorter.auxB) == null || auxB.length < size) {
-                System.out.println("alloc b: "+size);
+                System.out.println("alloc b: " + size);
                 auxA = new int[size];
                 auxB = new int[size];
             }
@@ -733,14 +759,14 @@ public final class DualPivotQuicksort201811211Ext {
      * @return the destination where runs are merged
      */
     private static int[] mergeRuns(int[] srcA, int[] dstA, int[] srcB, int[] dstB, int offset,
-            int aim, int[] run, int lo, int hi) {
+                                   int aim, int[] run, int lo, int hi) {
 
         if (hi - lo == 1) {
             if (aim >= 0) {
                 return srcA;
             }
             for (int i = run[hi], j = i - offset, low = run[lo]; i > low;
-                --j, --i, dstA[j] = srcA[i], dstB[j] = srcB[i]);
+                    --j, --i, dstA[j] = srcA[i], dstB[j] = srcB[i]);
             return dstA;
         }
 
@@ -755,16 +781,16 @@ public final class DualPivotQuicksort201811211Ext {
          */
         int[] a1, a2;
         a1 = mergeRuns(srcA, dstA, srcB, dstB, offset, -aim, run, lo, mi);
-        a2 = mergeRuns(srcA, dstA, srcB, dstB, offset,    0, run, mi, hi);
+        a2 = mergeRuns(srcA, dstA, srcB, dstB, offset, 0, run, mi, hi);
 
         int[] b1, b2;
         b1 = a1 == srcA ? srcB : dstB;
         b2 = a2 == srcA ? srcB : dstB;
-        
+
         int[] resA = a1 == srcA ? dstA : srcA;
         int[] resB = a1 == srcA ? dstB : srcB;
 
-        int k   = a1 == srcA ? run[lo] - offset : run[lo];
+        int k = a1 == srcA ? run[lo] - offset : run[lo];
         int lo1 = a1 == dstA ? run[lo] - offset : run[lo];
         int hi1 = a1 == dstA ? run[mi] - offset : run[mi];
         int lo2 = a2 == dstA ? run[mi] - offset : run[mi];
@@ -788,7 +814,7 @@ public final class DualPivotQuicksort201811211Ext {
      * @param hi2 the end index of the second part, exclusive
      */
     private static void mergeParts(int[] dstA, int[] dstB, int k,
-            int[] a1, int[] b1, int lo1, int hi1, int[] a2, int[] b2, int lo2, int hi2) {
+                                   int[] a1, int[] b1, int lo1, int hi1, int[] a2, int[] b2, int lo2, int hi2) {
 // ...
         /*
          * Merge small parts sequentially.
@@ -797,41 +823,46 @@ public final class DualPivotQuicksort201811211Ext {
             if (a1[lo1] < a2[lo2]) {
                 dstA[k] = a1[lo1];
                 dstB[k] = b1[lo1];
-                k++; lo1++;
+                k++;
+                lo1++;
             } else {
                 dstA[k] = a2[lo2];
                 dstB[k] = b2[lo2];
-                k++; lo2++;
+                k++;
+                lo2++;
             }
         }
         if (dstA != a1 || k < lo1) {
             while (lo1 < hi1) {
                 dstA[k] = a1[lo1];
                 dstB[k] = b1[lo1];
-                k++; lo1++;
+                k++;
+                lo1++;
             }
         }
         if (dstA != a2 || k < lo2) {
             while (lo2 < hi2) {
                 dstA[k] = a2[lo2];
                 dstB[k] = b2[lo2];
-                k++; lo2++;
+                k++;
+                lo2++;
             }
         }
     }
 
-    static final class Sorter{
+    static final class Sorter {
+
         final int[] run;
         int[] auxA;
         int[] auxB;
         boolean runInit;
-        
+
         Sorter() {
             // preallocate max runs:
             final int max = getMaxRunCount(Integer.MAX_VALUE) + 1;
             run = new int[max];
         }
-        
+
         void initLength(int length) {
             if (auxA == null || auxA.length < length) {
                 auxA = new int[length];

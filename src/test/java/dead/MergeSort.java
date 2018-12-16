@@ -22,9 +22,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package dead;
 
 import java.util.Arrays;
+import org.marlin.pisces.DualPivotQuicksort20181121Ext;
+import org.marlin.pisces.MarlinUtils;
 
 /**
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[])
