@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.marlin.geom.Path2D;
 import org.marlin.ReentrantContext;
 import org.marlin.pisces.ArrayCacheConst.CacheStats;
-import org.marlin.pisces.DualPivotQuicksort20181121Ext.Sorter;
 import org.marlin.pisces.MarlinRenderingEngine.NormalizingPathIterator;
 import org.marlin.pisces.TransformingPathConsumer2D.CurveBasicMonotonizer;
 import org.marlin.pisces.TransformingPathConsumer2D.CurveClipSplitter;
@@ -93,7 +92,7 @@ final class RendererContext extends ReentrantContext implements IRendererContext
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
     // DPQS Sorter context
-    final Sorter sorterCtx;
+    final DPQSSorterContext sorterCtx;
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
@@ -149,7 +148,7 @@ final class RendererContext extends ReentrantContext implements IRendererContext
         stroker = new Stroker(this);
         dasher = new Dasher(this);
 
-        sorterCtx = (MergeSort.USE_DPQS) ? new DualPivotQuicksort20181121Ext.Sorter() : null;
+        sorterCtx = (MergeSort.USE_DPQS) ? new DPQSSorterContext() : null;
     }
 
     /**

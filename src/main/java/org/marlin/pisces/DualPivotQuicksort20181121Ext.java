@@ -50,9 +50,6 @@ import java.util.Arrays; // TODO
  */
 public final class DualPivotQuicksort20181121Ext {
 
-    private static final boolean LOG_ALLOC = false;
-    private static final boolean CHECK_ALLOC = false && LOG_ALLOC;
-
     /*
     From OpenJDK12 source code
      */
@@ -100,7 +97,7 @@ public final class DualPivotQuicksort20181121Ext {
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
-    public static void sort(Sorter sorter, int[] a, int[] auxA, int b[], int[] auxB, int low, int high) {
+    static void sort(DPQSSorterContext sorter, int[] a, int[] auxA, int b[], int[] auxB, int low, int high) {
         sorter.initBuffers(high, auxA, auxB);
         sort(sorter, a, b, 0, low, high);
     }
@@ -116,7 +113,7 @@ public final class DualPivotQuicksort20181121Ext {
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
-    static void sort(Sorter sorter, int[] a, int[] b, int bits, int low, int high) {
+    static void sort(DPQSSorterContext sorter, int[] a, int[] b, int bits, int low, int high) {
         while (true) {
             int end = high - 1, size = high - low;
 
@@ -610,16 +607,6 @@ public final class DualPivotQuicksort20181121Ext {
     }
 
     /**
-     * Calculates the max number of runs.
-     *
-     * @param size the array size
-     * @return the max number of runs
-     */
-    public static int getMaxRunCount(int size) {
-        return size > 2048000 ? 2000 : size >> 10 | 5;
-    }
-
-    /**
      * Tries to sort the specified range of the array.
      *
      * @param sorter parallel context
@@ -628,7 +615,7 @@ public final class DualPivotQuicksort20181121Ext {
      * @param size the array size
      * @return true if finally sorted, false otherwise
      */
-    private static boolean tryMergeRuns(Sorter sorter, int[] a, int[] b, int low, int size) {
+    private static boolean tryMergeRuns(DPQSSorterContext sorter, int[] a, int[] b, int low, int size) {
         /*
          * The run array is constructed only if initial runs are
          * long enough to continue, run[i] then holds start index
@@ -637,7 +624,7 @@ public final class DualPivotQuicksort20181121Ext {
         int[] run = null;
         int high = low + size;
         int count = 1, last = low;
-        int max = getMaxRunCount(size);
+        int max = DPQSSorterContext.getMaxRunCount(size);
 
         /*
          * Identify all possible runs.
@@ -729,8 +716,8 @@ public final class DualPivotQuicksort20181121Ext {
             int offset = low;
 
             // LBO: prealloc
-            if (CHECK_ALLOC && (auxA.length < size || auxB.length < size)) {
-                if (LOG_ALLOC) {
+            if (DPQSSorterContext.CHECK_ALLOC && (auxA.length < size || auxB.length < size)) {
+                if (DPQSSorterContext.LOG_ALLOC) {
                     MarlinUtils.logInfo("alloc auxA/auxB: " + size);
                 }
                 auxA = new int[size];
@@ -842,41 +829,6 @@ public final class DualPivotQuicksort20181121Ext {
                 k++;
                 lo2++;
             }
-        }
-    }
-
-    public static final class Sorter {
-
-        final int[] run;
-        int[] auxA;
-        int[] auxB;
-        boolean runInit;
-
-        Sorter() {
-            // preallocate max runs:
-            final int max = getMaxRunCount(Integer.MAX_VALUE) + 1;
-            if (LOG_ALLOC) {
-                MarlinUtils.logInfo("alloc run: " + max);
-            }
-            run = new int[max];
-        }
-
-        public void initBuffers(final int length, final int[] a, final int[] b) {
-            auxA = a;
-            if (CHECK_ALLOC && (auxA.length < length)) {
-                if (LOG_ALLOC) {
-                    MarlinUtils.logInfo("alloc auxA: " + length);
-                }
-                auxA = new int[length];
-            }
-            auxB = b;
-            if (CHECK_ALLOC && (auxB.length < length)) {
-                if (LOG_ALLOC) {
-                    MarlinUtils.logInfo("alloc auxB: " + length);
-                }
-                auxB = new int[length];
-            }
-            runInit = true;
         }
     }
 }

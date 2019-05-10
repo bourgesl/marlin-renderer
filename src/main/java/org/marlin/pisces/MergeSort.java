@@ -25,7 +25,7 @@
 package org.marlin.pisces;
 
 import java.util.Arrays;
-import org.marlin.pisces.DualPivotQuicksort20181121Ext.Sorter;
+import static org.marlin.pisces.DualPivotQuicksort20190501Ext.sort;
 
 /**
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[])
@@ -34,17 +34,19 @@ import org.marlin.pisces.DualPivotQuicksort20181121Ext.Sorter;
  */
 final class MergeSort {
 
-    static final boolean USE_DPQS = true;
+    static final boolean USE_DPQS = MarlinProperties.isUseDPQS();
 
+    static final int DPQS_THRESHOLD = 256;
     static final int DISABLE_ISORT_THRESHOLD = 1000;
 
     private static final boolean CHECK_SORTED = false;
 
-    static int[] prepareRuns() {
-        if (USE_DPQS) {
-            return new int[1 + DualPivotQuicksort20181121Ext.getMaxRunCount(Integer.MAX_VALUE)];
+    static {
+        MarlinUtils.logInfo("MergeSort: DPQS_THRESHOLD: " + DPQS_THRESHOLD);
+        MarlinUtils.logInfo("MergeSort: DISABLE_ISORT_THRESHOLD: " + DISABLE_ISORT_THRESHOLD);
+        if (CHECK_SORTED) {
+            MarlinUtils.logInfo("MergeSort: CHECK_SORTED: " + CHECK_SORTED);
         }
-        return null;
     }
 
     /**
@@ -58,7 +60,8 @@ final class MergeSort {
                                 final int toIndex,
                                 final int insertionSortIndex,
                                 final boolean skipISort,
-                                final Sorter sorter) {
+                                final DPQSSorterContext sorter,
+                                final boolean useDPQS) {
 
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
@@ -66,25 +69,33 @@ final class MergeSort {
             throw new ArrayIndexOutOfBoundsException("bad arguments: toIndex="
                     + toIndex);
         }
-        if (USE_DPQS) {
-            if (skipISort) {
-                DualPivotQuicksort20181121Ext.sort(sorter, x, auxX, y, auxY, 0, toIndex);
-
-                if (CHECK_SORTED) {
-                    checkRange(x, 0, toIndex);
-                }
-                return;
+        if (skipISort) {
+            if (useDPQS) {
+                // sort full x/y in-place
+                sort(sorter, x, auxX, y, auxY, 0, toIndex);
             } else {
-                DualPivotQuicksort20181121Ext.sort(sorter, auxX, x, auxY, y, insertionSortIndex, toIndex);
+                // sort full auxX/auxY into x/y
+                mergeSort(auxX, auxY, auxX, x, auxY, y, 0, toIndex);
             }
+            if (CHECK_SORTED) {
+                checkRange(x, 0, toIndex);
+            }
+            return;
         } else {
-            // sort second part only using merge / insertion sort
-            // in auxiliary storage (auxX/auxY)
-            mergeSort(x, y, x, auxX, y, auxY, (skipISort) ? 0 : insertionSortIndex, toIndex);
+            if (useDPQS) {
+                // sort auxX/auxY in-place
+                sort(sorter, auxX, x, auxY, y, insertionSortIndex, toIndex);
+            } else {
+                // sort second part only using merge sort
+                // x/y into auxiliary storage (auxX/auxY)
+                mergeSort(x, y, x, auxX, y, auxY, insertionSortIndex, toIndex);
+            }
         }
 
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
+        
+// low probability: deoptimization ?
         if ((insertionSortIndex == 0)
                 || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
             // 34 occurences
