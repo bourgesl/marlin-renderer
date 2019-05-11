@@ -19,8 +19,8 @@
 
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
-        <integration.skip>true</integration.skip>
-        <integration.skip.long>true</integration.skip.long>
+        <integration.skip>false</integration.skip>
+        <integration.skip.long>false</integration.skip.long>
         <javadoc.skip>true</javadoc.skip>
     </properties>
 
