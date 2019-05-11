@@ -25,6 +25,9 @@
 
 package sun.java2d.marlin;
 
+import java.util.Arrays;
+import static sun.java2d.marlin.DualPivotQuicksort20190501Ext.sort;
+
 /**
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[])
  * to swap two arrays at the same time (x & y)
@@ -32,8 +35,20 @@ package sun.java2d.marlin;
  */
 final class MergeSort {
 
-    // insertion sort threshold
-    public static final int INSERTION_SORT_THRESHOLD = 14;
+    static final boolean USE_DPQS = MarlinProperties.isUseDPQS();
+
+    static final int DPQS_THRESHOLD = 256;
+    static final int DISABLE_ISORT_THRESHOLD = 1000;
+
+    private static final boolean CHECK_SORTED = false;
+
+    static {
+        MarlinUtils.logInfo("MergeSort: DPQS_THRESHOLD: " + DPQS_THRESHOLD);
+        MarlinUtils.logInfo("MergeSort: DISABLE_ISORT_THRESHOLD: " + DISABLE_ISORT_THRESHOLD);
+        if (CHECK_SORTED) {
+            MarlinUtils.logInfo("MergeSort: CHECK_SORTED: " + CHECK_SORTED);
+        }
+    }
 
     /**
      * Modified merge sort:
@@ -44,34 +59,61 @@ final class MergeSort {
     static void mergeSortNoCopy(final int[] x, final int[] y,
                                 final int[] auxX, final int[] auxY,
                                 final int toIndex,
-                                final int insertionSortIndex)
-    {
+                                final int insertionSortIndex,
+                                final boolean skipISort,
+                                final DPQSSorterContext sorter,
+                                final boolean useDPQS) {
+
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
             // explicit check to avoid bound checks within hot loops (below):
             throw new ArrayIndexOutOfBoundsException("bad arguments: toIndex="
-                                                     + toIndex);
+                    + toIndex);
         }
-
-        // sort second part only using merge / insertion sort
-        // in auxiliary storage (auxX/auxY)
-        mergeSort(x, y, x, auxX, y, auxY, insertionSortIndex, toIndex);
+        if (skipISort) {
+            if (useDPQS) {
+                // sort full x/y in-place
+                sort(sorter, x, auxX, y, auxY, 0, toIndex);
+            } else {
+                // sort full auxX/auxY into x/y
+                mergeSort(auxX, auxY, auxX, x, auxY, y, 0, toIndex);
+            }
+            if (CHECK_SORTED) {
+                checkRange(x, 0, toIndex);
+            }
+            return;
+        } else {
+            if (useDPQS) {
+                // sort auxX/auxY in-place
+                sort(sorter, auxX, x, auxY, y, insertionSortIndex, toIndex);
+            } else {
+                // sort second part only using merge sort
+                // x/y into auxiliary storage (auxX/auxY)
+                mergeSort(x, y, x, auxX, y, auxY, insertionSortIndex, toIndex);
+            }
+        }
 
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
+        
+// low probability: deoptimization ?
         if ((insertionSortIndex == 0)
-            || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
+                || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
             // 34 occurences
             // no initial left part or both sublists (auxX, auxY) are sorted:
             // copy back data into (x, y):
             System.arraycopy(auxX, 0, x, 0, toIndex);
             System.arraycopy(auxY, 0, y, 0, toIndex);
+
+            if (CHECK_SORTED) {
+                checkRange(x, 0, toIndex);
+            }
             return;
         }
 
         for (int i = 0, p = 0, q = insertionSortIndex; i < toIndex; i++) {
             if ((q >= toIndex) || ((p < insertionSortIndex)
-                                   && (auxX[p] <= auxX[q]))) {
+                    && (auxX[p] <= auxX[q]))) {
                 x[i] = auxX[p];
                 y[i] = auxY[p];
                 p++;
@@ -81,7 +123,14 @@ final class MergeSort {
                 q++;
             }
         }
+
+        if (CHECK_SORTED) {
+            checkRange(x, 0, toIndex);
+        }
     }
+
+    // insertion sort threshold for MergeSort()
+    private static final int INSERTION_SORT_THRESHOLD = 14;
 
     /**
      * Src is the source array that starts at index 0
@@ -92,8 +141,7 @@ final class MergeSort {
     private static void mergeSort(final int[] refX, final int[] refY,
                                   final int[] srcX, final int[] dstX,
                                   final int[] srcY, final int[] dstY,
-                                  final int low, final int high)
-    {
+                                  final int low, final int high) {
         final int length = high - low;
 
         /*
@@ -124,7 +172,6 @@ final class MergeSort {
         }
 
         // Recursively sort halves of dest into src
-
         // note: use signed shift (not >>>) for performance
         // as indices are small enough to exceed Integer.MAX_VALUE
         final int mid = (low + high) >> 1;
@@ -170,5 +217,14 @@ final class MergeSort {
     }
 
     private MergeSort() {
+    }
+
+    private static void checkRange(int[] x, int lo, int hi) {
+        for (int i = lo + 1; i < hi; i++) {
+            if (x[i - 1] > x[i]) {
+                MarlinUtils.logInfo("Bad sorted x [" + (i - 1) + "]" + Arrays.toString(Arrays.copyOf(x, hi)));
+                return;
+            }
+        }
     }
 }
