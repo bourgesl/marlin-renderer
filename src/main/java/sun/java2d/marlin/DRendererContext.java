@@ -91,6 +91,8 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     final CurveBasicMonotonizer monotonizer;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
+    // DPQS Sorter context
+    final DPQSSorterContext sorterCtx;
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
@@ -147,6 +149,8 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
 
         stroker = new DStroker(this);
         dasher = new DDasher(this);
+
+        sorterCtx = (MergeSort.USE_DPQS) ? new DPQSSorterContext() : null;
     }
 
     /**
