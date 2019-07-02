@@ -35,6 +35,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.marlin.pisces.ArrayCacheConst.CacheStats;
 import static org.marlin.pisces.MarlinUtils.logInfo;
+import org.marlin.pisces.stats.ArraySortDataCollection;
 import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.Monitor;
 import org.marlin.pisces.stats.StatLong;
@@ -43,6 +44,8 @@ import org.marlin.pisces.stats.StatLong;
  * This class gathers global rendering statistics for debugging purposes only
  */
 public final class RendererStats implements MarlinConst {
+
+    public final static boolean DUMP_ARRAY_DATA = true && MarlinConst.DO_STATS;
 
     static RendererStats createInstance(final Object parent, final String name)
     {
@@ -56,6 +59,10 @@ public final class RendererStats implements MarlinConst {
 
     public static void dumpStats() {
         RendererStatsHolder.dumpStats();
+    }
+
+    public static ArraySortDataCollection getADC() {
+        return RendererStatsHolder.getADC();
     }
 
     // context name (debugging purposes)
@@ -354,10 +361,19 @@ public final class RendererStats implements MarlinConst {
             }
         }
 
+        static ArraySortDataCollection getADC() {
+            if (SINGLETON != null) {
+            return SINGLETON.adc;
+            }
+            return null;
+        }
+
         /* RendererStats collection as hard references
            (only used for debugging purposes) */
         private final ConcurrentLinkedQueue<RendererStats> allStats
             = new ConcurrentLinkedQueue<RendererStats>();
+        // array data
+        final ArraySortDataCollection adc = new ArraySortDataCollection();
 
         private RendererStatsHolder() {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
@@ -370,6 +386,9 @@ public final class RendererStats implements MarlinConst {
                             @Override
                             public void run() {
                                 dump();
+
+                                // dump array data:
+                                ArraySortDataCollection.save("/tmp/ArraySortDataCollection.ser", adc);
                             }
                         },
                         "MarlinStatsHook"

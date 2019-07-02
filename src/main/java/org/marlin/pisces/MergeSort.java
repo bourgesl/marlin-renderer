@@ -62,6 +62,12 @@ final class MergeSort {
                                 final boolean skipISort,
                                 final DPQSSorterContext sorter,
                                 final boolean useDPQS) {
+        // Gather array data:
+        if (RendererStats.DUMP_ARRAY_DATA && !useDPQS && !skipISort) {
+            // Copy presorted data from auxX to x:
+            System.arraycopy(auxX, 0, x, 0, insertionSortIndex);
+            RendererStats.getADC().addData(x, 0, toIndex, insertionSortIndex);
+        }
 
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
@@ -94,7 +100,7 @@ final class MergeSort {
 
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
-        
+/*
 // low probability: deoptimization ?
         if ((insertionSortIndex == 0)
                 || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
@@ -109,7 +115,7 @@ final class MergeSort {
             }
             return;
         }
-
+*/
         for (int i = 0, p = 0, q = insertionSortIndex; i < toIndex; i++) {
             if ((q >= toIndex) || ((p < insertionSortIndex)
                     && (auxX[p] <= auxX[q]))) {
@@ -129,7 +135,7 @@ final class MergeSort {
     }
 
     // insertion sort threshold for MergeSort()
-    private static final int INSERTION_SORT_THRESHOLD = 14;
+    static final int INSERTION_SORT_THRESHOLD = 14;
 
     /**
      * Src is the source array that starts at index 0
