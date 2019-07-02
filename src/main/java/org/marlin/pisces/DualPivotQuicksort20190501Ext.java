@@ -50,7 +50,7 @@ public final class DualPivotQuicksort20190501Ext {
 
     private static final boolean FAST_ISORT = false;
 
-    /* 
+    /*
     From OpenJDK13 source code
      */
 
@@ -106,7 +106,7 @@ public final class DualPivotQuicksort20190501Ext {
             insertionSort(a, b, low, high);
             return;
         }
-        
+
         sorter.initBuffers(high, auxA, auxB);
         sort(sorter, a, b, 0, low, high);
     }
@@ -188,8 +188,8 @@ public final class DualPivotQuicksort20190501Ext {
             if (a[e3] < a[e2]) { int t = a[e3]; a[e3] = a[e2]; a[e2] = t; t = b[e3]; b[e3] = b[e2]; b[e2] = t; }
             if (a[e4] < a[e3]) { int t = a[e4]; a[e4] = a[e3]; a[e3] = t; t = b[e4]; b[e4] = b[e3]; b[e3] = t;}
 
-            if (a[e1] > a[e2]) { 
-                int ta = a[e1]; a[e1] = a[e2]; a[e2] = ta; 
+            if (a[e1] > a[e2]) {
+                int ta = a[e1]; a[e1] = a[e2]; a[e2] = ta;
                 int tb = b[e1]; b[e1] = b[e2]; b[e2] = tb;
                 if (ta > a[e3]) { a[e2] = a[e3]; a[e3] = ta; b[e2] = b[e3]; b[e3] = tb;
                     if (ta > a[e4]) { a[e3] = a[e4]; a[e4] = ta; b[e3] = b[e4]; b[e4] = tb;
@@ -417,7 +417,7 @@ public final class DualPivotQuicksort20190501Ext {
                         a[i + 1] = a[i];
                         b[i + 1] = b[i];
                     }
-                    a[i + 1] = ai;                
+                    a[i + 1] = ai;
                     b[i + 1] = bi;
                 }
             }
@@ -543,12 +543,12 @@ public final class DualPivotQuicksort20190501Ext {
 
             if (ai < a[i - 1]) {
                 int bi = b[i];
-                
+
                 while (--i >= low && ai < a[i]) {
                     a[i + 1] = a[i];
                     b[i + 1] = b[i];
                 }
-                a[i + 1] = ai;                
+                a[i + 1] = ai;
                 b[i + 1] = bi;
             }
         }
