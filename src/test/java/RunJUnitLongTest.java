@@ -29,16 +29,20 @@ import org.junit.Test;
  */
 public class RunJUnitLongTest {
 
-    @Test
-    public void clipTests() {
+    @Test(timeout = 600000)
+    public void clipTestPoly() throws InterruptedException {
         ClipShapeTest.main(new String[]{"-poly"});
         ClipShapeTest.main(new String[]{"-poly", "-doDash"});
+    }
 
-        // high uncertainty
+    @Test(timeout = 900000)
+    public void clipTestQuad() throws InterruptedException {
         ClipShapeTest.main(new String[]{"-quad"});
         ClipShapeTest.main(new String[]{"-quad", "-doDash"});
+    }
 
-        // medium uncertainty
+    @Test(timeout = 900000)
+    public void clipTestCubic() throws InterruptedException {
         ClipShapeTest.main(new String[]{"-cubic"});
         ClipShapeTest.main(new String[]{"-cubic", "-doDash"});
     }

@@ -42,13 +42,34 @@ public class StrokeClipBugTest {
 
     private final static int N = 1;
 
-    private final static boolean DO_FILL = true;
+    private final static boolean DO_FILL = false;
     private final static boolean DO_DRAW = true;
 
     public static void main(String[] args) {
 
-        final float lineStroke = 4f;
-        final int size = 400;
+        // fix subpixel accuracy:
+        System.setProperty("sun.java2d.renderer.subPixel_log2_X", "3");
+        System.setProperty("sun.java2d.renderer.subPixel_log2_Y", "3");
+
+        // enable subdivider:
+        System.setProperty("sun.java2d.renderer.clip.subdivider", "true");
+
+        // disable min length check: always subdivide curves at clip edges
+        System.setProperty("sun.java2d.renderer.clip.subdivider.minLength", "-1");
+
+        // If any curve, increase curve accuracy:
+        // curve length max error:
+        System.setProperty("sun.java2d.renderer.curve_len_err", "1e-4"); // 1e-4
+
+        // cubic min/max error:
+        System.setProperty("sun.java2d.renderer.cubic_dec_d2", "1e-3");
+        System.setProperty("sun.java2d.renderer.cubic_inc_d1", "1e-4"); // or disabled ~ 1e-6
+
+        // quad max error:
+        System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
+
+        final float lineStroke = 10f;
+        final int size = 100;
 
         // First display which renderer is tested:
         // JDK9 only:
@@ -74,11 +95,12 @@ public class StrokeClipBugTest {
         final Graphics2D g2d = (Graphics2D) image.getGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
 
         g2d.setClip(0, 0, size, size);
         g2d.setStroke(
-                new BasicStroke(lineStroke, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 20f)
+                new BasicStroke(lineStroke, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 10f
+                        , new float[]{13f, 7f}, 0f)
         );
 
         g2d.setBackground(Color.WHITE);
@@ -122,15 +144,40 @@ public class StrokeClipBugTest {
     }
 
     private static Shape createPath() {
-        final Path2D p = new Path2D.Float();
-        // outside top
-        p.moveTo(100, -100);
+        final Path2D p2d = new Path2D.Float();
 
-        p.lineTo(100.0, 50);
-        p.lineTo(300.0, 200);
+        if (true) {
+            p2d.moveTo(-33.946766, 34.31042);
+            p2d.lineTo(26.70244, 34.970547);
+            p2d.lineTo(-82.63043, 143.15761);
+            p2d.lineTo(-88.35962, -18.40037);
+            p2d.lineTo(-36.85617, -15.169012);
+            p2d.lineTo(-96.494835, -73.487);
+            p2d.lineTo(185.43329, 95.0785);
+            p2d.lineTo(199.92317, 1.5416826);
+            p2d.lineTo(154.63771, 196.44171);
+            p2d.lineTo(84.148544, -93.854065);
+            p2d.closePath();
+            p2d.lineTo(194.41913, -9.220437);
+            p2d.lineTo(-67.79607, 118.96178);
+            p2d.lineTo(184.34657, 188.84198);
+            p2d.lineTo(157.65941, 114.608604);
+            p2d.lineTo(83.466034, 105.08833);
+            p2d.lineTo(134.23169, 172.10742);
+            p2d.lineTo(-3.8211524, 105.22348);
+            p2d.lineTo(-89.49237, -6.0259376);
+            p2d.lineTo(-13.128742, 175.07613);
+            p2d.closePath();
 
-        p.closePath();
+        } else {
+            // outside top
+            p2d.moveTo(100, -100);
 
-        return p;
+            p2d.lineTo(100.0, 50);
+            p2d.lineTo(300.0, 200);
+
+            p2d.closePath();
+        }
+        return p2d;
     }
 }

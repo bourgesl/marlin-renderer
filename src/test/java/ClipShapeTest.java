@@ -90,8 +90,6 @@ public final class ClipShapeTest {
     static final int TESTW = 100;
     static final int TESTH = 100;
 
-    static final boolean SHAPE_REPEAT = true;
-
     // dump path on console:
     static final boolean DUMP_SHAPE = true;
 
@@ -174,6 +172,10 @@ public final class ClipShapeTest {
         System.setProperty("sun.java2d.renderer.log", "true");
         System.setProperty("sun.java2d.renderer.useLogger", "true");
 
+        // fix subpixel accuracy:
+        System.setProperty("sun.java2d.renderer.subPixel_log2_X", "3");
+        System.setProperty("sun.java2d.renderer.subPixel_log2_Y", "3");
+
         // disable static clipping setting:
         System.setProperty("sun.java2d.renderer.clip", "false");
         System.setProperty("sun.java2d.renderer.clip.runtime.enable", "true");
@@ -248,28 +250,30 @@ public final class ClipShapeTest {
             case TWO_CUBICS:
                 // Define uncertainty for curves:
 /*
-Diff Pixels [Worst(All Test setups)][n: 647] sum: 15130 avg: 23.384 [1 | 174] {
-            1 ..     2[n: 93] sum: 93 avg: 1.0 [1 | 1]
-            2 ..     4[n: 92] sum: 223 avg: 2.423 [2 | 3]
-            4 ..     8[n: 135] sum: 732 avg: 5.422 [4 | 7]
-            8 ..    16[n: 109] sum: 1235 avg: 11.33 [8 | 15]
-           16 ..    32[n: 82] sum: 1782 avg: 21.731 [16 | 31]
-           32 ..    64[n: 59] sum: 2584 avg: 43.796 [32 | 62]
-           64 ..   128[n: 52] sum: 4929 avg: 94.788 [64 | 127]
-          128 ..   256[n: 25] sum: 3552 avg: 142.08 [129 | 174] }
+Diff Pixels [Worst(All Test setups)][n: 293] sum: 16014 avg: 54.655 [4 | 160] {
+            4 ..     8[n: 35] sum: 140 avg: 4.0 [4 | 4]
+            8 ..    16[n: 32] sum: 320 avg: 10.0 [8 | 12]
+           16 ..    32[n: 47] sum: 1068 avg: 22.723 [16 | 31]
+           32 ..    64[n: 78] sum: 3566 avg: 45.717 [32 | 63]
+           64 ..   128[n: 77] sum: 7453 avg: 96.792 [64 | 127]
+          128 ..   256[n: 24] sum: 3467 avg: 144.458 [131 | 160] }
+Differences [Diff Pixels [All Test setups]]:
+NbPixels [All Test setups][n: 101819] sum: 250541 avg: 2.46 [0 | 175]
 
-DASH: Diff Pixels [Worst(All Test setups)][n: 128] sum: 5399 avg: 42.179 [1 | 255] {
-            1 ..     2[n: 54] sum: 54 avg: 1.0 [1 | 1]
-            2 ..     4[n: 28] sum: 63 avg: 2.25 [2 | 3]
-            4 ..     8[n: 6] sum: 33 avg: 5.5 [4 | 7]
-            8 ..    16[n: 3] sum: 33 avg: 11.0 [9 | 15]
-           16 ..    32[n: 4] sum: 87 avg: 21.75 [16 | 25]
-           32 ..    64[n: 6] sum: 276 avg: 46.0 [37 | 60]
-           64 ..   128[n: 6] sum: 568 avg: 94.666 [71 | 118]
-          128 ..   256[n: 21] sum: 4285 avg: 204.047 [128 | 255] }
+DASH: Diff Pixels [Worst(All Test setups)][n: 95] sum: 6255 avg: 65.842 [3 | 255] {
+            2 ..     4[n: 1] sum: 3 avg: 3.0 [3 | 3]
+            4 ..     8[n: 33] sum: 132 avg: 4.0 [4 | 4]
+            8 ..    16[n: 10] sum: 88 avg: 8.8 [8 | 12]
+           16 ..    32[n: 9] sum: 176 avg: 19.555 [16 | 28]
+           32 ..    64[n: 8] sum: 363 avg: 45.375 [36 | 63]
+           64 ..   128[n: 13] sum: 1285 avg: 98.846 [68 | 119]
+          128 ..   256[n: 21] sum: 4208 avg: 200.38 [131 | 255] }
+Differences [Diff Pixels [All Test setups]]:
+NbPixels [All Test setups][n: 81430] sum: 3771 avg: 0.046 [0 | 42]
+
 */
                 THRESHOLD_DELTA = 32;
-                THRESHOLD_NBPIX = (USE_DASHES) ? 40 : 150;
+                THRESHOLD_NBPIX = (USE_DASHES) ? 45 : 200;
                 break;
             case FOUR_QUADS:
             case MIXED:
@@ -277,28 +281,29 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 128] sum: 5399 avg: 42.179 [1 | 25
                 // curve subdivision causes curves to be smaller
                 // then curve offsets are different (more accurate)
 /*
-Diff Pixels [Worst(All Test setups)][n: 775] sum: 57659 avg: 74.398 [1 | 251] {
-            1 ..     2[n: 21] sum: 21 avg: 1.0 [1 | 1]
-            2 ..     4[n: 20] sum: 52 avg: 2.6 [2 | 3]
-            4 ..     8[n: 44] sum: 236 avg: 5.363 [4 | 7]
-            8 ..    16[n: 52] sum: 578 avg: 11.115 [8 | 15]
-           16 ..    32[n: 75] sum: 1729 avg: 23.053 [16 | 31]
-           32 ..    64[n: 152] sum: 7178 avg: 47.223 [32 | 63]
-           64 ..   128[n: 274] sum: 25741 avg: 93.945 [64 | 127]
-          128 ..   256[n: 137] sum: 22124 avg: 161.489 [128 | 251] }
+NbPixels [Worst(All Test setups)][n: 1] sum: 381 avg: 381.0 [381 | 381]
+Diff Pixels [Worst(All Test setups)][n: 759] sum: 61342 avg: 80.819 [3 | 255] {
+            2 ..     4[n: 3] sum: 9 avg: 3.0 [3 | 3]
+            4 ..     8[n: 99] sum: 396 avg: 4.0 [4 | 4]
+            8 ..    16[n: 76] sum: 800 avg: 10.526 [8 | 12]
+           16 ..    32[n: 65] sum: 1460 avg: 22.461 [16 | 28]
+           32 ..    64[n: 121] sum: 5621 avg: 46.454 [32 | 60]
+           64 ..   128[n: 193] sum: 17740 avg: 91.917 [64 | 127]
+          128 ..   256[n: 202] sum: 35316 avg: 174.831 [128 | 255] }
+Differences [Diff Pixels [All Test setups]]:
+NbPixels [All Test setups][n: 90621] sum: 2819936 avg: 31.117 [0 | 392]
 
-DASH: Diff Pixels [Worst(All Test setups)][n: 354] sum: 29638 avg: 83.723 [1 | 254] {
-            1 ..     2[n: 31] sum: 31 avg: 1.0 [1 | 1]
-            2 ..     4[n: 45] sum: 111 avg: 2.466 [2 | 3]
-            4 ..     8[n: 22] sum: 113 avg: 5.136 [4 | 7]
-            8 ..    16[n: 25] sum: 247 avg: 9.88 [8 | 15]
-           16 ..    32[n: 26] sum: 579 avg: 22.269 [16 | 31]
-           32 ..    64[n: 39] sum: 1698 avg: 43.538 [32 | 62]
-           64 ..   128[n: 56] sum: 5284 avg: 94.357 [64 | 127]
-          128 ..   256[n: 110] sum: 21575 avg: 196.136 [128 | 254] }
+DASH: Diff Pixels [Worst(All Test setups)][n: 87] sum: 3169 avg: 36.425 [4 | 96] {
+            4 ..     8[n: 30] sum: 120 avg: 4.0 [4 | 4]
+            8 ..    16[n: 7] sum: 60 avg: 8.571 [8 | 12]
+           16 ..    32[n: 9] sum: 144 avg: 16.0 [16 | 16]
+           32 ..    64[n: 15] sum: 776 avg: 51.733 [48 | 63]
+           64 ..   128[n: 26] sum: 2069 avg: 79.576 [64 | 96] }
+Differences [Diff Pixels [All Test setups]]:
+NbPixels [All Test setups][n: 72710] sum: 66 avg: 0.0 [0 | 22]
 */
                 THRESHOLD_DELTA = 64;
-                THRESHOLD_NBPIX = (USE_DASHES) ? 180 : 420;
+                THRESHOLD_NBPIX = (USE_DASHES) ? 25 : 420;
                 break;
             default:
                 // Define uncertainty for lines:
@@ -319,7 +324,6 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
 
         if (runSlowTests) {
             NUM_TESTS = 10000; // or 100000 (very slow)
-            USE_DASHES = true;
             USE_VAR_STROKE = true;
         }
 
@@ -359,7 +363,7 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
 
                 int nsw = 0;
                 if (USE_VAR_STROKE) {
-                    for (float width = 0.1f; width < 110f; width *= 5f) {
+                    for (float width = 0.25f; width < 110f; width *= 5f) {
                         strokeWidths[nsw++] = width;
                     }
                 } else {
@@ -448,11 +452,11 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
             for (int n = 0; n < NUM_TESTS; n++) {
                 genShape(p2d, ts);
 
-                // Runtime clip setting ON:
-                paintShape(p2d, g2dOn, fill, true);
-
                 // Runtime clip setting OFF:
                 paintShape(p2d, g2dOff, fill, false);
+
+                // Runtime clip setting ON:
+                paintShape(p2d, g2dOn, fill, true);
 
                 /* compute image difference if possible */
                 diffImage = computeDiffImage(testCtx, testThCtx, imgOn, imgOff, imgDiff);
@@ -541,7 +545,10 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-                RenderingHints.VALUE_STROKE_PURE);
+// Test normalize:
+                RenderingHints.VALUE_STROKE_NORMALIZE
+//                RenderingHints.VALUE_STROKE_PURE
+        );
 
         if (ts.isStroke()) {
             g2d.setStroke(createStroke(ts));
@@ -571,16 +578,24 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
     static void genShape(final Path2D p2d, final TestSetup ts) {
         p2d.reset();
 
-        final int end = (SHAPE_REPEAT) ? 2 : 1;
+        /*
+            Test closed path:
+            0: moveTo + (draw)To + closePath
+            1: (draw)To + closePath (closePath + (draw)To sequence)
+        */
+        final int end  = (ts.closed) ? 2 : 1;
 
         for (int p = 0; p < end; p++) {
-            p2d.moveTo(randX(), randY());
+            if (p <= 0) {
+                p2d.moveTo(randX(), randY());
+            }
 
             switch (ts.shapeMode) {
                 case MIXED:
-                case FIFTY_LINE_POLYS:
-                case NINE_LINE_POLYS:
                 case FIVE_LINE_POLYS:
+                case NINE_LINE_POLYS:
+                case FIFTY_LINE_POLYS:
+                    p2d.lineTo(randX(), randY());
                     p2d.lineTo(randX(), randY());
                     p2d.lineTo(randX(), randY());
                     p2d.lineTo(randX(), randY());
@@ -879,6 +894,8 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
             }
         }
 
+        testCtx.addNbPix(testThCtx.histPix.count);
+
         if (!testThCtx.isDiff() || (testThCtx.histPix.count <= THRESHOLD_NBPIX)) {
             return null;
         }
@@ -1134,17 +1151,24 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
 
         public final Histogram histPix;
 
+        public final StatInteger nbPix;
+
         DiffContext(String name) {
             histPix = new Histogram("Diff Pixels [" + name + "]");
+            nbPix = new StatInteger("NbPixels [" + name + "]");
         }
 
         void reset() {
             histPix.reset();
+            nbPix.reset();
         }
 
         void dump() {
             if (isDiff()) {
-                System.out.println("Differences [" + histPix.name + "]:\n" + histPix.toString());
+                System.out.println("Differences [" + histPix.name + "]:\n"
+                        + ((nbPix.count != 0) ? (nbPix.toString()+"\n") : "")
+                        + histPix.toString()
+                );
             } else {
                 System.out.println("No difference for [" + histPix.name + "].");
             }
@@ -1156,6 +1180,11 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
 
         void add(DiffContext ctx) {
             histPix.add(ctx.histPix);
+            nbPix.add(ctx.nbPix);
+        }
+
+        void addNbPix(long val) {
+            nbPix.add(val);
         }
 
         void set(DiffContext ctx) {
