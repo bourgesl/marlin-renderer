@@ -45,7 +45,7 @@ import org.marlin.pisces.stats.StatLong;
  */
 public final class RendererStats implements MarlinConst {
 
-    public final static boolean DUMP_ARRAY_DATA = true && MarlinConst.DO_STATS;
+    public final static boolean DUMP_ARRAY_DATA = false && MarlinConst.DO_STATS;
 
     static RendererStats createInstance(final Object parent, final String name)
     {

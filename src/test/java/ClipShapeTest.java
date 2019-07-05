@@ -26,7 +26,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
@@ -82,7 +84,7 @@ public final class ClipShapeTest {
     static long THRESHOLD_NBPIX;
 
     // constants:
-    static final boolean DO_FAIL = true;
+    static final boolean DO_FAIL = Boolean.valueOf(System.getProperty("ClipShapeTest.fail", "true"));
 
     static final boolean TEST_STROKER = true;
     static final boolean TEST_FILLER = true;
@@ -126,6 +128,7 @@ public final class ClipShapeTest {
     static final File OUTPUT_DIR = new File(".");
 
     static final AtomicBoolean isMarlin = new AtomicBoolean();
+    static final AtomicBoolean isMarlinFloat = new AtomicBoolean();
     static final AtomicBoolean isClipRuntime = new AtomicBoolean();
 
     static {
@@ -143,6 +146,7 @@ public final class ClipShapeTest {
                     // last space to avoid matching other settings:
                     if (msg.startsWith("sun.java2d.renderer ")) {
                         isMarlin.set(msg.contains("MarlinRenderingEngine"));
+                        isMarlinFloat.set(!msg.contains("DMarlinRenderingEngine"));
                     }
                     if (msg.startsWith("sun.java2d.renderer.clip.runtime.enable")) {
                         isClipRuntime.set(msg.contains("true"));
@@ -172,10 +176,6 @@ public final class ClipShapeTest {
         System.setProperty("sun.java2d.renderer.log", "true");
         System.setProperty("sun.java2d.renderer.useLogger", "true");
 
-        // fix subpixel accuracy:
-        System.setProperty("sun.java2d.renderer.subPixel_log2_X", "3");
-        System.setProperty("sun.java2d.renderer.subPixel_log2_Y", "3");
-
         // disable static clipping setting:
         System.setProperty("sun.java2d.renderer.clip", "false");
         System.setProperty("sun.java2d.renderer.clip.runtime.enable", "true");
@@ -199,7 +199,7 @@ public final class ClipShapeTest {
     }
 
     private static void resetOptions() {
-        NUM_TESTS = 5000;
+        NUM_TESTS = Integer.getInteger("ClipShapeTest.numTests", 5000);
 
         // shape settings:
         SHAPE_MODE = ShapeMode.NINE_LINE_POLYS;
@@ -213,6 +213,25 @@ public final class ClipShapeTest {
      * @param args
      */
     public static void main(String[] args) {
+        {
+            // Bootstrap: init Renderer now:
+            final BufferedImage img = newImage(TESTW, TESTH);
+            final Graphics2D g2d = initialize(img, null);
+
+            try {
+                paintShape(new Line2D.Double(0,0,100,100), g2d, true, false);
+            } finally {
+                g2d.dispose();
+            }
+
+            if (!isMarlin.get()) {
+                throw new RuntimeException("Marlin renderer not used at runtime !");
+            }
+            if (!isClipRuntime.get()) {
+                throw new RuntimeException("Marlin clipping not enabled at runtime !");
+            }
+        }
+
         System.out.println("---------------------------------------");
         System.out.println("ClipShapeTest: image = " + TESTW + " x " + TESTH);
 
@@ -303,21 +322,31 @@ Differences [Diff Pixels [All Test setups]]:
 NbPixels [All Test setups][n: 72710] sum: 66 avg: 0.0 [0 | 22]
 */
                 THRESHOLD_DELTA = 64;
-                THRESHOLD_NBPIX = (USE_DASHES) ? 25 : 420;
+                THRESHOLD_NBPIX = (USE_DASHES) ? 30 : 420;
                 break;
             default:
                 // Define uncertainty for lines:
-                // float variant have higher uncertainty
 /*
 DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
             1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1]
             2 ..     4[n: 1] sum: 2 avg: 2.0 [2 | 2] }
+
+Float DASH: Diff Pixels [Worst(All Test setups)][n: 22] sum: 427 avg: 19.409 [1 | 55] {
+            1 ..     2[n: 1] sum: 1 avg: 1.0 [1 | 1]
+            2 ..     4[n: 3] sum: 8 avg: 2.666 [2 | 3]
+            4 ..     8[n: 1] sum: 4 avg: 4.0 [4 | 4]
+            8 ..    16[n: 5] sum: 55 avg: 11.0 [9 | 13]
+           16 ..    32[n: 8] sum: 175 avg: 21.875 [16 | 30]
+           32 ..    64[n: 4] sum: 184 avg: 46.0 [39 | 55] }
+Differences [Diff Pixels [All Test setups]]:
+NbPixels [All Test setups][n: 30] sum: 232 avg: 7.733 [1 | 27]
 */
                 THRESHOLD_DELTA = 2;
-                THRESHOLD_NBPIX = 4; // very low
+                THRESHOLD_NBPIX = (USE_DASHES) ?
+                    // float variant have higher uncertainty
+                    ((isMarlinFloat.get()) ? 30 : 6) // low for double
+                    : 0;
         }
-
-        // TODO: define one more threshold on total result (total sum) ?
 
         System.out.println("THRESHOLD_DELTA: " + THRESHOLD_DELTA);
         System.out.println("THRESHOLD_NBPIX: " + THRESHOLD_NBPIX);
@@ -334,6 +363,9 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
         }
         if (USE_VAR_STROKE) {
             System.out.println("USE_VAR_STROKE: enabled.");
+        }
+        if (!DO_FAIL) {
+            System.out.println("DO_FAIL: disabled.");
         }
 
         System.out.println("---------------------------------------");
@@ -406,12 +438,6 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
         allWorstCtx.dump();
         allCtx.dump();
 
-        if (!isMarlin.get()) {
-            throw new RuntimeException("Marlin renderer not used at runtime !");
-        }
-        if (!isClipRuntime.get()) {
-            throw new RuntimeException("Marlin clipping not enabled at runtime !");
-        }
         if (DO_FAIL && (failures != 0)) {
             throw new RuntimeException("Clip test failures : " + failures);
         }
@@ -431,11 +457,13 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
         final boolean fill = !ts.isStroke();
         final Path2D p2d = new Path2D.Double(ts.windingRule);
 
+        final Stroke stroke = (!fill) ? createStroke(ts) : null;
+
         final BufferedImage imgOn = newImage(TESTW, TESTH);
-        final Graphics2D g2dOn = initialize(imgOn, ts);
+        final Graphics2D g2dOn = initialize(imgOn, stroke);
 
         final BufferedImage imgOff = newImage(TESTW, TESTH);
-        final Graphics2D g2dOff = initialize(imgOff, ts);
+        final Graphics2D g2dOff = initialize(imgOff, stroke);
 
         final BufferedImage imgDiff = newImage(TESTW, TESTH);
 
@@ -526,7 +554,7 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
         return nd;
     }
 
-    private static void paintShape(final Path2D p2d, final Graphics2D g2d,
+    private static void paintShape(final Shape p2d, final Graphics2D g2d,
                                    final boolean fill, final boolean clip) {
         reset(g2d);
 
@@ -540,18 +568,18 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
     }
 
     private static Graphics2D initialize(final BufferedImage img,
-                                         final TestSetup ts) {
+                                         final Stroke s) {
         final Graphics2D g2d = (Graphics2D) img.getGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
 // Test normalize:
-                RenderingHints.VALUE_STROKE_NORMALIZE
-//                RenderingHints.VALUE_STROKE_PURE
+//                RenderingHints.VALUE_STROKE_NORMALIZE
+                RenderingHints.VALUE_STROKE_PURE
         );
 
-        if (ts.isStroke()) {
-            g2d.setStroke(createStroke(ts));
+        if (s != null) {
+            g2d.setStroke(s);
         }
         g2d.setColor(Color.BLACK);
 
@@ -1024,8 +1052,11 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
 
         public final StringBuilder toString(final StringBuilder sb) {
             sb.append(name).append("[n: ").append(count);
-            sb.append("] sum: ").append(sum).append(" avg: ").append(trimTo3Digits(average()));
-            sb.append(" [").append(min).append(" | ").append(max).append("]");
+            sb.append("] ");
+            if (count != 0) {
+                sb.append("sum: ").append(sum).append(" avg: ").append(trimTo3Digits(average()));
+                sb.append(" [").append(min).append(" | ").append(max).append("]");
+            }
             return sb;
         }
 
@@ -1166,7 +1197,7 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
         void dump() {
             if (isDiff()) {
                 System.out.println("Differences [" + histPix.name + "]:\n"
-                        + ((nbPix.count != 0) ? (nbPix.toString()+"\n") : "")
+                        + ((nbPix.count != 0) ? (nbPix.toString() + "\n") : "")
                         + histPix.toString()
                 );
             } else {
@@ -1180,11 +1211,15 @@ DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
 
         void add(DiffContext ctx) {
             histPix.add(ctx.histPix);
-            nbPix.add(ctx.nbPix);
+            if (ctx.nbPix.count != 0L) {
+                nbPix.add(ctx.nbPix);
+            }
         }
 
         void addNbPix(long val) {
-            nbPix.add(val);
+            if (val != 0L) {
+                nbPix.add(val);
+            }
         }
 
         void set(DiffContext ctx) {

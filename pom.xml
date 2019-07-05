@@ -216,6 +216,7 @@
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
+                                -DClipShapeTest.numTests=5000
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
@@ -237,6 +238,7 @@
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
+                                -DClipShapeTest.numTests=5000
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
