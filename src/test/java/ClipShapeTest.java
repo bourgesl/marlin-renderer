@@ -279,20 +279,20 @@ Diff Pixels [Worst(All Test setups)][n: 293] sum: 16014 avg: 54.655 [4 | 160] {
 Differences [Diff Pixels [All Test setups]]:
 NbPixels [All Test setups][n: 101819] sum: 250541 avg: 2.46 [0 | 175]
 
-DASH: Diff Pixels [Worst(All Test setups)][n: 95] sum: 6255 avg: 65.842 [3 | 255] {
-            2 ..     4[n: 1] sum: 3 avg: 3.0 [3 | 3]
-            4 ..     8[n: 33] sum: 132 avg: 4.0 [4 | 4]
-            8 ..    16[n: 10] sum: 88 avg: 8.8 [8 | 12]
-           16 ..    32[n: 9] sum: 176 avg: 19.555 [16 | 28]
-           32 ..    64[n: 8] sum: 363 avg: 45.375 [36 | 63]
-           64 ..   128[n: 13] sum: 1285 avg: 98.846 [68 | 119]
-          128 ..   256[n: 21] sum: 4208 avg: 200.38 [131 | 255] }
+Float DASH: Diff Pixels [Worst(All Test setups)][n: 117] sum: 7571 avg: 64.709 [1 | 255] {
+            1 ..     2[n: 25] sum: 25 avg: 1.0 [1 | 1]
+            2 ..     4[n: 9] sum: 22 avg: 2.444 [2 | 3]
+            4 ..     8[n: 8] sum: 45 avg: 5.625 [4 | 7]
+            8 ..    16[n: 11] sum: 122 avg: 11.09 [8 | 15]
+           16 ..    32[n: 15] sum: 340 avg: 22.666 [18 | 31]
+           32 ..    64[n: 15] sum: 612 avg: 40.8 [32 | 58]
+           64 ..   128[n: 7] sum: 616 avg: 88.0 [64 | 127]
+          128 ..   256[n: 27] sum: 5789 avg: 214.407 [133 | 255] }
 Differences [Diff Pixels [All Test setups]]:
-NbPixels [All Test setups][n: 81430] sum: 3771 avg: 0.046 [0 | 42]
-
+NbPixels [All Test setups][n: 2054] sum: 7778 avg: 3.786 [1 | 46]
 */
                 THRESHOLD_DELTA = 32;
-                THRESHOLD_NBPIX = (USE_DASHES) ? 45 : 200;
+                THRESHOLD_NBPIX = (USE_DASHES) ? 50 : 200;
                 break;
             case FOUR_QUADS:
             case MIXED:
@@ -300,7 +300,6 @@ NbPixels [All Test setups][n: 81430] sum: 3771 avg: 0.046 [0 | 42]
                 // curve subdivision causes curves to be smaller
                 // then curve offsets are different (more accurate)
 /*
-NbPixels [Worst(All Test setups)][n: 1] sum: 381 avg: 381.0 [381 | 381]
 Diff Pixels [Worst(All Test setups)][n: 759] sum: 61342 avg: 80.819 [3 | 255] {
             2 ..     4[n: 3] sum: 9 avg: 3.0 [3 | 3]
             4 ..     8[n: 99] sum: 396 avg: 4.0 [4 | 4]
@@ -312,14 +311,17 @@ Diff Pixels [Worst(All Test setups)][n: 759] sum: 61342 avg: 80.819 [3 | 255] {
 Differences [Diff Pixels [All Test setups]]:
 NbPixels [All Test setups][n: 90621] sum: 2819936 avg: 31.117 [0 | 392]
 
-DASH: Diff Pixels [Worst(All Test setups)][n: 87] sum: 3169 avg: 36.425 [4 | 96] {
-            4 ..     8[n: 30] sum: 120 avg: 4.0 [4 | 4]
-            8 ..    16[n: 7] sum: 60 avg: 8.571 [8 | 12]
-           16 ..    32[n: 9] sum: 144 avg: 16.0 [16 | 16]
-           32 ..    64[n: 15] sum: 776 avg: 51.733 [48 | 63]
-           64 ..   128[n: 26] sum: 2069 avg: 79.576 [64 | 96] }
+DASH: Diff Pixels [Worst(All Test setups)][n: 227] sum: 5742 avg: 25.295 [1 | 255] {
+            1 ..     2[n: 122] sum: 122 avg: 1.0 [1 | 1]
+            2 ..     4[n: 47] sum: 108 avg: 2.297 [2 | 3]
+            4 ..     8[n: 18] sum: 92 avg: 5.111 [4 | 7]
+            8 ..    16[n: 8] sum: 75 avg: 9.375 [8 | 15]
+           16 ..    32[n: 2] sum: 57 avg: 28.5 [28 | 29]
+           32 ..    64[n: 2] sum: 89 avg: 44.5 [41 | 48]
+           64 ..   128[n: 8] sum: 864 avg: 108.0 [96 | 125]
+          128 ..   256[n: 20] sum: 4335 avg: 216.75 [128 | 255] }
 Differences [Diff Pixels [All Test setups]]:
-NbPixels [All Test setups][n: 72710] sum: 66 avg: 0.0 [0 | 22]
+NbPixels [All Test setups][n: 66] sum: 681 avg: 10.318 [1 | 28]
 */
                 THRESHOLD_DELTA = 64;
                 THRESHOLD_NBPIX = (USE_DASHES) ? 30 : 420;
@@ -347,6 +349,9 @@ NbPixels [All Test setups][n: 30] sum: 232 avg: 7.733 [1 | 27]
                     ((isMarlinFloat.get()) ? 30 : 6) // low for double
                     : 0;
         }
+
+// Visual inspection (low threshold):
+//        THRESHOLD_NBPIX = 10;
 
         System.out.println("THRESHOLD_DELTA: " + THRESHOLD_DELTA);
         System.out.println("THRESHOLD_NBPIX: " + THRESHOLD_NBPIX);
