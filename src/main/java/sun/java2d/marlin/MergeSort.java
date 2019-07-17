@@ -63,6 +63,12 @@ final class MergeSort {
                                 final boolean skipISort,
                                 final DPQSSorterContext sorter,
                                 final boolean useDPQS) {
+        // Gather array data:
+        if (RendererStats.DUMP_ARRAY_DATA && !useDPQS && !skipISort) {
+            // Copy presorted data from auxX to x:
+            System.arraycopy(auxX, 0, x, 0, insertionSortIndex);
+            RendererStats.getADC().addData(x, 0, toIndex, insertionSortIndex);
+        }
 
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
@@ -130,7 +136,7 @@ final class MergeSort {
     }
 
     // insertion sort threshold for MergeSort()
-    private static final int INSERTION_SORT_THRESHOLD = 14;
+    static final int INSERTION_SORT_THRESHOLD = 14;
 
     /**
      * Src is the source array that starts at index 0
