@@ -1066,7 +1066,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
 
                     skipISort = (prevNumCrossings >= MergeSort.DISABLE_ISORT_THRESHOLD);
                     useDPQS   = MergeSort.USE_DPQS && (skipISort || (ptrLen >= MergeSort. DPQS_THRESHOLD));
-                    
+
                     if (DO_STATS && useDPQS) {
                         rdrCtx.stats.stat_rdr_crossings_dpqs.add((skipISort) ? numCrossings : ptrLen);
                     }
