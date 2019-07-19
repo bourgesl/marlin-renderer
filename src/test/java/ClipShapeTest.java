@@ -37,7 +37,6 @@ import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
@@ -198,7 +197,7 @@ public final class ClipShapeTest {
 
         // cubic min/max error:
         System.setProperty("sun.java2d.renderer.cubic_dec_d2", "1e-3");
-        System.setProperty("sun.java2d.renderer.cubic_inc_d1", "1e-4"); // or disabled ~ 1e-6
+        System.setProperty("sun.java2d.renderer.cubic_inc_d1", "1e-4");
 
         // quad max error:
         System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
