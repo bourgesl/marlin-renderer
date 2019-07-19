@@ -197,7 +197,7 @@ public final class ClipShapeTest {
 
         // cubic min/max error:
         System.setProperty("sun.java2d.renderer.cubic_dec_d2", "1e-3");
-        System.setProperty("sun.java2d.renderer.cubic_inc_d1", "1e-4"); // or disabled ~ 1e-6
+        System.setProperty("sun.java2d.renderer.cubic_inc_d1", "1e-4");
 
         // quad max error:
         System.setProperty("sun.java2d.renderer.quad_dec_d2", "5e-4");
@@ -339,7 +339,6 @@ NbPixels [All Test setups][n: 25] sum: 162 avg: 6.48 [1 | 35]
                 break;
             default:
                 // Define uncertainty for lines:
-                // float variant have higher uncertainty
 /*
 DASH: Diff Pixels [Worst(All Test setups)][n: 7] sum: 8 avg: 1.142 [1 | 2] {
             1 ..     2[n: 6] sum: 6 avg: 1.0 [1 | 1]
