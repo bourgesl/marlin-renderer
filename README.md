@@ -27,7 +27,7 @@ For JavaFX, see the [Marlin-FX](https://github.com/bourgesl/marlin-fx) project
 
 News
 ====
-* jul 2019: MarlinFX 0.9.3.1 integrated in OpenJFX 14
+* jul 2019: MarlinFX 0.9.3.1 integrated in OpenJFX 14, backported in OpenJFX 13
 * oct 2018: MarlinFX 0.9.3 integrated in OpenJFX 12
 * oct 2018: Marlin 0.9.1.1 backported to OpenJDK 11 updates (11.0.2)
 * sep 2018: Marlin 0.9.1.1 integrated in OpenJDK 12
