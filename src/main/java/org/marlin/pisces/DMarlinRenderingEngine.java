@@ -1157,6 +1157,11 @@ public final class DMarlinRenderingEngine extends RenderingEngine
         logInfo("sun.java2d.renderer.clip.subdivider.minLength = "
                 + MarlinProperties.getSubdividerMinLength());
 
+        logInfo("sun.java2d.renderer.betterCurves     = "
+                + MarlinProperties.isDoSubdivideCurves());
+        logInfo("sun.java2d.renderer.betterCurves.runtime.enable = "
+                + MarlinProperties.isDoSubdivideCurvesRuntimeFlag());
+
         // debugging parameters
         logInfo("sun.java2d.renderer.doStats          = "
                 + MarlinConst.DO_STATS);

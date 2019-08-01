@@ -542,7 +542,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     private void somethingTo(final int type) {
         final double[] _curCurvepts = curCurvepts;
         if (DHelpers.isPointCurve(_curCurvepts, type)) {
-//            System.out.println("somethingTo: isPointCurve !!");
             return;
         }
         final LengthIterator _li = li;
@@ -599,7 +598,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     private void skipSomethingTo(final int type) {
         final double[] _curCurvepts = curCurvepts;
         if (DHelpers.isPointCurve(_curCurvepts, type)) {
-            System.out.println("skipSomethingTo: isPointCurve !!");
             return;
         }
         final LengthIterator _li = li;

@@ -23,12 +23,13 @@
 
 import org.junit.Ignore;
 import org.junit.Test;
+import test.BetterCurveShapeTest;
 
 /**
  * Simple wrapper on Marlin long tests
  */
 public class RunJUnitLongTest {
-
+/*
     @Test(timeout = 600000)
     public void clipTestPoly() throws InterruptedException {
         ClipShapeTest.main(new String[]{"-poly"});
@@ -45,6 +46,18 @@ public class RunJUnitLongTest {
     public void clipTestCubic() throws InterruptedException {
         ClipShapeTest.main(new String[]{"-cubic"});
         ClipShapeTest.main(new String[]{"-cubic", "-doDash"});
+    }
+*/    
+    @Test(timeout = 600000)
+    public void subdivideTestQuad() throws InterruptedException {
+        BetterCurveShapeTest.main(new String[]{"-quad"});
+        BetterCurveShapeTest.main(new String[]{"-quad", "-doDash"});
+    }
+
+    @Test(timeout = 600000)
+    public void subdivideTestCubic() throws InterruptedException {
+        BetterCurveShapeTest.main(new String[]{"-cubic"});
+        BetterCurveShapeTest.main(new String[]{"-cubic", "-doDash"});
     }
 
     @Ignore

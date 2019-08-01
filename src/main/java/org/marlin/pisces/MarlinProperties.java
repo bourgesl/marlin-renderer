@@ -283,6 +283,18 @@ public final class MarlinProperties {
     public static boolean isUseDPQS() {
         return getBoolean("sun.java2d.renderer.useDPQS", "true");
     }
+    
+    public static boolean isDoSubdivideCurves() {
+        return getBoolean("sun.java2d.renderer.betterCurves", "true");
+    }
+
+    public static boolean isDoSubdivideCurvesRuntimeFlag() {
+        return getBoolean("sun.java2d.renderer.betterCurves.runtime.enable", "false");
+    }
+
+    public static boolean isDoSubdivideCurvesAtRuntime() {
+        return getBoolean("sun.java2d.renderer.betterCurves.runtime", "true");
+    }
 
     // debugging parameters
 
