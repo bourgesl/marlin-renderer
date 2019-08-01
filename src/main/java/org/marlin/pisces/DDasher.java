@@ -410,6 +410,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         final double cx = dx / len;
         final double cy = dy / len;
 
+        // test: tell stroker to process joins:
+        rdrCtx.doDrawJoins = true;
+        
         final double[] _curCurvepts = curCurvepts;
         final double[] _dash = dash;
         final int _dashLen = this.dashLen;
@@ -538,7 +541,8 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     // that contains the curve we want to dash in the first type elements
     private void somethingTo(final int type) {
         final double[] _curCurvepts = curCurvepts;
-        if (pointCurve(_curCurvepts, type)) {
+        if (DHelpers.isPointCurve(_curCurvepts, type)) {
+//            System.out.println("somethingTo: isPointCurve !!");
             return;
         }
         final LengthIterator _li = li;
@@ -594,7 +598,8 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
 
     private void skipSomethingTo(final int type) {
         final double[] _curCurvepts = curCurvepts;
-        if (pointCurve(_curCurvepts, type)) {
+        if (DHelpers.isPointCurve(_curCurvepts, type)) {
+            System.out.println("skipSomethingTo: isPointCurve !!");
             return;
         }
         final LengthIterator _li = li;
@@ -612,15 +617,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         // Fix initial move:
         this.needsMoveTo = true;
         this.starting = false;
-    }
-
-    private static boolean pointCurve(final double[] curve, final int type) {
-        for (int i = 2; i < type; i++) {
-            if (curve[i] != curve[i-2]) {
-                return false;
-            }
-        }
-        return true;
     }
 
     // Objects of this class are used to iterate through curves. They return
@@ -704,7 +700,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             this.lenAtLastT = 0.0d;
             this.nextT = 0.0d;
             this.lenAtNextT = 0.0d;
-            goLeft(); // initializes nextT and lenAtNextT properly
+            // initializes nextT and lenAtNextT properly
+            goLeft(); 
+
             this.lenAtLastSplit = 0.0d;
             if (recLevel > 0) {
                 this.sidesRight[0] = false;
@@ -973,6 +971,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                           final double x2, final double y2,
                           final double x3, final double y3)
     {
+        // test: tell stroker to process joins:
+        rdrCtx.doDrawJoins = true;
+        
         final double[] _curCurvepts = curCurvepts;
 
         // monotonize curve:
@@ -1058,6 +1059,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     private void _quadTo(final double x1, final double y1,
                          final double x2, final double y2)
     {
+        // test: tell stroker to process joins:
+        rdrCtx.doDrawJoins = true;
+        
         final double[] _curCurvepts = curCurvepts;
 
         // monotonize quad:

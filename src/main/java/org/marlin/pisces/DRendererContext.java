@@ -60,6 +60,8 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     final double[] double6 = new double[6];
     // shared curve (dirty) (Renderer / Stroker)
     final DCurve curve = new DCurve();
+    // shared curve (dirty) (CurveBasicMonotonizer)
+    final DCurve rotCurve = new DCurve();
     // MarlinRenderingEngine NormalizingPathIterator NearestPixelCenter:
     final NormalizingPathIterator nPCPathIterator;
     // MarlinRenderingEngine NearestPixelQuarter NormalizingPathIterator:
@@ -89,6 +91,8 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     double clipInvScale = 0.0d;
     // CurveBasicMonotonizer instance
     final CurveBasicMonotonizer monotonizer;
+    // flag indicating to force the stroker to process joins
+    boolean doDrawJoins = true;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
     // DPQS Sorter context
@@ -168,6 +172,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         doClip     = false;
         closedPath = false;
         clipInvScale = 0.0d;
+        doDrawJoins = true;
 
         // if context is maked as DIRTY:
         if (dirty) {

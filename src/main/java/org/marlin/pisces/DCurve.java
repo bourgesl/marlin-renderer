@@ -25,6 +25,8 @@
 
 package org.marlin.pisces;
 
+import java.util.Arrays;
+
 final class DCurve {
 
     double ax, ay, bx, by, cx, cy, dx, dy;
@@ -112,6 +114,22 @@ final class DCurve {
         dby = 0.0d;
     }
 
+    double xat(final double t) {
+        return DHelpers.evalCubic(ax, bx, cx, dx, t);
+    }
+
+    double yat(final double t) {
+        return DHelpers.evalCubic(ay, by, cy, dy, t);
+    }
+
+    double dxat(final double t) {
+        return DHelpers.evalQuad(dax, dbx, cx, t);
+    }
+
+    double dyat(final double t) {
+        return DHelpers.evalQuad(day, dby, cy, t);
+    }
+    
     int dxRoots(final double[] roots, final int off) {
         return DHelpers.quadraticRoots(dax, dbx, cx, roots, off);
     }
@@ -178,12 +196,16 @@ final class DCurve {
         int ret = off;
         final int end = off + perpendiculardfddf(roots, off);
         roots[end] = 1.0d; // always check interval end points
+        
+        // add extrema:
+//        ret = end;
 
         double t0 = 0.0d, ft0 = ROCsq(t0) - w2;
 
-        for (int i = off; i <= end; i++) {
+        for (int i = off; i <= end; ++i) {
             double t1 = roots[i], ft1 = ROCsq(t1) - w2;
             if (ft0 == 0.0d) {
+//                System.out.println("ft0("+t0+") = "+ft0);
                 roots[ret++] = t0;
             } else if (ft1 * ft0 < 0.0d) { // have opposite signs
                 // (ROC(t)^2 == w^2) == (ROC(t) == w) is true because
@@ -192,6 +214,23 @@ final class DCurve {
             }
             t0 = t1;
             ft0 = ft1;
+        }
+        
+        if (false && ret - off > 1) {
+        // sudivide at half:
+            final double[] old = Arrays.copyOfRange(roots, off, ret);
+
+            ret = off;
+            
+            t0 = old[0];
+            roots[ret++] = t0;
+            for (int i = 1; i < old.length; ++i) {
+                roots[ret++] = (t0 * 0.75 + old[i] * 0.25);
+                roots[ret++] = (t0 * 0.50 + old[i] * 0.50);
+                roots[ret++] = (t0 * 0.25 + old[i] * 0.75);
+                t0 = old[i];
+                roots[ret++] = t0;
+            }
         }
 
         return ret - off;
@@ -218,9 +257,11 @@ final class DCurve {
         double s = t0, fs = eliminateInf(ROCsq(s) - w2);
         double r = s, fr;
 
-        for (int i = 0; i < iterLimit && Math.abs(t - s) > err * Math.abs(t + s); i++) {
+        for (int i = 0; i < iterLimit && Math.abs(t - s) > err /* * Math.abs(t + s) */; ++i) {
             r = (fs * t - ft * s) / (fs - ft);
             fr = ROCsq(r) - w2;
+            
+//            System.out.println("falsePositionROCsqMinusX("+i+"): "+fr + " vs " + ft + " for t= "+t + " s="+s);
             if (sameSign(fr, ft)) {
                 ft = fr; t = r;
                 if (side < 0) {
@@ -238,9 +279,12 @@ final class DCurve {
                     side = 1;
                 }
             } else {
+//                System.out.println("falsePositionROCsqMinusX("+i+"): break");
                 break;
             }
+//            System.out.println("falsePositionROCsqMinusX("+i+"): next t= "+t + " s="+s + " delta: "+Math.abs(t - s));
         }
+//        System.out.println("falsePositionROCsqMinusX("+r+") = "+(ROCsq(r) - w2));
         return r;
     }
 

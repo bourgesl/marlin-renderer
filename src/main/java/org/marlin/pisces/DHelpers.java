@@ -31,6 +31,17 @@ import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.StatLong;
 
 final class DHelpers implements MarlinConst {
+    
+    private final static boolean USE_CURVE_ANGLE_SUBDIVISION = true;
+
+    // PI/8 (22.5 deg) or PI/12 (15 deg) 
+    private final static double MIN_ANGLE = Math.PI / 12.0d; // 15 deg ie divide 90° in 5 parts
+    private final static double COS2_MIN_ANGLE = Math.pow(Math.cos(MIN_ANGLE), 2.0d);
+
+    private static final double EPS = 1e-9d;
+
+    private static final double T_MIN = 1e-6d;
+    private static final double T_MAX = 1.0d - T_MIN;
 
     private DHelpers() {
         throw new Error("This is a non instantiable class");
@@ -41,6 +52,30 @@ final class DHelpers implements MarlinConst {
         return (d <= err && d >= -err);
     }
 
+    static boolean within(final double x1, final double y1,
+                          final double x2, final double y2,
+                          final double err)
+    {
+        assert err > 0 : "";
+        // compare taxicab distance. ERR will always be small, so using
+        // true distance won't give much benefit
+        return (within(x1, x2, err) && // we want to avoid calling Math.abs
+                within(y1, y2, err));  // this is just as good.
+    }
+
+    static boolean isPointCurve(final double[] curve, final int type) {
+        return isPointCurve(curve, type, EPS);
+    }
+    
+    static boolean isPointCurve(final double[] curve, final int type, final double err) {
+        for (int i = 2; i < type; i++) {
+            if (!within(curve[i], curve[i - 2], err)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     static double evalCubic(final double a, final double b,
                             final double c, final double d,
                             final double t)
@@ -59,26 +94,33 @@ final class DHelpers implements MarlinConst {
     {
         int ret = off;
         if (a != 0.0d) {
-            final double dis = b*b - 4.0d * a * c;
-            if (dis > 0.0d) {
-                final double sqrtDis = Math.sqrt(dis);
-                // depending on the sign of b we use a slightly different
-                // algorithm than the traditional one to find one of the roots
-                // so we can avoid adding numbers of different signs (which
-                // might result in loss of precision).
-                if (b >= 0.0d) {
-                    zeroes[ret++] = (2.0d * c) / (-b - sqrtDis);
-                    zeroes[ret++] = (-b - sqrtDis) / (2.0d * a);
-                } else {
-                    zeroes[ret++] = (-b + sqrtDis) / (2.0d * a);
-                    zeroes[ret++] = (2.0d * c) / (-b + sqrtDis);
+            double d = b * b - 4.0d * a * c;
+            if (d > 0.0d) {
+                d = Math.sqrt(d);
+                // For accuracy, calculate one root using:
+                //     (-b +/- d) / 2a
+                // and the other using:
+                //     2c / (-b +/- d)
+                // Choose the sign of the +/- so that b+d gets larger in magnitude
+                if (b < 0.0) {
+                    d = -d;
                 }
-            } else if (dis == 0.0d) {
+                final double q = (b + d) / -2.0d;
+                // We already tested a for being 0 above
+                zeroes[ret++] = q / a;
+                if (q != 0.0d) {
+                    zeroes[ret++] = c / q;
+                }
+            } else if (d == 0.0d) {
                 zeroes[ret++] = -b / (2.0d * a);
             }
         } else if (b != 0.0d) {
             zeroes[ret++] = -c / b;
         }
+/*
+        System.out.println("quadraticRoots()");
+        dumpRoots(0.0d, a, b, c, zeroes, off, ret - off);
+*/
         return ret - off;
     }
 
@@ -91,6 +133,30 @@ final class DHelpers implements MarlinConst {
             final int num = quadraticRoots(a, b, c, pts, off);
             return filterOutNotInAB(pts, off, num, A, B) - off;
         }
+
+        int num;
+
+    if (false) {
+        // Try higher precision (not needed if subdivision is performed)
+        final double[] eqn = {c, b, a, d};
+        final double[] res = new double[3];
+        int nRoots = java.awt.geom.CubicCurve2D.solveCubic(eqn, res);
+
+        num = nRoots;
+        for (int i = 0; i < num; i++) {
+            pts[off + i] = res[i];
+        }
+/*        
+        System.out.println("cubicRootsInAB()");
+
+        // normal form: x^3 + ax^2 + bx + c = 0
+        a /= d;
+        b /= d;
+        c /= d;
+        dumpRoots(1.0d, a, b, c, pts, off, num);
+*/        
+    } else {
+        
         // From Graphics Gems:
         // https://github.com/erich666/GraphicsGems/blob/master/gems/Roots3And4.c
         // (also from awt.geom.CubicCurve2D. But here we don't need as
@@ -98,10 +164,6 @@ final class DHelpers implements MarlinConst {
         // our own customized version).
 
         // normal form: x^3 + ax^2 + bx + c = 0
-
-        /*
-         * TODO: cleanup all that code after reading Roots3And4.c
-         */
         a /= d;
         b /= d;
         c /= d;
@@ -114,9 +176,9 @@ final class DHelpers implements MarlinConst {
         // p = P/3
         // q = Q/2
         // instead and use those values for simplicity of the code.
-        final double sub = (1.0d / 3.0d) * a;
         final double sq_A = a * a;
         final double p = (1.0d / 3.0d) * ((-1.0d / 3.0d) * sq_A + b);
+        final double sub = (1.0d / 3.0d) * a;
         final double q = (1.0d / 2.0d) * ((2.0d / 27.0d) * a * sq_A - sub * b + c);
 
         // use Cardano's formula
@@ -124,8 +186,27 @@ final class DHelpers implements MarlinConst {
         final double cb_p = p * p * p;
         final double D = q * q + cb_p;
 
-        int num;
-        if (D < 0.0d) {
+        if (within(D, 0.0d, EPS)) {
+/*
+            final double err = 1200000000.0d * Math.ulp(Math.abs(uv) + Math.abs(sub));
+
+            if (within(D, 0.0d, err) || within(u, v, err)) {
+                pts[off + 1] = (-uv / 2.0d - sub);
+                num = 2;
+            }
+*/            
+            if (within(q, 0.0d, EPS)) {
+                /* one triple solution */
+                pts[off    ] = (- sub);
+                num = 1;
+            } else {
+                /* one single and one double solution */
+                final double u = FastMath.cbrt(-q);
+                pts[off    ] = (2.0d * u - sub);
+                pts[off + 1] = (- u - sub);
+                num = 2;
+            }
+        } else if (D < 0.0d) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
             final double phi = (1.0d / 3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
             final double t = 2.0d * Math.sqrt(-p);
@@ -138,17 +219,32 @@ final class DHelpers implements MarlinConst {
             final double sqrt_D = Math.sqrt(D);
             final double u =   FastMath.cbrt(sqrt_D - q);
             final double v = - FastMath.cbrt(sqrt_D + q);
+            final double uv = u + v;
 
-            pts[off    ] = (u + v - sub);
+            pts[off    ] = (uv - sub);
             num = 1;
-
-            if (within(D, 0.0d, 1e-8d)) {
-                pts[off + 1] = ((-1.0d / 2.0d) * (u + v) - sub);
-                num = 2;
-            }
         }
-
+        
+        // TODO: refine precision myself (newton?) !!
+/*        
+        // normal form: 
+        System.out.println("cubicRootsInAB()");
+        dumpRoots(1.0d, a, b, c, pts, off, num);
+*/        
+    }        
+                
         return filterOutNotInAB(pts, off, num, A, B) - off;
+    }
+    
+    // g(t) = d*t^3 + a*t^2 + b*t + c
+    static void dumpRoots(final double d, double a, double b, double c,
+                          final double[] pts, final int off, final int len) {
+
+        for (int i = 0; i < len; ++i) {
+            final double t = pts[off + i];
+            final double g = (((d * t) + a) * t + b) * t + c;
+            System.out.println("root(t = " + t + "):" + g);
+        }
     }
 
     // returns the index 1 past the last valid element remaining after filtering
@@ -156,14 +252,30 @@ final class DHelpers implements MarlinConst {
                                 final double a, final double b)
     {
         int ret = off;
-        for (int i = off, end = off + len; i < end; i++) {
-            if (nums[i] >= a && nums[i] < b) {
+        for (int i = off, end = off + len; i < end; ++i) {
+            if (nums[i] > a && nums[i] < b) {
                 nums[ret++] = nums[i];
             }
         }
         return ret;
     }
 
+    // returns the index 1 past the last valid element remaining after filtering
+    static int filterDuplicates(final double[] nums, final int len, final double err)
+    {
+        int ret = 0;
+        double prev = -1.0d;
+        
+        for (int i = 0; i < len; ++i) {
+            // remove duplicated values:
+            if (!within(nums[i], prev, err)) {
+                nums[ret++] = nums[i];
+            }
+            prev = nums[i];
+        }
+        return ret;
+    }
+    
     static double fastLineLen(final double x0, final double y0,
                               final double x1, final double y1)
     {
@@ -236,29 +348,190 @@ final class DHelpers implements MarlinConst {
     // finds values of t where the curve in pts should be subdivided in order
     // to get good offset curves a distance of w away from the middle curve.
     // Stores the points in ts, and returns how many of them there were.
-    static int findSubdivPoints(final DCurve c, final double[] pts,
+    static int findSubdivPoints(final DCurve c, final DCurve rotc, final double[] pts,
                                 final double[] ts, final int type,
                                 final double w2)
     {
-        final double x12 = pts[2] - pts[0];
-        final double y12 = pts[3] - pts[1];
-        // if the curve is already parallel to either axis we gain nothing
-        // from rotating it.
-        if ((y12 != 0.0d) && (x12 != 0.0d)) {
-            // we rotate it so that the first vector in the control polygon is
-            // parallel to the x-axis. This will ensure that rotated quarter
-            // circles won't be subdivided.
-            final double hypot = Math.sqrt(x12 * x12 + y12 * y12);
-            final double cos = x12 / hypot;
-            final double sin = y12 / hypot;
-            final double x1 = cos * pts[0] + sin * pts[1];
-            final double y1 = cos * pts[1] - sin * pts[0];
-            final double x2 = cos * pts[2] + sin * pts[3];
-            final double y2 = cos * pts[3] - sin * pts[2];
-            final double x3 = cos * pts[4] + sin * pts[5];
-            final double y3 = cos * pts[5] - sin * pts[4];
+//        System.out.println("findSubdivPoints: in");
+//        new Throwable().printStackTrace();
+        
+        int ret = 0;
 
-            switch(type) {
+        c.set(pts, type);
+
+        // we subdivide at values of t such that the initial
+        // curves are monotonic in x and y.
+        ret += c.dxRoots(ts, ret);
+        ret += c.dyRoots(ts, ret);
+        // max 4 roots
+
+        // subdivide at inflection points.
+        if (type == 8) {
+            // quadratic curves can't have inflection points
+            ret += c.infPoints(ts, ret);
+            // max 2 infPoints
+            
+//            System.out.println("findSubdivPoints(infPoints): "+Arrays.toString(Arrays.copyOf(ts, ret)));
+        }
+
+        if (true) {
+        // now we must subdivide at points where one of the offset curves will have
+        // a cusp. This happens at ts where the radius of curvature is equal to w.
+        ret += c.rootsOfROCMinusW(ts, ret, w2, EPS);
+        // max 4 roots
+        }
+
+        ret = filterOutNotInAB(ts, 0, ret, T_MIN, T_MAX);
+        isort(ts, ret);
+        // max 10 initial roots
+
+        // Extra pass to check large curvature:
+        if (USE_CURVE_ANGLE_SUBDIVISION) {
+//        System.out.println("findSubdivPoints(before split): "+Arrays.toString(Arrays.copyOf(ts, ret)));
+
+            // include end (will be discarded anyway):
+            ts[ret++] = 1.0d;
+            // +1 value needed => min 11 elements
+
+            final int end = ret;
+            double t1 = 0.0d;
+
+            // Check large angles on sorted t intervals in [0;1]:
+            for (int i = 0; i < end; ++i) {
+                // max 16 extra subdivision per interval: 10 roots + [0] + [1] = 12
+                ret += maySplitCubic(c, rotc, pts, ts, type, ret, t1, ts[i]);
+                t1 = ts[i];
+            }
+
+            if (ret == end) {
+                // skip end:
+                --ret;
+            } else {
+                // filter and sort again:
+                ret = filterOutNotInAB(ts, 0, ret, T_MIN, T_MAX);
+                isort(ts, ret);
+            }
+        }
+        
+        // Anyway filter out duplicated t values:
+        ret = filterDuplicates(ts, ret, EPS);
+
+//        System.out.println("findSubdivPoints(after split): "+Arrays.toString(Arrays.copyOf(ts, ret)));
+
+//        System.out.println("findSubdivPoints: out");
+        return ret;
+    }
+    
+    private static int maySplitCubic(final DCurve c, final DCurve rotc, final double[] pts,
+                                     final double[] ts, final int type, final int off,
+                                     final double t1, final double t2)
+    {
+//        System.out.println("shouldSplitCubic(" + t1 + " - " + t2 + ");");
+
+        final double dx1 = c.dxat(t1);
+        final double dy1 = c.dyat(t1);
+        final double dx2 = c.dxat(t2);
+        final double dy2 = c.dyat(t2);
+
+        // if dP1 and dP2 are parallel, that must mean this curve is a line
+        double dotsq = (dx1 * dx2 + dy1 * dy2);
+        dotsq *= dotsq;
+        final double l1sq = dx1 * dx1 + dy1 * dy1;
+        final double l2sq = dx2 * dx2 + dy2 * dy2;
+
+        if (within(dotsq, l1sq * l2sq, 4.0d * Math.ulp(dotsq))) {
+//            System.out.println("shouldSplitCubic: parallel");
+            return 0;
+        }
+
+        // check angles (dP1 vs dP2):
+        int ret = off;
+
+        // consider cos only:
+        final double cos2D12 = dotsq / (l1sq * l2sq);
+
+//        System.out.println("cos2Angle: " + cos2Angle);
+//        System.out.println("Curve angle: " + Math.toDegrees(FastMath.acos(Math.sqrt(cos2Angle))));
+
+        
+        // angle > 22 deg:
+        if (cos2D12 < COS2_MIN_ANGLE) {
+            final double crossD12 = (dx1 * dy2 - dy1 * dx2);
+            final boolean signD12 = (crossD12 >= 0.0d);
+/*
+            // we rotate it so that the first vector is parallel to the x-axis.
+            final double hypot = Math.sqrt(l1sq + l2sq);
+            final double cosD1 = dx1 / hypot;
+            final double sinD1 = dy1 / hypot;
+            
+            double angleD1 = FastMath.acos(cosD1); // rad
+            if (sinD1 < 0.0d) {
+                angleD1 = -angleD1;
+            }
+            
+            final double y1 = c.yat(t1);
+*/            
+//            System.out.println("angleD1: "+Math.toDegrees(angleD1));
+            
+            // TODO: avoid any acos / cos computation !
+            /*
+            Additions angles:
+                cos ⁡ ( a + b ) = cos ⁡ a cos ⁡ b − sin ⁡ a sin ⁡ b
+                sin ⁡ ( a + b ) = sin ⁡ a cos ⁡ b + cos ⁡ a sin ⁡ b
+
+                cos^2(x) = (1 + cos(2x) ) / 2
+                sin^2(x) = (1 - cos(2x) ) / 2
+            */
+            
+            // TODO: preserve laws of cosines
+            final double maxAngle = FastMath.acos(Math.sqrt(cos2D12)); // rad
+
+//            System.out.println("Large Curve angle: " + Math.toDegrees(maxAngle));
+            
+            int nSplits = 1;
+            double step;
+            
+            step = maxAngle;
+            do {
+                step *= 0.5d; // half
+                nSplits <<= 1;
+            } while (step > MIN_ANGLE);
+            
+            if (signD12) {
+                step = -step;
+            }
+
+//            System.out.println("angle step: " + ((sign) ? "+" : "-") + step);
+
+            for (int i = 1; i < nSplits; ++i) {
+                final double angle = (/*angleD1 +*/ step * i);
+                
+                // TODO: preserve laws of cosines
+                final double cos = FastMath.cos(angle);
+                final double sin = FastMath.sin(angle);
+
+//                System.out.println("angle: " + Math.toDegrees(angle));
+
+                // max 4 solutions:
+                ret += findExtremaOfRotatedCurve(rotc, pts, ts, type, ret, t1, t2, cos, sin);
+            } // max (PI/2 div PI/8 = 4) ie max 4 x 4 solutions: 16
+        }
+        return ret - off;
+    }
+    
+    static int findExtremaOfRotatedCurve(final DCurve c, final double[] pts,
+                                 final double[] ts, final int type, final int off,
+                                 final double t1, final double t2,
+                                 final double cos, final double sin) {
+        
+        final double x1 = cos * pts[0] + sin * pts[1];
+        final double y1 = cos * pts[1] - sin * pts[0];
+        final double x2 = cos * pts[2] + sin * pts[3];
+        final double y2 = cos * pts[3] - sin * pts[2];
+        final double x3 = cos * pts[4] + sin * pts[5];
+        final double y3 = cos * pts[5] - sin * pts[4];
+
+        switch(type) {
             case 8:
                 final double x4 = cos * pts[6] + sin * pts[7];
                 final double y4 = cos * pts[7] - sin * pts[6];
@@ -268,30 +541,39 @@ final class DHelpers implements MarlinConst {
                 c.set(x1, y1, x2, y2, x3, y3);
                 break;
             default:
-            }
+        }
+
+//        System.out.println("findExtremaOfRotatedCurve(before): " + Arrays.toString(Arrays.copyOf(ts, off)));
+
+        int ret = off;
+/*
+        if (false) {
+            ret += c.yPoints(ts, ret, y);
         } else {
-            c.set(pts, type);
+*/        
+            // we subdivide at values of t such that the remaining rotated
+            // curves are monotonic in x and y.
+            // Idea: cheapest way to find interesting horizontal / vertical points along the curve after rotation:
+            ret += c.dxRoots(ts, ret);
+            ret += c.dyRoots(ts, ret);
+//        }
+        
+        // TODO: try cubic solver to find line - intersection
+/*
+        if (ret - off > 0) {
+            System.out.println("findExtremaOfRotatedCurve(1): " + Arrays.toString(Arrays.copyOfRange(ts, off, ret))
+                    + " in ]" + t1 + " - " + t2 + "[");
         }
-
-        int ret = 0;
-        // we subdivide at values of t such that the remaining rotated
-        // curves are monotonic in x and y.
-        ret += c.dxRoots(ts, ret);
-        ret += c.dyRoots(ts, ret);
-
-        // subdivide at inflection points.
-        if (type == 8) {
-            // quadratic curves can't have inflection points
-            ret += c.infPoints(ts, ret);
+*/
+        // Discard any intermediate t value not in ]t1; t2[ range (max 4 potential solutions):
+        ret = filterOutNotInAB(ts, off, ret - off, t1, t2);
+/*
+        if (ret - off > 0) {
+            System.out.println("findExtremaOfRotatedCurve(2): " + Arrays.toString(Arrays.copyOfRange(ts, off, ret))
+                    + " in ]" + t1 + " - " + t2 + "[");
         }
-
-        // now we must subdivide at points where one of the offset curves will have
-        // a cusp. This happens at ts where the radius of curvature is equal to w.
-        ret += c.rootsOfROCMinusW(ts, ret, w2, 0.0001d);
-
-        ret = filterOutNotInAB(ts, 0, ret, 0.0001d, 0.9999d);
-        isort(ts, ret);
-        return ret;
+*/
+        return ret - off;
     }
 
     // finds values of t where the curve in pts should be subdivided in order
@@ -340,10 +622,10 @@ final class DHelpers implements MarlinConst {
     }
 
     static void isort(final double[] a, final int len) {
-        for (int i = 1, j; i < len; i++) {
+        for (int i = 1, j; i < len; ++i) {
             final double ai = a[i];
             j = i - 1;
-            for (; j >= 0 && a[j] > ai; j--) {
+            for (; j >= 0 && a[j] > ai; --j) {
                 a[j + 1] = a[j];
             }
             a[j + 1] = ai;
@@ -759,7 +1041,7 @@ final class DHelpers implements MarlinConst {
             final double[] _curves = curves;
             int e = 0;
 
-            for (int i = 0; i < nc; i++) {
+            for (int i = 0; i < nc; ++i) {
                 switch(_curveTypes[i]) {
                 case TYPE_LINETO:
                     io.lineTo(_curves[e], _curves[e+1]);
@@ -958,7 +1240,7 @@ final class DHelpers implements MarlinConst {
             }
             final int[] _values = indices;
 
-            for (int i = 0, j; i < nc; i++) {
+            for (int i = 0, j; i < nc; ++i) {
                 j = _values[i] << 1;
                 io.lineTo(points[j], points[j + 1]);
             }

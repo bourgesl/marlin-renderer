@@ -1073,7 +1073,8 @@ final class DTransformingPathConsumer2D {
 
     static final class CurveBasicMonotonizer {
 
-        private static final int MAX_N_CURVES = 11;
+        // (10 roots + 2 extrema) * 4 subdivision * 4 solutions (upper limit)
+        private static final int MAX_N_CURVES = 12 * 5 * 4;
 
         // squared half line width (for stroker)
         private double lw2;
@@ -1085,13 +1086,15 @@ final class DTransformingPathConsumer2D {
         // enough room to store all curves.
         final double[] middle = new double[MAX_N_CURVES * 6 + 2];
         // t values at subdivision points
-        private final double[] subdivTs = new double[MAX_N_CURVES - 1];
+        private final double[] subdivTs = new double[MAX_N_CURVES];
 
         // dirty curve
         private final DCurve curve;
+        private final DCurve rotCurve;
 
         CurveBasicMonotonizer(final DRendererContext rdrCtx) {
             this.curve = rdrCtx.curve;
+            this.rotCurve = rdrCtx.rotCurve;
         }
 
         void init(final double lineWidth) {
@@ -1110,7 +1113,7 @@ final class DTransformingPathConsumer2D {
             mid[6] = x3;  mid[7] = y3;
 
             final double[] subTs = subdivTs;
-            final int nSplits = DHelpers.findSubdivPoints(curve, mid, subTs, 8, lw2);
+            final int nSplits = DHelpers.findSubdivPoints(curve, rotCurve, mid, subTs, 8, lw2);
 
             double prevT = 0.0d;
             for (int i = 0, off = 0; i < nSplits; i++, off += 6) {
@@ -1135,7 +1138,7 @@ final class DTransformingPathConsumer2D {
             mid[4] = x2;  mid[5] = y2;
 
             final double[] subTs = subdivTs;
-            final int nSplits = DHelpers.findSubdivPoints(curve, mid, subTs, 6, lw2);
+            final int nSplits = DHelpers.findSubdivPoints(curve, rotCurve, mid, subTs, 6, lw2);
 
             double prevt = 0.0d;
             for (int i = 0, off = 0; i < nSplits; i++, off += 4) {
