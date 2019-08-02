@@ -1138,22 +1138,19 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         // if these vectors are too small, normalize them, to avoid future
         // precision problems.
+        if (Math.abs(dxs) < 0.1d && Math.abs(dys) < 0.1d) {
+            final double len = Math.sqrt(dxs * dxs + dys * dys);
+            dxs /= len;
+            dys /= len;
+        }
         if (Math.abs(dxf) < 0.1d && Math.abs(dyf) < 0.1d) {
             final double len = Math.sqrt(dxf * dxf + dyf * dyf);
             dxf /= len;
             dyf /= len;
         }
-
         // Take care: joins are generated tons by tons by Dasher (subdivision and many small curves ...) !
         // TODO: discard join from Dasher ie only for REAL inputs
-        if (rdrCtx.doDrawJoins) {
-            if (Math.abs(dxs) < 0.1d && Math.abs(dys) < 0.1d) {
-                final double len = Math.sqrt(dxs * dxs + dys * dys);
-                dxs /= len;
-                dys /= len;
-            }
-            computeOffset(dxs, dys, lineWidth2, offset0);
-        }
+        computeOffset(dxs, dys, lineWidth2, offset0);
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, offset0[0], offset0[1], outcode0);
 
         int nSplits = 0;
@@ -1279,6 +1276,11 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         // if these vectors are too small, normalize them, to avoid future
         // precision problems.
+        if (Math.abs(dxs) < 0.1d && Math.abs(dys) < 0.1d) {
+            final double len = Math.sqrt(dxs * dxs + dys * dys);
+            dxs /= len;
+            dys /= len;
+        }
         if (Math.abs(dxf) < 0.1d && Math.abs(dyf) < 0.1d) {
             final double len = Math.sqrt(dxf * dxf + dyf * dyf);
             dxf /= len;
@@ -1287,14 +1289,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         // Take care: joins are generated tons by tons by Dasher (subdivision and many small curves ...) !
         // TODO: discard join from Dasher ie only for REAL inputs
-        if (rdrCtx.doDrawJoins) {
-            if (Math.abs(dxs) < 0.1d && Math.abs(dys) < 0.1d) {
-                final double len = Math.sqrt(dxs * dxs + dys * dys);
-                dxs /= len;
-                dys /= len;
-            }
-            computeOffset(dxs, dys, lineWidth2, offset0);
-        }
+        computeOffset(dxs, dys, lineWidth2, offset0);
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, offset0[0], offset0[1], outcode0);
 
         int nSplits = 0;

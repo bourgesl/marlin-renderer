@@ -596,8 +596,28 @@ final class DHelpers implements MarlinConst {
         int ret = 0;
         // we subdivide at values of t such that the initial
         // curves are monotonic in x and y.
-        ret += c.dxRoots(ts, ret);
-        ret += c.dyRoots(ts, ret);
+        if (false) {
+            final double x12 = pts[2] - pts[0];
+            final double y12 = pts[3] - pts[1];
+            // if the curve is already parallel to either axis we gain nothing
+            // from rotating it.
+            if ((y12 != 0.0d) && (x12 != 0.0d)) {
+                // we rotate it so that the first vector in the control polygon is
+                // parallel to the x-axis. This will ensure that rotated quarter
+                // circles won't be subdivided.
+                final double hypot = Math.sqrt(x12 * x12 + y12 * y12);
+                final double cos = x12 / hypot;
+                final double sin = y12 / hypot;
+                // rotate original curve:
+                ret += findExtremaOfRotatedCurve(c, pts, ts, type, ret, 0.0, 1.0, cos, sin);
+            } else {
+                ret += c.dxRoots(ts, ret);
+                ret += c.dyRoots(ts, ret);
+            }            
+        } else {
+            ret += c.dxRoots(ts, ret);
+            ret += c.dyRoots(ts, ret);
+        }
         // max 4 roots
 
         // subdivide at inflection points.
@@ -619,8 +639,6 @@ final class DHelpers implements MarlinConst {
         // Extra pass to check large curvature:
         if (DO_SUBDIVIDE_CURVE_ANGLE
                 || (DO_SUBDIVIDE_CURVE_RUNTIME_ENABLE && MarlinProperties.isDoSubdivideCurvesAtRuntime())) {
-
-//        System.out.println("findSubdivPoints(before split): "+Arrays.toString(Arrays.copyOf(ts, ret)));
 
             // include end (will be discarded anyway):
             ts[ret++] = 1.0d;
@@ -649,7 +667,6 @@ final class DHelpers implements MarlinConst {
         // Anyway filter out duplicated t values:
         ret = filterDuplicates(ts, ret, EPS);
 
-//        System.out.println("findSubdivPoints(after split): "+Arrays.toString(Arrays.copyOf(ts, ret)));
         return ret;
     }
     
@@ -657,8 +674,6 @@ final class DHelpers implements MarlinConst {
                                      final double[] ts, final int type, final int off,
                                      final double t1, final double t2)
     {
-//        System.out.println("shouldSplitCubic(" + t1 + " - " + t2 + ");");
-
         final double dx1 = c.dxat(t1);
         final double dy1 = c.dyat(t1);
         final double dx2 = c.dxat(t2);
@@ -671,7 +686,6 @@ final class DHelpers implements MarlinConst {
         final double l2sq = dx2 * dx2 + dy2 * dy2;
 
         if (within(dotsq, l1sq * l2sq, 4.0d * Math.ulp(dotsq))) {
-//            System.out.println("shouldSplitCubic: parallel");
             return 0;
         }
 

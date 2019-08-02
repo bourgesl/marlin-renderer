@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
+ */
 package test;
 
 import java.awt.BasicStroke;
@@ -16,48 +38,79 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 
 /**
  * Basic curve drawing application
- * @author bourgesl
  */
 public final class DrawCurveApplication extends JPanel {
 
     private static final long serialVersionUID = 1L;
-
-    static final boolean SHOW_EXTRA = true;
-
-    static final boolean USE_DASHES = false;
-    static final float STROKE_SIZE = 400.0f;
-    static final float[] DASHES = (USE_DASHES)
-            ? new float[]{63f, 27f}
-//            ? new float[]{63000f, 27f}
-            : null;
-
-    static final boolean SHOW_QUAD = false;
-    static final boolean SHOW_CUBIC = true;
-    static final boolean SHOW_ELLIPSE = false;
-
-    static final boolean SHOW_OUTLINE = SHOW_EXTRA && false;
-
-    static final boolean PAINT_CONTROLS = SHOW_EXTRA && true;
-    static final boolean PAINT_DETAILS = SHOW_EXTRA && true;
-    static final boolean PAINT_TANGENT = SHOW_EXTRA && false;
 
     /**
      * Main
      * @param unused
      */
     public static void main(String[] unused) {
-        final JFrame frame = new JFrame("Draw Curve");
-        frame.getContentPane().add(new DrawCurveApplication());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(2000, 2000);
-        frame.setVisible(true);
+        // Set the default locale to en-US locale (for Numerical Fields "." ",")
+        Locale.setDefault(Locale.US);
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            /**
+             * Create the Gui using EDT
+             */
+            @Override
+            public void run() {
+                final DrawCurveApplication appPanel = new DrawCurveApplication();
+                final DrawCurveSettingsPanel paramsPanel = new DrawCurveSettingsPanel();
+                paramsPanel.setApp(appPanel);
+
+                final JFrame frame = new JFrame("Canvas");
+                frame.getContentPane().add(appPanel);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.pack();
+                frame.setSize(2000, 2000);
+                frame.setVisible(true);
+
+                final JFrame frameParams = new JFrame("Parameters");
+                frameParams.getContentPane().add(paramsPanel);
+                frameParams.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frameParams.pack();
+                frameParams.setLocation(2050, 150);
+                frameParams.setVisible(true);
+                frameParams.toFront();
+            }
+        });
     }
+
+    // settings
+    // stroke parameters:
+    float strokeWidth = 400.0f;
+    int strokeCap = BasicStroke.CAP_BUTT;
+    int strokeJoin = BasicStroke.JOIN_BEVEL;
+
+    boolean useDashes = false;
+    float[] dashes
+            = new float[]{63f, 27f};
+//            = new float[]{63000f, 27f};
+
+    // shape parameters:
+    AtomicBoolean showQuad = new AtomicBoolean(false);
+    AtomicBoolean showCubic = new AtomicBoolean(true);
+    boolean showEllipse = false;
+
+    // painting parameters:
+    boolean showExtra = true;
+    boolean showOutline = false;
+    boolean paintControls = true;
+    boolean paintDetails = true;
+    boolean paintDetailsTangent = true;
 
     // members
     private final CanvasPanel canvas;
@@ -72,29 +125,25 @@ public final class DrawCurveApplication extends JPanel {
     );
 
     // Quadratic curve:
-    private final Marker quadStart = new Marker(
+    private final Marker quadStart = new Marker(1, showQuad,
             50 * 5, 75 * 5
     );
 
-    private final Marker quadEnd = new Marker(
-            150 * 5, 75 * 5
-    );
-
-    private final Marker quadCtrl = new Marker(
+    private final Marker quadCtrl = new Marker(2, showQuad,
             // 80 * 5, 25 * 5
             3839.0, 928.0
     );
 
+    private final Marker quadEnd = new Marker(3, showQuad,
+            150 * 5, 75 * 5
+    );
+
     // Cubic curve:
-    private final Marker cubicStart = new Marker(
+    private final Marker cubicStart = new Marker(1, showCubic,
             50 * 5, 150 * 5
     );
 
-    private final Marker cubicEnd = new Marker(
-            150 * 5, 200 * 5
-    );
-
-    private final Marker cubicCtrl1 = new Marker(
+    private final Marker cubicCtrl1 = new Marker(2, showCubic,
             // 80 * 5, 100 * 5
             // 1229.0, 714.0
             // 73.0, 430.0
@@ -102,7 +151,7 @@ public final class DrawCurveApplication extends JPanel {
             214.0, 732.0
     );
 
-    private final Marker cubicCtrl2 = new Marker(
+    private final Marker cubicCtrl2 = new Marker(3, showCubic,
             // 160 * 5, 100 * 5    
             // 801.0, 761.0 
             // 866.0, 830.0
@@ -114,81 +163,61 @@ public final class DrawCurveApplication extends JPanel {
             1532.0, 1389.0
     );
 
+    private final Marker cubicEnd = new Marker(4, showCubic,
+            150 * 5, 200 * 5
+    );
+    
+/*
+    Loop sample with artefact:
+p2d.moveTo(2995.0, 442.0);
+p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);    
+*/    
+
     DrawCurveApplication() {
         super(new BorderLayout());
         canvas = new CanvasPanel();
         add(canvas, BorderLayout.CENTER);
 
         // Marker Handler:
-        this.handler = new MarkerMouseHandler();
+        this.handler = new MarkerMouseHandler(this);
         canvas.addMouseListener(handler);
         canvas.addMouseMotionListener(handler);
 
         // Quad
-        if (SHOW_QUAD) {
-            handler.register(quadStart.setUpdater(new MarkerUpdater() {
-                @Override
-                public void update(final Point2D.Double pt) {
-                    quadCurve.x1 = pt.x;
-                    quadCurve.y1 = pt.y;
-                }
-            }));
-            handler.register(quadCtrl.setUpdater(new MarkerUpdater() {
-                @Override
-                public void update(final Point2D.Double pt) {
-                    quadCurve.ctrlx = pt.x;
-                    quadCurve.ctrly = pt.y;
-                }
-            }));
-            handler.register(quadEnd.setUpdater(new MarkerUpdater() {
-                @Override
-                public void update(final Point2D.Double pt) {
-                    quadCurve.x2 = pt.x;
-                    quadCurve.y2 = pt.y;
-                }
-            }));
-        }
+        final QuadMarkerUpdater quadUpdater = new QuadMarkerUpdater(quadCurve);
+        handler.register(quadStart.setUpdater(quadUpdater));
+        handler.register(quadCtrl.setUpdater(quadUpdater));
+        handler.register(quadEnd.setUpdater(quadUpdater));
 
         // Cubic
-        if (SHOW_CUBIC) {
-            handler.register(cubicStart.setUpdater(new MarkerUpdater() {
-                @Override
-                public void update(final Point2D.Double pt) {
-                    cubicCurve.x1 = pt.x;
-                    cubicCurve.y1 = pt.y;
-                }
-            }));
-            handler.register(cubicCtrl1.setUpdater(new MarkerUpdater() {
-                @Override
-                public void update(final Point2D.Double pt) {
-                    cubicCurve.ctrlx1 = pt.x;
-                    cubicCurve.ctrly1 = pt.y;
-                }
-            }));
-            handler.register(cubicCtrl2.setUpdater(new MarkerUpdater() {
-                @Override
-                public void update(final Point2D.Double pt) {
-                    cubicCurve.ctrlx2 = pt.x;
-                    cubicCurve.ctrly2 = pt.y;
-                }
-            }));
-            handler.register(cubicEnd.setUpdater(new MarkerUpdater() {
-                @Override
-                public void update(final Point2D.Double pt) {
-                    cubicCurve.x2 = pt.x;
-                    cubicCurve.y2 = pt.y;
-                }
-            }));
-        }
+        final CubicMarkerUpdater cubicUpdater = new CubicMarkerUpdater(cubicCurve);
+        handler.register(cubicStart.setUpdater(cubicUpdater));
+        handler.register(cubicCtrl1.setUpdater(cubicUpdater));
+        handler.register(cubicCtrl2.setUpdater(cubicUpdater));
+        handler.register(cubicEnd.setUpdater(cubicUpdater));
+
         dumpInfo();
+    }
+
+    void dumpInfo() {
+        if (showQuad.get()) {
+            dumpShape(quadCurve);
+        }
+        if (showCubic.get()) {
+            dumpShape(cubicCurve);
+        }
+    }
+
+    void refresh() {
+        canvas.refresh();
     }
 
     private final class CanvasPanel extends JPanel {
 
         private static final long serialVersionUID = 1L;
 
-        private final BasicStroke stroke;
-        private final BasicStroke strokeInfo;
+        private BasicStroke stroke = null;
+        private final BasicStroke strokeInfo = new BasicStroke(3f);
         private final Color colorInfo = Color.GREEN.darker();
 
         private Shape ellipseOutline = null;
@@ -196,13 +225,11 @@ public final class DrawCurveApplication extends JPanel {
         private Shape cubicOutline = null;
 
         CanvasPanel() {
-            stroke = new BasicStroke(STROKE_SIZE,
-                    BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1000f, DASHES, 0f
-            );
-            strokeInfo = new BasicStroke(3f);
+            super();
         }
 
-        void reset() {
+        private void reset() {
+            stroke = null;
             ellipseOutline = null;
             quadOutline = null;
             cubicOutline = null;
@@ -227,25 +254,30 @@ public final class DrawCurveApplication extends JPanel {
             g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
             final Stroke oldStroke = g2d.getStroke();
+            if (stroke == null) {
+                stroke = new BasicStroke(strokeWidth, strokeCap, strokeJoin, 1000f,
+                        (useDashes) ? dashes : null, 0f
+                );
+            }
             g2d.setStroke(stroke);
             g2d.setPaint(Color.LIGHT_GRAY);
 
             System.out.println("g2D.draw() before");
 
-            if (SHOW_QUAD) {
+            if (showQuad.get()) {
                 g2d.draw(quadCurve);
             }
-            if (SHOW_CUBIC) {
+            if (showCubic.get()) {
                 g2d.draw(cubicCurve);
             }
-            if (SHOW_ELLIPSE) {
+            if (showEllipse) {
                 g2d.draw(ellipse);
             }
 
             System.out.println("g2D.draw() after");
 
-            if (PAINT_CONTROLS) {
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // xrender calls Marlin anyway
+            if (paintControls) {
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF); // xrender calls Marlin anyway
                 g2d.setStroke(strokeInfo);
                 g2d.setPaint(colorInfo);
 
@@ -253,13 +285,13 @@ public final class DrawCurveApplication extends JPanel {
                     marker.draw(g2d);
                 }
                 // draw tangents:
-                if (SHOW_QUAD) {
+                if (showQuad.get()) {
                     LINE.setLine(quadStart.getPoint(), quadCtrl.getPoint());
                     g2d.draw(LINE);
                     LINE.setLine(quadEnd.getPoint(), quadCtrl.getPoint());
                     g2d.draw(LINE);
                 }
-                if (SHOW_CUBIC) {
+                if (showCubic.get()) {
                     LINE.setLine(cubicStart.getPoint(), cubicCtrl1.getPoint());
                     g2d.draw(LINE);
                     LINE.setLine(cubicEnd.getPoint(), cubicCtrl2.getPoint());
@@ -267,46 +299,46 @@ public final class DrawCurveApplication extends JPanel {
                 }
 
                 // draw curves:
-                if (SHOW_QUAD) {
+                if (showQuad.get()) {
                     g2d.draw(quadCurve);
                 }
-                if (SHOW_CUBIC) {
+                if (showCubic.get()) {
                     g2d.draw(cubicCurve);
                 }
-                if (SHOW_ELLIPSE) {
+                if (showEllipse) {
                     g2d.draw(ellipse);
                 }
             }
             // draw outlines:
-            if (PAINT_DETAILS) {
-                if (SHOW_ELLIPSE && ellipseOutline == null) {
+            if (showExtra && paintDetails) {
+                if (showEllipse && ellipseOutline == null) {
                     ellipseOutline = stroke.createStrokedShape(ellipse);
                 }
-                if (SHOW_QUAD && quadOutline == null) {
+                if (showQuad.get() && quadOutline == null) {
                     quadOutline = stroke.createStrokedShape(quadCurve);
                 }
-                if (SHOW_CUBIC && cubicOutline == null) {
+                if (showCubic.get() && cubicOutline == null) {
                     cubicOutline = stroke.createStrokedShape(cubicCurve);
                 }
-                if (SHOW_OUTLINE) {
+                if (showExtra && showOutline) {
                     g2d.setPaint(Color.DARK_GRAY);
-                    if (SHOW_QUAD) {
+                    if (showQuad.get()) {
                         g2d.draw(quadOutline);
                     }
-                    if (SHOW_CUBIC) {
+                    if (showCubic.get()) {
                         g2d.draw(cubicOutline);
                     }
-                    if (SHOW_ELLIPSE) {
+                    if (showEllipse) {
                         g2d.draw(ellipseOutline);
                     }
                 }
-                if (SHOW_QUAD) {
+                if (showQuad.get()) {
                     paintShapeDetails(g2d, quadOutline);
                 }
-                if (SHOW_CUBIC) {
+                if (showCubic.get()) {
                     paintShapeDetails(g2d, cubicOutline);
                 }
-                if (SHOW_ELLIPSE) {
+                if (showEllipse) {
                     paintShapeDetails(g2d, ellipseOutline);
                 }
             }
@@ -316,7 +348,67 @@ public final class DrawCurveApplication extends JPanel {
 
     interface MarkerUpdater {
 
-        public void update(final Point2D.Double pt);
+        public void update(final int index, final Point2D.Double pt);
+    }
+
+    final static class QuadMarkerUpdater implements MarkerUpdater {
+
+        private final QuadCurve2D.Double quadCurve;
+
+        QuadMarkerUpdater(final QuadCurve2D.Double quadCurve) {
+            this.quadCurve = quadCurve;
+        }
+
+        @Override
+        public void update(final int index, final Point2D.Double pt) {
+            switch (index) {
+                case 1: // P1 = start point
+                    quadCurve.x1 = pt.x;
+                    quadCurve.y1 = pt.y;
+                    return;
+                case 2: // P2 = control point
+                    quadCurve.ctrlx = pt.x;
+                    quadCurve.ctrly = pt.y;
+                    return;
+                case 3: // P3 = end point
+                    quadCurve.x2 = pt.x;
+                    quadCurve.y2 = pt.y;
+                    return;
+                default:
+            }
+        }
+    }
+
+    final static class CubicMarkerUpdater implements MarkerUpdater {
+
+        private final CubicCurve2D.Double cubicCurve;
+
+        CubicMarkerUpdater(final CubicCurve2D.Double cubicCurve) {
+            this.cubicCurve = cubicCurve;
+        }
+
+        @Override
+        public void update(final int index, final Point2D.Double pt) {
+            switch (index) {
+                case 1: // P1 = start point
+                    cubicCurve.x1 = pt.x;
+                    cubicCurve.y1 = pt.y;
+                    return;
+                case 2: // P2 = control point 1
+                    cubicCurve.ctrlx1 = pt.x;
+                    cubicCurve.ctrly1 = pt.y;
+                    return;
+                case 3: // P3 = control point 2
+                    cubicCurve.ctrlx2 = pt.x;
+                    cubicCurve.ctrly2 = pt.y;
+                    return;
+                case 4: // P4 = end point
+                    cubicCurve.x2 = pt.x;
+                    cubicCurve.y2 = pt.y;
+                    return;
+                default:
+            }
+        }
     }
 
     final static class Marker {
@@ -324,14 +416,23 @@ public final class DrawCurveApplication extends JPanel {
         private static final double POINT_DIAM = 30.0;
         private static final double POINT_OFF = POINT_DIAM / 2.0 - 0.5;
 
+        // members:
+        private final int index;
         private final Point2D.Double point;
+        private final AtomicBoolean show;
         private MarkerUpdater updater = null;
         private final Ellipse2D.Double ellipse;
 
-        Marker(final double x, final double y) {
+        Marker(final int index, final AtomicBoolean show, final double x, final double y) {
+            this.index = index;
             this.point = new Point2D.Double();
+            this.show = show;
             this.ellipse = new Ellipse2D.Double();
             setLocation(x, y);
+        }
+
+        public int getIndex() {
+            return index;
         }
 
         public Point2D.Double getPoint() {
@@ -350,16 +451,18 @@ public final class DrawCurveApplication extends JPanel {
 
         public void update() {
             if (updater != null) {
-                updater.update(point);
+                updater.update(index, point);
             }
         }
 
-        public void draw(Graphics2D g2D) {
-            g2D.draw(ellipse);
+        public void draw(final Graphics2D g2D) {
+            if (show.get()) {
+                g2D.draw(ellipse);
+            }
         }
 
         public boolean contains(final double x, final double y) {
-            return ellipse.contains(x, y);
+            return show.get() && ellipse.contains(x, y);
         }
 
         public void setLocation(final double x, final double y) {
@@ -369,13 +472,15 @@ public final class DrawCurveApplication extends JPanel {
         }
     }
 
-    private final class MarkerMouseHandler extends MouseInputAdapter {
+    private static final class MarkerMouseHandler extends MouseInputAdapter {
 
+        private final DrawCurveApplication app;
         private final ArrayList<Marker> markers;
         private Marker selected = null;
 
-        MarkerMouseHandler() {
-            markers = new ArrayList<Marker>();
+        MarkerMouseHandler(DrawCurveApplication app) {
+            this.app = app;
+            this.markers = new ArrayList<Marker>();
         }
 
         void register(final Marker marker) {
@@ -404,7 +509,7 @@ public final class DrawCurveApplication extends JPanel {
 
         @Override
         public void mouseReleased(final MouseEvent me) {
-            dumpInfo();
+            app.dumpInfo();
             selected = null;
         }
 
@@ -412,17 +517,8 @@ public final class DrawCurveApplication extends JPanel {
         public void mouseDragged(final MouseEvent me) {
             if (selected != null) {
                 selected.setLocation(me.getX(), me.getY());
-                canvas.refresh();
+                app.refresh();
             }
-        }
-    }
-
-    void dumpInfo() {
-        if (SHOW_QUAD) {
-            dumpShape(quadCurve);
-        }
-        if (SHOW_CUBIC) {
-            dumpShape(cubicCurve);
         }
     }
 
@@ -479,7 +575,6 @@ public final class DrawCurveApplication extends JPanel {
         final Color oldColor = g2d.getColor();
 
         int nOp = 0;
-
         double sx0 = 0, sy0 = 0, x0 = 0, y0 = 0;
 
         for (final PathIterator it = shape.getPathIterator(null); !it.isDone(); it.next()) {
@@ -508,7 +603,7 @@ public final class DrawCurveApplication extends JPanel {
                     break;
                 case PathIterator.SEG_QUADTO:
                     g2d.setColor((nOp % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
-                    if (PAINT_TANGENT) {
+                    if (showExtra && paintDetailsTangent) {
                         ELL_POINT.setFrame(coords[0] - POINT_OFF, coords[1] - POINT_OFF, POINT_DIAM, POINT_DIAM);
                         g2d.fill(ELL_POINT);
                     }
@@ -519,7 +614,7 @@ public final class DrawCurveApplication extends JPanel {
                     QUAD.setCurve(x0, y0, coords[0], coords[1], coords[2], coords[3]);
                     g2d.draw(QUAD);
 
-                    if (PAINT_TANGENT) {
+                    if (showExtra && paintDetailsTangent) {
                         LINE.setLine(x0, y0, coords[0], coords[1]);
                         g2d.draw(LINE);
                         LINE.setLine(coords[0], coords[1], coords[2], coords[3]);
@@ -531,7 +626,7 @@ public final class DrawCurveApplication extends JPanel {
                     break;
                 case PathIterator.SEG_CUBICTO:
                     g2d.setColor((nOp % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
-                    if (PAINT_TANGENT) {
+                    if (showExtra && paintDetailsTangent) {
                         ELL_POINT.setFrame(coords[0] - POINT_OFF, coords[1] - POINT_OFF, POINT_DIAM, POINT_DIAM);
                         g2d.fill(ELL_POINT);
                         ELL_POINT.setFrame(coords[2] - POINT_OFF, coords[3] - POINT_OFF, POINT_DIAM, POINT_DIAM);
@@ -544,7 +639,7 @@ public final class DrawCurveApplication extends JPanel {
                     CUBIC.setCurve(x0, y0, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5]);
                     g2d.draw(CUBIC);
 
-                    if (PAINT_TANGENT) {
+                    if (showExtra && paintDetailsTangent) {
                         LINE.setLine(x0, y0, coords[0], coords[1]);
                         g2d.draw(LINE);
                         LINE.setLine(coords[2], coords[3], coords[4], coords[5]);
