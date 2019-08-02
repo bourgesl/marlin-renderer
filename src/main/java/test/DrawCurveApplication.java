@@ -277,7 +277,7 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
             System.out.println("g2D.draw() after");
 
             if (paintControls) {
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF); // xrender calls Marlin anyway
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // xrender calls Marlin anyway
                 g2d.setStroke(strokeInfo);
                 g2d.setPaint(colorInfo);
 
