@@ -74,6 +74,13 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
                 boolean paintControls = true;
                 boolean paintDetails = true;
              */
+
+            // Marlin parameters:
+            jToggleButtonMarlinBetterCurves.setSelected(a.betterCurves.get());
+            jToggleButtonMarlinBetterCurvesActionPerformed(null);
+            jLabelMarlinBetterCurves.setEnabled(a.isMarlin);
+            jToggleButtonMarlinBetterCurves.setEnabled(a.isMarlin);
+
         } finally {
             // restore app:
             this.app = a;
@@ -100,15 +107,18 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         jLabelStrokeUseDashes = new javax.swing.JLabel();
         jToggleButtonUseDashes = new javax.swing.JToggleButton();
         jPanelShape = new javax.swing.JPanel();
-        jLabelStrokeShowQuad = new javax.swing.JLabel();
+        jLabelShowQuad = new javax.swing.JLabel();
         jToggleButtonShowQuad = new javax.swing.JToggleButton();
-        jLabelStrokeShowCubic = new javax.swing.JLabel();
+        jLabelShowCubic = new javax.swing.JLabel();
         jToggleButtonShowCubic = new javax.swing.JToggleButton();
-        jLabelStrokeShowEllipse = new javax.swing.JLabel();
+        jLabelShowEllipse = new javax.swing.JLabel();
         jToggleButtonShowEllipse = new javax.swing.JToggleButton();
         jPanelPaint = new javax.swing.JPanel();
-        jLabelStrokeShowExtra = new javax.swing.JLabel();
+        jLabelShowExtra = new javax.swing.JLabel();
         jToggleButtonShowExtra = new javax.swing.JToggleButton();
+        jLabelMarlinBetterCurves = new javax.swing.JLabel();
+        jToggleButtonMarlinBetterCurves = new javax.swing.JToggleButton();
+        jSeparator1 = new javax.swing.JSeparator();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder("Parameters"));
         setName("Form"); // NOI18N
@@ -212,13 +222,13 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         jPanelShape.setName("jPanelShape"); // NOI18N
         jPanelShape.setLayout(new java.awt.GridBagLayout());
 
-        jLabelStrokeShowQuad.setText("Quadratic curve:");
-        jLabelStrokeShowQuad.setName("jLabelStrokeShowQuad"); // NOI18N
+        jLabelShowQuad.setText("Quadratic curve:");
+        jLabelShowQuad.setName("jLabelShowQuad"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        jPanelShape.add(jLabelStrokeShowQuad, gridBagConstraints);
+        jPanelShape.add(jLabelShowQuad, gridBagConstraints);
 
         jToggleButtonShowQuad.setText("ENABLED");
         jToggleButtonShowQuad.setName("jToggleButtonShowQuad"); // NOI18N
@@ -232,13 +242,13 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         jPanelShape.add(jToggleButtonShowQuad, gridBagConstraints);
 
-        jLabelStrokeShowCubic.setText("Cubic curve:");
-        jLabelStrokeShowCubic.setName("jLabelStrokeShowCubic"); // NOI18N
+        jLabelShowCubic.setText("Cubic curve:");
+        jLabelShowCubic.setName("jLabelShowCubic"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        jPanelShape.add(jLabelStrokeShowCubic, gridBagConstraints);
+        jPanelShape.add(jLabelShowCubic, gridBagConstraints);
 
         jToggleButtonShowCubic.setText("ENABLED");
         jToggleButtonShowCubic.setName("jToggleButtonShowCubic"); // NOI18N
@@ -252,13 +262,13 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         jPanelShape.add(jToggleButtonShowCubic, gridBagConstraints);
 
-        jLabelStrokeShowEllipse.setText("Ellipse:");
-        jLabelStrokeShowEllipse.setName("jLabelStrokeShowEllipse"); // NOI18N
+        jLabelShowEllipse.setText("Ellipse:");
+        jLabelShowEllipse.setName("jLabelShowEllipse"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        jPanelShape.add(jLabelStrokeShowEllipse, gridBagConstraints);
+        jPanelShape.add(jLabelShowEllipse, gridBagConstraints);
 
         jToggleButtonShowEllipse.setText("ENABLED");
         jToggleButtonShowEllipse.setName("jToggleButtonShowEllipse"); // NOI18N
@@ -282,13 +292,13 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         jPanelPaint.setName("jPanelPaint"); // NOI18N
         jPanelPaint.setLayout(new java.awt.GridBagLayout());
 
-        jLabelStrokeShowExtra.setText("Show Extra:");
-        jLabelStrokeShowExtra.setName("jLabelStrokeShowExtra"); // NOI18N
+        jLabelShowExtra.setText("Show Extra:");
+        jLabelShowExtra.setName("jLabelShowExtra"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        jPanelPaint.add(jLabelStrokeShowExtra, gridBagConstraints);
+        jPanelPaint.add(jLabelShowExtra, gridBagConstraints);
 
         jToggleButtonShowExtra.setText("ENABLED");
         jToggleButtonShowExtra.setName("jToggleButtonShowExtra"); // NOI18N
@@ -301,6 +311,35 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         jPanelPaint.add(jToggleButtonShowExtra, gridBagConstraints);
+
+        jLabelMarlinBetterCurves.setText("Marlin - Better Curves:");
+        jLabelMarlinBetterCurves.setName("jLabelMarlinBetterCurves"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanelPaint.add(jLabelMarlinBetterCurves, gridBagConstraints);
+
+        jToggleButtonMarlinBetterCurves.setText("ENABLED");
+        jToggleButtonMarlinBetterCurves.setName("jToggleButtonMarlinBetterCurves"); // NOI18N
+        jToggleButtonMarlinBetterCurves.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButtonMarlinBetterCurvesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        jPanelPaint.add(jToggleButtonMarlinBetterCurves, gridBagConstraints);
+
+        jSeparator1.setName("jSeparator1"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        jPanelPaint.add(jSeparator1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -379,22 +418,34 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jToggleButtonShowEllipseActionPerformed
 
+    private void jToggleButtonMarlinBetterCurvesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonMarlinBetterCurvesActionPerformed
+        System.out.println("DrawCurveSettingsPanel: Marlin - better curves: " + jToggleButtonMarlinBetterCurves.isSelected());
+        jToggleButtonMarlinBetterCurves.setText((jToggleButtonMarlinBetterCurves.isSelected()) ? "ENABLED" : "DISABLED");
+        if (app != null) {
+            app.betterCurves.set(jToggleButtonMarlinBetterCurves.isSelected());
+            app.refresh();
+        }
+    }//GEN-LAST:event_jToggleButtonMarlinBetterCurvesActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jComboBoxCap;
     private javax.swing.JComboBox jComboBoxJoin;
+    private javax.swing.JLabel jLabelMarlinBetterCurves;
+    private javax.swing.JLabel jLabelShowCubic;
+    private javax.swing.JLabel jLabelShowEllipse;
+    private javax.swing.JLabel jLabelShowExtra;
+    private javax.swing.JLabel jLabelShowQuad;
     private javax.swing.JLabel jLabelStrokeCap;
     private javax.swing.JLabel jLabelStrokeJoin;
-    private javax.swing.JLabel jLabelStrokeShowCubic;
-    private javax.swing.JLabel jLabelStrokeShowEllipse;
-    private javax.swing.JLabel jLabelStrokeShowExtra;
-    private javax.swing.JLabel jLabelStrokeShowQuad;
     private javax.swing.JLabel jLabelStrokeUseDashes;
     private javax.swing.JLabel jLabelStrokeWidth;
     private javax.swing.JPanel jPanelPaint;
     private javax.swing.JPanel jPanelShape;
     private javax.swing.JPanel jPanelStroke;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSlider jSliderStrokeWidthSlider;
+    private javax.swing.JToggleButton jToggleButtonMarlinBetterCurves;
     private javax.swing.JToggleButton jToggleButtonShowCubic;
     private javax.swing.JToggleButton jToggleButtonShowEllipse;
     private javax.swing.JToggleButton jToggleButtonShowExtra;

@@ -97,6 +97,24 @@
                             </includes>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>test</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>test</classifier>
+                            <includes>
+                                <include>test/**</include>
+                            </includes>
+                            <archive>
+                                <manifestEntries>
+                                    <Main-Class>test.DrawCurveApplication</Main-Class>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 

@@ -60,6 +60,28 @@ public final class DrawCurveApplication extends JPanel {
         // Set the default locale to en-US locale (for Numerical Fields "." ",")
         Locale.setDefault(Locale.US);
 
+        // disable static curve subdivision setting:
+        System.setProperty("sun.java2d.renderer.betterCurves", "false");
+        System.setProperty("sun.java2d.renderer.betterCurves.runtime.enable", "true");
+
+        // First display which renderer is tested:
+        // JDK9 only:
+        System.setProperty("sun.java2d.renderer.verbose", "true");
+        System.out.println("Testing renderer: ");
+        // Other JDK:
+        String renderer = "undefined";
+        try {
+            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
+            System.out.println(renderer);
+        } catch (Throwable th) {
+            // may fail with JDK9 jigsaw (jake)
+            if (false) {
+                System.err.println("Unable to get RenderingEngine.getInstance()");
+                th.printStackTrace();
+            }
+        }
+        final boolean isMarlin = renderer.contains("MarlinRenderingEngine");
+
         SwingUtilities.invokeLater(new Runnable() {
 
             /**
@@ -67,7 +89,7 @@ public final class DrawCurveApplication extends JPanel {
              */
             @Override
             public void run() {
-                final DrawCurveApplication appPanel = new DrawCurveApplication();
+                final DrawCurveApplication appPanel = new DrawCurveApplication(isMarlin);
                 final DrawCurveSettingsPanel paramsPanel = new DrawCurveSettingsPanel();
                 paramsPanel.setApp(appPanel);
 
@@ -90,6 +112,11 @@ public final class DrawCurveApplication extends JPanel {
     }
 
     // settings
+
+    // Marlin parameters:
+    final boolean isMarlin;
+    AtomicBoolean betterCurves = new AtomicBoolean(true);
+
     // stroke parameters:
     float strokeWidth = 400.0f;
     int strokeCap = BasicStroke.CAP_BUTT;
@@ -148,33 +175,37 @@ public final class DrawCurveApplication extends JPanel {
             // 1229.0, 714.0
             // 73.0, 430.0
             // 375.0, 655.0
-            214.0, 732.0
+//            214.0, 732.0
+            783.0, 859.0
     );
 
     private final Marker cubicCtrl2 = new Marker(3, showCubic,
-            // 160 * 5, 100 * 5    
-            // 801.0, 761.0 
+            // 160 * 5, 100 * 5
+            // 801.0, 761.0
             // 866.0, 830.0
             // 2108.0, 1693.0
             // 3484.0, 723.0
             // 3335.0, 439.0
             // 748.0, 1713.0
             // 1010.0, 486.0
-            1532.0, 1389.0
+//            1532.0, 1389.0
+            565.0, 1752.0
     );
 
     private final Marker cubicEnd = new Marker(4, showCubic,
             150 * 5, 200 * 5
     );
-    
+
 /*
     Loop sample with artefact:
 p2d.moveTo(2995.0, 442.0);
-p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);    
-*/    
+p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
+*/
 
-    DrawCurveApplication() {
+    DrawCurveApplication(final boolean isMarlin) {
         super(new BorderLayout());
+        this.isMarlin = isMarlin;
+
         canvas = new CanvasPanel();
         add(canvas, BorderLayout.CENTER);
 
@@ -182,6 +213,13 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
         this.handler = new MarkerMouseHandler(this);
         canvas.addMouseListener(handler);
         canvas.addMouseMotionListener(handler);
+
+        if (false) {
+            cubicStart.setLocation(997.4651258477551, 1122.8952188708217);
+            cubicCtrl1.setLocation(998.0416661761394, 1123.1895282578275);
+            cubicCtrl2.setLocation(998.3357637878879, 1123.3431861242257);
+            cubicEnd.setLocation(998.3357637878879, 1123.3503852683693);
+        }
 
         // Quad
         final QuadMarkerUpdater quadUpdater = new QuadMarkerUpdater(quadCurve);
@@ -253,6 +291,11 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
+            if (isMarlin) {
+                // Enable or Disable curve subdivision:
+                System.setProperty("sun.java2d.renderer.betterCurves.runtime", (betterCurves.get()) ? "true" : "false");
+            }
+
             final Stroke oldStroke = g2d.getStroke();
             if (stroke == null) {
                 stroke = new BasicStroke(strokeWidth, strokeCap, strokeJoin, 1000f,
@@ -262,8 +305,12 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
             g2d.setStroke(stroke);
             g2d.setPaint(Color.LIGHT_GRAY);
 
-            System.out.println("g2D.draw() before");
+//            System.out.println("g2D.draw() before");
 
+if (false) {
+            g2d.translate(-2800.0, -2700);
+            g2d.scale(3.3, 3.3);
+}
             if (showQuad.get()) {
                 g2d.draw(quadCurve);
             }
@@ -274,7 +321,7 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
                 g2d.draw(ellipse);
             }
 
-            System.out.println("g2D.draw() after");
+//            System.out.println("g2D.draw() after");
 
             if (paintControls) {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // xrender calls Marlin anyway
@@ -557,7 +604,7 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
 
     static final Stroke STROKE_ODD = new BasicStroke(1.0f);
     static final Stroke STROKE_EVEN = new BasicStroke(1.0f);
-    static final int COLOR_ALPHA = 220;
+    static final int COLOR_ALPHA = 150;
     static final Color COLOR_MOVETO = new Color(0, 255, 0, COLOR_ALPHA);
     static final Color COLOR_LINETO_ODD = new Color(0, 0, 255, COLOR_ALPHA);
     static final Color COLOR_LINETO_EVEN = new Color(255, 0, 0, COLOR_ALPHA);

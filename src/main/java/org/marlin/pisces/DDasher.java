@@ -412,7 +412,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
 
         // test: tell stroker to process joins:
         rdrCtx.doDrawJoins = true;
-        
+
         final double[] _curCurvepts = curCurvepts;
         final double[] _dash = dash;
         final int _dashLen = this.dashLen;
@@ -699,7 +699,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             this.nextT = 0.0d;
             this.lenAtNextT = 0.0d;
             // initializes nextT and lenAtNextT properly
-            goLeft(); 
+            goLeft();
 
             this.lenAtLastSplit = 0.0d;
             if (recLevel > 0) {
@@ -971,7 +971,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     {
         // test: tell stroker to process joins:
         rdrCtx.doDrawJoins = true;
-        
+
         final double[] _curCurvepts = curCurvepts;
 
         // monotonize curve:
@@ -1059,7 +1059,7 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     {
         // test: tell stroker to process joins:
         rdrCtx.doDrawJoins = true;
-        
+
         final double[] _curCurvepts = curCurvepts;
 
         // monotonize quad:

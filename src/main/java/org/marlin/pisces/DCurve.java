@@ -127,7 +127,7 @@ final class DCurve {
     double dyat(final double t) {
         return DHelpers.evalQuad(day, dby, cy, t);
     }
-    
+
     int dxRoots(final double[] roots, final int off) {
         return DHelpers.quadraticRoots(dax, dbx, cx, roots, off);
     }
@@ -236,7 +236,7 @@ final class DCurve {
         for (int i = 0; i < iterLimit && Math.abs(t - s) > err * Math.abs(t + s); i++) {
             r = (fs * t - ft * s) / (fs - ft);
             fr = ROCsq(r) - w2;
-            
+
             if (sameSign(fr, ft)) {
                 ft = fr; t = r;
                 if (side < 0) {

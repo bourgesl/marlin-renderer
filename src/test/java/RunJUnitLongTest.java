@@ -47,7 +47,7 @@ public class RunJUnitLongTest {
         ClipShapeTest.main(new String[]{"-cubic"});
         ClipShapeTest.main(new String[]{"-cubic", "-doDash"});
     }
-*/    
+*/
     @Test(timeout = 600000)
     public void subdivideTestQuad() throws InterruptedException {
         BetterCurveShapeTest.main(new String[]{"-quad"});

@@ -6,3 +6,5 @@ marlin.iml
 /nb-configuration.xml
 /synch_safe.sh
 /nbproject/
+/quad/
+/cubic/
