@@ -13,20 +13,21 @@ Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 | --- | --- | --- |
 | Oracle JDK 6 - 8  | Ductus       | [Marlin-renderer 0.9.4.1](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1) |
 | Open JDK   6 - 8  | Pisces       | [Marlin-renderer 0.9.4.1](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1) |
-| Azul Zulu 8.20+   | Marlin 0.7.4 | [Marlin-renderer 0.9.4.1](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1) |
-| Jetbrains JDK 8   | Marlin 0.7.4 / 0.9.3 | Marlin 0.9.3 integrated in sep 2018 |
+| Azul Zulu 8.20+   | Marlin 0.7.4 / 0.9.1.1 | Marlin 0.9.1.1 integrated in 2018.12, [Marlin-renderer 0.9.4.1](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1) |
+| Jetbrains JDK 8   | Marlin 0.7.4 / 0.9.3 | Marlin 0.9.3 integrated in 2018.09, [Marlin-renderer 0.9.4.1](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1) |
 | Open JDK 9        | Marlin 0.7.4 | [Marlin-renderer 0.9.4.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1_jdk9) |
 | Open JDK 10       | Marlin 0.8.2 | [Marlin-renderer 0.9.4.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1_jdk9) |
 | Open JDK 11       | Marlin 0.9.1 | [Marlin-renderer 0.9.4.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1_jdk9) |
 | Open JDK 11.0.2   | Marlin 0.9.1.1 | [Marlin-renderer 0.9.4.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1_jdk9) |
 | Open JDK 12       | Marlin 0.9.1.1 | [Marlin-renderer 0.9.4.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1_jdk9) |
 | Open JDK 13       | Marlin 0.9.1.1 | [Marlin-renderer 0.9.4.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1_jdk9) |
-| Open JDK 14 (EA)  | Marlin 0.9.1.1 | [Marlin-renderer 0.9.4.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1_jdk9) |
+| Open JDK 14 (EA)  | Marlin 0.9.1.2 | [Marlin-renderer 0.9.4.1 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_1_jdk9) |
 
 For JavaFX, see the [Marlin-FX](https://github.com/bourgesl/marlin-fx) project
 
 News
 ====
+* aug 2019: Marlin 0.9.1.2 integrated in OpenJDK 14
 * jul 2019: MarlinFX 0.9.3.1 integrated in OpenJFX 14, backported in OpenJFX 13
 * oct 2018: MarlinFX 0.9.3 integrated in OpenJFX 12
 * oct 2018: Marlin 0.9.1.1 backported to OpenJDK 11 updates (11.0.2)
