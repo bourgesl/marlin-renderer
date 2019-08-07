@@ -31,11 +31,11 @@ import org.marlin.pisces.stats.Histogram;
 import org.marlin.pisces.stats.StatLong;
 
 final class DHelpers implements MarlinConst {
-    
+
     static final boolean DO_SUBDIVIDE_CURVE_ANGLE = MarlinProperties.isDoSubdivideCurves();
     static final boolean DO_SUBDIVIDE_CURVE_RUNTIME_ENABLE = MarlinProperties.isDoSubdivideCurvesRuntimeFlag();
 
-    // PI/8 (22.5 deg) or PI/12 (15 deg) 
+    // PI/8 (22.5 deg) or PI/12 (15 deg)
     private final static double MIN_ANGLE = Math.PI / 12.0d; // 15 deg ie divide 90° in 5 parts
     private final static double COS2_MIN_ANGLE = Math.pow(Math.cos(MIN_ANGLE), 2.0d);
 
@@ -67,7 +67,7 @@ final class DHelpers implements MarlinConst {
     static boolean isPointCurve(final double[] curve, final int type) {
         return isPointCurve(curve, type, EPS);
     }
-    
+
     static boolean isPointCurve(final double[] curve, final int type, final double err) {
         for (int i = 2; i < type; i++) {
             if (!within(curve[i], curve[i - 2], err)) {
@@ -76,7 +76,7 @@ final class DHelpers implements MarlinConst {
         }
         return true;
     }
-    
+
     static double evalCubic(final double a, final double b,
                             final double c, final double d,
                             final double t)
@@ -131,29 +131,6 @@ final class DHelpers implements MarlinConst {
             return filterOutNotInAB(pts, off, num, A, B) - off;
         }
 
-        int num;
-
-    if (false) {
-        // Try higher precision (not needed if subdivision is performed)
-        final double[] eqn = {c, b, a, d};
-        final double[] res = new double[3];
-        int nRoots = java.awt.geom.CubicCurve2D.solveCubic(eqn, res);
-
-        num = nRoots;
-        for (int i = 0; i < num; i++) {
-            pts[off + i] = res[i];
-        }
-/*        
-        System.out.println("cubicRootsInAB()");
-
-        // normal form: x^3 + ax^2 + bx + c = 0
-        a /= d;
-        b /= d;
-        c /= d;
-        dumpRoots(1.0d, a, b, c, pts, off, num);
-*/        
-    } else {
-        
         // From Graphics Gems:
         // https://github.com/erich666/GraphicsGems/blob/master/gems/Roots3And4.c
         // (also from awt.geom.CubicCurve2D. But here we don't need as
@@ -179,9 +156,10 @@ final class DHelpers implements MarlinConst {
         final double q = (1.0d / 2.0d) * ((2.0d / 27.0d) * a * sq_A - sub * b + c);
 
         // use Cardano's formula
-
         final double cb_p = p * p * p;
         final double D = q * q + cb_p;
+
+        int num;
 
         if (within(D, 0.0d, EPS)) {
             if (within(q, 0.0d, EPS)) {
@@ -212,277 +190,8 @@ final class DHelpers implements MarlinConst {
 
             pts[off    ] = (uv - sub);
             num = 1;
-            
-/*
-            num = 1;
-
-            double err = 1200000000*ulp(abs(uv) + abs(sub));
-            if (iszero(D, err) || within(u, v, err)) {
-                if (res == eqn) {
-                    eqn = Arrays.copyOf(eqn, 4);
-                }
-                res[1] = -(uv / 2) - sub;
-                num = 2;
-            }
-            // this must be done after the potential Arrays.copyOf
-            res[ 0 ] =  uv - sub;
-*/            
         }
-        
-        // TODO: refine precision myself (newton?) !!
-        
-/*
-        if (num > 1) { // num == 3 || num == 2
-            num = fixRoots(eqn, res, num);
-        }
-        if (num > 2 && (res[2] == res[1] || res[2] == res[0])) {
-            num--;
-        }
-        if (num > 1 && res[1] == res[0]) {
-            res[1] = res[--num]; // Copies res[2] to res[1] if needed
-        }
-*/        
-        
-/*        
-        // normal form: 
-        System.out.println("cubicRootsInAB()");
-        dumpRoots(1.0d, a, b, c, pts, off, num);
-*/        
-    }        
-                
         return filterOutNotInAB(pts, off, num, A, B) - off;
-    }
-    
-
-    // preconditions: eqn != res && eqn[3] != 0 && num > 1
-    // This method tries to improve the accuracy of the roots of eqn (which
-    // should be in res). It also might eliminate roots in res if it decideds
-    // that they're not real roots. It will not check for roots that the
-    // computation of res might have missed, so this method should only be
-    // used when the roots in res have been computed using an algorithm
-    // that never underestimates the number of roots (such as solveCubic above)
-    private static int fixRoots(double[] eqn, double[] res, int num) {
-        double[] intervals = {eqn[1], 2*eqn[2], 3*eqn[3]};
-        int critCount = java.awt.geom.QuadCurve2D.solveQuadratic(intervals, intervals);
-        if (critCount == 2 && intervals[0] == intervals[1]) {
-            critCount--;
-        }
-        if (critCount == 2 && intervals[0] > intervals[1]) {
-            double tmp = intervals[0];
-            intervals[0] = intervals[1];
-            intervals[1] = tmp;
-        }
-
-        // below we use critCount to possibly filter out roots that shouldn't
-        // have been computed. We require that eqn[3] != 0, so eqn is a proper
-        // cubic, which means that its limits at -/+inf are -/+inf or +/-inf.
-        // Therefore, if critCount==2, the curve is shaped like a sideways S,
-        // and it could have 1-3 roots. If critCount==0 it is monotonic, and
-        // if critCount==1 it is monotonic with a single point where it is
-        // flat. In the last 2 cases there can only be 1 root. So in cases
-        // where num > 1 but critCount < 2, we eliminate all roots in res
-        // except one.
-
-        if (num == 3) {
-            double xe = getRootUpperBound(eqn);
-            double x0 = -xe;
-
-            Arrays.sort(res, 0, num);
-            if (critCount == 2) {
-                // this just tries to improve the accuracy of the computed
-                // roots using Newton's method.
-                res[0] = refineRootWithHint(eqn, x0, intervals[0], res[0]);
-                res[1] = refineRootWithHint(eqn, intervals[0], intervals[1], res[1]);
-                res[2] = refineRootWithHint(eqn, intervals[1], xe, res[2]);
-                return 3;
-            } else if (critCount == 1) {
-                // we only need fx0 and fxe for the sign of the polynomial
-                // at -inf and +inf respectively, so we don't need to do
-                // fx0 = solveEqn(eqn, 3, x0); fxe = solveEqn(eqn, 3, xe)
-                double fxe = eqn[3];
-                double fx0 = -fxe;
-
-                double x1 = intervals[0];
-                double fx1 = solveEqn(eqn, 3, x1);
-
-                // if critCount == 1 or critCount == 0, but num == 3 then
-                // something has gone wrong. This branch and the one below
-                // would ideally never execute, but if they do we can't know
-                // which of the computed roots is closest to the real root;
-                // therefore, we can't use refineRootWithHint. But even if
-                // we did know, being here most likely means that the
-                // curve is very flat close to two of the computed roots
-                // (or maybe even all three). This might make Newton's method
-                // fail altogether, which would be a pain to detect and fix.
-                // This is why we use a very stable bisection method.
-                if (oppositeSigns(fx0, fx1)) {
-                    res[0] = bisectRootWithHint(eqn, x0, x1, res[0]);
-                } else if (oppositeSigns(fx1, fxe)) {
-                    res[0] = bisectRootWithHint(eqn, x1, xe, res[2]);
-                } else /* fx1 must be 0 */ {
-                    res[0] = x1;
-                }
-                // return 1
-            } else if (critCount == 0) {
-                res[0] = bisectRootWithHint(eqn, x0, xe, res[1]);
-                // return 1
-            }
-        } else if (num == 2 && critCount == 2) {
-            // XXX: here we assume that res[0] has better accuracy than res[1].
-            // This is true because this method is only used from solveCubic
-            // which puts in res[0] the root that it would compute anyway even
-            // if num==1. If this method is ever used from any other method, or
-            // if the solveCubic implementation changes, this assumption should
-            // be reevaluated, and the choice of goodRoot might have to become
-            // goodRoot = (abs(eqn'(res[0])) > abs(eqn'(res[1]))) ? res[0] : res[1]
-            // where eqn' is the derivative of eqn.
-            double goodRoot = res[0];
-            double badRoot = res[1];
-            double x1 = intervals[0];
-            double x2 = intervals[1];
-            // If a cubic curve really has 2 roots, one of those roots must be
-            // at a critical point. That can't be goodRoot, so we compute x to
-            // be the farthest critical point from goodRoot. If there are two
-            // roots, x must be the second one, so we evaluate eqn at x, and if
-            // it is zero (or close enough) we put x in res[1] (or badRoot, if
-            // |solveEqn(eqn, 3, badRoot)| < |solveEqn(eqn, 3, x)| but this
-            // shouldn't happen often).
-            double x = Math.abs(x1 - goodRoot) > Math.abs(x2 - goodRoot) ? x1 : x2;
-            double fx = solveEqn(eqn, 3, x);
-
-            if (iszero(fx, 10000000 * Math.ulp(x))) {
-                double badRootVal = solveEqn(eqn, 3, badRoot);
-                res[1] = Math.abs(badRootVal) < Math.abs(fx) ? badRoot : x;
-                return 2;
-            }
-        } // else there can only be one root - goodRoot, and it is already in res[0]
-
-        return 1;
-    }
-
-    // use newton's method.
-    private static double refineRootWithHint(double[] eqn, double min, double max, double t) {
-        if (!inInterval(t, min, max)) {
-            return t;
-        }
-        double[] deriv = {eqn[1], 2*eqn[2], 3*eqn[3]};
-        double origt = t;
-        for (int i = 0; i < 3; i++) {
-            double slope = solveEqn(deriv, 2, t);
-            double y = solveEqn(eqn, 3, t);
-            double delta = - (y / slope);
-            double newt = t + delta;
-
-            if (slope == 0 || y == 0 || t == newt) {
-                break;
-            }
-
-            t = newt;
-        }
-        if (within(t, origt, 1000 * Math.ulp(origt)) && inInterval(t, min, max)) {
-            return t;
-        }
-        return origt;
-    }
-
-    private static double bisectRootWithHint(double[] eqn, double x0, double xe, double hint) {
-        double delta1 = Math.min(Math.abs(hint - x0) / 64, 0.0625);
-        double delta2 = Math.min(Math.abs(hint - xe) / 64, 0.0625);
-        double x02 = hint - delta1;
-        double xe2 = hint + delta2;
-        double fx02 = solveEqn(eqn, 3, x02);
-        double fxe2 = solveEqn(eqn, 3, xe2);
-        while (oppositeSigns(fx02, fxe2)) {
-            if (x02 >= xe2) {
-                return x02;
-            }
-            x0 = x02;
-            xe = xe2;
-            delta1 /= 64;
-            delta2 /= 64;
-            x02 = hint - delta1;
-            xe2 = hint + delta2;
-            fx02 = solveEqn(eqn, 3, x02);
-            fxe2 = solveEqn(eqn, 3, xe2);
-        }
-        if (fx02 == 0) {
-            return x02;
-        }
-        if (fxe2 == 0) {
-            return xe2;
-        }
-
-        return bisectRoot(eqn, x0, xe);
-    }
-
-    private static double bisectRoot(double[] eqn, double x0, double xe) {
-        double fx0 = solveEqn(eqn, 3, x0);
-        double m = x0 + (xe - x0) / 2;
-        while (m != x0 && m != xe) {
-            double fm = solveEqn(eqn, 3, m);
-            if (fm == 0) {
-                return m;
-            }
-            if (oppositeSigns(fx0, fm)) {
-                xe = m;
-            } else {
-                fx0 = fm;
-                x0 = m;
-            }
-            m = x0 + (xe-x0)/2;
-        }
-        return m;
-    }
-
-    private static boolean inInterval(final double t, final double min, final double max) {
-        return min <= t && t <= max;
-    }
-
-    private static boolean iszero(final double x, final double err) {
-        return within(x, 0.0d, err);
-    }
-
-    private static boolean oppositeSigns(final double x1, final double x2) {
-        return (x1 < 0.0d && x2 > 0.0d) || (x1 > 0.0d && x2 < 0.0d);
-    }
-
-    private static double solveEqn(double[] eqn, int order, double t) {
-        double v = eqn[order];
-        while (--order >= 0) {
-            v = v * t + eqn[order];
-        }
-        return v;
-    }
-
-    /*
-     * Computes M+1 where M is an upper bound for all the roots in of eqn.
-     * See: http://en.wikipedia.org/wiki/Sturm%27s_theorem#Applications.
-     * The above link doesn't contain a proof, but I [dlila] proved it myself
-     * so the result is reliable. The proof isn't difficult, but it's a bit
-     * long to include here.
-     * Precondition: eqn must represent a cubic polynomial
-     */
-    private static double getRootUpperBound(double[] eqn) {
-        double d = eqn[3];
-        double a = eqn[2];
-        double b = eqn[1];
-        double c = eqn[0];
-
-        double M = 1 + Math.max(Math.max(Math.abs(a), Math.abs(b)), Math.abs(c)) / Math.abs(d);
-        M += Math.ulp(M) + 1;
-        return M;
-    }
-    
-    
-    // g(t) = d*t^3 + a*t^2 + b*t + c
-    static void dumpRoots(final double d, double a, double b, double c,
-                          final double[] pts, final int off, final int len) {
-
-        for (int i = 0; i < len; i++) {
-            final double t = pts[off + i];
-            final double g = (((d * t) + a) * t + b) * t + c;
-            System.out.println("root(t = " + t + "):" + g);
-        }
     }
 
     // returns the index 1 past the last valid element remaining after filtering
@@ -503,7 +212,7 @@ final class DHelpers implements MarlinConst {
     {
         int ret = 0;
         double prev = -1.0d;
-        
+
         for (int i = 0; i < len; i++) {
             // remove duplicated values:
             if (!within(nums[i], prev, err)) {
@@ -513,7 +222,7 @@ final class DHelpers implements MarlinConst {
         }
         return ret;
     }
-    
+
     static double fastLineLen(final double x0, final double y0,
                               final double x1, final double y1)
     {
@@ -596,28 +305,8 @@ final class DHelpers implements MarlinConst {
         int ret = 0;
         // we subdivide at values of t such that the initial
         // curves are monotonic in x and y.
-        if (false) {
-            final double x12 = pts[2] - pts[0];
-            final double y12 = pts[3] - pts[1];
-            // if the curve is already parallel to either axis we gain nothing
-            // from rotating it.
-            if ((y12 != 0.0d) && (x12 != 0.0d)) {
-                // we rotate it so that the first vector in the control polygon is
-                // parallel to the x-axis. This will ensure that rotated quarter
-                // circles won't be subdivided.
-                final double hypot = Math.sqrt(x12 * x12 + y12 * y12);
-                final double cos = x12 / hypot;
-                final double sin = y12 / hypot;
-                // rotate original curve:
-                ret += findExtremaOfRotatedCurve(c, pts, ts, type, ret, 0.0, 1.0, cos, sin);
-            } else {
-                ret += c.dxRoots(ts, ret);
-                ret += c.dyRoots(ts, ret);
-            }            
-        } else {
-            ret += c.dxRoots(ts, ret);
-            ret += c.dyRoots(ts, ret);
-        }
+        ret += c.dxRoots(ts, ret);
+        ret += c.dyRoots(ts, ret);
         // max 4 roots
 
         // subdivide at inflection points.
@@ -663,13 +352,13 @@ final class DHelpers implements MarlinConst {
                 isort(ts, ret);
             }
         }
-        
+
         // Anyway filter out duplicated t values:
         ret = filterDuplicates(ts, ret, EPS);
 
         return ret;
     }
-    
+
     private static int maySplitCubic(final DCurve c, final DCurve rotc, final double[] pts,
                                      final double[] ts, final int type, final int off,
                                      final double t1, final double t2)
@@ -693,12 +382,13 @@ final class DHelpers implements MarlinConst {
         int ret = off;
 
         // consider cos only:
+        // angle is [0..90 deg] as curve is already subdivided (monotonic)
         final double cos2D12 = dotsq / (l1sq * l2sq);
 
 //        System.out.println("cos2Angle: " + cos2Angle);
 //        System.out.println("Curve angle: " + Math.toDegrees(FastMath.acos(Math.sqrt(cos2Angle))));
 
-        
+
         // angle > 22 deg:
         if (cos2D12 < COS2_MIN_ANGLE) {
             final double crossD12 = (dx1 * dy2 - dy1 * dx2);
@@ -708,16 +398,16 @@ final class DHelpers implements MarlinConst {
             final double hypot = Math.sqrt(l1sq + l2sq);
             final double cosD1 = dx1 / hypot;
             final double sinD1 = dy1 / hypot;
-            
+
             double angleD1 = FastMath.acos(cosD1); // rad
             if (sinD1 < 0.0d) {
                 angleD1 = -angleD1;
             }
-            
+
             final double y1 = c.yat(t1);
-*/            
+*/
 //            System.out.println("angleD1: "+Math.toDegrees(angleD1));
-            
+
             // TODO: avoid any acos / cos computation !
             /*
             Additions angles:
@@ -727,21 +417,21 @@ final class DHelpers implements MarlinConst {
                 cos^2(x) = (1 + cos(2x) ) / 2
                 sin^2(x) = (1 - cos(2x) ) / 2
             */
-            
+
             // TODO: preserve laws of cosines
             final double maxAngle = FastMath.acos(Math.sqrt(cos2D12)); // rad
 
 //            System.out.println("Large Curve angle: " + Math.toDegrees(maxAngle));
-            
+
             int nSplits = 1;
             double step;
-            
+
             step = maxAngle;
             do {
                 step *= 0.5d; // half
                 nSplits <<= 1;
             } while (step > MIN_ANGLE);
-            
+
             if (signD12) {
                 step = -step;
             }
@@ -750,7 +440,7 @@ final class DHelpers implements MarlinConst {
 
             for (int i = 1; i < nSplits; i++) {
                 final double angle = (/*angleD1 +*/ step * i);
-                
+
                 // TODO: preserve laws of cosines
                 final double cos = FastMath.cos(angle);
                 final double sin = FastMath.sin(angle);
@@ -763,12 +453,12 @@ final class DHelpers implements MarlinConst {
         }
         return ret - off;
     }
-    
+
     static int findExtremaOfRotatedCurve(final DCurve c, final double[] pts,
                                  final double[] ts, final int type, final int off,
                                  final double t1, final double t2,
                                  final double cos, final double sin) {
-        
+
         final double x1 = cos * pts[0] + sin * pts[1];
         final double y1 = cos * pts[1] - sin * pts[0];
         final double x2 = cos * pts[2] + sin * pts[3];
@@ -795,14 +485,14 @@ final class DHelpers implements MarlinConst {
         if (false) {
             ret += c.yPoints(ts, ret, y);
         } else {
-*/        
+*/
             // we subdivide at values of t such that the remaining rotated
             // curves are monotonic in x and y.
             // Idea: cheapest way to find interesting horizontal / vertical points along the curve after rotation:
             ret += c.dxRoots(ts, ret);
             ret += c.dyRoots(ts, ret);
 //        }
-        
+
         // TODO: try cubic solver to find line - intersection
 /*
         if (ret - off > 0) {
