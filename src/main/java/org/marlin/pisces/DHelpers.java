@@ -44,6 +44,9 @@ final class DHelpers implements MarlinConst {
     private static final double T_MIN = 1e-6d;
     private static final double T_MAX = 1.0d - T_MIN;
 
+    // half-width of 4pixels to start subdividing curves:
+    private static final double W2_THRESHOLD = Math.pow(4.0d / 2.0d, 2.0d);
+
     private DHelpers() {
         throw new Error("This is a non instantiable class");
     }
@@ -328,9 +331,9 @@ final class DHelpers implements MarlinConst {
         // max 10 initial roots
 
         // Extra pass to check large curvature:
-        if (DO_SUBDIVIDE_CURVE_ANGLE
-                || (DO_SUBDIVIDE_CURVE_RUNTIME_ENABLE && MarlinProperties.isDoSubdivideCurvesAtRuntime())) {
-
+        if ((w2 >= W2_THRESHOLD) && (DO_SUBDIVIDE_CURVE_ANGLE
+                || (DO_SUBDIVIDE_CURVE_RUNTIME_ENABLE && MarlinProperties.isDoSubdivideCurvesAtRuntime())))
+        {
             // include end (will be discarded anyway):
             ts[ret++] = 1.0d;
             // +1 value needed => min 11 elements
