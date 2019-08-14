@@ -48,6 +48,10 @@ final class DHelpers implements MarlinConst {
         throw new Error("This is a non instantiable class");
     }
 
+    static boolean within(final double x, final double y) {
+        return within(x, y, EPS);
+    }
+
     static boolean within(final double x, final double y, final double err) {
         final double d = y - x;
         return (d <= err && d >= -err);
@@ -130,7 +134,6 @@ final class DHelpers implements MarlinConst {
             final int num = quadraticRoots(a, b, c, pts, off);
             return filterOutNotInAB(pts, off, num, A, B) - off;
         }
-
         // From Graphics Gems:
         // https://github.com/erich666/GraphicsGems/blob/master/gems/Roots3And4.c
         // (also from awt.geom.CubicCurve2D. But here we don't need as
@@ -161,8 +164,8 @@ final class DHelpers implements MarlinConst {
 
         int num;
 
-        if (within(D, 0.0d, EPS)) {
-            if (within(q, 0.0d, EPS)) {
+        if (within(D, 0.0d)) {
+            if (within(q, 0.0d)) {
                 /* one triple solution */
                 pts[off    ] = (- sub);
                 num = 1;
@@ -186,9 +189,8 @@ final class DHelpers implements MarlinConst {
             final double sqrt_D = Math.sqrt(D);
             final double u =   FastMath.cbrt(sqrt_D - q);
             final double v = - FastMath.cbrt(sqrt_D + q);
-            final double uv = u + v;
 
-            pts[off    ] = (uv - sub);
+            pts[off    ] = (u + v - sub);
             num = 1;
         }
         return filterOutNotInAB(pts, off, num, A, B) - off;

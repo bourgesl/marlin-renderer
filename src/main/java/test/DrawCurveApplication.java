@@ -52,6 +52,8 @@ public final class DrawCurveApplication extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
+    private static final boolean USE_SPECIFIC_TEST = false;
+
     /**
      * Main
      * @param unused
@@ -214,7 +216,7 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
         canvas.addMouseListener(handler);
         canvas.addMouseMotionListener(handler);
 
-        if (false) {
+        if (USE_SPECIFIC_TEST) {
             cubicStart.setLocation(997.4651258477551, 1122.8952188708217);
             cubicCtrl1.setLocation(998.0416661761394, 1123.1895282578275);
             cubicCtrl2.setLocation(998.3357637878879, 1123.3431861242257);
@@ -307,7 +309,7 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
 
 //            System.out.println("g2D.draw() before");
 
-if (false) {
+if (USE_SPECIFIC_TEST) {
             g2d.translate(-2800.0, -2700);
             g2d.scale(3.3, 3.3);
 }

@@ -259,14 +259,6 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                                 final double dx2, final double dy2)
     {
         return dx1 * dy2 <= dy1 * dx2;
-/*
-        final double dx1y2 = dx1 * dy2;
-        final double dy1x2 = dy1 * dx2;
-
-        return dx1y2 <= dy1x2
-// Precision issue on very small vectors : performance impact ???
-                || DHelpers.within(dx1y2, dy1x2, 1e-9d);
-*/
     }
 
     private void mayDrawRoundJoin(double cx, double cy,
@@ -799,15 +791,14 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                     mayDrawRoundJoin(x0, y0, omx, omy, mx, my, cw);
                 }
             }
-// This line goes onto curve !! to preserve join quality ???
             emitLineTo(x0, y0, !cw);
         }
         prev = DRAWING_OP_TO;
     }
 
     private int getLineOffsets(final double x1, final double y1,
-                                final double x2, final double y2,
-                                final double[] left, final double[] right)
+                               final double x2, final double y2,
+                               final double[] left, final double[] right)
     {
         computeOffset(x2 - x1, y2 - y1, lineWidth2, offset0);
         final double mx = offset0[0];
@@ -885,40 +876,12 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         if (DHelpers.within(dotsq, l1sq * l4sq, 4.0d * Math.ulp(dotsq))) {
             return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
         }
-/*
-        System.out.println("dx1: "+dx1 + " dy1: "+dy1 + " len: "+Math.sqrt(l1sq));
-        System.out.println("dx4: "+dx4 + " dy4: "+dy4 + " len: "+Math.sqrt(l4sq));
-*/
 
         if (true) {
             // (dxm,dym) is some tangent of B at t=0.5. This means it's equal to
             // c*B'(0.5) for some constant c.
             final double dxm = x3 + x4 - x1 - x2;
             final double dym = y3 + y4 - y1 - y2;
-/*
-            final double dxm = x3 - x2;
-            final double dym = y3 - y2;
-*/
-//            System.out.println("dxm: "+dxm + " dym: "+dym);
-
-            if (false) {
-            // if p2-p1 and p3-p2 are parallel, that must mean this curve is a quad ?
-            dotsq = (dx1 * dxm + dy1 * dym);
-            dotsq *= dotsq;
-            final double lmsq = dxm * dxm + dym * dym;
-
-            if (DHelpers.within(dotsq, l1sq * lmsq, 4.0d * Math.ulp(dotsq))) {
-                return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
-            }
-
-            // if p4-p3 and p3-p2 are parallel, that must mean this curve is a quad ?
-            dotsq = (dx4 * dxm + dy4 * dym);
-            dotsq *= dotsq;
-
-            if (DHelpers.within(dotsq, l4sq * lmsq, 4.0d * Math.ulp(dotsq))) {
-                return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
-            }
-            }
 
             // this computes the offsets at t=0, 0.5, 1, using the property that
             // for any bezier curve the vectors p2-p1 and p4-p3 are parallel to
@@ -926,11 +889,6 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             computeOffset(dx1, dy1, lineWidth2, offset0);
             computeOffset(dxm, dym, lineWidth2, offset1);
             computeOffset(dx4, dy4, lineWidth2, offset2);
-      /*
-            System.out.println("offset0: "+offset0[0] + ", " + offset0[1]);
-            System.out.println("offset1: "+offset1[0] + ", " + offset1[1]);
-            System.out.println("offset2: "+offset2[0] + ", " + offset2[1]);
-        */
 
             double x1p = x1 + offset0[0]; // start
             double y1p = y1 + offset0[1]; // point
@@ -1023,18 +981,10 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         final double x = (x1 + 3.0d * (x2 + x3) + x4) / 8.0d;
         final double y = (y1 + 3.0d * (y2 + y3) + y4) / 8.0d;
-
-//        System.out.println("x: "+x + " y: "+y);
-
         // (dxm,dym) is some tangent of B at t=0.5. This means it's equal to
         // c*B'(0.5) for some constant c.
         final double dxm = x3 + x4 - x1 - x2;
         final double dym = y3 + y4 - y1 - y2;
-/*
-        System.out.println("dx1: "+dx1 + " dy1: "+dy1);
-        System.out.println("dx4: "+dx4 + " dy4: "+dy4);
-*/
-        System.out.println("dxm: "+dxm + " dym: "+dym);
 
         // this computes the offsets at t=0, 0.5, 1, using the property that
         // for any bezier curve the vectors p2-p1 and p4-p3 are parallel to
@@ -1042,11 +992,6 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         computeOffset(dx1, dy1, lineWidth2, offset0);
         computeOffset(dxm, dym, lineWidth2, offset1);
         computeOffset(dx4, dy4, lineWidth2, offset2);
-  /*
-        System.out.println("offset0: "+offset0[0] + ", " + offset0[1]);
-        System.out.println("offset1: "+offset1[0] + ", " + offset1[1]);
-        System.out.println("offset2: "+offset2[0] + ", " + offset2[1]);
-    */
 
         double x1p = x1 + offset0[0]; // start
         double y1p = y1 + offset0[1]; // point
@@ -1055,39 +1000,10 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         double x4p = x4 + offset2[0]; // end
         double y4p = y4 + offset2[1]; // point
 
-        System.out.println("x1p: "+x1p);
-        System.out.println("y1p: "+y1p);
-        System.out.println("xi: "+xi);
-        System.out.println("yi: "+yi);
-        System.out.println("x4p: "+x4p);
-        System.out.println("y4p: "+y4p);
-
         final double invdet43 = 4.0d / (3.0d * (dx1 * dy4 - dy1 * dx4));
-
-//        System.out.println("invdet43: "+invdet43);
-
-        // todo: check angle:
-
-        double dx1i = xi - x1p;
-        double dy1i = yi - y1p;
-        double dx4i = xi - x4p;
-        double dy4i = yi - y4p;
-
-        System.out.println("dx1i: "+dx1i + " dy1i: "+dy1i);
-        System.out.println("dx4i: "+dx4i + " dy4i: "+dy4i);
-
-        System.out.println("angle 1-i-4: " + Math.toDegrees(
-                Math.acos(
-                        (dx1i * dx4i + dy1i * dy4i)
-                        / Math.sqrt(((dx1i * dx1i + dy1i * dy1i) * (dx4i * dx4i + dy4i * dy4i)))
-                )
-        ));
 
         double two_pi_m_p1_m_p4x = 2.0d * xi - x1p - x4p;
         double two_pi_m_p1_m_p4y = 2.0d * yi - y1p - y4p;
-
-        System.out.println("two_pi_m_p1_m_p4x: "+two_pi_m_p1_m_p4x);
-        System.out.println("two_pi_m_p1_m_p4y: "+two_pi_m_p1_m_p4y);
 
         double c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
         double c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
@@ -1097,15 +1013,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         y2p = y1p + c1 * dy1;
         x3p = x4p + c2 * dx4;
         y3p = y4p + c2 * dy4;
-/*
-        System.out.println("c1: "+c1);
-        System.out.println("c2: "+c2);
 
-        System.out.println("x2p: "+x2p);
-        System.out.println("y2p: "+y2p);
-        System.out.println("x3p: "+x3p);
-        System.out.println("y3p: "+y3p);
-*/
         leftOff[0] = x1p; leftOff[1] = y1p;
         leftOff[2] = x2p; leftOff[3] = y2p;
         leftOff[4] = x3p; leftOff[5] = y3p;
@@ -1120,16 +1028,10 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         two_pi_m_p1_m_p4x = 2.0d * xi - x1p - x4p;
         two_pi_m_p1_m_p4y = 2.0d * yi - y1p - y4p;
-/*
-        System.out.println("two_pi_m_p1_m_p4x: "+two_pi_m_p1_m_p4x);
-        System.out.println("two_pi_m_p1_m_p4y: "+two_pi_m_p1_m_p4y);
-*/
+
         c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
         c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
-/*
-        System.out.println("c1: "+c1);
-        System.out.println("c2: "+c2);
-*/
+
         x2p = x1p + c1 * dx1;
         y2p = y1p + c1 * dy1;
         x3p = x4p + c2 * dx4;
@@ -1268,15 +1170,15 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         double dxf = x3 - x2;
         double dyf = y3 - y2;
 
-        if (DHelpers.within(dxs, dys, 1e-9d)) {
+        if (DHelpers.within(dxs, dys)) {
             dxs = x2 - cx0;
             dys = y2 - cy0;
-            if (DHelpers.within(dxs, dys, 1e-9d)) {
+            if (DHelpers.within(dxs, dys)) {
                 dxs = x3 - cx0;
                 dys = y3 - cy0;
             }
         }
-        if (DHelpers.within(dxs, dys, 1e-9d)) {
+        if (DHelpers.within(dxs, dys)) {
             // this happens if the "curve" is just a point
             // fix outcode0 for lineTo() call:
             if (clipRect != null) {
@@ -1285,10 +1187,10 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             lineTo(cx0, cy0);
             return;
         }
-        if (DHelpers.within(dxf, dyf, 1e-9d)) {
+        if (DHelpers.within(dxf, dyf)) {
             dxf = x3 - x1;
             dyf = y3 - y1;
-            if (DHelpers.within(dxf, dyf, 1e-9d)) {
+            if (DHelpers.within(dxf, dyf)) {
                 dxf = x3 - cx0;
                 dyf = y3 - cy0;
             }
@@ -1426,11 +1328,11 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         double dxf = x2 - x1;
         double dyf = y2 - y1;
 
-        if (DHelpers.within(dxs, dys, 1e-9d) || DHelpers.within(dxf, dyf, 1e-9d)) {
+        if (DHelpers.within(dxs, dys) || DHelpers.within(dxf, dyf)) {
             dxs = dxf = x2 - cx0;
             dys = dyf = y2 - cy0;
         }
-        if (DHelpers.within(dxs, dys, 1e-9d)) {
+        if (DHelpers.within(dxs, dys)) {
             // this happens if the "curve" is just a point
             // fix outcode0 for lineTo() call:
             if (clipRect != null) {
