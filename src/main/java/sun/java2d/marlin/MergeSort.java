@@ -101,7 +101,7 @@ final class MergeSort {
 
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
-        
+
 // low probability: deoptimization ?
         if ((insertionSortIndex == 0)
                 || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
