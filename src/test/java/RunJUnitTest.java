@@ -99,4 +99,8 @@ public class RunJUnitTest {
         ScaleClipTest.main(NO_ARGS);
     }
 
+    @Test
+    public void flipBitTest() {
+        FlipBitTest.main(NO_ARGS);
+    }
 }
