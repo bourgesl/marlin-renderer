@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.4.1-Unsafe-OpenJDK9</version>
+    <version>0.9.4.2-Unsafe-OpenJDK9</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
