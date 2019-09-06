@@ -99,7 +99,7 @@ public class FlipBitTest {
                     ex.printStackTrace();
                 }
             }
-            
+
             boolean nonWhitePixelFound = false;
             for (int x = 0; x < image.getWidth(); ++x) {
                 if (image.getRGB(x, 50) != Color.WHITE.getRGB()) {
