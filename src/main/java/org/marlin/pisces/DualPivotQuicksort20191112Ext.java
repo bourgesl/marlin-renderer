@@ -4,13 +4,13 @@
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation. Oracle designates this
+ * published by the Free Software Foundation.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * version 2 for more details (a copy is included in the LICENSE file that
  * accompanied this code).
  *
@@ -44,31 +44,34 @@ import java.util.Arrays; // TODO
  *
  * @version 2018.08.18
  *
- * @since 1.7 * 13
+ * @since 1.7 * 14
  */
-public final class DualPivotQuicksort20190501Ext {
+public final class DualPivotQuicksort20191112Ext {
 
     private static final boolean FAST_ISORT = false;
 
     /*
-    From OpenJDK13 source code
+    From OpenJDK14 source code:
+    8226297: Dual-pivot quicksort improvements
+        Reviewed-by: dl, lbourges
+        Contributed-by: Vladimir Yaroslavskiy <vlv.spb.ru@mail.ru>
+     	Tue, 12 Nov 2019 13:49:40 -0800
      */
-
     /**
      * Prevents instantiation.
      */
-    private DualPivotQuicksort20190501Ext() {
+    private DualPivotQuicksort20191112Ext() {
     }
 
     /**
      * Max array size to use mixed insertion sort.
      */
-    private static final int MAX_MIXED_INSERTION_SORT_SIZE = 114;
+    private static final int MAX_MIXED_INSERTION_SORT_SIZE = 65;
 
     /**
      * Max array size to use insertion sort.
      */
-    private static final int MAX_INSERTION_SORT_SIZE = 33;
+    private static final int MAX_INSERTION_SORT_SIZE = 44;
 
     /**
      * Min array size to try merging of runs.
@@ -78,7 +81,7 @@ public final class DualPivotQuicksort20190501Ext {
     /**
      * Min size of the first run to continue with scanning.
      */
-    private static final int MIN_FIRST_RUN_SIZE = 32;
+    private static final int MIN_FIRST_RUN_SIZE = 16;
 
     /**
      * Min factor for the first runs to continue scanning.
@@ -86,10 +89,21 @@ public final class DualPivotQuicksort20190501Ext {
     private static final int MIN_FIRST_RUNS_FACTOR = 7;
 
     /**
-     * Max double recursive partitioning depth before using heap sort.
+     * Max capacity of the index array for tracking runs.
      */
-    private static final int MAX_RECURSION_DEPTH = 64 << 1;
+    /* private */ static final int MAX_RUN_CAPACITY = 5 << 10;
 
+    /**
+     * Threshold of mixed insertion sort is incremented by this value.
+     */
+    private static final int DELTA = 3 << 1;
+
+    /**
+     * Max recursive partitioning depth before using heap sort.
+     */
+    private static final int MAX_RECURSION_DEPTH = 64 * DELTA;
+
+    
     /**
      * Sorts the specified range of the array.
      *
@@ -122,14 +136,14 @@ public final class DualPivotQuicksort20190501Ext {
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
-    static void sort(DPQSSorterContext sorter, int[] a, int[] b, int bits, int low, int high) {
+    private static void sort(DPQSSorterContext sorter, int[] a, int[] b, int bits, int low, int high) {
         while (true) {
             int end = high - 1, size = high - low;
 
             /*
              * Run mixed insertion sort on small non-leftmost parts.
              */
-            if (size < MAX_MIXED_INSERTION_SORT_SIZE && (bits & 1) > 0) {
+            if (size < MAX_MIXED_INSERTION_SORT_SIZE + bits && (bits & 1) > 0) {
                 mixedInsertionSort(a, b, low, high - 3 * ((size >> 5) << 3), high);
                 return;
             }
@@ -155,7 +169,7 @@ public final class DualPivotQuicksort20190501Ext {
              * Switch to heap sort if execution
              * time is becoming quadratic.
              */
-            if ((bits += 2) > MAX_RECURSION_DEPTH) {
+            if ((bits += DELTA) > MAX_RECURSION_DEPTH) {
                 heapSort(a, b, low, high);
                 return;
             }
@@ -177,24 +191,37 @@ public final class DualPivotQuicksort20190501Ext {
             int e3 = (e1 + e5) >>> 1;
             int e2 = (e1 + e3) >>> 1;
             int e4 = (e3 + e5) >>> 1;
+            int a3 = a[e3];
 
             /*
              * Sort these elements in place by the combination
-             * of 5-element sorting network and insertion sort.
+             * of 4-element sorting network and insertion sort.
+             *
+             *    5 ------o-----------o------------
+             *            |           |
+             *    4 ------|-----o-----o-----o------
+             *            |     |           |
+             *    2 ------o-----|-----o-----o------
+             *                  |     |
+             *    1 ------------o-----o------------
              */
-            if (a[e5] < a[e3]) { int t = a[e5]; a[e5] = a[e3]; a[e3] = t; t = b[e5]; b[e5] = b[e3]; b[e3] = t; }
-            if (a[e4] < a[e2]) { int t = a[e4]; a[e4] = a[e2]; a[e2] = t; t = b[e4]; b[e4] = b[e2]; b[e2] = t; }
-            if (a[e5] < a[e4]) { int t = a[e5]; a[e5] = a[e4]; a[e4] = t; t = b[e5]; b[e5] = b[e4]; b[e4] = t; }
-            if (a[e3] < a[e2]) { int t = a[e3]; a[e3] = a[e2]; a[e2] = t; t = b[e3]; b[e3] = b[e2]; b[e2] = t; }
-            if (a[e4] < a[e3]) { int t = a[e4]; a[e4] = a[e3]; a[e3] = t; t = b[e4]; b[e4] = b[e3]; b[e3] = t;}
+            if (a[e5] < a[e2]) { int t = a[e5]; a[e5] = a[e2]; a[e2] = t; }
+            if (a[e4] < a[e1]) { int t = a[e4]; a[e4] = a[e1]; a[e1] = t; }
+            if (a[e5] < a[e4]) { int t = a[e5]; a[e5] = a[e4]; a[e4] = t; }
+            if (a[e2] < a[e1]) { int t = a[e2]; a[e2] = a[e1]; a[e1] = t; }
+            if (a[e4] < a[e2]) { int t = a[e4]; a[e4] = a[e2]; a[e2] = t; }
 
-            if (a[e1] > a[e2]) {
-                int ta = a[e1]; a[e1] = a[e2]; a[e2] = ta;
-                int tb = b[e1]; b[e1] = b[e2]; b[e2] = tb;
-                if (ta > a[e3]) { a[e2] = a[e3]; a[e3] = ta; b[e2] = b[e3]; b[e3] = tb;
-                    if (ta > a[e4]) { a[e3] = a[e4]; a[e4] = ta; b[e3] = b[e4]; b[e4] = tb;
-                        if (ta > a[e5]) { a[e4] = a[e5]; a[e5] = ta; b[e4] = b[e5]; b[e5] = tb; }
-                    }
+            if (a3 < a[e2]) {
+                if (a3 < a[e1]) {
+                    a[e3] = a[e2]; a[e2] = a[e1]; a[e1] = a3;
+                } else {
+                    a[e3] = a[e2]; a[e2] = a3;
+                }
+            } else if (a3 > a[e4]) {
+                if (a3 > a[e5]) {
+                    a[e3] = a[e4]; a[e4] = a[e5]; a[e5] = a3;
+                } else {
+                    a[e3] = a[e4]; a[e4] = a3;
                 }
             }
 
@@ -259,7 +286,7 @@ public final class DualPivotQuicksort20190501Ext {
                     int bk = b[k];
 
                     if (ak < pivotA1) { // Move a[k] to the left side
-                        while (k > lower) {
+                        while (lower < k) {
                             if (a[++lower] >= pivotA1) {
                                 if (a[lower] > pivotA2) {
                                     a[k] = a[--upper];
@@ -487,7 +514,7 @@ public final class DualPivotQuicksort20190501Ext {
              */
             for (int i; low < high; ++low) {
                 int a1 = a[i = low], a2 = a[++low];
-                int b1 = b[i],       b2 = b[low];
+                int b1 = b[i],       b2 = b[  low];
 
                 /*
                  * Insert two elements per iteration: at first, insert the
@@ -563,12 +590,12 @@ public final class DualPivotQuicksort20190501Ext {
      */
     private static void heapSort(int[] a, int b[], int low, int high) {
         for (int k = (low + high) >>> 1; k > low; ) {
-            pushDown(a, b, --k, a[k], low, high);
+            pushDown(a, b, --k, a[k], b[k], low, high);
         }
         while (--high > low) {
             int maxA = a[low];
             int maxB = b[low];
-            pushDown(a, b, low, a[high], low, high);
+            pushDown(a, b, low, a[high], b[high], low, high);
             a[high] = maxA;
             b[high] = maxB;
         }
@@ -579,12 +606,12 @@ public final class DualPivotQuicksort20190501Ext {
      *
      * @param a the given array
      * @param p the start index
-     * @param value the given element
+     * @param valueA the given element
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
-    private static void pushDown(int[] a, int b[], int p, int value, int low, int high) {
-        for (int k;; a[p] = a[k], b[p] = b[k], p = k) {
+    private static void pushDown(int[] a, int b[], int p, int valueA, int valueB, int low, int high) {
+        for (int k;; a[p] = a[k], b[p] = b[p = k]) {
             k = (p << 1) - low + 2; // Index of the right child
 
             if (k > high) {
@@ -593,10 +620,12 @@ public final class DualPivotQuicksort20190501Ext {
             if (k == high || a[k] < a[k - 1]) {
                 --k;
             }
-            if (a[k] <= value) {
+            if (a[k] <= valueA) {
                 break;
             }
         }
+        a[p] = valueA;
+        b[p] = valueB;
     }
 
     /**
@@ -609,6 +638,7 @@ public final class DualPivotQuicksort20190501Ext {
      * @return true if finally sorted, false otherwise
      */
     private static boolean tryMergeRuns(DPQSSorterContext sorter, int[] a, int[] b, int low, int size) {
+
         /*
          * The run array is constructed only if initial runs are
          * long enough to continue, run[i] then holds start index
@@ -617,12 +647,11 @@ public final class DualPivotQuicksort20190501Ext {
         int[] run = null;
         int high = low + size;
         int count = 1, last = low;
-        int max = DPQSSorterContext.MAX_RUN_CAPACITY;
 
         /*
          * Identify all possible runs.
          */
-        for (int k = low + 1; k < high && count < max; ) {
+        for (int k = low + 1; k < high; ) {
 
             /*
              * Find the end index of the current run.
@@ -642,7 +671,7 @@ public final class DualPivotQuicksort20190501Ext {
                     t = a[i]; a[i] = a[j]; a[j] = t;
                     t = b[i]; b[i] = b[j]; b[j] = t;
                 }
-            } else { // Identify equal elements
+            } else { // Identify constant sequence
                 for (int ak = a[k]; ++k < high && ak == a[k]; );
 
                 if (k < high) {
@@ -675,7 +704,7 @@ public final class DualPivotQuicksort20190501Ext {
                 }
 
 //                System.out.println("alloc run");
-//                run = new int[INITIAL_RUN_CAPACITY];
+//                run = new int[((size >> 10) | 0x7F) & 0x3FF];
                 run = sorter.run; // LBO: prealloc
                 run[0] = low;
 
@@ -690,10 +719,20 @@ public final class DualPivotQuicksort20190501Ext {
                     return false;
                 }
 
-                if (++count == run.length) {
-                    if (DPQSSorterContext.LOG_ALLOC) {
-                        MarlinUtils.logInfo("Arrays.copyOf(run)");
-                    }
+                if (++count == MAX_RUN_CAPACITY) {
+
+                    /*
+                     * Array is not highly structured.
+                     */
+                    return false;
+                }
+
+                if (false && count == run.length) {
+
+                    /*
+                     * Increase capacity of index array.
+                     */
+//                  System.out.println("alloc run (resize)");
                     run = Arrays.copyOf(run, count << 1);
                 }
             }
@@ -701,24 +740,22 @@ public final class DualPivotQuicksort20190501Ext {
         }
 
         /*
-         * Check if array is highly structured and then merge runs.
+         * Merge runs of highly structured array.
          */
-        if (count < max && count > 1) {
+        if (count > 1) {
             int[] auxA = sorter.auxA;
             int[] auxB = sorter.auxB;
             int offset = low;
 
             // LBO: prealloc
-            if (DPQSSorterContext.CHECK_ALLOC && (auxA.length < size || auxB.length < size)) {
-                if (DPQSSorterContext.LOG_ALLOC) {
-                    MarlinUtils.logInfo("alloc auxA/auxB: " + size);
-                }
+            if ((auxA.length < size || auxB.length < size)) {
+//                System.out.println("alloc aux: "+size);
                 auxA = new int[size];
                 auxB = new int[size];
             }
             mergeRuns(a, auxA, b, auxB, offset, 1, run, 0, count);
         }
-        return count < max;
+        return true;
     }
 
     /**
@@ -753,7 +790,7 @@ public final class DualPivotQuicksort20190501Ext {
         while (run[++mi + 1] <= rmi);
 
         /*
-         * Merge the left and the right parts.
+         * Merge the left and right parts.
          */
         int[] a1, a2;
         a1 = mergeRuns(srcA, dstA, srcB, dstB, offset, -aim, run, lo, mi);
