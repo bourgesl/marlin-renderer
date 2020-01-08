@@ -32,13 +32,43 @@ import org.marlin.pisces.stats.StatLong;
 
 final class DHelpers implements MarlinConst {
 
+    private static final double EPS = 1e-9d;
+
     private DHelpers() {
         throw new Error("This is a non instantiable class");
+    }
+
+    static boolean within(final double x, final double y) {
+        return within(x, y, EPS);
     }
 
     static boolean within(final double x, final double y, final double err) {
         final double d = y - x;
         return (d <= err && d >= -err);
+    }
+
+    static boolean within(final double x1, final double y1,
+                          final double x2, final double y2,
+                          final double err)
+    {
+        assert err > 0 : "";
+        // compare taxicab distance. ERR will always be small, so using
+        // true distance won't give much benefit
+        return (within(x1, x2, err) && // we want to avoid calling Math.abs
+                within(y1, y2, err));  // this is just as good.
+    }
+
+    static boolean isPointCurve(final double[] curve, final int type) {
+        return isPointCurve(curve, type, EPS);
+    }
+
+    static boolean isPointCurve(final double[] curve, final int type, final double err) {
+        for (int i = 2; i < type; i++) {
+            if (!within(curve[i], curve[i - 2], err)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     static double evalCubic(final double a, final double b,
@@ -59,21 +89,24 @@ final class DHelpers implements MarlinConst {
     {
         int ret = off;
         if (a != 0.0d) {
-            final double dis = b*b - 4.0d * a * c;
-            if (dis > 0.0d) {
-                final double sqrtDis = Math.sqrt(dis);
-                // depending on the sign of b we use a slightly different
-                // algorithm than the traditional one to find one of the roots
-                // so we can avoid adding numbers of different signs (which
-                // might result in loss of precision).
-                if (b >= 0.0d) {
-                    zeroes[ret++] = (2.0d * c) / (-b - sqrtDis);
-                    zeroes[ret++] = (-b - sqrtDis) / (2.0d * a);
-                } else {
-                    zeroes[ret++] = (-b + sqrtDis) / (2.0d * a);
-                    zeroes[ret++] = (2.0d * c) / (-b + sqrtDis);
+            double d = b * b - 4.0d * a * c;
+            if (d > 0.0d) {
+                d = Math.sqrt(d);
+                // For accuracy, calculate one root using:
+                //     (-b +/- d) / 2a
+                // and the other using:
+                //     2c / (-b +/- d)
+                // Choose the sign of the +/- so that b+d gets larger in magnitude
+                if (b < 0.0d) {
+                    d = -d;
                 }
-            } else if (dis == 0.0d) {
+                final double q = (b + d) / -2.0d;
+                // We already tested a for being 0 above
+                zeroes[ret++] = q / a;
+                if (q != 0.0d) {
+                    zeroes[ret++] = c / q;
+                }
+            } else if (d == 0.0d) {
                 zeroes[ret++] = -b / (2.0d * a);
             }
         } else if (b != 0.0d) {
@@ -98,10 +131,6 @@ final class DHelpers implements MarlinConst {
         // our own customized version).
 
         // normal form: x^3 + ax^2 + bx + c = 0
-
-        /*
-         * TODO: cleanup all that code after reading Roots3And4.c
-         */
         a /= d;
         b /= d;
         c /= d;
@@ -114,18 +143,30 @@ final class DHelpers implements MarlinConst {
         // p = P/3
         // q = Q/2
         // instead and use those values for simplicity of the code.
-        final double sub = (1.0d / 3.0d) * a;
         final double sq_A = a * a;
         final double p = (1.0d / 3.0d) * ((-1.0d / 3.0d) * sq_A + b);
+        final double sub = (1.0d / 3.0d) * a;
         final double q = (1.0d / 2.0d) * ((2.0d / 27.0d) * a * sq_A - sub * b + c);
 
         // use Cardano's formula
-
         final double cb_p = p * p * p;
         final double D = q * q + cb_p;
 
         int num;
-        if (D < 0.0d) {
+
+        if (DHelpers.within(D, 0.0d)) {
+            if (DHelpers.within(q, 0.0d)) {
+                /* one triple solution */
+                pts[off    ] = (- sub);
+                num = 1;
+            } else {
+                /* one single and one double solution */
+                final double u = FastMath.cbrt(-q);
+                pts[off    ] = (2.0d * u - sub);
+                pts[off + 1] = (- u - sub);
+                num = 2;
+            }
+        } else if (D < 0.0d) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
             final double phi = (1.0d / 3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
             final double t = 2.0d * Math.sqrt(-p);
@@ -141,13 +182,7 @@ final class DHelpers implements MarlinConst {
 
             pts[off    ] = (u + v - sub);
             num = 1;
-
-            if (within(D, 0.0d, 1e-8d)) {
-                pts[off + 1] = ((-1.0d / 2.0d) * (u + v) - sub);
-                num = 2;
-            }
         }
-
         return filterOutNotInAB(pts, off, num, A, B) - off;
     }
 
