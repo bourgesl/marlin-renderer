@@ -39,7 +39,7 @@ final class DHelpers implements MarlinConst {
     private final static double MIN_ANGLE = Math.PI / 12.0d; // 15 deg ie divide 90° in 5 parts
     private final static double COS2_MIN_ANGLE = Math.pow(Math.cos(MIN_ANGLE), 2.0d);
 
-    private static final double EPS = 1e-6d;
+    private static final double EPS = 1e-9d;
 
     private static final double T_MIN = 1e-6d;
     private static final double T_MAX = 1.0d - T_MIN;

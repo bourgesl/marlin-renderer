@@ -838,7 +838,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
         // in which case ignore if p1 == p2
-        final boolean p1eqp2 = Helpers.withinD(dx34, dy12, 6.0f * Math.ulp(y2));
+        final boolean p1eqp2 = Helpers.withinD(dx12, dy12, 6.0f * Math.ulp(y2));
         final boolean p3eqp4 = Helpers.withinD(dx34, dy34, 6.0f * Math.ulp(y4));
 
         if (p1eqp2 && p3eqp4) {
