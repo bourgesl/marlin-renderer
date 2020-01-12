@@ -186,8 +186,7 @@ public final class DrawCurveApplication extends JPanel {
             // 73.0, 430.0
             // 375.0, 655.0
             //            214.0, 732.0
-            //            783.0, 859.0
-            354.0, 1849.0 // loop bug
+            783.0, 859.0
     );
 
     private final Marker cubicCtrl2 = new Marker(3, showCubic,
@@ -200,14 +199,11 @@ public final class DrawCurveApplication extends JPanel {
             // 748.0, 1713.0
             // 1010.0, 486.0
             //            1532.0, 1389.0
-            //            565.0, 1752.0
-            1723.0, 132.0 // loop bug
-
+            565.0, 1752.0
     );
 
     private final Marker cubicEnd = new Marker(4, showCubic,
-            //            150 * 5, 200 * 5
-            1269.0, 2026.0 // loop bug
+            150 * 5, 200 * 5
     );
 
     /*

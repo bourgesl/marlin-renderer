@@ -25,7 +25,6 @@
 
 package org.marlin.pisces;
 
-import java.awt.geom.Point2D;
 import java.util.Arrays;
 import org.marlin.pisces.DHelpers.PolyStack;
 import org.marlin.pisces.DTransformingPathConsumer2D.CurveBasicMonotonizer;
