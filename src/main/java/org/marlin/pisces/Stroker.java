@@ -797,20 +797,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         prev = DRAWING_OP_TO;
     }
 
-    private static boolean within(final float x1, final float y1,
-                                  final float x2, final float y2,
-                                  final float err)
-    {
-        assert err > 0 : "";
-        // compare taxicab distance. ERR will always be small, so using
-        // true distance won't give much benefit
-        return (Helpers.within(x1, x2, err) && // we want to avoid calling Math.abs
-                Helpers.within(y1, y2, err));  // this is just as good.
-    }
-
     private int getLineOffsets(final float x1, final float y1,
-                                final float x2, final float y2,
-                                final float[] left, final float[] right)
+                               final float x2, final float y2,
+                               final float[] left, final float[] right)
     {
         computeOffset(x2 - x1, y2 - y1, lineWidth2, offset0);
         final float mx = offset0[0];
@@ -844,13 +833,13 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         final float x3 = pts[off + 4]; final float y3 = pts[off + 5];
         final float x4 = pts[off + 6]; final float  y4 = pts[off + 7];
 
-        final float dx4 = x4 - x3; final float dy4 = y4 - y3;
-        final float dx1 = x2 - x1; final float dy1 = y2 - y1;
+        final float dx12 = x2 - x1; final float dy12 = y2 - y1;
+        final float dx34 = x4 - x3; final float dy34 = y4 - y3;
 
         // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
         // in which case ignore if p1 == p2
-        final boolean p1eqp2 = within(x1, y1, x2, y2, 6.0f * Math.ulp(y2));
-        final boolean p3eqp4 = within(x3, y3, x4, y4, 6.0f * Math.ulp(y4));
+        final boolean p1eqp2 = Helpers.withinD(dx34, dy12, 6.0f * Math.ulp(y2));
+        final boolean p3eqp4 = Helpers.withinD(dx34, dy34, 6.0f * Math.ulp(y4));
 
         if (p1eqp2 && p3eqp4) {
             return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
@@ -866,7 +855,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             return computeOffsetQuad(pts, off, leftOff, rightOff, false);
         }
 
-        final boolean p2eqp3 = within(x2, y2, x3, y3, 6.0f * Math.ulp(y3));
+        final float dx23 = x3 - x2; final float dy23 = y3 - y2;
+
+        final boolean p2eqp3 = Helpers.withinD(dx23, dy23, 6.0f * Math.ulp(y3));
         if (p2eqp3) {
             // shift 4 to 3 to computeOffsetQuad(1-2-4)
             pts[off + 4] = pts[off + 6];
@@ -875,61 +866,164 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         }
 
         // if p2-p1 and p4-p3 are parallel, that must mean this curve is a line
-        float dotsq = (dx1 * dx4 + dy1 * dy4);
+        float dotsq = (dx12 * dx34 + dy12 * dy34);
         dotsq *= dotsq;
-        final float l1sq = dx1 * dx1 + dy1 * dy1;
-        final float l4sq = dx4 * dx4 + dy4 * dy4;
+        final float l1sq = dx12 * dx12 + dy12 * dy12;
+        final float l4sq = dx34 * dx34 + dy34 * dy34;
 
         if (Helpers.within(dotsq, l1sq * l4sq, 4.0f * Math.ulp(dotsq))) {
             return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
         }
 
+//      What we're trying to do in this function is to approximate an ideal
+//      offset curve (call it I) of the input curve B using a bezier curve Bp.
+//      The constraints I use to get the equations are:
+//
+//      1. The computed curve Bp should go through I(0) and I(1). These are
+//      x1p, y1p, x4p, y4p, which are p1p and p4p. We still need to find
+//      4 variables: the x and y components of p2p and p3p (i.e. x2p, y2p, x3p, y3p).
+//
+//      2. Bp should have slope equal in absolute value to I at the endpoints. So,
+//      (by the way, the operator || in the comments below means "aligned with".
+//      It is defined on vectors, so when we say I'(0) || Bp'(0) we mean that
+//      vectors I'(0) and Bp'(0) are aligned, which is the same as saying
+//      that the tangent lines of I and Bp at 0 are parallel. Mathematically
+//      this means (I'(t) || Bp'(t)) <==> (I'(t) = c * Bp'(t)) where c is some
+//      nonzero constant.)
+//      I'(0) || Bp'(0) and I'(1) || Bp'(1). Obviously, I'(0) || B'(0) and
+//      I'(1) || B'(1); therefore, Bp'(0) || B'(0) and Bp'(1) || B'(1).
+//      We know that Bp'(0) || (p2p-p1p) and Bp'(1) || (p4p-p3p) and the same
+//      is true for any bezier curve; therefore, we get the equations
+//          (1) p2p = c1 * (p2-p1) + p1p
+//          (2) p3p = c2 * (p4-p3) + p4p
+//      We know p1p, p4p, p2, p1, p3, and p4; therefore, this reduces the number
+//      of unknowns from 4 to 2 (i.e. just c1 and c2).
+//      To eliminate these 2 unknowns we use the following constraint:
+//
+//      3. Bp(0.5) == I(0.5). Bp(0.5)=(x,y) and I(0.5)=(xi,yi), and I should note
+//      that I(0.5) is *the only* reason for computing dxm,dym. This gives us
+//          (3) Bp(0.5) = (p1p + 3 * (p2p + p3p) + p4p)/8, which is equivalent to
+//          (4) p2p + p3p = (Bp(0.5)*8 - p1p - p4p) / 3
+//      We can substitute (1) and (2) from above into (4) and we get:
+//          (5) c1*(p2-p1) + c2*(p4-p3) = (Bp(0.5)*8 - p1p - p4p)/3 - p1p - p4p
+//      which is equivalent to
+//          (6) c1*(p2-p1) + c2*(p4-p3) = (4/3) * (Bp(0.5) * 2 - p1p - p4p)
+//
+//      The right side of this is a 2D vector, and we know I(0.5), which gives us
+//      Bp(0.5), which gives us the value of the right side.
+//      The left side is just a matrix vector multiplication in disguise. It is
+//
+//      [x2-x1, x4-x3][c1]
+//      [y2-y1, y4-y3][c2]
+//      which, is equal to
+//      [dx1, dx4][c1]
+//      [dy1, dy4][c2]
+//      At this point we are left with a simple linear system and we solve it by
+//      getting the inverse of the matrix above. Then we use [c1,c2] to compute
+//      p2p and p3p.
+
+        final float xm = (x1 + x4 + 3.0f * (x2 + x3)) / 8.0f;
+        final float ym = (y1 + y4 + 3.0f * (y2 + y3)) / 8.0f;
         // (dxm,dym) is some tangent of B at t=0.5. This means it's equal to
         // c*B'(0.5) for some constant c.
-        final float dxm = x3 + x4 - x1 - x2;
-        final float dym = y3 + y4 - y1 - y2;
+        final float dxm = x3 + x4 - (x1 + x2);
+        final float dym = y3 + y4 - (y1 + y2);
 
         // this computes the offsets at t=0, 0.5, 1, using the property that
         // for any bezier curve the vectors p2-p1 and p4-p3 are parallel to
         // the (dx/dt, dy/dt) vectors at the endpoints.
-        computeOffset(dx1, dy1, lineWidth2, offset0);
+        computeOffset(dx12, dy12, lineWidth2, offset0);
         computeOffset(dxm, dym, lineWidth2, offset1);
-        computeOffset(dx4, dy4, lineWidth2, offset2);
+        computeOffset(dx34, dy34, lineWidth2, offset2);
 
+        // left side:
         float x1p = x1 + offset0[0]; // start
         float y1p = y1 + offset0[1]; // point
-        float x2p = x2 + offset1[0]; // 2nd
-        float y2p = y2 + offset1[1]; // point
-        float x3p = x3 + offset1[0]; // 3nd
-        float y3p = y3 + offset1[1]; // point
+        float xi  = xm  + offset1[0]; // interpolation
+        float yi  = ym  + offset1[1]; // point
         float x4p = x4 + offset2[0]; // end
         float y4p = y4 + offset2[1]; // point
 
-        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x2p, y2p, x2p-dxm, y2p-dym, leftOff);
-        x2p = leftOff[2]; y2p = leftOff[3];
+if (false) {
+        final MarlinDebugThreadLocal dbgCtx = MarlinDebugThreadLocal.get();
+        // never release (reset):
+        dbgCtx.addPoint(xi, yi);
+}
 
-        safeComputeMiter(x4p, y4p, x4p+dx4, y4p+dy4, x3p, y3p, x3p-dxm, y3p-dym, leftOff);
-        x3p = leftOff[2]; y3p = leftOff[3];
+        final float invdet43 = 4.0f / (3.0f * (dx12 * dy34 - dy12 * dx34));
+
+        float two_pi_m_p1_m_p4x = 2.0f * xi - (x1p + x4p);
+        float two_pi_m_p1_m_p4y = 2.0f * yi - (y1p + y4p);
+
+        float c1 = invdet43 * (dy34 * two_pi_m_p1_m_p4x - dx34 * two_pi_m_p1_m_p4y);
+        float c2 = invdet43 * (dx12 * two_pi_m_p1_m_p4y - dy12 * two_pi_m_p1_m_p4x);
+
+        float x2p, y2p, x3p, y3p;
+
+        if (c1 * c2 > 0.0) {
+//            System.out.println("Buggy solver (left): c1 = " + c1 + " c2 = " + c2);
+
+            // use lower quality approximation but good enough
+            // to ensure cuve being in its convex hull
+            x2p = x2 + offset1[0]; // 2nd
+            y2p = y2 + offset1[1]; // point
+            x3p = x3 + offset1[0]; // 3nd
+            y3p = y3 + offset1[1]; // point
+
+            safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x2p, y2p, x2p-dxm, y2p-dym, leftOff);
+            x2p = leftOff[2]; y2p = leftOff[3];
+
+            safeComputeMiter(x4p, y4p, x4p+dx34, y4p+dy34, x3p, y3p, x3p-dxm, y3p-dym, leftOff);
+            x3p = leftOff[2]; y3p = leftOff[3];
+        } else {
+            x2p = x1p + c1 * dx12; y2p = y1p + c1 * dy12;
+            x3p = x4p + c2 * dx34; y3p = y4p + c2 * dy34;
+        }
 
         leftOff[0] = x1p; leftOff[1] = y1p;
         leftOff[2] = x2p; leftOff[3] = y2p;
         leftOff[4] = x3p; leftOff[5] = y3p;
         leftOff[6] = x4p; leftOff[7] = y4p;
 
+        // Right side:
         x1p = x1 - offset0[0]; // start
         y1p = y1 - offset0[1]; // point
-        x2p = x2 - offset1[0]; // 2nd
-        y2p = y2 - offset1[1]; // point
-        x3p = x3 - offset1[0]; // 3nd
-        y3p = y3 - offset1[1]; // point
+        xi =  xm  - offset1[0]; // interpolation
+        yi =  ym  - offset1[1]; // point
         x4p = x4 - offset2[0]; // end
         y4p = y4 - offset2[1]; // point
 
-        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x2p, y2p, x2p-dxm, y2p-dym, rightOff);
-        x2p = rightOff[2]; y2p = rightOff[3];
+if (false) {
+        final MarlinDebugThreadLocal dbgCtx = MarlinDebugThreadLocal.get();
+        // never release (reset):
+        dbgCtx.addPoint(xi, yi);
+}
 
-        safeComputeMiter(x4p, y4p, x4p+dx4, y4p+dy4, x3p, y3p, x3p-dxm, y3p-dym, rightOff);
-        x3p = rightOff[2]; y3p = rightOff[3];
+        two_pi_m_p1_m_p4x = 2.0f * xi - (x1p + x4p);
+        two_pi_m_p1_m_p4y = 2.0f * yi - (y1p + y4p);
+
+        c1 = invdet43 * (dy34 * two_pi_m_p1_m_p4x - dx34 * two_pi_m_p1_m_p4y);
+        c2 = invdet43 * (dx12 * two_pi_m_p1_m_p4y - dy12 * two_pi_m_p1_m_p4x);
+
+        if (c1 * c2 > 0.0) {
+//            System.out.println("Buggy solver (right): c1 = " + c1 + " c2 = " + c2);
+
+            // use lower quality approximation but good enough
+            // to ensure cuve being in its convex hull
+            x2p = x2 - offset1[0]; // 2nd
+            y2p = y2 - offset1[1]; // point
+            x3p = x3 - offset1[0]; // 3nd
+            y3p = y3 - offset1[1]; // point
+
+            safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x2p, y2p, x2p-dxm, y2p-dym, rightOff);
+            x2p = rightOff[2]; y2p = rightOff[3];
+
+            safeComputeMiter(x4p, y4p, x4p+dx34, y4p+dy34, x3p, y3p, x3p-dxm, y3p-dym, rightOff);
+            x3p = rightOff[2]; y3p = rightOff[3];
+        } else {
+            x2p = x1p + c1 * dx12; y2p = y1p + c1 * dy12;
+            x3p = x4p + c2 * dx34; y3p = y4p + c2 * dy34;
+        }
 
         rightOff[0] = x1p; rightOff[1] = y1p;
         rightOff[2] = x2p; rightOff[3] = y2p;
@@ -948,7 +1042,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
     {
         return computeOffsetQuad(pts, off, leftOff, rightOff, true);
     }
-    
+
     private int computeOffsetQuad(final float[] pts, final int off,
                                   final float[] leftOff,
                                   final float[] rightOff,
@@ -958,8 +1052,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         final float x2 = pts[off + 2]; final float y2 = pts[off + 3];
         final float x3 = pts[off + 4]; final float y3 = pts[off + 5];
 
-        final float dx3 = x3 - x2; final float dy3 = y3 - y2;
-        final float dx1 = x2 - x1; final float dy1 = y2 - y1;
+        final float dx12 = x2 - x1; final float dy12 = y2 - y1;
+        final float dx23 = x3 - x2; final float dy23 = y3 - y2;
 
         if (checkCtrlPoints) {
             // if p1=p2 or p2=p3 it means that the derivative at the endpoint
@@ -971,18 +1065,18 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             // equal if they're very close to each other.
 
             // if p1 == p2 or p2 == p3: draw line from p1->p3
-            final boolean p1eqp2 = within(x1, y1, x2, y2, 6.0f * Math.ulp(y2));
-            final boolean p2eqp3 = within(x2, y2, x3, y3, 6.0f * Math.ulp(y3));
+            final boolean p1eqp2 = Helpers.withinD(dx12, dy12, 6.0f * Math.ulp(y2));
+            final boolean p2eqp3 = Helpers.withinD(dx23, dy23, 6.0f * Math.ulp(y3));
 
             if (p1eqp2 || p2eqp3) {
                 return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
             }
 
             // if p2-p1 and p3-p2 are parallel, that must mean this curve is a line
-            float dotsq = (dx1 * dx3 + dy1 * dy3);
+            float dotsq = (dx12 * dx23 + dy12 * dy23);
             dotsq *= dotsq;
-            final float l1sq = dx1 * dx1 + dy1 * dy1;
-            final float l3sq = dx3 * dx3 + dy3 * dy3;
+            final float l1sq = dx12 * dx12 + dy12 * dy12;
+            final float l3sq = dx23 * dx23 + dy23 * dy23;
 
             if (Helpers.within(dotsq, l1sq * l3sq, 4.0f * Math.ulp(dotsq))) {
                 return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
@@ -992,15 +1086,15 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // this computes the offsets at t=0, 0.5, 1, using the property that
         // for any bezier curve the vectors p2-p1 and p3-p2 are parallel to
         // the (dx/dt, dy/dt) vectors at the endpoints.
-        computeOffset(dx1, dy1, lineWidth2, offset0);
-        computeOffset(dx3, dy3, lineWidth2, offset1);
+        computeOffset(dx12, dy12, lineWidth2, offset0);
+        computeOffset(dx23, dy23, lineWidth2, offset1);
 
         float x1p = x1 + offset0[0]; // start
         float y1p = y1 + offset0[1]; // point
         float x3p = x3 + offset1[0]; // end
         float y3p = y3 + offset1[1]; // point
 
-        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, leftOff);
+        safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x3p, y3p, x3p-dx23, y3p-dy23, leftOff);
         leftOff[0] = x1p; leftOff[1] = y1p;
         leftOff[4] = x3p; leftOff[5] = y3p;
 
@@ -1009,7 +1103,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         x3p = x3 - offset1[0]; // end
         y3p = y3 - offset1[1]; // point
 
-        safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x3p, y3p, x3p-dx3, y3p-dy3, rightOff);
+        safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x3p, y3p, x3p-dx23, y3p-dy23, rightOff);
         rightOff[0] = x1p; rightOff[1] = y1p;
         rightOff[4] = x3p; rightOff[5] = y3p;
 

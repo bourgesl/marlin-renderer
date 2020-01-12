@@ -33,7 +33,7 @@ import sun.awt.geom.PathConsumer2D;
 
 final class Helpers implements MarlinConst {
 
-    private static final float EPS = 1e-9f;
+    private static final float EPS = 1e-6f;
 
     private Helpers() {
         throw new Error("This is a non instantiable class");
@@ -44,21 +44,22 @@ final class Helpers implements MarlinConst {
     }
 
     static boolean within(final float x, final float y, final float err) {
-        final float d = y - x;
+        return withinD(y - x, err);
+    }
+
+    static boolean withinD(final float d, final float err) {
         return (d <= err && d >= -err);
     }
 
-    static boolean within(final float x1, final float y1,
-                          final float x2, final float y2,
-                          final float err)
+    static boolean withinD(final float dx, final float dy, final float err)
     {
         assert err > 0 : "";
         // compare taxicab distance. ERR will always be small, so using
         // true distance won't give much benefit
-        return (within(x1, x2, err) && // we want to avoid calling Math.abs
-                within(y1, y2, err));  // this is just as good.
+        return (withinD(dx, err) && // we want to avoid calling Math.abs
+                withinD(dy, err));  // this is just as good.
     }
-    
+
     static boolean isPointCurve(final float[] curve, final int type) {
         return isPointCurve(curve, type, EPS);
     }
@@ -89,16 +90,16 @@ final class Helpers implements MarlinConst {
                               final float[] zeroes, final int off)
     {
         int ret = off;
-        if (a != 0.0d) {
+        if (a != 0.0f) {
             float d = b * b - 4.0f * a * c;
-            if (d > 0.0d) {
+            if (d > 0.0f) {
                 d = (float)Math.sqrt(d);
                 // For accuracy, calculate one root using:
                 //     (-b +/- d) / 2a
                 // and the other using:
                 //     2c / (-b +/- d)
                 // Choose the sign of the +/- so that b+d gets larger in magnitude
-                if (b < 0.0d) {
+                if (b < 0.0f) {
                     d = -d;
                 }
                 final float q = (b + d) / -2.0f;

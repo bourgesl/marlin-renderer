@@ -32,7 +32,7 @@ import org.marlin.pisces.stats.StatLong;
 
 final class DHelpers implements MarlinConst {
 
-    private static final double EPS = 1e-9d;
+    private static final double EPS = 1e-6d;
 
     private DHelpers() {
         throw new Error("This is a non instantiable class");
@@ -43,19 +43,20 @@ final class DHelpers implements MarlinConst {
     }
 
     static boolean within(final double x, final double y, final double err) {
-        final double d = y - x;
+        return withinD(y - x, err);
+    }
+
+    static boolean withinD(final double d, final double err) {
         return (d <= err && d >= -err);
     }
 
-    static boolean within(final double x1, final double y1,
-                          final double x2, final double y2,
-                          final double err)
+    static boolean withinD(final double dx, final double dy, final double err)
     {
         assert err > 0 : "";
         // compare taxicab distance. ERR will always be small, so using
         // true distance won't give much benefit
-        return (within(x1, x2, err) && // we want to avoid calling Math.abs
-                within(y1, y2, err));  // this is just as good.
+        return (withinD(dx, err) && // we want to avoid calling Math.abs
+                withinD(dy, err));  // this is just as good.
     }
 
     static boolean isPointCurve(final double[] curve, final int type) {
@@ -154,8 +155,8 @@ final class DHelpers implements MarlinConst {
 
         int num;
 
-        if (DHelpers.within(D, 0.0d)) {
-            if (DHelpers.within(q, 0.0d)) {
+        if (within(D, 0.0d)) {
+            if (within(q, 0.0d)) {
                 /* one triple solution */
                 pts[off    ] = (- sub);
                 num = 1;
