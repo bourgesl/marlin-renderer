@@ -33,7 +33,7 @@ import sun.awt.geom.PathConsumer2D;
 
 final class Helpers implements MarlinConst {
 
-    private static final float EPS = 1e-6f;
+    private static final float EPS = 1e-9f;
 
     private Helpers() {
         throw new Error("This is a non instantiable class");

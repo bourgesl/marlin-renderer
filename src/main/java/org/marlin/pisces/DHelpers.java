@@ -32,7 +32,7 @@ import org.marlin.pisces.stats.StatLong;
 
 final class DHelpers implements MarlinConst {
 
-    private static final double EPS = 1e-6d;
+    private static final double EPS = 1e-9d;
 
     private DHelpers() {
         throw new Error("This is a non instantiable class");
