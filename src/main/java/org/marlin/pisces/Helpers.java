@@ -33,18 +33,44 @@ import sun.awt.geom.PathConsumer2D;
 
 final class Helpers implements MarlinConst {
 
+    private static final float EPS = 1e-6f;
+
     private Helpers() {
         throw new Error("This is a non instantiable class");
     }
 
+    static boolean within(final float x, final float y) {
+        return within(x, y, EPS);
+    }
+
     static boolean within(final float x, final float y, final float err) {
-        final float d = y - x;
+        return withinD(y - x, err);
+    }
+
+    static boolean withinD(final float d, final float err) {
         return (d <= err && d >= -err);
     }
 
-    static boolean within(final double x, final double y, final double err) {
-        final double d = y - x;
-        return (d <= err && d >= -err);
+    static boolean withinD(final float dx, final float dy, final float err)
+    {
+        assert err > 0 : "";
+        // compare taxicab distance. ERR will always be small, so using
+        // true distance won't give much benefit
+        return (withinD(dx, err) && // we want to avoid calling Math.abs
+                withinD(dy, err));  // this is just as good.
+    }
+
+    static boolean isPointCurve(final float[] curve, final int type) {
+        return isPointCurve(curve, type, EPS);
+    }
+
+    static boolean isPointCurve(final float[] curve, final int type, final float err) {
+        for (int i = 2; i < type; i++) {
+            if (!within(curve[i], curve[i - 2], err)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     static float evalCubic(final float a, final float b,
@@ -149,7 +175,7 @@ final class Helpers implements MarlinConst {
             pts[off    ] = (float) (u + v - sub);
             num = 1;
 
-            if (within(D, 0.0d, 1e-8d)) {
+            if (DHelpers.within(D, 0.0d, 1e-8d)) {
                 pts[off + 1] = (float)((-1.0d / 2.0d) * (u + v) - sub);
                 num = 2;
             }

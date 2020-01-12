@@ -38,21 +38,30 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
+import org.marlin.pisces.MarlinDebugThreadLocal;
+import static org.marlin.pisces.MarlinDebugThreadLocal.get;
+import static org.marlin.pisces.MarlinDebugThreadLocal.release;
 
 /**
  * Basic curve drawing application
+
+Loop case:
+p2d.moveTo(1690.0, 191.0);
+p2d.curveTo(1650.0, 557.0, 503.0, 680.0, 915.0, 694.0);
+
  */
 public final class DrawCurveApplication extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    private static final boolean USE_SPECIFIC_TEST = false;
+    private static final boolean USE_SPECIFIC_TEST = false; // ear / loop case
 
     /**
      * Main
@@ -114,7 +123,6 @@ public final class DrawCurveApplication extends JPanel {
     }
 
     // settings
-
     // Marlin parameters:
     final boolean isMarlin;
     AtomicBoolean betterCurves = new AtomicBoolean(true);
@@ -150,7 +158,7 @@ public final class DrawCurveApplication extends JPanel {
 
     // Ellipse
     private final Ellipse2D.Double ellipse = new Ellipse2D.Double(
-            2500, 1500, 500, 200
+            2500, 1200, 500, 400
     );
 
     // Quadratic curve:
@@ -177,8 +185,9 @@ public final class DrawCurveApplication extends JPanel {
             // 1229.0, 714.0
             // 73.0, 430.0
             // 375.0, 655.0
-//            214.0, 732.0
-            783.0, 859.0
+            //            214.0, 732.0
+            //            783.0, 859.0
+            354.0, 1849.0 // loop bug
     );
 
     private final Marker cubicCtrl2 = new Marker(3, showCubic,
@@ -190,20 +199,22 @@ public final class DrawCurveApplication extends JPanel {
             // 3335.0, 439.0
             // 748.0, 1713.0
             // 1010.0, 486.0
-//            1532.0, 1389.0
-            565.0, 1752.0
+            //            1532.0, 1389.0
+            //            565.0, 1752.0
+            1723.0, 132.0 // loop bug
+
     );
 
     private final Marker cubicEnd = new Marker(4, showCubic,
-            150 * 5, 200 * 5
+            //            150 * 5, 200 * 5
+            1269.0, 2026.0 // loop bug
     );
 
-/*
+    /*
     Loop sample with artefact:
 p2d.moveTo(2995.0, 442.0);
 p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
-*/
-
+     */
     DrawCurveApplication(final boolean isMarlin) {
         super(new BorderLayout());
         this.isMarlin = isMarlin;
@@ -308,11 +319,10 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
             g2d.setPaint(Color.LIGHT_GRAY);
 
 //            System.out.println("g2D.draw() before");
-
-if (USE_SPECIFIC_TEST) {
-            g2d.translate(-2800.0, -2700);
-            g2d.scale(3.3, 3.3);
-}
+            if (USE_SPECIFIC_TEST) {
+                g2d.translate(-2800.0, -2700);
+                g2d.scale(3.3, 3.3);
+            }
             if (showQuad.get()) {
                 g2d.draw(quadCurve);
             }
@@ -324,7 +334,6 @@ if (USE_SPECIFIC_TEST) {
             }
 
 //            System.out.println("g2D.draw() after");
-
             if (paintControls) {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // xrender calls Marlin anyway
                 g2d.setStroke(strokeInfo);
@@ -632,8 +641,7 @@ if (USE_SPECIFIC_TEST) {
                 case PathIterator.SEG_MOVETO:
                     g2d.setColor(COLOR_MOVETO);
                     g2d.setStroke(STROKE_ODD);
-                    ELL_POINT.setFrame(coords[0] - POINT_OFF, coords[1] - POINT_OFF, POINT_DIAM, POINT_DIAM);
-                    g2d.fill(ELL_POINT);
+                    drawPoint(g2d, coords[0], coords[1]);
                     x0 = coords[0];
                     y0 = coords[1];
                     sx0 = x0;
@@ -641,33 +649,26 @@ if (USE_SPECIFIC_TEST) {
                     break;
                 case PathIterator.SEG_LINETO:
                     g2d.setColor((nOp % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
-                    ELL_POINT.setFrame(coords[0] - POINT_OFF, coords[1] - POINT_OFF, POINT_DIAM, POINT_DIAM);
-                    g2d.fill(ELL_POINT);
+                    drawPoint(g2d, coords[0], coords[1]);
 
                     g2d.setStroke((nOp % 2 == 0) ? STROKE_ODD : STROKE_EVEN);
-                    LINE.setLine(x0, y0, coords[0], coords[1]);
-                    g2d.draw(LINE);
+                    drawLine(g2d, x0, y0, coords[0], coords[1]);
                     x0 = coords[0];
                     y0 = coords[1];
                     break;
                 case PathIterator.SEG_QUADTO:
                     g2d.setColor((nOp % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
                     if (showExtra && paintDetailsTangent) {
-                        ELL_POINT.setFrame(coords[0] - POINT_OFF, coords[1] - POINT_OFF, POINT_DIAM, POINT_DIAM);
-                        g2d.fill(ELL_POINT);
+                        drawPoint(g2d, coords[0], coords[1]);
+                        drawPoint(g2d, coords[2], coords[3]);
                     }
-                    ELL_POINT.setFrame(coords[2] - POINT_OFF, coords[3] - POINT_OFF, POINT_DIAM, POINT_DIAM);
-                    g2d.fill(ELL_POINT);
 
                     g2d.setStroke((nOp % 2 == 0) ? STROKE_ODD : STROKE_EVEN);
                     QUAD.setCurve(x0, y0, coords[0], coords[1], coords[2], coords[3]);
                     g2d.draw(QUAD);
 
                     if (showExtra && paintDetailsTangent) {
-                        LINE.setLine(x0, y0, coords[0], coords[1]);
-                        g2d.draw(LINE);
-                        LINE.setLine(coords[0], coords[1], coords[2], coords[3]);
-                        g2d.draw(LINE);
+                        drawLine(g2d, x0, y0, coords[0], coords[1]);
                     }
                     x0 = coords[2];
                     y0 = coords[3];
@@ -676,23 +677,48 @@ if (USE_SPECIFIC_TEST) {
                 case PathIterator.SEG_CUBICTO:
                     g2d.setColor((nOp % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
                     if (showExtra && paintDetailsTangent) {
-                        ELL_POINT.setFrame(coords[0] - POINT_OFF, coords[1] - POINT_OFF, POINT_DIAM, POINT_DIAM);
-                        g2d.fill(ELL_POINT);
-                        ELL_POINT.setFrame(coords[2] - POINT_OFF, coords[3] - POINT_OFF, POINT_DIAM, POINT_DIAM);
-                        g2d.fill(ELL_POINT);
+                        drawPoint(g2d, coords[0], coords[1]);
+                        drawPoint(g2d, coords[2], coords[3]);
+                        drawPoint(g2d, coords[4], coords[5]);
                     }
-                    ELL_POINT.setFrame(coords[4] - POINT_OFF, coords[5] - POINT_OFF, POINT_DIAM, POINT_DIAM);
-                    g2d.fill(ELL_POINT);
 
                     g2d.setStroke((nOp % 2 == 0) ? STROKE_ODD : STROKE_EVEN);
                     CUBIC.setCurve(x0, y0, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5]);
                     g2d.draw(CUBIC);
 
                     if (showExtra && paintDetailsTangent) {
-                        LINE.setLine(x0, y0, coords[0], coords[1]);
-                        g2d.draw(LINE);
-                        LINE.setLine(coords[2], coords[3], coords[4], coords[5]);
-                        g2d.draw(LINE);
+                        drawLine(g2d, x0, y0, coords[0], coords[1]);
+                        drawLine(g2d, coords[0], coords[1], coords[2], coords[3]);
+                        drawLine(g2d, coords[2], coords[3], coords[4], coords[5]);
+                        // P12
+                        final double x12 = (x0 + coords[0]) / 2.0;
+                        final double y12 = (y0 + coords[1]) / 2.0;
+                        drawPoint(g2d, x12, y12);
+                        // P23
+                        final double x23 = (coords[0] + coords[2]) / 2.0;
+                        final double y23 = (coords[1] + coords[3]) / 2.0;
+                        drawPoint(g2d, x23, y23);
+                        // P34
+                        final double x34 = (coords[2] + coords[4]) / 2.0;
+                        final double y34 = (coords[3] + coords[5]) / 2.0;
+                        drawPoint(g2d, x34, y34);
+                        // P123
+                        final double x123 = (x12 + x23) / 2.0;
+                        final double y123 = (y12 + y23) / 2.0;
+                        drawPoint(g2d, x123, y123);
+                        // P234
+                        final double x234 = (x23 + x34) / 2.0;
+                        final double y234 = (y23 + y34) / 2.0;
+                        drawPoint(g2d, x234, y234);
+                        // P1234 = midpoint
+                        final double x1234 = (x123 + x234) / 2.0;
+                        final double y1234 = (y123 + y234) / 2.0;
+                        drawPoint(g2d, x1234, y1234);
+                        // Pente it draw Line (P123 to P234)
+                        drawLine(g2d, x12, y12, x23, y23);
+                        drawLine(g2d, x23, y23, x34, y34);
+                        drawLine(g2d, x123, y123, x234, y234);
+                        drawLine(g2d, x123, y123, x234, y234);
                     }
                     x0 = coords[4];
                     y0 = coords[5];
@@ -701,8 +727,7 @@ if (USE_SPECIFIC_TEST) {
                 case PathIterator.SEG_CLOSE:
                     g2d.setColor((nOp % 2 == 0) ? COLOR_LINETO_ODD : COLOR_LINETO_EVEN);
                     g2d.setStroke((nOp % 2 == 0) ? STROKE_ODD : STROKE_EVEN);
-                    LINE.setLine(x0, y0, sx0, sy0);
-                    g2d.draw(LINE);
+                    drawLine(g2d, x0, y0, sx0, sy0);
                     x0 = sx0;
                     y0 = sy0;
                     continue;
@@ -710,7 +735,34 @@ if (USE_SPECIFIC_TEST) {
                     System.out.println("unsupported segment type= " + type);
             }
         }
+
+        if (showExtra) {
+            g2d.setColor(Color.CYAN);
+
+            final MarlinDebugThreadLocal dbgCtx = get();
+            try {
+                // use MarlinDebugThreadLocal ...
+                for (Point2D p : dbgCtx.getPoints()) {
+                    drawPoint(g2d, p.getX(), p.getY());
+                }
+            } finally {
+                release(dbgCtx);
+            }
+        }
+
         g2d.setStroke(oldStroke);
         g2d.setColor(oldColor);
     }
+
+    private void drawPoint(final Graphics2D g2d, final double x, final double y) {
+        ELL_POINT.setFrame(x - POINT_OFF, y - POINT_OFF, POINT_DIAM, POINT_DIAM);
+        g2d.fill(ELL_POINT);
+    }
+
+    private void drawLine(final Graphics2D g2d,
+                          final double x1, final double y1, final double x2, final double y2) {
+        LINE.setLine(x1, y1, x2, y2);
+        g2d.draw(LINE);
+    }
+
 }
