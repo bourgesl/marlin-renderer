@@ -25,7 +25,7 @@
 package org.marlin.pipe;
 
 // Per-thread Fast Context (ThreadLocal)
-public class CompositorSettings {
+public final class CompositorSettings {
 
     private boolean enableGammaCorrection = false;
 

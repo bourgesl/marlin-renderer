@@ -126,7 +126,7 @@ public final class BlendComposite {
     static abstract class BlendingContext {
 
         BlendingContext() {
-            System.out.println("new BlendingContext: "+getClass().getSimpleName());
+            // System.out.println("new BlendingContext: "+getClass().getSimpleName());
         }
 
         abstract BlendingContext init(final BlendComposite composite);
