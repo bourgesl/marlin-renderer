@@ -46,7 +46,9 @@ final class PathSimplifier implements PathConsumer2D {
     }
 
     PathSimplifier init(final PathConsumer2D delegate) {
-        this.delegate = delegate;
+        if (this.delegate != delegate) {
+            this.delegate = delegate;
+        }
         skipped = false;
         return this; // fluent API
     }

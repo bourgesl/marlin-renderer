@@ -109,8 +109,22 @@ public class OpenJDKFillBug {
      */
 
     public static void main(String args[]) {
-
-        System.out.println("Testing renderer = " + sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName());
+        // First display which renderer is tested:
+        // JDK9 only:
+        System.setProperty("sun.java2d.renderer.verbose", "true");
+        System.out.println("Testing renderer: ");
+        // Other JDK:
+        String renderer = "undefined";
+        try {
+            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
+            System.out.println(renderer);
+        } catch (Throwable th) {
+            // may fail with JDK9 jigsaw (jake)
+            if (false) {
+                System.err.println("Unable to get RenderingEngine.getInstance()");
+                th.printStackTrace();
+            }
+        }
 
         BufferedImage bi = new BufferedImage(801, 1202, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = bi.createGraphics();

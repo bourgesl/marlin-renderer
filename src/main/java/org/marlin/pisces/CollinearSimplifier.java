@@ -47,7 +47,9 @@ final class CollinearSimplifier implements PathConsumer2D {
     }
 
     public CollinearSimplifier init(final PathConsumer2D delegate) {
-        this.delegate = delegate;
+        if (this.delegate != delegate) {
+            this.delegate = delegate;
+        }
         this.state = STATE_EMPTY;
 
         return this; // fluent API

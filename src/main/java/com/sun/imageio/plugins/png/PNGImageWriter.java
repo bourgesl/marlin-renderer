@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2005, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -279,6 +279,7 @@ final class IDATOutputStream extends ImageOutputStreamImpl {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected void finalize() throws Throwable {
         // Empty finalizer (for improved performance; no need to call
         // super.finalize() in this case)
@@ -649,11 +650,11 @@ public final class PNGImageWriter extends ImageWriter {
             int colorType = metadata.IHDR_colorType & 0x3;
             int chunkType = metadata.bKGD_colorType;
 
+            int chunkRed = metadata.bKGD_red;
+            int chunkGreen = metadata.bKGD_green;
+            int chunkBlue = metadata.bKGD_blue;
             // Special case: image is RGB(A) and chunk is Gray
             // Promote chunk contents to RGB
-            int chunkRed = metadata.bKGD_red;
-            int chunkGreen = metadata.bKGD_red;
-            int chunkBlue = metadata.bKGD_red;
             if (colorType == PNGImageReader.PNG_COLOR_RGB &&
                 chunkType == PNGImageReader.PNG_COLOR_GRAY) {
                 // Make a gray bKGD chunk look like RGB
@@ -1234,43 +1235,46 @@ public final class PNGImageWriter extends ImageWriter {
         clearAbortRequest();
 
         processImageStarted(0);
+        if (abortRequested()) {
+            processWriteAborted();
+        } else {
+            try {
+                write_magic();
+                write_IHDR();
 
-        try {
-            write_magic();
-            write_IHDR();
+                write_cHRM();
+                write_gAMA();
+                write_iCCP();
+                write_sBIT();
+                write_sRGB();
 
-            write_cHRM();
-            write_gAMA();
-            write_iCCP();
-            write_sBIT();
-            write_sRGB();
+                write_PLTE();
 
-            write_PLTE();
+                write_hIST();
+                write_tRNS();
+                write_bKGD();
 
-            write_hIST();
-            write_tRNS();
-            write_bKGD();
+                write_pHYs();
+                write_sPLT();
+                write_tIME();
+                write_tEXt();
+                write_iTXt();
+                write_zTXt();
 
-            write_pHYs();
-            write_sPLT();
-            write_tIME();
-            write_tEXt();
-            write_iTXt();
-            write_zTXt();
+                writeUnknownChunks();
 
-            writeUnknownChunks();
+                write_IDAT(im, deflaterLevel);
 
-            write_IDAT(im, deflaterLevel);
-
-            if (abortRequested()) {
-                processWriteAborted();
-            } else {
-                // Finish up and inform the listeners we are done
-                writeIEND();
-                processImageComplete();
+                if (abortRequested()) {
+                    processWriteAborted();
+                } else {
+                    // Finish up and inform the listeners we are done
+                    writeIEND();
+                    processImageComplete();
+                }
+            } catch (IOException e) {
+                throw new IIOException("I/O error writing PNG file!", e);
             }
-        } catch (IOException e) {
-            throw new IIOException("I/O error writing PNG file!", e);
         }
     }
 }

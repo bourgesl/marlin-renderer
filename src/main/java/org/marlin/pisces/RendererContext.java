@@ -65,7 +65,7 @@ final class RendererContext extends ReentrantContext implements IRendererContext
     // MarlinRenderingEngine NearestPixelQuarter NormalizingPathIterator:
     final NormalizingPathIterator nPQPathIterator;
     // MarlinRenderingEngine.TransformingPathConsumer2D
-    final TransformingPathConsumer2D transformerPC2D;
+    final TransformingPathConsumer2D transformerPC2D; // TODO: clear if dirty ?
     // recycled Path2D instance (weak)
     private WeakReference<Path2D.Float> refPath2D = null;
     final Renderer renderer;
@@ -89,18 +89,22 @@ final class RendererContext extends ReentrantContext implements IRendererContext
     float clipInvScale = 0.0f;
     // CurveBasicMonotonizer instance
     final CurveBasicMonotonizer monotonizer;
+    // flag indicating to force the stroker to process joins
+    boolean isFirstSegment = true;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
+    // DPQS Sorter context
+    final DPQSSorterContext sorterCtx;
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
-    private final IntArrayCache cleanIntCache = new IntArrayCache(true, 5);
+    private final ArrayCacheIntClean cleanIntCache = new ArrayCacheIntClean(5);
     /* dirty int[] cache = 5 refs */
-    private final IntArrayCache dirtyIntCache = new IntArrayCache(false, 5);
+    private final ArrayCacheInt dirtyIntCache = new ArrayCacheInt(5);
     /* dirty float[] cache = 4 refs (2 polystack) */
-    private final FloatArrayCache dirtyFloatCache = new FloatArrayCache(false, 4);
+    private final ArrayCacheFloat dirtyFloatCache = new ArrayCacheFloat(4);
     /* dirty byte[] cache = 2 ref (2 polystack) */
-    private final ByteArrayCache dirtyByteCache = new ByteArrayCache(false, 2);
+    private final ArrayCacheByte dirtyByteCache = new ArrayCacheByte(2);
 
     // RendererContext statistics
     final RendererStats stats;
@@ -145,6 +149,8 @@ final class RendererContext extends ReentrantContext implements IRendererContext
 
         stroker = new Stroker(this);
         dasher = new Dasher(this);
+
+        sorterCtx = (MergeSort.USE_DPQS) ? new DPQSSorterContext() : null;
     }
 
     /**
@@ -162,6 +168,7 @@ final class RendererContext extends ReentrantContext implements IRendererContext
         doClip     = false;
         closedPath = false;
         clipInvScale = 0.0f;
+        isFirstSegment = true;
 
         // if context is maked as DIRTY:
         if (dirty) {
@@ -211,19 +218,19 @@ final class RendererContext extends ReentrantContext implements IRendererContext
     }
 
     @Override
-    public IntArrayCache.Reference newCleanIntArrayRef(final int initialSize) {
+    public ArrayCacheIntClean.Reference newCleanIntArrayRef(final int initialSize) {
         return cleanIntCache.createRef(initialSize);
     }
 
-    IntArrayCache.Reference newDirtyIntArrayRef(final int initialSize) {
+    ArrayCacheInt.Reference newDirtyIntArrayRef(final int initialSize) {
         return dirtyIntCache.createRef(initialSize);
     }
 
-    FloatArrayCache.Reference newDirtyFloatArrayRef(final int initialSize) {
+    ArrayCacheFloat.Reference newDirtyFloatArrayRef(final int initialSize) {
         return dirtyFloatCache.createRef(initialSize);
     }
 
-    ByteArrayCache.Reference newDirtyByteArrayRef(final int initialSize) {
+    ArrayCacheByte.Reference newDirtyByteArrayRef(final int initialSize) {
         return dirtyByteCache.createRef(initialSize);
     }
 }

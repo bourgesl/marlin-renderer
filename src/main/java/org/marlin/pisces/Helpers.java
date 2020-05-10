@@ -33,18 +33,44 @@ import sun.awt.geom.PathConsumer2D;
 
 final class Helpers implements MarlinConst {
 
+    private static final float EPS = 1e-9f;
+
     private Helpers() {
         throw new Error("This is a non instantiable class");
     }
 
+    static boolean within(final float x, final float y) {
+        return within(x, y, EPS);
+    }
+
     static boolean within(final float x, final float y, final float err) {
-        final float d = y - x;
+        return withinD(y - x, err);
+    }
+
+    static boolean withinD(final float d, final float err) {
         return (d <= err && d >= -err);
     }
 
-    static boolean within(final double x, final double y, final double err) {
-        final double d = y - x;
-        return (d <= err && d >= -err);
+    static boolean withinD(final float dx, final float dy, final float err)
+    {
+        assert err > 0 : "";
+        // compare taxicab distance. ERR will always be small, so using
+        // true distance won't give much benefit
+        return (withinD(dx, err) && // we want to avoid calling Math.abs
+                withinD(dy, err));  // this is just as good.
+    }
+
+    static boolean isPointCurve(final float[] curve, final int type) {
+        return isPointCurve(curve, type, EPS);
+    }
+
+    static boolean isPointCurve(final float[] curve, final int type, final float err) {
+        for (int i = 2; i < type; i++) {
+            if (!within(curve[i], curve[i - 2], err)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     static float evalCubic(final float a, final float b,
@@ -65,21 +91,24 @@ final class Helpers implements MarlinConst {
     {
         int ret = off;
         if (a != 0.0f) {
-            final float dis = b*b - 4.0f * a * c;
-            if (dis > 0.0f) {
-                final float sqrtDis = (float) Math.sqrt(dis);
-                // depending on the sign of b we use a slightly different
-                // algorithm than the traditional one to find one of the roots
-                // so we can avoid adding numbers of different signs (which
-                // might result in loss of precision).
-                if (b >= 0.0f) {
-                    zeroes[ret++] = (2.0f * c) / (-b - sqrtDis);
-                    zeroes[ret++] = (-b - sqrtDis) / (2.0f * a);
-                } else {
-                    zeroes[ret++] = (-b + sqrtDis) / (2.0f * a);
-                    zeroes[ret++] = (2.0f * c) / (-b + sqrtDis);
+            float d = b * b - 4.0f * a * c;
+            if (d > 0.0f) {
+                d = (float)Math.sqrt(d);
+                // For accuracy, calculate one root using:
+                //     (-b +/- d) / 2a
+                // and the other using:
+                //     2c / (-b +/- d)
+                // Choose the sign of the +/- so that b+d gets larger in magnitude
+                if (b < 0.0f) {
+                    d = -d;
                 }
-            } else if (dis == 0.0f) {
+                final float q = (b + d) / -2.0f;
+                // We already tested a for being 0 above
+                zeroes[ret++] = q / a;
+                if (q != 0.0f) {
+                    zeroes[ret++] = c / q;
+                }
+            } else if (d == 0.0f) {
                 zeroes[ret++] = -b / (2.0f * a);
             }
         } else if (b != 0.0f) {
@@ -106,9 +135,6 @@ final class Helpers implements MarlinConst {
         // normal form: x^3 + ax^2 + bx + c = 0
 
         // 2018.1: Need double precision if d is very small (flat curve) !
-        /*
-         * TODO: cleanup all that code after reading Roots3And4.c
-         */
         final double a = ((double)a0) / d0;
         final double b = ((double)b0) / d0;
         final double c = ((double)c0) / d0;
@@ -121,18 +147,30 @@ final class Helpers implements MarlinConst {
         // p = P/3
         // q = Q/2
         // instead and use those values for simplicity of the code.
-        final double sub = (1.0d / 3.0d) * a;
         final double sq_A = a * a;
         final double p = (1.0d / 3.0d) * ((-1.0d / 3.0d) * sq_A + b);
+        final double sub = (1.0d / 3.0d) * a;
         final double q = (1.0d / 2.0d) * ((2.0d / 27.0d) * a * sq_A - sub * b + c);
 
         // use Cardano's formula
-
         final double cb_p = p * p * p;
         final double D = q * q + cb_p;
 
         int num;
-        if (D < 0.0d) {
+
+        if (DHelpers.within(D, 0.0d)) {
+            if (DHelpers.within(q, 0.0d)) {
+                /* one triple solution */
+                pts[off    ] = (float) (- sub);
+                num = 1;
+            } else {
+                /* one single and one double solution */
+                final double u = FastMath.cbrt(-q);
+                pts[off    ] = (float) (2.0d * u - sub);
+                pts[off + 1] = (float) (- u - sub);
+                num = 2;
+            }
+        } else if (D < 0.0d) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
             final double phi = (1.0d / 3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
             final double t = 2.0d * Math.sqrt(-p);
@@ -148,13 +186,7 @@ final class Helpers implements MarlinConst {
 
             pts[off    ] = (float) (u + v - sub);
             num = 1;
-
-            if (within(D, 0.0d, 1e-8d)) {
-                pts[off + 1] = (float)((-1.0d / 2.0d) * (u + v) - sub);
-                num = 2;
-            }
         }
-
         return filterOutNotInAB(pts, off, num, A, B) - off;
     }
 
@@ -252,7 +284,7 @@ final class Helpers implements MarlinConst {
         final float y12 = pts[3] - pts[1];
         // if the curve is already parallel to either axis we gain nothing
         // from rotating it.
-        if ((y12 != 0.0f && x12 != 0.0f)) {
+        if ((y12 != 0.0f) && (x12 != 0.0f)) {
             // we rotate it so that the first vector in the control polygon is
             // parallel to the x-axis. This will ensure that rotated quarter
             // circles won't be subdivided.
@@ -630,9 +662,9 @@ final class Helpers implements MarlinConst {
         int numCurves;
 
         // curves ref (dirty)
-        final FloatArrayCache.Reference curves_ref;
+        final ArrayCacheFloat.Reference curves_ref;
         // curveTypes ref (dirty)
-        final ByteArrayCache.Reference curveTypes_ref;
+        final ArrayCacheByte.Reference curveTypes_ref;
 
         // used marks (stats only)
         int curveTypesUseMark;
@@ -679,7 +711,7 @@ final class Helpers implements MarlinConst {
          * clean up before reusing this instance
          */
         void dispose() {
-            end = 0;
+            end       = 0;
             numCurves = 0;
 
             if (DO_STATS) {
@@ -694,8 +726,12 @@ final class Helpers implements MarlinConst {
 
             // Return arrays:
             // curves and curveTypes are kept dirty
-            curves     = curves_ref.putArray(curves);
-            curveTypes = curveTypes_ref.putArray(curveTypes);
+            if (curves_ref.doCleanRef(curves)) {
+                curves = curves_ref.putArray(curves);
+            }
+            if (curveTypes_ref.doCleanRef(curveTypes)) {
+                curveTypes = curveTypes_ref.putArray(curveTypes);
+            }
         }
 
         private void ensureSpace(final int n) {
@@ -874,7 +910,7 @@ final class Helpers implements MarlinConst {
         private int[] indices;
 
         // indices ref (dirty)
-        private final IntArrayCache.Reference indices_ref;
+        private final ArrayCacheInt.Reference indices_ref;
 
         // used marks (stats only)
         private int indicesUseMark;
@@ -920,8 +956,10 @@ final class Helpers implements MarlinConst {
             }
 
             // Return arrays:
-            // values is kept dirty
-            indices = indices_ref.putArray(indices);
+            // indices is kept dirty
+            if (indices_ref.doCleanRef(indices)) {
+                indices = indices_ref.putArray(indices);
+            }
         }
 
         boolean isEmpty() {

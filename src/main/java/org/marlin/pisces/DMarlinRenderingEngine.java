@@ -36,6 +36,8 @@ import static org.marlin.pisces.MarlinUtils.logInfo;
 import org.marlin.ReentrantContextProvider;
 import org.marlin.ReentrantContextProviderCLQ;
 import org.marlin.ReentrantContextProviderTL;
+import org.marlin.pipe.BlendComposite;
+import org.marlin.pipe.MarlinCompositor;
 import sun.awt.geom.PathConsumer2D;
 import sun.java2d.pipe.AATileGenerator;
 import sun.java2d.pipe.Region;
@@ -246,7 +248,8 @@ public final class DMarlinRenderingEngine extends RenderingEngine
             widthScale = 1.0d;
         } else if ((at.getType() & (AffineTransform.TYPE_GENERAL_TRANSFORM  |
                                     AffineTransform.TYPE_GENERAL_SCALE)) != 0) {
-            widthScale = Math.sqrt(at.getDeterminant());
+            // Determinant may be negative (flip), use its absolute value:
+            widthScale = Math.sqrt(Math.abs(at.getDeterminant()));
         } else {
             // First calculate the "maximum scale" of this transform.
             double A = at.getScaleX();       // m00
@@ -408,6 +411,55 @@ public final class DMarlinRenderingEngine extends RenderingEngine
             // either at is null or it's the identity. In either case
             // we don't transform the path.
             at = null;
+        }
+        
+        /* Fix width for gamma-correction */
+        if (MarlinCompositor.ENABLE_STROKE_FIX && MarlinCompositor.isGammaCorrectionEnabled()) {
+            final double lineWidth2 = width / 2.0d;
+            double intWidth2 = Math.floor(lineWidth2);
+            double rem = lineWidth2 - intWidth2;
+            double cov = rem; // partial coverage in [0..1[
+
+            // Correction should take into account the pen color = enlarge black, reduce white ...
+            
+            if (true) {
+                if (false && (cov == 0.0)) {
+                    width += MIN_PEN_SIZE;           
+                } else {
+                    final double covFactor = BlendComposite.getCompatibleCoverageFactor(cov);
+
+                    if (covFactor != 1.0) {
+                        final double fixedWith = 2.0d * (intWidth2 + covFactor * rem);
+                        /*
+                        System.out.println("lineWidth2 = " + lineWidth2);
+                        System.out.println("cov_ratio = " + cov);
+                        System.out.println("covFactor = " + covFactor);
+                        System.out.println("fixedWith = " + fixedWith);
+                         */
+                        // System.out.println("fixedWith = " + fixedWith + " (width = " + width + ")");
+                        width = fixedWith;
+                    }
+                }
+            } else {
+                if (cov == 0.0) {
+                    rem = 0.5;
+                    intWidth2 -= rem;
+                    cov = rem; // small                 
+                }
+
+                final double covFactor = BlendComposite.getCompatibleCoverageFactor(cov);
+
+                if (covFactor != 1.0) {
+                    final double fixedWith = 2.0d * (intWidth2 + covFactor * rem);
+                    /*
+                System.out.println("lineWidth2 = " + lineWidth2);
+                System.out.println("cov_ratio = " + cov);
+                System.out.println("covFactor = " + covFactor);
+                System.out.println("fixedWith = " + fixedWith);
+                     */
+                    width = fixedWith;
+                }
+            }
         }
 
         final DTransformingPathConsumer2D transformerPC2D = rdrCtx.transformerPC2D;
@@ -1184,6 +1236,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinProperties.getQuadDecD2());
 
         logInfo("Renderer settings:");
+        logInfo("SORT         = " + MergeSort.SORT_TYPE);
         logInfo("CUB_DEC_BND  = " + DRenderer.CUB_DEC_BND);
         logInfo("CUB_INC_BND  = " + DRenderer.CUB_INC_BND);
         logInfo("QUAD_DEC_BND = " + DRenderer.QUAD_DEC_BND);

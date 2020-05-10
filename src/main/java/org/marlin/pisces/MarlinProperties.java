@@ -280,6 +280,10 @@ public final class MarlinProperties {
         return getFloat("sun.java2d.renderer.clip.subdivider.minLength", 100.0f, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
     }
 
+    public static boolean isUseDPQS() {
+        return getBoolean("sun.java2d.renderer.useDPQS", "true");
+    }
+
     // debugging parameters
 
     public static boolean isDoStats() {

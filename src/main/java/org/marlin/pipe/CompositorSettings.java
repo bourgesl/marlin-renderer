@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,15 +22,33 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package org.marlin.pipe;
 
-package org.marlin.pisces;
+// Per-thread Fast Context (ThreadLocal)
+public class CompositorSettings {
 
-interface IRendererContext extends MarlinConst {
+    private boolean enableGammaCorrection = false;
 
-    public RendererStats stats();
+    // current context:
+    private CompositorContext ctx = null;
 
-    public OffHeapArray newOffHeapArray(final long initialSize);
+    CompositorSettings() {
+        // ThreadLocal constructor
+    }
 
-    public ArrayCacheIntClean.Reference newCleanIntArrayRef(final int initialSize);
+    public boolean isGammaCorrectionEnabled() {
+        return enableGammaCorrection;
+    }
 
+    public void setGammaCorrection(final boolean enabled) {
+        this.enableGammaCorrection = enabled;
+    }
+
+    public CompositorContext getCompositorContext() {
+        if (ctx == null) {
+            ctx = new CompositorContext();
+            // System.out.println("new CompositorContext");
+        }
+        return ctx;
+    }
 }

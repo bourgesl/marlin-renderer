@@ -26,27 +26,21 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import static java.awt.geom.Path2D.WIND_NON_ZERO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import org.marlin.pisces.MarlinProperties;
+import sun.java2d.pipe.RenderingEngine;
 
 /**
- * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers
+ * Simple Line rendering test using GeneralPath to enable Pisces / marlin /
+ * ductus renderers
  */
-public class LineTests {
+public class SpiralTests {
 
     public static void main(String[] args) {
-        
-        final int N = 100;
-
-        final float lineStroke = 4f;
-        final int size = 1000;
-
         // First display which renderer is tested:
         // JDK9 only:
         System.setProperty("sun.java2d.renderer.verbose", "true");
@@ -64,7 +58,16 @@ public class LineTests {
             }
         }
 
-        System.out.println("LineTests: size = " + size);
+        StrokerTest.main(args);
+
+        final boolean useDashes = false;
+        final float lineStroke = 2f;
+
+        BasicStroke stroke = createStroke(lineStroke, useDashes);
+
+        final int size = 4096;
+
+        System.out.println("SpiralTests: size = " + size);
 
         final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
 
@@ -74,66 +77,86 @@ public class LineTests {
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
 
         g2d.setClip(0, 0, size, size);
-        g2d.setStroke(new BasicStroke(lineStroke));
+        g2d.setBackground(Color.WHITE);
+        g2d.clearRect(0, 0, size, size);
 
-        for (int i = 0; i < N; i++) {
+        g2d.setStroke(stroke);
+        g2d.setColor(Color.BLUE);
+        final long start = System.nanoTime();
 
-            g2d.setBackground(Color.GRAY); // BLUE
-            g2d.clearRect(0, 0, size, size);
+        paint(g2d, size - 10f);
 
-            final long start = System.nanoTime();
+        final long time = System.nanoTime() - start;
 
-            paint(g2d, size - 2.0 * lineStroke);
-
-            final long time = System.nanoTime() - start;
-
-            System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
-        }
+        System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
 
         try {
-            final File file = new File("LinesTest-norm-subpix_lg_" + MarlinProperties.getSubPixel_Log2_X()
-                    + "x" + MarlinProperties.getSubPixel_Log2_Y() + ".png");
+            final File file = new File("SpiralTests-" + renderer + "-dash-" + useDashes + ".png");
 
-            System.out.println("Writing file: " + file.getAbsolutePath());
+            System.out.println("Writing file: " + file.getAbsolutePath());;
             ImageIO.write(image, "PNG", file);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             ex.printStackTrace();
-        } finally {
+        }
+        finally {
             g2d.dispose();
         }
     }
 
-    private static void paint(final Graphics2D g2d, final double size) {
+    private static void paint(final Graphics2D g2d, final float size) {
 
-        final double half = size / 2.0;
-        final double radius = 266.0;
+        final Path2D.Float path = new Path2D.Float(WIND_NON_ZERO, 256 * 1024);
+        path.moveTo(0f, 0f);
 
-        g2d.setPaint(Color.RED);
-        g2d.fill(new Ellipse2D.Double(half - radius, half - radius, 2f * radius, 2f * radius));
+        final double halfSize = size / 2.0;
+        g2d.translate(halfSize, halfSize);
 
-        final Path2D.Double path = new Path2D.Double(WIND_NON_ZERO, 10);
-        
-        boolean on = false;
+        final double maxRadius = Math.sqrt(2.0) * halfSize;
+        final double twoPi = 2.0 * Math.PI;
+        final double stepCircle = 10.0;
 
-        for (double angle = 1.0 / 3; angle <= 90.0; angle += 1.0) {
-            double angRad = Math.toRadians(angle);
+        double r = 1.0;
 
-            double cos = Math.cos(angRad);
-            double sin = Math.sin(angRad);
+        double angle, sa, sr;
 
-            if (on) {
-                g2d.setPaint(Color.WHITE);
-            } else {
-               g2d.setPaint(Color.BLACK); 
+        int n = 0;
+
+        while (r < maxRadius) {
+            // circle
+            sa = twoPi / (2.0 * r);
+            sr = stepCircle / (twoPi / sa);
+
+            for (angle = 0.0; angle <= twoPi; angle += sa) {
+                double cos = Math.cos(angle);
+                double sin = Math.sin(angle);
+
+                path.lineTo(r * cos, r * sin);
+
+                r += sr;
+                n++;
             }
-            on = !on;
-            
-            path.reset();
-
-            path.moveTo(5.0 * cos, 5.0 * sin);
-            path.lineTo(size * cos, size * sin);
-
-            g2d.draw(path);
         }
+        System.out.println("draw : " + n + " lines.");
+        g2d.draw(path);
+    }
+
+    private static BasicStroke createStroke(final float width, final boolean useDashes) {
+        final float[] dashes;
+
+        if (useDashes) {
+            dashes = new float[8192];
+
+            float cur, step = 0.1f;
+            cur = step;
+            for (int i = 0; i < dashes.length; i++) {
+                dashes[i] = cur;
+                cur += step;
+            }
+        } else {
+            dashes = null;
+        }
+
+        return new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, dashes, 0.0f);
     }
 }
