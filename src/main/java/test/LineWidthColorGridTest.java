@@ -25,10 +25,15 @@
 package test;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -62,9 +67,15 @@ public class LineWidthColorGridTest {
     private final static int MARGIN = 8;
     private final static int WIDTH = 128;
     private final static int HALF_HEIGHT = 52;
+    private final static int QUARTER_HEIGHT = 30;
 
     public static void main(String[] args) {
-        final int square = Math.max(2 * MARGIN + WIDTH, 2 * HALF_HEIGHT + 3 * MARGIN);
+        final int sqW = MARGIN + WIDTH;
+        final int sqH = HALF_HEIGHT + 2 * QUARTER_HEIGHT + 3 * MARGIN;
+
+        final int square = Math.max(MARGIN + WIDTH, HALF_HEIGHT + 2 * QUARTER_HEIGHT + 3 * MARGIN) + 2;
+
+        System.out.println("Square[" + square + "] : " + sqW + " x " + sqH);
 
         final int nColors = COLORS.length;
 
@@ -120,7 +131,7 @@ public class LineWidthColorGridTest {
 
             final File file = new File(FILE_NAME + MarlinProperties.getSubPixel_Log2_X()
                     + "x" + MarlinProperties.getSubPixel_Log2_Y()
-                    + ((MarlinCompositor.ENABLE_COMPOSITOR) ? ("_comp"
+                    + ((MarlinCompositor.ENABLE_COMPOSITOR) ? ("_comp_"
                             + BlendComposite.getBlendingMode()) : "_REF") + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());;
@@ -150,10 +161,37 @@ public class LineWidthColorGridTest {
             }
         }
         {
+            final AffineTransform oldAt = g2d.getTransform();
+
             final int y = MARGIN + HALF_HEIGHT + MARGIN;
 
             g2d.setBackground(bgcolor);
-            g2d.clearRect(MARGIN - 1, y - 1, WIDTH + 2, HALF_HEIGHT + 2);
+            g2d.clearRect(MARGIN - 1, y - 1, WIDTH + 2, QUARTER_HEIGHT + 2);
+
+            g2d.setColor(color);
+
+            final String s = "#azertyg?";
+
+            final Font font = new Font(Font.SERIF, Font.PLAIN, 12); // small enough
+            final FontRenderContext frc = g2d.getFontRenderContext();
+
+            final GlyphVector gv = font.createGlyphVector(frc, s);
+            final int length = gv.getNumGlyphs();
+
+            for (int i = 0; i < length; i++) {
+                final Point2D p = gv.getGlyphPosition(i);
+
+                final Shape glyph = gv.getGlyphOutline(i, (float) (MARGIN + 5 + p.getX()), (float) (y + 15 + p.getY()));
+                g2d.fill(glyph);
+            }
+
+            g2d.setTransform(oldAt);
+        }
+        {
+            final int y = MARGIN + HALF_HEIGHT + MARGIN + QUARTER_HEIGHT + MARGIN;
+
+            g2d.setBackground(bgcolor);
+            g2d.clearRect(MARGIN - 1, y - 1, WIDTH + 2, QUARTER_HEIGHT + 2);
 
             final int w = 8;
             final int ns = WIDTH / w;
@@ -166,9 +204,8 @@ public class LineWidthColorGridTest {
                 final double x1 = MARGIN + (i * w);
                 final double x2 = x1 + w;
                 // not at pixel center ??
-                setPathRect(PATH, x1, y, x2, y + HALF_HEIGHT); // 2px wide
+                setPathRect(PATH, x1, y, x2, y + QUARTER_HEIGHT);
                 g2d.fill(PATH);
-                // g2d.fillRect(x, y, 1, HALF_HEIGHT);
             }
         }
     }

@@ -24,129 +24,299 @@
  */
 package org.marlin.pipe;
 
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import static org.marlin.pipe.BlendComposite.GAMMA_LUT;
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE7;
-import static org.marlin.pipe.BlendComposite.NORM_GAMMA;
-import static org.marlin.pipe.BlendComposite.TILE_WIDTH;
+import sun.awt.image.IntegerInterleavedRaster;
+import sun.misc.Unsafe;
 
-final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
+final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
 
-    private final static int NUM_COMP = 4;
-
-    /* members */
-    private int _extraAlpha;
-    private BlendComposite.Blender _blender;
-
-    // recycled arrays into context (shared):
-    private final int[] _c_srcPixel = new int[NUM_COMP];
-    private final int[] _srcPixel = new int[NUM_COMP];
-    private final int[] _dstPixel = new int[NUM_COMP];
-    private final int[] _result = new int[NUM_COMP];
-    // horiz arrays:
-    private int[] _srcPixels = new int[TILE_WIDTH];
-    private int[] _dstPixels = new int[TILE_WIDTH];
-
-    BlendingContextIntARGB() {
+    BlendingContextIntSRGB() {
         super();
     }
 
-    BlendComposite.BlendingContext init(final BlendComposite composite) {
-        this._blender = BlendComposite.Blender.getBlenderFor(composite);
-        this._extraAlpha = Math.round(127f * composite.extraAlpha); // [0; 127] ie 7 bits
-        return this; // fluent API
-    }
-
-    int[] getSrcPixels(final int len) {
-        int[] t = _srcPixels;
-        if (t.length < len) {
-            // System.out.println("RESIZE _srcPixels to " + len);
-            // create a larger stride and may free current maskStride (too small)
-            _srcPixels = t = new int[len];
-        }
-        return t;
-    }
-
-    int[] getDstPixels(final int len) {
-        int[] t = _dstPixels;
-        if (t.length < len) {
-            // System.out.println("RESIZE _dstPixels to " + len);
-            // create a larger stride and may free current maskStride (too small)
-            _dstPixels = t = new int[len];
-        }
-        return t;
-    }
-
+    @Override
     void compose(final int srcRGBA, final Raster srcIn,
-                 final byte[] atile, final int offset, final int tilesize,
                  final WritableRaster dstOut,
-                 final int w, final int h) {
+                 final int x, final int y, final int w, final int h,
+                 final byte[] mask, final int maskOff, final int maskScan) {
 
         /*
              System.out.println("srcIn = " + srcIn.getBounds());
              System.out.println("dstOut = " + dstOut.getBounds());
          */
-        final int[] gamma_dir = GAMMA_LUT.dir;
-        final int[] gamma_inv = GAMMA_LUT.inv;
-
         final int extraAlpha = this._extraAlpha; // 7 bits
 
+        final int[] srcBuffer = (srcIn != null) ? ((DataBufferInt) srcIn.getDataBuffer()).getData() : null;
+        final int[] dstBuffer = ((DataBufferInt) dstOut.getDataBuffer()).getData();
+
+        final int srcScan = (srcIn != null) ? ((IntegerInterleavedRaster) srcIn).getScanlineStride() : 0;
+        final int dstScan = ((IntegerInterleavedRaster) dstOut).getScanlineStride();
+
 //            final BlendComposite.Blender blender = _blender;
-        // use shared arrays:
-        final int[] c_srcPixel = _c_srcPixel;
-        final int[] srcPixel = _srcPixel;
-        final int[] dstPixel = _dstPixel;
-        final int[] result = _result;
-
-        final int[] srcPixels = (srcIn != null) ? getSrcPixels(w) : null;
-        final int[] dstPixels = getDstPixels(w);
-
         int pixel;
+        int csr, csg, csb, csa;
+        int sr, sg, sb, sa;
+        int dr, dg, db, da;
+        int rr, rg, rb, ra;
+
+        int am, alpha, fs, fd;
+
+        int offSrc = 0;
+
+        final Unsafe _unsafe = UNSAFE;
+
+        long addrDst = OFF_INT + ((y * dstScan + x) << 2L); // ints
+        final long dstSkip = (dstScan - w) << 2L; // ints
+
+        if (mask == null) {
+            am = NORM_BYTE;
+
+            // Apply extra alpha:
+            // alpha in range [0; 32385] (15bits)
+            am *= extraAlpha;
+
+            // int offDst;
+            if (am == NORM_ALPHA) {
+                // mask with full opacity
+                // output = source OVER (totally)
+                if (srcIn == null) {
+                    for (int j = 0; j < h; j++) {
+//                        offDst = (y + j) * dstScan + x;
+
+                        for (int i = 0; i < w; i++, addrDst += 4L) {
+                            // pixels are stored as INT_ARGB
+                            // our arrays are [R, G, B, A]
+                            // Source pixel sRGBA:
+//                            dstBuffer[offDst + i] = srcRGBA;
+                            _unsafe.putInt(dstBuffer, addrDst, srcRGBA);
+                        }
+                        addrDst += dstSkip;
+                    }
+                    return;
+                }
+
+                for (int j = 0; j < h; j++) {
+                    offSrc = (y + j) * srcScan + x;
+//                    offDst = (y + j) * dstScan + x;
+
+                    for (int i = 0; i < w; i++, addrDst += 4L) {
+                        // pixels are stored as INT_ARGB
+                        // our arrays are [R, G, B, A]
+                        // Source pixel sRGBA:
+//                        dstBuffer[offDst + i] = srcBuffer[offSrc + i];
+                        _unsafe.putInt(dstBuffer, addrDst, srcBuffer[offSrc + i]);
+                    }
+                    addrDst += dstSkip;
+                }
+                return;
+            }
+
+            // Prepare source pixel if constant in tile:
+            if (srcIn == null) {
+                // Source pixel sRGBA:
+                pixel = srcRGBA;
+
+                // sRGBA components are not pre-multiplied by alpha:
+                // NOP
+                // color components in range [0; 255]
+                csr = (pixel >> 16) & NORM_BYTE;
+                csg = (pixel >> 8) & NORM_BYTE;
+                csb = (pixel) & NORM_BYTE;
+                csa = (pixel >> 24) & NORM_BYTE;
+
+                // cs is sRGBA.
+            } else {
+                csr = 0;
+                csg = 0;
+                csb = 0;
+                csa = 0;
+            }
+
+            for (int j = 0; j < h; j++) {
+                if (srcIn != null) {
+                    offSrc = (y + j) * srcScan + x;
+                }
+//                offDst = (y + j) * dstScan + x;
+                /*
+                // Explicit bound checks
+                if (offDst < 0 || offDst + w > dstBuffer.length) {
+                    break;
+                }
+                 */
+                for (int i = 0; i < w; i++, addrDst += 4L) {
+                    // pixels are stored as INT_ARGB
+                    // our arrays are [R, G, B, A]
+
+                    if (srcIn == null) {
+                        // Copy prepared source pixel:
+                        sr = csr;
+                        sg = csg;
+                        sb = csb;
+                        sa = csa;
+                    } else {
+                        // Source pixel sRGBA:
+                        pixel = srcBuffer[offSrc + i];
+
+                        // sRGBA components are not pre-multiplied by alpha:
+                        // NOP
+                        // color components in range [0; 255]
+                        sr = (pixel >> 16) & NORM_BYTE;
+                        sg = (pixel >> 8) & NORM_BYTE;
+                        sb = (pixel) & NORM_BYTE;
+                        sa = (pixel >> 24) & NORM_BYTE;
+                    }
+                    // srcPixel is Gamma-corrected sRGBA.
+
+                    // fade operator:
+                    // Rs = As x Coverage
+                    // alpha in range [0; 32385] (15bits)
+                    sa = (sa * am) / NORM_BYTE;
+
+                    // Destination pixel:
+                    {
+                        // Dest pixel sRGBA:
+//                        pixel = dstBuffer[offDst + i];
+                        pixel = _unsafe.getInt(dstBuffer, addrDst);
+
+                        // sRGBA components are not pre-multiplied by alpha:
+                        // NOP
+                        // color components in range [0; 255]
+                        dr = (pixel >> 16) & NORM_BYTE;
+                        dg = (pixel >> 8) & NORM_BYTE;
+                        db = (pixel) & NORM_BYTE;
+                        da = (pixel >> 24) & NORM_BYTE;
+
+                        // alpha in range [0; 32385] (15bits)
+                        da *= NORM_BYTE7;
+                    }
+                    // dstPixel is Gamma-corrected sRGBA.
+
+                    // Ported-Duff rules in action:
+                    // R = S x fs + D x fd
+                    // Src Over Dst rule:
+                    // fs = Sa
+                    // fd = Da x (1 - Sa)
+                    // Factors in range [0; 32385] (15bits)
+                    fs = (sa); // alpha
+                    fd = (da * (NORM_ALPHA - fs)) / NORM_ALPHA;
+                    /*
+                    if (fs > NORM_ALPHA || fs < 0) {
+                        System.out.println("fs overflow");
+                    }
+                    if (fd > NORM_ALPHA || fd < 0) {
+                        System.out.println("fd overflow");
+                    }
+                     */
+ /*
+                    System.out.println("fs: " + fs);
+                    System.out.println("fd: " + fd);
+
+                    System.out.println("srcPixel: " + Arrays.toString(srcPixel));
+                    System.out.println("dstPixel: " + Arrays.toString(dstPixel));
+                     */
+//                            blender.blend(srcPixel, dstPixel, fs, fd, result);
+                    // ALPHA in range [0; 32385] (15bits):
+                    alpha = fs + fd;
+
+                    if (alpha == 0) {
+                        // output = none
+                        // Source pixel sRGBA:
+//                        dstBuffer[offDst + i] = 0;
+                        _unsafe.putInt(dstBuffer, addrDst, 0);
+                        continue;
+                    }
+
+                    // color components in range [0; 32385]
+                    // no overflow: 15b + 15b < 31b
+                    rr = (sr * fs + dr * fd) / alpha;
+                    rg = (sg * fs + dg * fd) / alpha;
+                    rb = (sb * fs + db * fd) / alpha;
+                    // alpha in range [0; 255]
+                    ra = alpha / NORM_BYTE7;
+
+                    // System.out.println("result: " + Arrays.toString(result));
+                    // result is sRGBA.
+                    // color components in range [0; 255]
+                    pixel = (ra << 24)
+                            | (rr << 16)
+                            | (rg << 8)
+                            | (rb);
+
+                    // sRGBA components are not pre-multiplied by alpha:
+                    // NOP
+//                    dstBuffer[offDst + i] = pixel;
+                    _unsafe.putInt(dstBuffer, addrDst, pixel);
+                }
+                addrDst += dstSkip;
+            }
+            return;
+        }
 
         // Prepare source pixel if constant in tile:
         if (srcIn == null) {
-            // Source pixel Linear RGBA:
+            // Source pixel sRGBA:
             pixel = srcRGBA;
 
-            // Linear RGBA components are not pre-multiplied by alpha:
+            // sRGBA components are not pre-multiplied by alpha:
             // NOP
-            // Gamma-correction on Linear RGBA: 
-            // color components in range [0; 32767]
-            c_srcPixel[0] = gamma_dir[(pixel >> 16) & NORM_BYTE];
-            c_srcPixel[1] = gamma_dir[(pixel >> 8) & NORM_BYTE];
-            c_srcPixel[2] = gamma_dir[(pixel) & NORM_BYTE];
-            c_srcPixel[3] = (pixel >> 24) & NORM_BYTE;
+            // color components in range [0; 255]
+            csr = (pixel >> 16) & NORM_BYTE;
+            csg = (pixel >> 8) & NORM_BYTE;
+            csb = (pixel) & NORM_BYTE;
+            csa = (pixel >> 24) & NORM_BYTE;
 
-            // c_srcPixel is Gamma-corrected Linear RGBA.
+            // cs is sRGBA.
+        } else {
+            csr = 0;
+            csg = 0;
+            csb = 0;
+            csa = 0;
         }
 
-        int am, alpha, fs, fd;
-        int offTile;
+        long addrMask = OFF_BYTE + maskOff; // bytes
+        final long maskSkip = maskScan; // bytes
 
-        for (int y = 0; y < h; y++) {
-            // TODO: use directly DataBufferInt (offsets + stride)
+//        int offDst;
+//        int offMask = 0;
+        for (int j = 0; j < h; j++) {
             if (srcIn != null) {
-                srcIn.getDataElements(0, y, w, 1, srcPixels);
+                offSrc = (y + j) * srcScan + x;
             }
-            dstOut.getDataElements(0, y, w, 1, dstPixels);
+            /*
+            offDst = (y + j) * dstScan + x;
 
-            offTile = y * tilesize + offset;
+            // Explicit bound checks
+            if (offDst < 0 || offDst + w > dstBuffer.length) {
+                break;
+            }
+             */
+ /*
+            offMask = j * maskScan + maskOff;
 
-            for (int x = 0; x < w; x++) {
+            // Explicit bound checks
+            if (offMask < 0 || offMask + w > mask.length) {
+                break;
+            }
+             */
+            for (int i = 0; i < w; i++, addrDst += 4L) {
                 // pixels are stored as INT_ARGB
                 // our arrays are [R, G, B, A]
 
                 // coverage is stored directly as byte in maskPixel:
-                am = (atile != null) ? atile[offTile + x] & NORM_BYTE : NORM_BYTE;
+//                am = mask[offMask + i] & NORM_BYTE;
+                am = _unsafe.getByte(mask, addrMask + i) & NORM_BYTE;
 
                 /*
-                     * coverage = 0 means translucent: 
-                     * result = destination (already the case)
+                 * coverage = 0 means translucent: 
+                 * result = destination (already the case)
                  */
                 if (am != 0) {
                     // ELSE: coverage between [1;255]:
@@ -157,59 +327,55 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                     if (am == NORM_ALPHA) {
                         // mask with full opacity
                         // output = source OVER (totally)
-                        // Source pixel Linear RGBA:
-                        dstPixels[x] = (srcIn != null) ? srcPixels[x] : srcRGBA;
+                        // Source pixel sRGBA:
+//                        dstBuffer[offDst + i] = (srcIn != null) ? srcBuffer[offSrc + i] : srcRGBA;
+                        _unsafe.putInt(dstBuffer, addrDst, (srcIn != null) ? srcBuffer[offSrc + i] : srcRGBA);
                         continue;
                     }
 
                     if (srcIn == null) {
                         // Copy prepared source pixel:
-                        srcPixel[0] = c_srcPixel[0];
-                        srcPixel[1] = c_srcPixel[1];
-                        srcPixel[2] = c_srcPixel[2];
-                        srcPixel[3] = c_srcPixel[3];
+                        sr = csr;
+                        sg = csg;
+                        sb = csb;
+                        sa = csa;
                     } else {
-                        // Source pixel Linear RGBA:
-                        pixel = srcPixels[x];
+                        // Source pixel sRGBA:
+                        pixel = srcBuffer[offSrc + i];
 
-                        // Linear RGBA components are not pre-multiplied by alpha:
+                        // sRGBA components are not pre-multiplied by alpha:
                         // NOP
-                        // Gamma-correction on Linear RGBA: 
-                        // color components in range [0; 32767]
-                        srcPixel[0] = gamma_dir[(pixel >> 16) & NORM_BYTE];
-                        srcPixel[1] = gamma_dir[(pixel >> 8) & NORM_BYTE];
-                        srcPixel[2] = gamma_dir[(pixel) & NORM_BYTE];
-                        srcPixel[3] = (pixel >> 24) & NORM_BYTE;
+                        // color components in range [0; 255]
+                        sr = (pixel >> 16) & NORM_BYTE;
+                        sg = (pixel >> 8) & NORM_BYTE;
+                        sb = (pixel) & NORM_BYTE;
+                        sa = (pixel >> 24) & NORM_BYTE;
                     }
-                    // srcPixel is Gamma-corrected Linear RGBA.
+                    // srcPixel is Gamma-corrected sRGBA.
 
                     // fade operator:
                     // Rs = As x Coverage
                     // alpha in range [0; 32385] (15bits)
-                    srcPixel[3] = (srcPixel[3] * am) / NORM_BYTE;
-                    /*                        
-                        if (srcPixel[3] > NORM_ALPHA || srcPixel[3] < 0) {
-                            System.out.println("srcPixel[3] overflow");
-                        }
-                     */
+                    sa = (sa * am) / NORM_BYTE;
+
                     // Destination pixel:
                     {
-                        // Dest pixel Linear RGBA:
-                        pixel = dstPixels[x];
+                        // Dest pixel sRGBA:
+//                        pixel = dstBuffer[offDst + i];
+                        pixel = _unsafe.getInt(dstBuffer, addrDst);
 
-                        // Linear RGBA components are not pre-multiplied by alpha:
+                        // sRGBA components are not pre-multiplied by alpha:
                         // NOP
-                        // Gamma-correction on Linear RGBA: 
-                        // color components in range [0; 32767]
-                        dstPixel[0] = gamma_dir[(pixel >> 16) & NORM_BYTE];
-                        dstPixel[1] = gamma_dir[(pixel >> 8) & NORM_BYTE];
-                        dstPixel[2] = gamma_dir[(pixel) & NORM_BYTE];
-                        dstPixel[3] = (pixel >> 24) & NORM_BYTE;
+                        // color components in range [0; 255]
+                        dr = (pixel >> 16) & NORM_BYTE;
+                        dg = (pixel >> 8) & NORM_BYTE;
+                        db = (pixel) & NORM_BYTE;
+                        da = (pixel >> 24) & NORM_BYTE;
 
                         // alpha in range [0; 32385] (15bits)
-                        dstPixel[3] *= NORM_BYTE7;
+                        da *= NORM_BYTE7;
                     }
-                    // dstPixel is Gamma-corrected Linear RGBA.
+                    // dstPixel is Gamma-corrected sRGBA.
 
                     // Ported-Duff rules in action:
                     // R = S x fs + D x fd
@@ -217,8 +383,8 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                     // fs = Sa
                     // fd = Da x (1 - Sa)
                     // Factors in range [0; 32385] (15bits)
-                    fs = (srcPixel[3]);
-                    fd = (dstPixel[3] * (NORM_ALPHA - fs)) / NORM_ALPHA;
+                    fs = (sa); // alpha * 1.0
+                    fd = (da * (NORM_ALPHA - fs)) / NORM_ALPHA;
                     /*
                         if (fs > NORM_ALPHA || fs < 0) {
                             System.out.println("fs overflow");
@@ -240,192 +406,66 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
                     if (alpha == 0) {
                         // output = none
-                        // Source pixel Linear RGBA:
-                        dstPixels[x] = 0;
+                        // Source pixel sRGBA:
+//                        dstBuffer[offDst + i] = 0;
+                        _unsafe.putInt(dstBuffer, addrDst, 0);
                         continue;
                     }
 
-                    // color components in range [0; 32767]
+                    // color components in range [0; 32385]
                     // no overflow: 15b + 15b < 31b
-                    result[0] = (srcPixel[0] * fs + dstPixel[0] * fd) / alpha;
-                    result[1] = (srcPixel[1] * fs + dstPixel[1] * fd) / alpha;
-                    result[2] = (srcPixel[2] * fs + dstPixel[2] * fd) / alpha;
+                    rr = (sr * fs + dr * fd) / alpha;
+                    rg = (sg * fs + dg * fd) / alpha;
+                    rb = (sb * fs + db * fd) / alpha;
                     // alpha in range [0; 255]
-                    result[3] = alpha / NORM_BYTE7;
+                    ra = alpha / NORM_BYTE7;
 
                     // System.out.println("result: " + Arrays.toString(result));
-                    // Faster with explicit bound checks !
-                    if (result[0] > NORM_GAMMA || result[1] > NORM_GAMMA || result[2] > NORM_GAMMA
-                            || result[3] > NORM_BYTE) {
-                        // System.out.println("overflow");
-                        result[0] = NORM_GAMMA;
-                        result[1] = NORM_GAMMA;
-                        result[2] = NORM_GAMMA;
-                        result[3] = NORM_BYTE;
-                    }
-                    if (result[0] < 0 || result[1] < 0 || result[2] < 0 || result[3] < 0) {
-                        // System.out.println("underflow");
-                        result[0] = 0;
-                        result[1] = 0;
-                        result[2] = 0;
-                        result[3] = 0;
-                    }
+                    // result is sRGBA.
+                    // color components in range [0; 255]
+                    pixel = (ra << 24)
+                            | (rr << 16)
+                            | (rg << 8)
+                            | (rb);
 
-                    // result is Gamma-corrected Linear RGBA.
-                    // Inverse Gamma-correction on Linear RGBA: 
-                    // color components in range [0; 32767]
-                    pixel = (result[3] << 24)
-                            | (gamma_inv[result[0]]) << 16
-                            | (gamma_inv[result[1]]) << 8
-                            | (gamma_inv[result[2]]);
-
-                    // Linear RGBA components are not pre-multiplied by alpha:
+                    // sRGBA components are not pre-multiplied by alpha:
                     // NOP
-                    dstPixels[x] = pixel;
+//                    dstBuffer[offDst + i] = pixel;
+                    _unsafe.putInt(dstBuffer, addrDst, pixel);
                 }
             }
-            dstOut.setDataElements(0, y, w, 1, dstPixels);
+            addrDst += dstSkip;
+            addrMask += maskSkip;
         }
     }
 
-    public void composeKO(final int srcRGBA, final Raster srcIn,
-                          final byte[] atile, final int offset, final int tilesize,
-                          final WritableRaster dstOut,
-                          final int w, final int h) {
+    // unsafe reference
+    static final Unsafe UNSAFE;
+    // offset of int[]
+    static final long OFF_BYTE;
+// offset of int[]
+    static final long OFF_INT;
 
-        /*
-             System.out.println("src = " + src.getBounds());
-             System.out.println("dstIn = " + dstIn.getBounds());
-             System.out.println("dstOut = " + dstOut.getBounds());
-         */
-        final int[] gamma_dir = GAMMA_LUT.dir;
-        final int[] gamma_inv = GAMMA_LUT.inv;
-
-        final int extraAlpha = this._extraAlpha;
-
-        final BlendComposite.Blender blender = _blender;
-
-        final DataBuffer srcBuffer = (srcIn != null) ? srcIn.getDataBuffer() : null;
-        final DataBuffer dstBuffer = (DataBufferInt) dstOut.getDataBuffer();
-
-        // use shared arrays:
-        final int[] srcPixel = _srcPixel;
-        final int[] dstPixel = _dstPixel;
-        final int[] result = _result;
-
-//            final int[] srcPixels = (srcIn != null) ? getSrcPixels(w) : null;
-        //final int[] dstPixels = getDstPixels(w);
-        int pixel, am, as, ad, ar, fs, fd;
-        int offTile, offBuf;
-
-        for (int y = 0; y < h; y++) {
-            // TODO: use directly BufferInt
-/*                
-                if (srcIn != null) {
-                    srcIn.getDataElements(0, y, w, 1, srcPixels);
+    static {
+        UNSAFE = AccessController.doPrivileged(new PrivilegedAction<Unsafe>() {
+            @Override
+            public Unsafe run() {
+                Unsafe ref = null;
+                try {
+                    final Field field = Unsafe.class.getDeclaredField("theUnsafe");
+                    field.setAccessible(true);
+                    ref = (Unsafe) field.get(null);
+                } catch (Exception e) {
+                    throw new InternalError("Unable to get sun.misc.Unsafe instance", e);
                 }
-                dstOut.getDataElements(0, y, w, 1, dstPixels);
-             */
-// dstOut.getDataElements(0, y, w, 1, dstPixels);
-
-            offBuf = y * w;
-            offTile = y * tilesize + offset;
-
-            for (int x = 0; x < w; x++) {
-                // pixels are stored as INT_ARGB
-                // our arrays are [R, G, B, A]
-
-                // coverage is stored directly as byte in maskPixel:
-                am = (atile == null) ? NORM_BYTE
-                        : atile[offTile + x] & NORM_BYTE;
-
-                /*
-                     * coverage = 0 means translucent: 
-                     * result = destination (already the case)
-                 */
-                if (am != 0) {
-                    // ELSE: coverage between [1;255]:
-                    am *= extraAlpha;
-
-                    pixel = (srcIn != null) ? srcBuffer.getElem(offBuf + x) /*srcPixels[x]*/ : srcRGBA;
-
-                    if (am == NORM_ALPHA) {
-                        // mask with full opacity
-                        // output = source
-                        dstBuffer.setElem(offBuf + x, pixel);
-//                            dstPixels[x] = pixel;
-                    } else {
-                        // TODO: cache last computation (rgba src + rgba dst + mask alpha) => (same result)
-                        // blend:
-                        as = ((pixel >> 24) & NORM_BYTE);
-
-                        // fade operator:
-                        // alpha in range [0; 255]
-                        as = (as * am) / NORM_ALPHA;
-
-                        // note: skip check as != 0 (low probability)
-                        // RGBA: premultiply color component by alpha:
-                        // color components in range [0; 32767]
-                        srcPixel[0] = gamma_dir[(pixel >> 16) & NORM_BYTE];
-                        srcPixel[1] = gamma_dir[(pixel >> 8) & NORM_BYTE];
-                        srcPixel[2] = gamma_dir[(pixel) & NORM_BYTE];
-                        srcPixel[3] = as;
-
-                        if (as != NORM_BYTE) {
-                            // Premultiply
-                            srcPixel[0] = (srcPixel[0] * as) / NORM_BYTE;
-                            srcPixel[1] = (srcPixel[1] * as) / NORM_BYTE;
-                            srcPixel[2] = (srcPixel[2] * as) / NORM_BYTE;
-                        }
-
-                        pixel = dstBuffer.getElem(offBuf + x);
-//                            pixel = dstPixels[x];
-                        ad = (pixel >> 24) & NORM_BYTE;
-
-                        // note: skip check ad != 0 (low probability)
-                        // RGBA: premultiply color component by alpha:
-                        // color components in range [0; 32767]
-                        dstPixel[0] = gamma_dir[(pixel >> 16) & NORM_BYTE];
-                        dstPixel[1] = gamma_dir[(pixel >> 8) & NORM_BYTE];
-                        dstPixel[2] = gamma_dir[(pixel) & NORM_BYTE];
-                        dstPixel[3] = ad;
-
-                        if (ad != NORM_BYTE) {
-                            // Premultiply
-                            dstPixel[0] = (dstPixel[0] * ad) / NORM_BYTE;
-                            dstPixel[1] = (dstPixel[1] * ad) / NORM_BYTE;
-                            dstPixel[2] = (dstPixel[2] * ad) / NORM_BYTE;
-                        }
-
-                        // Src Over Dst rule: factors in range [0; 255]
-                        fs = NORM_BYTE;
-                        fd = NORM_BYTE - as;
-
-                        // recycle int[] instances:
-                        blender.blend(srcPixel, dstPixel, fs, fd, result);
-
-                        // mixes the result with the opacity
-                        // alpha in range [0; 255]
-                        ar = result[3];
-
-                        if (ar == 0) {
-                            dstBuffer.setElem(offBuf + x, 0);
-//                                dstPixels[x] = 0x00FFFFFF;
-                        } else {
-                            // RGBA: divide color component by alpha 
-                            // color components in range [0; 32767]
-//                                dstPixels[x] = 
-                            dstBuffer.setElem(offBuf + x,
-                                    (ar << 24)
-                                    | (gamma_inv[result[0]] / ar) << 16
-                                    | (gamma_inv[result[1]] / ar) << 8
-                                    | (gamma_inv[result[2]] / ar)
-                            );
-                        }
-                    }
-                }
+                return ref;
             }
-//                dstOut.setDataElements(0, y, w, 1, dstPixels);
-        }
+        });
+
+        OFF_BYTE = Unsafe.ARRAY_BYTE_BASE_OFFSET; // 16
+        OFF_INT = Unsafe.ARRAY_INT_BASE_OFFSET; // 12
+
+        // System.out.println("OFF_BYTE: " + OFF_BYTE);
+        // System.out.println("OFF_INT: " + OFF_INT);
     }
 }

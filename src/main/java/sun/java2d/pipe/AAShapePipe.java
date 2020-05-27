@@ -144,8 +144,8 @@ public final class AAShapePipe
 
         // Only enable gamma correction on stroked shapes:
         CompositorSettings settings = null;
-        if (MarlinCompositor.ENABLE_COMPOSITOR 
-                && (bs != null)) {
+        if (MarlinCompositor.ENABLE_FILL 
+                || MarlinCompositor.ENABLE_COMPOSITOR && (bs != null)) {
 
             // check supported operations:
             if (MarlinCompositor.isSupported(sg)) {

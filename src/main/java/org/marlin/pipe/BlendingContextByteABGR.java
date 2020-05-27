@@ -30,16 +30,12 @@ import static org.marlin.pipe.BlendComposite.GAMMA_LUT;
 import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE7;
-import static org.marlin.pipe.BlendComposite.NORM_GAMMA;
 import static org.marlin.pipe.BlendComposite.TILE_WIDTH;
 
+// TODO: update implementation with latest correction (contrast)
 final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
 
     private final static int NUM_COMP = 4;
-
-    /* members */
-    private int _extraAlpha;
-    private BlendComposite.Blender _blender;
 
     // recycled arrays into context (shared):
     private final byte[] _r_srcPixel = new byte[NUM_COMP];
@@ -53,13 +49,6 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
 
     BlendingContextByteABGR() {
         super();
-    }
-    
-    @Override
-    BlendComposite.BlendingContext init(final BlendComposite composite) {
-        this._blender = BlendComposite.Blender.getBlenderFor(composite);
-        this._extraAlpha = Math.round(127f * composite.extraAlpha); // [0; 127] ie 7 bits
-        return this; // fluent API
     }
 
     byte[] getSrcPixels(final int len) {
@@ -82,10 +71,11 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
         return t;
     }
 
+    @Override
     void compose(final int srcRGBA, final Raster srcIn,
-                 final byte[] atile, final int offset, final int tilesize,
                  final WritableRaster dstOut,
-                 final int w, final int h) {
+                 final int x, final int y, final int w, final int h,
+                 final byte[] mask, final int maskoff, final int maskscan) {
 
         /*
              System.out.println("srcIn = " + srcIn.getBounds());
@@ -121,7 +111,7 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
             // Linear RGBA components are not pre-multiplied by alpha:
             // NOP
             // Gamma-correction on Linear RGBA: 
-            // color components in range [0; 32767]
+            // color components in range [0; 32385]
             c_srcPixel[0] = gamma_dir[(pixel >> 16) & NORM_BYTE];
             c_srcPixel[1] = gamma_dir[(pixel >> 8) & NORM_BYTE];
             c_srcPixel[2] = gamma_dir[(pixel) & NORM_BYTE];
@@ -134,22 +124,22 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
         int offTile;
         int offB;
 
-        for (int y = 0; y < h; y++) {
+        for (int j = 0; j < h; j++) {
             // TODO: use directly DataBufferByte (offsets + stride)
             // RGBA in interface (but not in storage)
             if (srcIn != null) {
-                srcIn.getDataElements(0, y, w, 1, srcPixels);
+                srcIn.getDataElements(0, j, w, 1, srcPixels);
             }
-            dstOut.getDataElements(0, y, w, 1, dstPixels);
+            dstOut.getDataElements(0, j, w, 1, dstPixels);
 
-            offTile = y * tilesize + offset;
+            offTile = j * maskscan + maskoff;
 
-            for (int x = 0; x < w; x++) {
+            for (int i = 0; i < w; i++) {
                 // pixels are stored as BYTE_ABGR
                 // our arrays are [R, G, B, A]
 
                 // coverage is stored directly as byte in maskPixel:
-                am = (atile != null) ? atile[offTile + x] & NORM_BYTE : NORM_BYTE;
+                am = (mask != null) ? mask[offTile + i] & NORM_BYTE : NORM_BYTE;
 
                 /*
                      * coverage = 0 means translucent: 
@@ -161,7 +151,7 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
                     // alpha in range [0; 32385] (15bits)
                     am *= extraAlpha; // TODO: out of loop if no tile !
 
-                    offB = x << 2; // x 4
+                    offB = i << 2; // x 4
 
                     if (am == NORM_ALPHA) {
                         // mask with full opacity
@@ -193,7 +183,7 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
                         // Linear RGBA components are not pre-multiplied by alpha:
                         // NOP
                         // Gamma-correction on Linear ABGR: 
-                        // color components in range [0; 32767]
+                        // color components in range [0; 32385]
                         // RGBA in interface (but not in storage)
                         srcPixel[0] = gamma_dir[srcPixels[offB] & NORM_BYTE];
                         srcPixel[1] = gamma_dir[srcPixels[offB + 1] & NORM_BYTE];
@@ -218,7 +208,7 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
                         // Linear RGBA components are not pre-multiplied by alpha:
                         // NOP
                         // Gamma-correction on Linear ABGR: 
-                        // color components in range [0; 32767]
+                        // color components in range [0; 32385]
                         // RGBA in interface (but not in storage)
                         dstPixel[0] = gamma_dir[dstPixels[offB] & NORM_BYTE];
                         dstPixel[1] = gamma_dir[dstPixels[offB + 1] & NORM_BYTE];
@@ -267,7 +257,7 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
                         continue;
                     }
 
-                    // color components in range [0; 32767]
+                    // color components in range [0; 32385]
                     // no overflow: 15b + 15b < 31b
                     result[0] = (srcPixel[0] * fs + dstPixel[0] * fd) / alpha;
                     result[1] = (srcPixel[1] * fs + dstPixel[1] * fd) / alpha;
@@ -277,12 +267,12 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
 
                     // System.out.println("result: " + Arrays.toString(result));
                     // Faster with explicit bound checks !
-                    if (result[0] > NORM_GAMMA || result[1] > NORM_GAMMA || result[2] > NORM_GAMMA
+                    if (result[0] > NORM_ALPHA || result[1] > NORM_ALPHA || result[2] > NORM_ALPHA
                             || result[3] > NORM_BYTE) {
                         // System.out.println("overflow");
-                        result[0] = NORM_GAMMA;
-                        result[1] = NORM_GAMMA;
-                        result[2] = NORM_GAMMA;
+                        result[0] = NORM_ALPHA;
+                        result[1] = NORM_ALPHA;
+                        result[2] = NORM_ALPHA;
                         result[3] = NORM_BYTE;
                     }
                     if (result[0] < 0 || result[1] < 0 || result[2] < 0 || result[3] < 0) {
@@ -295,7 +285,7 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
 
                     // result is Gamma-corrected Linear RGBA.
                     // Inverse Gamma-correction on Linear RGBA: 
-                    // color components in range [0; 32767]
+                    // color components in range [0; 32385]
                     // store in ABGR bytes:
                     // RGBA in interface (but not in storage)
                     dstPixels[offB] = (byte) (gamma_inv[result[0]]);
@@ -307,7 +297,7 @@ final class BlendingContextByteABGR extends BlendComposite.BlendingContext {
                     // NOP
                 }
             }
-            dstOut.setDataElements(0, y, w, 1, dstPixels);
+            dstOut.setDataElements(0, j, w, 1, dstPixels);
         }
     }
 }

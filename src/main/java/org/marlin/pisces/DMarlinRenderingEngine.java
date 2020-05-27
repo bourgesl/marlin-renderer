@@ -36,8 +36,6 @@ import static org.marlin.pisces.MarlinUtils.logInfo;
 import org.marlin.ReentrantContextProvider;
 import org.marlin.ReentrantContextProviderCLQ;
 import org.marlin.ReentrantContextProviderTL;
-import org.marlin.pipe.BlendComposite;
-import org.marlin.pipe.MarlinCompositor;
 import sun.awt.geom.PathConsumer2D;
 import sun.java2d.pipe.AATileGenerator;
 import sun.java2d.pipe.Region;
@@ -413,55 +411,6 @@ public final class DMarlinRenderingEngine extends RenderingEngine
             at = null;
         }
         
-        /* Fix width for gamma-correction */
-        if (MarlinCompositor.ENABLE_STROKE_FIX && MarlinCompositor.isGammaCorrectionEnabled()) {
-            final double lineWidth2 = width / 2.0d;
-            double intWidth2 = Math.floor(lineWidth2);
-            double rem = lineWidth2 - intWidth2;
-            double cov = rem; // partial coverage in [0..1[
-
-            // Correction should take into account the pen color = enlarge black, reduce white ...
-            
-            if (true) {
-                if (false && (cov == 0.0)) {
-                    width += MIN_PEN_SIZE;           
-                } else {
-                    final double covFactor = BlendComposite.getCompatibleCoverageFactor(cov);
-
-                    if (covFactor != 1.0) {
-                        final double fixedWith = 2.0d * (intWidth2 + covFactor * rem);
-                        /*
-                        System.out.println("lineWidth2 = " + lineWidth2);
-                        System.out.println("cov_ratio = " + cov);
-                        System.out.println("covFactor = " + covFactor);
-                        System.out.println("fixedWith = " + fixedWith);
-                         */
-                        // System.out.println("fixedWith = " + fixedWith + " (width = " + width + ")");
-                        width = fixedWith;
-                    }
-                }
-            } else {
-                if (cov == 0.0) {
-                    rem = 0.5;
-                    intWidth2 -= rem;
-                    cov = rem; // small                 
-                }
-
-                final double covFactor = BlendComposite.getCompatibleCoverageFactor(cov);
-
-                if (covFactor != 1.0) {
-                    final double fixedWith = 2.0d * (intWidth2 + covFactor * rem);
-                    /*
-                System.out.println("lineWidth2 = " + lineWidth2);
-                System.out.println("cov_ratio = " + cov);
-                System.out.println("covFactor = " + covFactor);
-                System.out.println("fixedWith = " + fixedWith);
-                     */
-                    width = fixedWith;
-                }
-            }
-        }
-
         final DTransformingPathConsumer2D transformerPC2D = rdrCtx.transformerPC2D;
 
         if (DO_TRACE_PATH) {

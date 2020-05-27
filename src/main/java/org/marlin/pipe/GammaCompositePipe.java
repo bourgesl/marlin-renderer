@@ -136,15 +136,21 @@ public final class GammaCompositePipe implements CompositePipe {
         }
 
         // System.out.println("createWritableChild: (" + w + " x " + h + ")");
-        final WritableRaster dstOut
-                             = ((WritableRaster) dstRaster).createWritableChild(x, y, w, h, 0, 0, null);
-        // = (WritableRaster)dstRaster;
+        final WritableRaster dstOut;
+
+        if (MarlinCompositor.USE_OLD_BLENDER) {
+            dstOut = (WritableRaster) dstRaster;
+        } else {
+            dstOut = ((WritableRaster) dstRaster).createWritableChild(x, y, w, h, 0, 0, null);
+        }
 
         // Perform compositing:
         // srcRaster = paint raster
         // dstIn = surface destination raster (input)
         // dstOut = writable destination raster (output)
-        compCtxt.compose(rgba, srcRaster, atile, offset, tilesize, dstOut, w, h);
+        compCtxt.compose(rgba, srcRaster, dstOut,
+                x, y, w, h,
+                atile, offset, tilesize);
     }
 
     @Override

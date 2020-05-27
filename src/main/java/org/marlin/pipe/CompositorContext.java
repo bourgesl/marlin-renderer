@@ -24,10 +24,13 @@
  */package org.marlin.pipe;
 
 import org.marlin.ReentrantContext;
+import org.marlin.pipe.BlendComposite.BlendingContext;
+import static org.marlin.pipe.MarlinCompositor.USE_OLD_BLENDER;
 import sun.java2d.loops.SurfaceType;
 
 final class CompositorContext extends ReentrantContext {
-/*
+
+    /*
     // Per-thread TileState (~1K very small so do not use any Weak Reference)
     private static final ReentrantContextProvider<CompositorContext> TILE_CTX_PROVIDER
                                                                      = new ReentrantContextProviderTL<CompositorContext>(
@@ -39,17 +42,17 @@ final class CompositorContext extends ReentrantContext {
             return new CompositorContext();
         }
     };
-  */  
+     */
     // members
     private final GammaCompositePipe.TileContext gcp_tile_ctx = new GammaCompositePipe.TileContext();
     // lazy initialized blenders:
-    private BlendingContextIntARGB bcInt = null;
-    private BlendingContextByteABGR bcByte = null;
+    private BlendingContext bcInt = null;
+    private BlendingContext bcByte = null;
 
     CompositorContext() {
         // ThreadLocal constructor
     }
-    
+
     void dispose() {
         // TODO !
     }
@@ -61,7 +64,7 @@ final class CompositorContext extends ReentrantContext {
     BlendComposite.BlendingContext init(final BlendComposite composite, final SurfaceType sdt) {
         if ((sdt == SurfaceType.IntArgb) || (sdt == SurfaceType.IntArgbPre)) {
             if (bcInt == null) {
-                bcInt = new BlendingContextIntARGB();
+                bcInt = (USE_OLD_BLENDER) ? new BlendingContextIntSRGB() : new BlendingContextIntARGB();
             }
             return bcInt.init(composite);
         } else if ((sdt == SurfaceType.FourByteAbgr) || (sdt == SurfaceType.FourByteAbgrPre)) {

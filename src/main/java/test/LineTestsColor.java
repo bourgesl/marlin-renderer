@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import org.marlin.pipe.BlendComposite;
+import org.marlin.pipe.MarlinCompositor;
 import org.marlin.pisces.MarlinProperties;
 
 /**
@@ -101,7 +102,8 @@ public class LineTestsColor {
 
             final File file = new File(FILE_NAME + MarlinProperties.getSubPixel_Log2_X()
                     + "x" + MarlinProperties.getSubPixel_Log2_Y()
-                    + (BlendComposite.getBlendingMode()) + ".png");
+                    + ((MarlinCompositor.ENABLE_COMPOSITOR) ? ("_comp_"
+                            + BlendComposite.getBlendingMode()) : "_REF") + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());;
             ImageIO.write(image, "PNG", file);

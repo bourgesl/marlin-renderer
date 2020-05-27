@@ -25,6 +25,7 @@
 package org.marlin.pipe;
 
 import java.awt.AlphaComposite;
+import org.marlin.pisces.MarlinProperties;
 import sun.java2d.SunGraphics2D;
 import sun.java2d.loops.SurfaceType;
 import sun.java2d.pipe.AlphaColorPipe;
@@ -34,23 +35,32 @@ public final class MarlinCompositor {
     public final static boolean ENABLE_COMPOSITOR = "true".equals(System.getProperty("sun.java2d.renderer.compositor", "true"))
             && isJava2dPipelinePatched();
 
-    public final static boolean ENABLE_STROKE_FIX = ENABLE_COMPOSITOR
-            && "true".equals(System.getProperty("sun.java2d.renderer.stroke.fix", "true"));
+    public final static boolean ENABLE_FILL = ENABLE_COMPOSITOR
+            && "true".equals(System.getProperty("sun.java2d.renderer.compositor.fill", "true"));
 
-    // TODO: use System property
+    public final static double GAMMA_sRGB = 2.4;
+    public final static double Y_to_L = 0.0;
+
     /* 2.2 is the standard gamma for current LCD/CRT monitors */
-    public final static double GAMMA = Double.parseDouble(System.getProperty("sun.java2d.renderer.gamma", "2.2"));
+    public final static double GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.gamma", GAMMA_sRGB, 0.1, 3.0);
+
+    /* contrast adjustement (0..1) */
+    public final static double BLEND_CONTRAST = MarlinProperties.getDouble("sun.java2d.renderer.contrast", 0.8, 0.1, 2.0);
+
+    public final static boolean USE_OLD_BLENDER = (GAMMA == 1.0);
 
     static {
         System.out.println("INFO: Marlin Compositor (Java implementation of correct alpha compositing)");
         System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor = " + ENABLE_COMPOSITOR);
-        
-        if (ENABLE_COMPOSITOR) {
-            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.gamma = " + GAMMA);
-            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.stroke.fix = " + ENABLE_STROKE_FIX);
 
-            System.out.println("INFO: Marlin Compositor: Gamma correction only supports following surface types [IntArgb, FourByteAbgr].");
-            System.out.println("INFO: Marlin Compositor: Premultiplied formats [IntArgbPre, FourByteAbgrPre] are also working with lower visual quality.");
+        if (ENABLE_COMPOSITOR) {
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fill = " + ENABLE_FILL);
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.gamma = " + GAMMA);
+            if (!USE_OLD_BLENDER) {
+                System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.contrast = " + BLEND_CONTRAST);
+            }
+            System.out.println("INFO: Marlin Compositor: Gamma correction only supports following surface types [IntArgb]."); // , FourByteAbgr
+            System.out.println("INFO: Marlin Compositor: Premultiplied formats [IntArgbPre] are also working with lower visual quality."); // , FourByteAbgrPre
         }
     }
 
@@ -65,12 +75,12 @@ public final class MarlinCompositor {
         } catch (Error e) {
             System.out.println("Marlin sun-java2d.jar patch is not loaded.");
             // e.printStackTrace();
-        }        
+        }
         return present;
     }
-    
+
     public final static boolean isSupported(final SunGraphics2D sg) {
-        
+
         if (sg.composite instanceof AlphaComposite) {
             final AlphaComposite ac = (AlphaComposite) sg.composite;
 
@@ -85,8 +95,8 @@ public final class MarlinCompositor {
 
     public final static boolean isSurfaceSupported(final SurfaceType sdt) {
         // check supported types (basic surfaces, not volatile or accelerated surfaces):
-        if ((sdt != SurfaceType.IntArgb) && (sdt != SurfaceType.IntArgbPre)
-                && (sdt != SurfaceType.FourByteAbgr) && (sdt != SurfaceType.FourByteAbgrPre)) {
+        if ((sdt != SurfaceType.IntArgb) && (sdt != SurfaceType.IntArgbPre) // TODO: fix 4bytes belnding ...
+                /*  && (sdt != SurfaceType.FourByteAbgr) && (sdt != SurfaceType.FourByteAbgrPre) */) {
             System.out.println("Unsupported surface type: " + sdt);
             return false; // means invalid pipe
         }
