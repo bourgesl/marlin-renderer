@@ -91,8 +91,8 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
         final int[] bright_dir = (FIX_LUM) ? brightness_LUT.dir : null;
         final int[] bright_inv = (FIX_LUM) ? brightness_LUT.inv : null;
 
-        final short[][][] alpha_tables = ALPHA_LUT.alphaTables;
-        short[][] src_alpha_tables = null;
+        final int[][][] alpha_tables = ALPHA_LUT.alphaTables;
+        int[][] src_alpha_tables = null;
 
         final int extraAlpha = this._extraAlpha; // 7 bits
 
@@ -240,10 +240,12 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                         ls = luminance4b(sr, sg, sb); // Y (4bits)
                         src_alpha_tables = alpha_tables[ls & 0x0F];
                     }
+                    // TODO: try caching last luminance computation ?
                     ld = luminance4b(dr, dg, db); // Y (4bits)
 
                     // ALPHA in range [0; 32385] (15bits):
-                    sa = src_alpha_tables[ld & 0x0F][((sa + 63) / NORM_BYTE7) & NORM_BYTE] & 0xFFFF; // short to int
+                    sa = src_alpha_tables[ld & 0x0F][(sa >> 7) & NORM_BYTE];
+//                    sa = src_alpha_tables[ld & 0x0F][((sa + 63) / NORM_BYTE7) & NORM_BYTE];
                 }
 
                 // Ported-Duff rules in action:
@@ -378,10 +380,10 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
     final static class AlphaLUT {
 
         // TODO: use Unsafe (off-heap table)
-        final short[][][] alphaTables;
+        final int[][][] alphaTables;
 
         AlphaLUT() {
-            alphaTables = new short[LUM_MAX + 1][LUM_MAX + 1][NORM_BYTE + 1];
+            alphaTables = new int[LUM_MAX + 1][LUM_MAX + 1][NORM_BYTE + 1];
 
             final int[] y2l_dir = (USE_Y_TO_L) ? Y2L_LUT.dirL : GAMMA_LUT.dirL;
 
@@ -430,7 +432,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                             }
                         }
                         // [0; 32385]
-                        alphaTables[ls][ld][a] = (short) (alpha * NORM_BYTE7);
+                        alphaTables[ls][ld][a] = alpha * NORM_BYTE7;
                     }
                 }
             }
