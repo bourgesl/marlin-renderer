@@ -30,7 +30,6 @@ import static org.marlin.pipe.BlendComposite.CONTRAST;
 import static org.marlin.pipe.BlendComposite.FIX_CONTRAST;
 import static org.marlin.pipe.BlendComposite.FIX_LUM;
 import static org.marlin.pipe.BlendComposite.GAMMA_LUT;
-import static org.marlin.pipe.BlendComposite.LUM_MAX;
 import static org.marlin.pipe.BlendComposite.MASK_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE;
@@ -40,18 +39,14 @@ import static org.marlin.pipe.BlendComposite.USE_Y_TO_L;
 import static org.marlin.pipe.BlendComposite.Y2L_LUT;
 import static org.marlin.pipe.BlendComposite.brightness_LUT;
 import static org.marlin.pipe.BlendComposite.luminance;
-import static org.marlin.pipe.BlendComposite.luminance4b;
 
-final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
+final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
 
-    private final static AlphaLUT ALPHA_LUT = new AlphaLUT();
-
-    // recycled arrays into context (shared):
     // horiz arrays:
     private int[] _srcPixels = new int[TILE_WIDTH];
     private int[] _dstPixels = new int[TILE_WIDTH];
 
-    BlendingContextIntARGB() {
+    BlendingContextIntARGBExact() {
         super();
     }
 
@@ -86,13 +81,13 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
              System.out.println("dstOut = " + dstOut.getBounds());
          */
         final int[] gamma_dir = GAMMA_LUT.dir;
+        final int[] gamma_dirL = GAMMA_LUT.dirL;
         final int[] gamma_inv = GAMMA_LUT.inv;
 
         final int[] bright_dir = (FIX_LUM) ? brightness_LUT.dir : null;
         final int[] bright_inv = (FIX_LUM) ? brightness_LUT.inv : null;
 
-        final short[][][] alpha_tables = ALPHA_LUT.alphaTables;
-        short[][] src_alpha_tables = null;
+        final int[] y2l_dir = (USE_Y_TO_L) ? Y2L_LUT.dirL : gamma_dirL;
 
         final int extraAlpha = this._extraAlpha; // 7 bits
 
@@ -107,7 +102,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
         int dr, dg, db, da;
         int rr, rg, rb, ra;
 
-        int ls = 0;
+        int ls = 0, lls = 0;
 
         // Prepare source pixel if constant in tile:
         if (srcIn == null) {
@@ -125,8 +120,8 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
             // c_srcPixel is Gamma-corrected Linear RGBA.
             if (FIX_CONTRAST) {
-                ls = luminance4b(csr, csg, csb); // Y (4bits)
-                src_alpha_tables = alpha_tables[ls & 0x0F];
+                ls = luminance(csr, csg, csb); // Y
+                lls = y2l_dir[ls]; // linear
             }
         } else {
             csr = 0;
@@ -135,10 +130,12 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
             csa = 0;
         }
 
+        final int contrast_scale = 4 * CONTRAST;
         int am, alpha, fs, fd;
         int offTile;
 
-        int ld, lro, lr;
+        int ld, lld, ll_old, lro, lr;
+        int contrast;
 
         for (int j = 0; j < h; j++) {
             // TODO: use directly DataBufferInt (offsets + stride)
@@ -167,6 +164,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
                 if (srcIn == null) {
                     // short-cut ?
+//                    if (((extraAlpha << 16) | (am << 8) | (srcPixel[3])) == 0x7FFFFF) {
                     if ((am == NORM_BYTE) && (csa == NORM_BYTE) && (extraAlpha == NORM_BYTE7)) {
                         // mask with full opacity
                         // output = source OVER (totally)
@@ -237,13 +235,41 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 if (FIX_CONTRAST) {
                     // in range [0; 32385] (15bits):
                     if (srcIn != null) {
-                        ls = luminance4b(sr, sg, sb); // Y (4bits)
-                        src_alpha_tables = alpha_tables[ls & 0x0F];
+                        ls = luminance(sr, sg, sb); // Y
+                        lls = y2l_dir[ls]; // linear
                     }
-                    ld = luminance4b(dr, dg, db); // Y (4bits)
+                    ld = luminance(dr, dg, db); // Y
+                    lld = y2l_dir[ld]; // linear
 
-                    // ALPHA in range [0; 32385] (15bits):
-                    sa = src_alpha_tables[ld & 0x0F][((sa + 63) / NORM_BYTE7) & NORM_BYTE] & 0xFFFF; // short to int
+                    if (lls != lld) {
+                        // [0; 255]
+                        // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
+                        // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
+//                        ll_old = y2l_dir[(128 * ls + 128 * ld) >> 8];
+//                        lr = (128 * lls + 128 * lld) >> 8; // eq (1) linear RGB
+
+                        // shifts faster (but better precision) :
+                        ll_old = y2l_dir[(ls + ld + 1) >> 1];
+                        lr = (lls + lld + 1) >> 1; // eq (1) linear RGB
+
+                        // [0; 32385] / [0; 32385] 
+                        // compare linear luminance:
+                        contrast = (contrast_scale * (lr - ll_old)) / (lld - lls); // [0; 255] x 4 (eq 2)
+//                            System.out.println("contrast: " + contrast);
+
+                        // ALPHA in range [0; 32385] (15bits):
+                        sa += (((sa * (NORM_ALPHA - sa)) / NORM_ALPHA) * contrast) / NORM_BYTE;
+//                            System.out.println("Sa (fix): " + alpha);
+
+                        // clamp alpha:
+                        if (sa > NORM_ALPHA) {
+                            // System.out.println("overflow : "+alpha);
+                            sa = NORM_ALPHA;
+                        } else if (sa < 0) {
+                            // System.out.println("undeflow");
+                            sa = 0;
+                        }
+                    }
                 }
 
                 // Ported-Duff rules in action:
@@ -372,69 +398,6 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 dstPixels[i] = pixel;
             } // for
             dstOut.setDataElements(0, j, w, 1, dstPixels);
-        }
-    }
-
-    final static class AlphaLUT {
-
-        // TODO: use Unsafe (off-heap table)
-        final short[][][] alphaTables;
-
-        AlphaLUT() {
-            alphaTables = new short[LUM_MAX + 1][LUM_MAX + 1][NORM_BYTE + 1];
-
-            final int[] y2l_dir = (USE_Y_TO_L) ? Y2L_LUT.dirL : GAMMA_LUT.dirL;
-
-            final int contrast_scale = 4 * CONTRAST;
-
-            // Precompute alpha correction table:
-            // indexed by [ls | ld] => contrast factor
-            // ls / ld are Y (luminance) encoded on 7bits (enough ?)
-            for (int ls = 0; ls <= LUM_MAX; ls++) {
-                int lls = y2l_dir[ls * 8 * NORM_BYTE]; // linear
-
-                for (int ld = 0; ld <= LUM_MAX; ld++) {
-                    int lld = y2l_dir[ld * 8 * NORM_BYTE]; // linear
-
-                    int c = 0;
-
-                    if (lls != lld) {
-                        // [0; 255]
-                        // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
-                        // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
-
-                        // shifts faster (but better precision) :
-                        int ll_old = y2l_dir[(ls + ld) * 8 * NORM_BYTE7]; // = 255 / 2
-                        int lr = (lls + lld) >> 1; // eq (1) linear RGB
-
-                        if (ll_old != lr) {
-                            // [0; 32385] / [0; 32385] 
-                            // compare linear luminance:
-                            c = (contrast_scale * (lr - ll_old)) / (lld - lls); // [0; 255] x 4 (eq 2)
-                        }
-                    }
-
-                    for (int a = 0; a <= NORM_BYTE; a++) {
-                        // Precompute adjusted alpha:
-                        int alpha = a;
-
-                        if (c != 0) {
-                            alpha += ((alpha * (NORM_BYTE - alpha)) * c) / (NORM_BYTE * NORM_BYTE);
-
-                            // clamp alpha:
-                            if (alpha > NORM_BYTE) {
-                                alpha = NORM_BYTE;
-                            }
-                            if (alpha < 0) {
-                                alpha = 0;
-                            }
-                        }
-                        // [0; 32385]
-                        alphaTables[ls][ld][a] = (short) (alpha * NORM_BYTE7);
-                    }
-                }
-            }
-            // System.out.println("contrast: "+ Arrays.toString(contrast));
         }
     }
 }

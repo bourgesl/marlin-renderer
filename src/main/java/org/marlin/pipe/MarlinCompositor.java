@@ -44,6 +44,10 @@ public final class MarlinCompositor {
     /* 2.2 is the standard gamma for current LCD/CRT monitors */
     public final static double GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.gamma", GAMMA_sRGB, 0.1, 3.0);
 
+    public final static String BLEND_FIX = System.getProperty("sun.java2d.renderer.compositor.fix", "contrast");
+
+    public final static boolean BLEND_QUALITY = "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
+
     /* contrast adjustement (0..1) */
     public final static double BLEND_CONTRAST = MarlinProperties.getDouble("sun.java2d.renderer.contrast", 0.8, 0.1, 2.0);
 
@@ -56,6 +60,8 @@ public final class MarlinCompositor {
         if (ENABLE_COMPOSITOR) {
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fill = " + ENABLE_FILL);
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.gamma = " + GAMMA);
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fix = " + BLEND_FIX);            
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.quality = " + BLEND_QUALITY);
             if (!USE_OLD_BLENDER) {
                 System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.contrast = " + BLEND_CONTRAST);
             }

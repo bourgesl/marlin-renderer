@@ -25,6 +25,7 @@
 
 import org.marlin.ReentrantContext;
 import org.marlin.pipe.BlendComposite.BlendingContext;
+import static org.marlin.pipe.MarlinCompositor.BLEND_QUALITY;
 import static org.marlin.pipe.MarlinCompositor.USE_OLD_BLENDER;
 import sun.java2d.loops.SurfaceType;
 
@@ -64,7 +65,8 @@ final class CompositorContext extends ReentrantContext {
     BlendComposite.BlendingContext init(final BlendComposite composite, final SurfaceType sdt) {
         if ((sdt == SurfaceType.IntArgb) || (sdt == SurfaceType.IntArgbPre)) {
             if (bcInt == null) {
-                bcInt = (USE_OLD_BLENDER) ? new BlendingContextIntSRGB() : new BlendingContextIntARGB();
+                bcInt = (USE_OLD_BLENDER) ? new BlendingContextIntSRGB()
+                        : ((BLEND_QUALITY) ? new BlendingContextIntARGBExact() : new BlendingContextIntARGB());
             }
             return bcInt.init(composite);
         } else if ((sdt == SurfaceType.FourByteAbgr) || (sdt == SurfaceType.FourByteAbgrPre)) {

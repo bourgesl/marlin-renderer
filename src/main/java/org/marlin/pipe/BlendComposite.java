@@ -27,6 +27,8 @@ package org.marlin.pipe;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import static org.marlin.pipe.MarlinCompositor.BLEND_CONTRAST;
+import static org.marlin.pipe.MarlinCompositor.BLEND_FIX;
+import static org.marlin.pipe.MarlinCompositor.BLEND_QUALITY;
 
 import static org.marlin.pipe.MarlinCompositor.GAMMA;
 import static org.marlin.pipe.MarlinCompositor.GAMMA_sRGB;
@@ -34,9 +36,9 @@ import static org.marlin.pipe.MarlinCompositor.Y_to_L;
 
 public final class BlendComposite {
 
-    protected final static boolean FIX_LUM = false;
-    protected final static boolean FIX_CONTRAST = true;
-    protected final static boolean LUMA_Y = false;
+    protected final static boolean FIX_LUM = BLEND_FIX.equals("lum");
+    protected final static boolean FIX_CONTRAST = BLEND_FIX.equals("contrast");
+    protected final static boolean LUMA_Y = true;
     protected final static boolean USE_Y_TO_L = true;
 
     protected final static int TILE_WIDTH = 128;
@@ -65,6 +67,7 @@ public final class BlendComposite {
 
     public static String getBlendingMode() {
         return "gamma_" + ((GAMMA == GAMMA_sRGB) ? "sRGB" : GAMMA)
+                + ((BLEND_QUALITY) ? "_qual" : "")
                 + ((FIX_LUM) ? "_lum" : "")
                 + ((FIX_CONTRAST) ? ("_contrast_" + BLEND_CONTRAST) : "")
                 + ((LUMA_Y) ? "_lumaY" : "_lumaGray")
@@ -317,21 +320,8 @@ public final class BlendComposite {
     protected final static int LUM_MAX = (1 << LUM_BITS) - 1; // 4b - 1
 
     static int luminance4b(final int r, final int g, final int b) {
-        // r/g/b in [0; 32385] ie 255 * 127 ie 8+7 ~ 15 bits
-        // Y
-        // from RGB to XYZ:
-        // http://brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
-        /* sRGB (D65):
-        [XYZ] = [M] [RGB linear] 
-     0.4124564  0.3575761  0.1804375 
-[M]= 0.2126729  0.7151522  0.0721750
-     0.0193339  0.1191920  0.9503041
-         */
-        if (LUMA_Y) {
-            // luminance means Y:
-            return (r * 13938 + g * 46868 + b * 4730) >> 28; // / 16b / 15-3 = 12 bits = 28 bits
-            //  + (1 << 15)
-        }
-        return ((r + g + b) / 3) >> 12;
+        // r/g/b in [0; 32385] ie 255 * 127 ie 8+7 ~ 15 bits        
+        // scale down [0; 32385] to [0; 15]:
+        return (luminance(r, g, b) + 1079) / 2159;
     }
 }
