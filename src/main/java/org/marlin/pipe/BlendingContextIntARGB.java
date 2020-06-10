@@ -44,6 +44,10 @@ import static org.marlin.pipe.BlendComposite.luminance4b;
 
 final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
+    private final static boolean USE_ALL_ALPHA = true;
+
+    protected final static boolean DEBUG_ALPHA_LUT = false && USE_ALL_ALPHA;
+
     private final static AlphaLUT ALPHA_LUT = new AlphaLUT();
 
     // recycled arrays into context (shared):
@@ -386,53 +390,177 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
             alphaTables = new int[LUM_MAX + 1][LUM_MAX + 1][NORM_BYTE + 1];
 
             final int[] y2l_dir = (USE_Y_TO_L) ? Y2L_LUT.dirL : GAMMA_LUT.dirL;
+            final int[] y2l_inv = (USE_Y_TO_L) ? Y2L_LUT.inv : GAMMA_LUT.inv;
 
-            final int contrast_scale = 4 * CONTRAST;
+            System.out.println("USE_Y_TO_L: " + USE_Y_TO_L);
+            System.out.println("USE_ALL_ALPHA: " + USE_ALL_ALPHA);
 
-            // Precompute alpha correction table:
-            // indexed by [ls | ld] => contrast factor
-            // ls / ld are Y (luminance) encoded on 7bits (enough ?)
-            for (int ls = 0; ls <= LUM_MAX; ls++) {
-                int lls = y2l_dir[ls * 8 * NORM_BYTE]; // linear
+            if (USE_ALL_ALPHA) {
+                /*
+                sRGB:
+                    off=0: total rms (N=144) = 328
+                    off=1: total rms (N=124) = 272
+                    off=2: total rms (N=110) = 242
+                    off=3: total rms (N=102) = 220
+                    off=4: total rms (N=92) = 196
+                    off=5: total rms (N=66) = 144
+                    off=6: total rms (N=62) = 130
+                    off=7: total rms (N=60) = 124
+                Y_TO_L:
+                    off=0: total rms (N=858) = 3542
+                    off=1: total rms (N=68) = 206
+                    off=2: total rms (N=430) = 978
+                    off=3: total rms (N=232) = 494
+                    off=4: total rms (N=116) = 244
+                    off=5: total rms (N=106) = 238
+                    off=6: total rms (N=90) = 192
+                    off=7: total rms (N=94) = 204
+                 */
+                final int off = 4; // best compromise on rms error at the middle of the interval
+//                for (int off = 0; off <= 7; off++)
+                {
+                    final long start = System.nanoTime();
+                    int nd = 0;
+                    long rms = 0l;
 
-                for (int ld = 0; ld <= LUM_MAX; ld++) {
-                    int lld = y2l_dir[ld * 8 * NORM_BYTE]; // linear
+                    // Precompute alpha correction table:
+                    // indexed by [ls | ld] => contrast factor
+                    // ls / ld are Y (luminance) encoded on 7bits (enough ?)
+                    for (int ls = 0; ls <= LUM_MAX; ls++) {
+                        // [0; 127]:
+                        final int sls = (ls * 8 + off); // +4 to be at the middle of the interval
+                        //System.out.println("ls: " + ls + " => " + sls);
 
-                    int c = 0;
+                        // [0; 32385]:
+                        final int lls = y2l_dir[sls * NORM_BYTE]; // linear
 
-                    if (lls != lld) {
-                        // [0; 255]
-                        // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
-                        // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
+                        for (int ld = 0; ld <= LUM_MAX; ld++) {
+                            // [0; 127]:
+                            final int sld = (ld * 8 + off); // +4 to be at the middle of the interval
+                            // [0; 32385]:
+                            final int lld = y2l_dir[sld * NORM_BYTE]; // linear
 
-                        // shifts faster (but better precision) :
-                        int ll_old = y2l_dir[(ls + ld) * 8 * NORM_BYTE7]; // = 255 / 2
-                        int lr = (lls + lld) >> 1; // eq (1) linear RGB
+                            if (lls == lld) {
+                                // no correction:
+                                for (int a = 0; a <= NORM_BYTE; a++) {
+                                    // [0; 32385]
+                                    alphaTables[ls][ld][a] = a * NORM_BYTE7;
+                                }
+                            } else {
+                                // [0; 255]
+                                // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
+                                // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
 
-                        if (ll_old != lr) {
-                            // [0; 32385] / [0; 32385] 
-                            // compare linear luminance:
-                            c = (contrast_scale * (lr - ll_old)) / (lld - lls); // [0; 255] x 4 (eq 2)
+                                for (int a = 0; a <= NORM_BYTE; a++) {
+                                    // Precompute adjusted alpha:
+                                    int alpha = a;
+
+                                    if ((alpha != 0) && (alpha != NORM_BYTE)) {
+
+                                        // shifts faster (but better precision) :
+                                        // [0; 32385]: alpha in [0; 255] x [0; 7] * 16
+                                        final int ll_old = y2l_dir[sls * alpha + sld * (NORM_BYTE - alpha)]; // round-off
+                                        final int lr = (lls * alpha + lld * (NORM_BYTE - alpha) + NORM_BYTE7) / NORM_BYTE; // eq (1) linear RGB
+
+                                        if (ll_old != lr) {
+                                            // [0; 32385] / [0; 32385] 
+                                            // compare linear luminance:
+                                            final int delta = (NORM_BYTE7 * CONTRAST * (lr - ll_old)) / (lld - lls); // 64x 255 range
+
+                                            if (delta != 0) {
+                                                final int old_alpha = alpha;
+//                                            System.out.println("delta: " + delta);
+                                                alpha = (alpha * NORM_BYTE7 + delta + 63) / NORM_BYTE7;
+
+                                                // clamp alpha:
+                                                if (alpha > NORM_BYTE) {
+                                                    alpha = NORM_BYTE;
+                                                }
+                                                if (alpha < 0) {
+                                                    alpha = 0;
+                                                }
+                                                if (DEBUG_ALPHA_LUT) {
+                                                    // test again equations:
+                                                    // [0; 32385]:
+                                                    final int l_old_test = sls * old_alpha + sld * (NORM_BYTE - old_alpha);
+                                                    // [0; 32385]:
+                                                    final int lr_test = y2l_inv[(lls * alpha + lld * (NORM_BYTE - alpha) + NORM_BYTE7) / NORM_BYTE]; // eq (1) linear RGB
+                                                    // [0; 255]
+                                                    final int diff = (USE_Y_TO_L) ? (l_old_test - lr_test + 63) / NORM_BYTE7
+                                                            : (l_old_test - lr_test * NORM_BYTE7 + 63) / NORM_BYTE7;
+
+                                                    if ((alpha != 0) && (alpha != NORM_BYTE)) {
+                                                        if (Math.abs(diff) > 1) {
+                                                            System.out.println("diff correction (old_alpha = " + old_alpha + " alpha = " + alpha + "): " + diff);
+                                                            nd++;
+                                                            rms += Math.abs(diff);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    // [0; 32385]
+                                    alphaTables[ls][ld][a] = alpha * NORM_BYTE7;
+                                }
+                            }
                         }
                     }
 
-                    for (int a = 0; a <= NORM_BYTE; a++) {
-                        // Precompute adjusted alpha:
-                        int alpha = a;
+                    if (DEBUG_ALPHA_LUT) {
+                        System.out.println("off=" + off + ": total rms (N=" + nd + ") = " + rms);
+                        final long time = System.nanoTime() - start;
+                        System.out.println("duration= " + (1e-6 * time) + " ms.");
+                    }
+                }
+            } else {
+                // old contrast approach: only fix alpha at 0.5
 
-                        if (c != 0) {
-                            alpha += ((alpha * (NORM_BYTE - alpha)) * c) / (NORM_BYTE * NORM_BYTE);
+                // Precompute alpha correction table:
+                // indexed by [ls | ld] => contrast factor
+                // ls / ld are Y (luminance) encoded on 7bits (enough ?)
+                for (int ls = 0; ls <= LUM_MAX; ls++) {
+                    int lls = y2l_dir[ls * 8 * NORM_BYTE]; // linear
 
-                            // clamp alpha:
-                            if (alpha > NORM_BYTE) {
-                                alpha = NORM_BYTE;
-                            }
-                            if (alpha < 0) {
-                                alpha = 0;
+                    for (int ld = 0; ld <= LUM_MAX; ld++) {
+                        int lld = y2l_dir[ld * 8 * NORM_BYTE]; // linear
+
+                        int c = 0;
+
+                        if (lls != lld) {
+                            // [0; 255]
+                            // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
+                            // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
+
+                            // shifts faster (but better precision) :
+                            int ll_old = y2l_dir[(ls + ld) * 8 * NORM_BYTE7]; // = 255 / 2
+                            int lr = (lls + lld) >> 1; // eq (1) linear RGB
+
+                            if (ll_old != lr) {
+                                // [0; 32385] / [0; 32385] 
+                                // compare linear luminance:
+                                c = ((4 * CONTRAST) * (lr - ll_old)) / (lld - lls); // [0; 255] x 4 (eq 2)
                             }
                         }
-                        // [0; 32385]
-                        alphaTables[ls][ld][a] = alpha * NORM_BYTE7;
+
+                        for (int a = 0; a <= NORM_BYTE; a++) {
+                            // Precompute adjusted alpha:
+                            int alpha = a;
+
+                            if (c != 0) {
+                                alpha += ((alpha * (NORM_BYTE - alpha)) * c) / (NORM_BYTE * NORM_BYTE);
+
+                                // clamp alpha:
+                                if (alpha > NORM_BYTE) {
+                                    alpha = NORM_BYTE;
+                                }
+                                if (alpha < 0) {
+                                    alpha = 0;
+                                }
+                            }
+                            // [0; 32385]
+                            alphaTables[ls][ld][a] = alpha * NORM_BYTE7;
+                        }
                     }
                 }
             }

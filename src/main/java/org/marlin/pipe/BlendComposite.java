@@ -39,7 +39,7 @@ public final class BlendComposite {
     protected final static boolean FIX_LUM = BLEND_FIX.equals("lum");
     protected final static boolean FIX_CONTRAST = BLEND_FIX.equals("contrast");
     protected final static boolean LUMA_Y = true;
-    protected final static boolean USE_Y_TO_L = true;
+    protected final static boolean USE_Y_TO_L = true && LUMA_Y; // TODO: use flag
 
     protected final static int TILE_WIDTH = 128;
 
@@ -143,6 +143,10 @@ public final class BlendComposite {
             scale = (double) range;
             if (gamma == Y_to_L) {
                 // L -> Y
+                for (int i = 0; i <= NORM_ALPHA; i++) {
+                    inv[i] = (int) Math.round(scale * L_to_Y(i / max));
+                    // System.out.println("inv[" + i + "] = " + inv[i]);
+                }
                 // not implemented yet (not used) !
             } else if (gamma == GAMMA_sRGB) {
                 // RGB Linear -> sRGB
@@ -298,6 +302,13 @@ public final class BlendComposite {
         return Y / 0.9033;
     }
 
+    private static double L_to_Y(final double L) {
+        // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
+        if (L > 0.008856452) {
+            return 1.16 * Math.cbrt(L) - 0.16;
+        }
+        return L * 9.033;
+    }
     static int luminance(final int r, final int g, final int b) {
         // Y
         // from RGB to XYZ:

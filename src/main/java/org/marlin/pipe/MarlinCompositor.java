@@ -49,7 +49,7 @@ public final class MarlinCompositor {
     public final static boolean BLEND_QUALITY = "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
 
     /* contrast adjustement (0..1) */
-    public final static double BLEND_CONTRAST = MarlinProperties.getDouble("sun.java2d.renderer.contrast", 0.8, 0.1, 2.0);
+    public final static double BLEND_CONTRAST = MarlinProperties.getDouble("sun.java2d.renderer.contrast", 1.0, 0.0, 2.0);
 
     public final static boolean USE_OLD_BLENDER = (GAMMA == 1.0);
 
