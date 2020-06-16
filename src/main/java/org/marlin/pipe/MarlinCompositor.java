@@ -39,12 +39,19 @@ public final class MarlinCompositor {
             && "true".equals(System.getProperty("sun.java2d.renderer.compositor.fill", "true"));
 
     public final static double GAMMA_sRGB = 2.4;
-    public final static double Y_to_L = 0.0;
+    public final static double GAMMA_LUMA = 2.2; // home made (4K panel)
+    public final static double GAMMA_Y_to_L = 3.0; // TODO: KILL
 
-    /* 2.2 is the standard gamma for current LCD/CRT monitors */
+    /* 2.4 is the standard sRGB gamma */
     public final static double GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.gamma", GAMMA_sRGB, 0.1, 3.0);
 
-    public final static String BLEND_FIX = System.getProperty("sun.java2d.renderer.compositor.fix", "contrast");
+    public final static String BLEND_FIX = System.getProperty("sun.java2d.renderer.compositor.fix", "contrast"); // 'contrast' or 'lum'
+
+    public final static boolean FIX_LUM = BLEND_FIX.equals("lum");
+    public final static boolean FIX_CONTRAST = BLEND_FIX.equals("contrast");
+
+    /* 3.0 is the standard L*(Y) gamma */
+    public final static double LUMA_GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.blend.gamma", GAMMA_LUMA, 0.1, 3.0);
 
     public final static boolean BLEND_QUALITY = "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
 
@@ -60,9 +67,10 @@ public final class MarlinCompositor {
         if (ENABLE_COMPOSITOR) {
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fill = " + ENABLE_FILL);
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.gamma = " + GAMMA);
-            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fix = " + BLEND_FIX);            
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fix = " + BLEND_FIX);
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.quality = " + BLEND_QUALITY);
-            if (!USE_OLD_BLENDER) {
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.blend.gamma = " + LUMA_GAMMA);
+            if (FIX_CONTRAST && !USE_OLD_BLENDER) {
                 System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.contrast = " + BLEND_CONTRAST);
             }
             System.out.println("INFO: Marlin Compositor: Gamma correction only supports following surface types [IntArgb]."); // , FourByteAbgr

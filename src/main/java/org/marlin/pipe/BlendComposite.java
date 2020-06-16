@@ -27,19 +27,18 @@ package org.marlin.pipe;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import static org.marlin.pipe.MarlinCompositor.BLEND_CONTRAST;
-import static org.marlin.pipe.MarlinCompositor.BLEND_FIX;
 import static org.marlin.pipe.MarlinCompositor.BLEND_QUALITY;
+import static org.marlin.pipe.MarlinCompositor.FIX_CONTRAST;
+import static org.marlin.pipe.MarlinCompositor.FIX_LUM;
 
 import static org.marlin.pipe.MarlinCompositor.GAMMA;
+import static org.marlin.pipe.MarlinCompositor.GAMMA_Y_to_L;
 import static org.marlin.pipe.MarlinCompositor.GAMMA_sRGB;
-import static org.marlin.pipe.MarlinCompositor.Y_to_L;
+import static org.marlin.pipe.MarlinCompositor.LUMA_GAMMA;
 
 public final class BlendComposite {
 
-    protected final static boolean FIX_LUM = BLEND_FIX.equals("lum");
-    protected final static boolean FIX_CONTRAST = BLEND_FIX.equals("contrast");
     protected final static boolean LUMA_Y = true;
-    protected final static boolean USE_Y_TO_L = true && LUMA_Y; // TODO: use flag
 
     protected final static int TILE_WIDTH = 128;
 
@@ -48,15 +47,14 @@ public final class BlendComposite {
     protected final static int NORM_ALPHA = (NORM_BYTE * NORM_BYTE7); // 32385 = 255 x 127
     protected final static int MASK_ALPHA = (1 << (8 + 7)) - 1; // 32767
 
-    protected final static BlendComposite.GammaLUT GAMMA_LUT = new BlendComposite.GammaLUT(GAMMA);
-
+    // contrast scale in [0; 255]
     protected final static int CONTRAST = (int) Math.round(255f * BLEND_CONTRAST); // [0; 255]
 
-    protected final static BlendComposite.GammaLUT Y2L_LUT = new BlendComposite.GammaLUT(Y_to_L, NORM_ALPHA);
+    // Device Gamma LUT:
+    protected final static BlendComposite.GammaLUT GAMMA_LUT = new BlendComposite.GammaLUT(GAMMA, false);
 
-    // OLD approach:
-    protected final static double BRIGHTNESS_GAMMA = 0.43;
-    protected final static BlendComposite.GammaLUT brightness_LUT = (FIX_LUM) ? new BlendComposite.GammaLUT(BRIGHTNESS_GAMMA, NORM_ALPHA) : null;
+    // Luma (gamma) LUT:
+    protected final static BlendComposite.GammaLUT LUMA_LUT = new BlendComposite.GammaLUT(LUMA_GAMMA, true);
 
     private final static BlendComposite BLEND_SRC_OVER_NO_EXTRA_ALPHA
                                         = new BlendComposite(BlendComposite.BlendingMode.SRC_OVER, 1f);
@@ -71,97 +69,106 @@ public final class BlendComposite {
                 + ((FIX_LUM) ? "_lum" : "")
                 + ((FIX_CONTRAST) ? ("_contrast_" + BLEND_CONTRAST) : "")
                 + ((LUMA_Y) ? "_lumaY" : "_lumaGray")
-                + ((USE_Y_TO_L) ? "_YtoL" : "");
+                + "_L(" + ((LUMA_GAMMA == GAMMA_Y_to_L) ? "Y" : ((LUMA_GAMMA == GAMMA_sRGB) ? "sRGB" : LUMA_GAMMA)) + ")";
     }
 
     final static class GammaLUT {
 
         // TODO: use Unsafe (off-heap table)
+        private final double gamma;
+        private final int range;
         final int[] dir;
-        final int[] dirL;
         final int[] inv;
 
-        GammaLUT(final double gamma) {
-            this(gamma, NORM_BYTE);
+        GammaLUT(final double gamma, final boolean fullRange) {
+            this.gamma = gamma;
+            this.range = (fullRange) ? NORM_ALPHA : NORM_BYTE;
+
+            this.dir = new int[range + 1];
+
+            for (int i = 0; i <= range; i++) {
+                dir[i] = (int) Math.round(dir(i));
+            }
+
+            this.inv = new int[MASK_ALPHA + 1]; // larger to use bit masking
+
+            for (int i = 0; i <= NORM_ALPHA; i++) {
+                inv[i] = (int) Math.round(inv(i));
+            }
         }
 
-        GammaLUT(final double gamma, final int range) {
-            dir = new int[range + 1];
-            dirL = new int[NORM_ALPHA + 1];
-            inv = new int[MASK_ALPHA + 1]; // larger to use bit masking
-
-            double max, scale;
-
-            // [0; 255] to [0; 32385]
-            max = (double) range;
-            scale = (double) NORM_ALPHA;
-
-            if (gamma == Y_to_L) {
-                // Y -> L
-                for (int i = 0; i <= range; i++) {
-                    dir[i] = (int) Math.round(scale * Y_to_L(i / max));
-                    // System.out.println("Y_to_L[" + i + "] = " + dir[i]);
-                }
-            } else if (gamma == GAMMA_sRGB) {
-                // sRGB -> RGB
-                for (int i = 0; i <= range; i++) {
-                    dir[i] = (int) Math.round(scale * sRGB_to_RGB(i / max));
-                    // System.out.println("sRGB_to_RGB[" + i + "] = " + dir[i]);
-                }
-            } else {
-                for (int i = 0; i <= range; i++) {
-                    dir[i] = (int) Math.round(scale * Math.pow(i / max, gamma));
-                    // System.out.println("dir[" + i + "] = " + dir[i]);
+        double dir(final int i) {
+            // Luma LUT is full range and should not use sRGB or Y to L profiles:
+            if (range == NORM_BYTE) {
+                if (gamma == GAMMA_Y_to_L) {
+                    // Y -> L (useless)
+                    return NORM_ALPHA * Y_to_L(i / ((double) range));
+                } else if (gamma == GAMMA_sRGB) {
+                    // sRGB -> RGB
+                    return NORM_ALPHA * sRGB_to_RGB(i / ((double) range));
                 }
             }
+            return NORM_ALPHA * Math.pow(i / ((double) range), gamma);
+        }
 
-            // [0; 32385] to [0; 32385]
-            max = (double) NORM_ALPHA;
-            scale = (double) NORM_ALPHA;
-
-            if (gamma == Y_to_L) {
-                // Y -> L
-                for (int i = 0; i <= NORM_ALPHA; i++) {
-                    dirL[i] = (int) Math.round(scale * Y_to_L(i / max));
-                    // System.out.println("Y_to_L[" + i + "] = " + dirL[i]);
-                }
-            } else if (gamma == GAMMA_sRGB) {
-                // sRGB -> RGB
-                for (int i = 0; i <= NORM_ALPHA; i++) {
-                    dirL[i] = (int) Math.round(scale * sRGB_to_RGB(i / max));
-                    // System.out.println("sRGB_to_RGB[" + i + "] = " + dirL[i]);
-                }
-            } else {
-                for (int i = 0; i <= NORM_ALPHA; i++) {
-                    dirL[i] = (int) Math.round(scale * Math.pow(i / max, gamma));
-                    // System.out.println("dir[" + i + "] = " + dirL[i]);
+        double inv(final double i) {
+            if (range == NORM_BYTE) {
+                if (gamma == GAMMA_Y_to_L) {
+                    // Y -> L (useless)
+                    return range * L_to_Y(i / ((double) NORM_ALPHA));
+                } else if (gamma == GAMMA_sRGB) {
+                    // sRGB -> RGB
+                    return range * RGB_to_sRGB(i / ((double) NORM_ALPHA));
                 }
             }
+            return range * Math.pow(i / ((double) NORM_ALPHA), 1.0 / gamma);
+        }
 
-            // [0; 32385] to [0; 255]
-            max = (double) NORM_ALPHA;
-            scale = (double) range;
-            if (gamma == Y_to_L) {
-                // L -> Y
-                for (int i = 0; i <= NORM_ALPHA; i++) {
-                    inv[i] = (int) Math.round(scale * L_to_Y(i / max));
-                    // System.out.println("inv[" + i + "] = " + inv[i]);
-                }
-                // not implemented yet (not used) !
-            } else if (gamma == GAMMA_sRGB) {
-                // RGB Linear -> sRGB
-                for (int i = 0; i <= NORM_ALPHA; i++) {
-                    inv[i] = (int) Math.round(scale * RGB_to_sRGB(i / max));
-                    // System.out.println("inv[" + i + "] = " + inv[i]);
-                }
-            } else {
-                final double invGamma = 1.0 / gamma;
-
-                for (int i = 0; i <= NORM_ALPHA; i++) {
-                    inv[i] = (int) Math.round(scale * Math.pow(i / max, invGamma));
-                    // System.out.println("inv[" + i + "] = " + inv[i]);
-                }
+        private static double RGB_to_sRGB(final double c) {
+            if (c <= 0.0) {
+                return 0.0;
             }
+            if (c >= 1.0) {
+                return 1.0;
+            }
+            if (c <= 0.0031308) {
+                return c * 12.92;
+            } else {
+                return 1.055 * Math.pow(c, 1.0 / GAMMA_sRGB) - 0.055;
+            }
+        }
+
+        private static double sRGB_to_RGB(final double c) {
+            // Convert non-linear RGB coordinates to linear ones,
+            //  numbers from the w3 spec.
+            if (c <= 0.0) {
+                return 0.0;
+            }
+            if (c >= 1.0) {
+                return 1.0;
+            }
+            if (c <= 0.04045) {
+                return c / 12.92;
+            } else {
+                return Math.pow((c + 0.055) / 1.055, GAMMA_sRGB);
+            }
+        }
+
+        private static double Y_to_L(final double Y) {
+            // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
+            if (Y > 0.008856452) {
+                final double y = (Y + 0.16) / 1.16;
+                return y * y * y;
+            }
+            return Y / 9.033;
+        }
+
+        private static double L_to_Y(final double L) {
+            // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
+            if (L > 0.000980455) {
+                return 1.16 * Math.cbrt(L) - 0.16;
+            }
+            return L * 9.033;
         }
     }
 
@@ -263,52 +270,6 @@ public final class BlendComposite {
         }
     }
 
-    private static double RGB_to_sRGB(final double c) {
-        if (c <= 0.0) {
-            return 0.0;
-        }
-        if (c >= 1.0) {
-            return 1.0;
-        }
-        if (c <= 0.0031308) {
-            return c * 12.92;
-        } else {
-            return 1.055 * Math.pow(c, 1.0 / GAMMA_sRGB) - 0.055;
-        }
-    }
-
-    private static double sRGB_to_RGB(final double c) {
-        // Convert non-linear RGB coordinates to linear ones,
-        //  numbers from the w3 spec.
-        if (c <= 0.0) {
-            return 0.0;
-        }
-        if (c >= 1.0) {
-            return 1.0;
-        }
-        if (c <= 0.04045) {
-            return c / 12.92;
-        } else {
-            return Math.pow((c + 0.055) / 1.055, GAMMA_sRGB);
-        }
-    }
-
-    private static double Y_to_L(final double Y) {
-        // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-        if (Y > 0.008856452) {
-            final double y = (Y + 0.16) / 1.16;
-            return y * y * y;
-        }
-        return Y / 0.9033;
-    }
-
-    private static double L_to_Y(final double L) {
-        // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-        if (L > 0.008856452) {
-            return 1.16 * Math.cbrt(L) - 0.16;
-        }
-        return L * 9.033;
-    }
     static int luminance(final int r, final int g, final int b) {
         // Y
         // from RGB to XYZ:
@@ -333,6 +294,21 @@ public final class BlendComposite {
     static int luminance4b(final int r, final int g, final int b) {
         // r/g/b in [0; 32385] ie 255 * 127 ie 8+7 ~ 15 bits        
         // scale down [0; 32385] to [0; 15]:
+
+        // TODO: use jmh to establish a faster approximation using only add / shift (no mult)
+        // ( (r * 13938 + g * 46868 + b * 4730) >> 16)  + 1079) / 2159;
+        /* sRGB (D65):
+        [Y] = [0.2126729  0.7151522  0.0721750] [RGB linear]        
+        255 -> 15 means divide by 17
+        255×0.7151522÷17 = 10,727       => 11 max
+        255×0.2126729÷17 = 3,190        => 3 max
+        255×0.0721750÷17 = 1,083        => 1 max
+         */
+        if (LUMA_Y) {
+            // luminance means Y:
+            return (r * 109 + g * 366 + b * 37 + 196095) >> 20; // 196095 = 32768*512-32385*512
+//            return (r * 7 + g * 23 + (b << 1) + 12224) >> 16; // 12224 = 32*(32767-32385)
+        }
         return (luminance(r, g, b) + 1079) / 2159;
     }
 }

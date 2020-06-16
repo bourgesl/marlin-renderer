@@ -27,8 +27,6 @@ package org.marlin.pipe;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import static org.marlin.pipe.BlendComposite.CONTRAST;
-import static org.marlin.pipe.BlendComposite.FIX_CONTRAST;
-import static org.marlin.pipe.BlendComposite.FIX_LUM;
 import static org.marlin.pipe.BlendComposite.GAMMA_LUT;
 import static org.marlin.pipe.BlendComposite.LUM_MAX;
 import static org.marlin.pipe.BlendComposite.MASK_ALPHA;
@@ -36,19 +34,19 @@ import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE7;
 import static org.marlin.pipe.BlendComposite.TILE_WIDTH;
-import static org.marlin.pipe.BlendComposite.USE_Y_TO_L;
-import static org.marlin.pipe.BlendComposite.Y2L_LUT;
-import static org.marlin.pipe.BlendComposite.brightness_LUT;
 import static org.marlin.pipe.BlendComposite.luminance;
 import static org.marlin.pipe.BlendComposite.luminance4b;
+import static org.marlin.pipe.BlendComposite.LUMA_LUT;
+import static org.marlin.pipe.MarlinCompositor.FIX_CONTRAST;
+import static org.marlin.pipe.MarlinCompositor.FIX_LUM;
 
 final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
-    private final static boolean USE_ALL_ALPHA = true;
-
-    protected final static boolean DEBUG_ALPHA_LUT = false && USE_ALL_ALPHA;
+    protected final static boolean DEBUG_ALPHA_LUT = true;
 
     private final static AlphaLUT ALPHA_LUT = new AlphaLUT();
+
+    private final static boolean OPT_DIVIDE = false;
 
     // recycled arrays into context (shared):
     // horiz arrays:
@@ -92,8 +90,8 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
         final int[] gamma_dir = GAMMA_LUT.dir;
         final int[] gamma_inv = GAMMA_LUT.inv;
 
-        final int[] bright_dir = (FIX_LUM) ? brightness_LUT.dir : null;
-        final int[] bright_inv = (FIX_LUM) ? brightness_LUT.inv : null;
+        final int[] luma_dir = LUMA_LUT.dir;
+        final int[] luma_inv = LUMA_LUT.inv;
 
         final int[][][] alpha_tables = ALPHA_LUT.alphaTables;
         int[][] src_alpha_tables = null;
@@ -131,6 +129,9 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
             if (FIX_CONTRAST) {
                 ls = luminance4b(csr, csg, csb); // Y (4bits)
                 src_alpha_tables = alpha_tables[ls & 0x0F];
+            }
+            if (FIX_LUM) {
+                ls = luma_inv[luminance(csr, csg, csb)];
             }
         } else {
             csr = 0;
@@ -208,7 +209,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 // Rs = As x Coverage
                 // alpha in range [0; 32385] (15bits)
                 // Apply extra alpha:
-                sa = (sa * am * extraAlpha) / NORM_BYTE;
+                sa = (sa * am * extraAlpha) / NORM_BYTE; // TODO: avoid divide and use [0; 255]
 
                 // Ensure src not opaque to be properly blended below:
                 if (sa == NORM_ALPHA) {
@@ -248,8 +249,11 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                     ld = luminance4b(dr, dg, db); // Y (4bits)
 
                     // ALPHA in range [0; 32385] (15bits):
-                    sa = src_alpha_tables[ld & 0x0F][(sa >> 7) & NORM_BYTE];
-//                    sa = src_alpha_tables[ld & 0x0F][((sa + 63) / NORM_BYTE7) & NORM_BYTE];
+                    if (OPT_DIVIDE) {
+                        sa = src_alpha_tables[ld & 0x0F][(((sa + 65) * 129) >> 14) & NORM_BYTE]; // NO DIVIDE
+                    } else {
+                        sa = src_alpha_tables[ld & 0x0F][((sa + 63) / NORM_BYTE7) & NORM_BYTE]; // DIVIDE
+                    }
                 }
 
                 // Ported-Duff rules in action:
@@ -259,22 +263,8 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 // fd = Da x (1 - Sa)
                 // Factors in range [0; 32385] (15bits)
                 fs = (sa); // alpha
-                fd = (da * (NORM_ALPHA - sa)) / NORM_ALPHA;
-                /*
-            if (fs > NORM_ALPHA || fs < 0) {
-                System.out.println("fs overflow");
-            }
-            if (fd > NORM_ALPHA || fd < 0) {
-                System.out.println("fd overflow");
-            }
-                 */
- /*
-            System.out.println("fs: " + fs);
-            System.out.println("fd: " + fd);
+                fd = (da * (NORM_ALPHA - sa)) / NORM_ALPHA; // TODO: avoid divide and use [0; 255]
 
-            System.out.println("srcPixel: " + Arrays.toString(srcPixel));
-            System.out.println("dstPixel: " + Arrays.toString(dstPixel));
-                 */
 //                            blender.blend(srcPixel, dstPixel, fs, fd, result);
                 // ALPHA in range [0; 32385] (15bits):
                 alpha = fs + fd;
@@ -292,40 +282,36 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 rg = (sg * fs + dg * fd) / alpha;
                 rb = (sb * fs + db * fd) / alpha;
                 // alpha in range [0; 255]
-                ra = alpha / NORM_BYTE7;
+                if (OPT_DIVIDE) {
+                    ra = (((alpha + 65) * 129) >> 14); // NO DIVIDE
+                } else {
+                    ra = alpha / NORM_BYTE7; // DIVIDE
+                }
 
-                // From https://stackoverflow.com/questions/22607043/color-gradient-algorithm
-                // Brightness or Relative Luminance correction ?
+                // Brightness or Relative Luminance correction :
                 if (FIX_LUM) {
+                    // Idea from https://stackoverflow.com/questions/22607043/color-gradient-algorithm
+
+                    // linear RGB luminance Result :
                     lro = luminance(rr, rg, rb);
 
                     if (lro != 0) {
-                        /*
-                        gamma ← 0.43
-                        brightness1 ← Pow(r1+g1+b1, gamma)
-                        brightness2 ← Pow(r2+g2+b2, gamma)
-                         */
-                        ls = bright_dir[luminance(sr, sg, sb)];
-                        ld = bright_dir[luminance(dr, dg, db)];
+                        // perceptual luminance (linear RGB) :
+                        // in range [0; 32385] (15bits):
+                        if (srcIn != null) {
+                            ls = luma_inv[luminance(sr, sg, sb)];
+                        }
+                        ld = luma_inv[luminance(dr, dg, db)];
 
                         if (ls != ld) {
-                            // Interpolate a new brightness value, and convert back to linear light
-                            // brightness ← LinearInterpolation(brightness1, brightness2, mix)
+                            // linear interpolation of perceptual luminance
                             lr = (ls * fs + ld * fd) / alpha;
 
-                            // intensity ← Pow(brightness, 1 / gamma)
-                            lr = bright_inv[lr];
+                            // Fixed linear RGB luminance Result
+                            lr = luma_dir[lr];
 
                             if (lr != lro) {
-                                // Apply adjustment factor to each rgb value based
-                                /*
-                                    if ((r+g+b) != 0) then
-                                       factor ← (intensity / (r+g+b))
-                                       r ← r * factor
-                                       g ← g * factor
-                                       b ← b * factor
-                                    end if
-                                 */
+                                // proportional correction of linear RGB luminance
                                 rr = (rr * lr) / lro;
                                 rg = (rg * lr) / lro;
                                 rb = (rb * lr) / lro;
@@ -342,26 +328,6 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                                 }
                             }
                         }
-                    }
-                }
-
-                // System.out.println("result: " + Arrays.toString(result));
-                if (false) {
-                    // Faster with explicit bound checks !
-                    if (rr > NORM_ALPHA || rg > NORM_ALPHA || rb > NORM_ALPHA
-                            || ra > NORM_BYTE) {
-                        System.out.println("overflow");
-                        rr = NORM_ALPHA;
-                        rg = NORM_ALPHA;
-                        rb = NORM_ALPHA;
-                        ra = NORM_BYTE;
-                    }
-                    if (rr < 0 || rg < 0 || rb < 0 || ra < 0) {
-                        System.out.println("underflow");
-                        rr = 0;
-                        rg = 0;
-                        rb = 0;
-                        ra = 0;
                     }
                 }
 
@@ -389,182 +355,98 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
         AlphaLUT() {
             alphaTables = new int[LUM_MAX + 1][LUM_MAX + 1][NORM_BYTE + 1];
 
-            final int[] y2l_dir = (USE_Y_TO_L) ? Y2L_LUT.dirL : GAMMA_LUT.dirL;
-            final int[] y2l_inv = (USE_Y_TO_L) ? Y2L_LUT.inv : GAMMA_LUT.inv;
+            final long start = System.nanoTime();
+            int nd = 0;
+            long rms = 0l;
 
-            System.out.println("USE_Y_TO_L: " + USE_Y_TO_L);
-            System.out.println("USE_ALL_ALPHA: " + USE_ALL_ALPHA);
+            // Precompute alpha correction table:
+            // indexed by [ls | ld] => contrast factor
+            // ls / ld are Y (luminance) encoded on 7bits (enough ?)
+            for (int ls = 0; ls <= LUM_MAX; ls++) {
+                // [0; 127]:
+                final int sls = (ls * 8 + (ls >> 1)); // +4 to be at the middle of 16 intervals in [0; 127]
+                //System.out.println("ls: " + ls + " => " + sls);
 
-            if (USE_ALL_ALPHA) {
-                /*
-                sRGB:
-                    off=0: total rms (N=144) = 328
-                    off=1: total rms (N=124) = 272
-                    off=2: total rms (N=110) = 242
-                    off=3: total rms (N=102) = 220
-                    off=4: total rms (N=92) = 196
-                    off=5: total rms (N=66) = 144
-                    off=6: total rms (N=62) = 130
-                    off=7: total rms (N=60) = 124
-                Y_TO_L:
-                    off=0: total rms (N=858) = 3542
-                    off=1: total rms (N=68) = 206
-                    off=2: total rms (N=430) = 978
-                    off=3: total rms (N=232) = 494
-                    off=4: total rms (N=116) = 244
-                    off=5: total rms (N=106) = 238
-                    off=6: total rms (N=90) = 192
-                    off=7: total rms (N=94) = 204
-                 */
-                final int off = 4; // best compromise on rms error at the middle of the interval
-//                for (int off = 0; off <= 7; off++)
-                {
-                    final long start = System.nanoTime();
-                    int nd = 0;
-                    long rms = 0l;
+                // [0; 32385]:
+                final double dls = LUMA_LUT.dir(sls * NORM_BYTE); // linear
 
-                    // Precompute alpha correction table:
-                    // indexed by [ls | ld] => contrast factor
-                    // ls / ld are Y (luminance) encoded on 7bits (enough ?)
-                    for (int ls = 0; ls <= LUM_MAX; ls++) {
+                for (int ld = 0; ld <= LUM_MAX; ld++) {
+                    if (ls == ld) {
+                        // no correction:
+                        for (int a = 0; a <= NORM_BYTE; a++) {
+                            // [0; 32385]
+                            alphaTables[ls][ld][a] = a * NORM_BYTE7;
+                        }
+                    } else {
                         // [0; 127]:
-                        final int sls = (ls * 8 + off); // +4 to be at the middle of the interval
-                        //System.out.println("ls: " + ls + " => " + sls);
-
+                        final int sld = (ld * 8 + (ld >> 1)); // +4 to be at the middle of the interval
                         // [0; 32385]:
-                        final int lls = y2l_dir[sls * NORM_BYTE]; // linear
+                        final double dld = LUMA_LUT.dir(sld * NORM_BYTE); // linear
 
-                        for (int ld = 0; ld <= LUM_MAX; ld++) {
-                            // [0; 127]:
-                            final int sld = (ld * 8 + off); // +4 to be at the middle of the interval
-                            // [0; 32385]:
-                            final int lld = y2l_dir[sld * NORM_BYTE]; // linear
+                        // [0; 255]
+                        // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
+                        // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
+                        for (int a = 0; a <= NORM_BYTE; a++) {
+                            // Precompute adjusted alpha:
+                            int alpha = a * NORM_BYTE7;
 
-                            if (lls == lld) {
-                                // no correction:
-                                for (int a = 0; a <= NORM_BYTE; a++) {
-                                    // [0; 32385]
-                                    alphaTables[ls][ld][a] = a * NORM_BYTE7;
-                                }
-                            } else {
-                                // [0; 255]
-                                // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
-                                // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
+                            if ((alpha != 0) && (alpha != NORM_ALPHA)) {
+                                // shifts faster (but better precision) :
+                                // [0; 32385]: alpha in [0; 255] x [0; 7] * 16
+                                final double dl_old = LUMA_LUT.dir((sls * alpha + sld * (NORM_ALPHA - alpha) + 63) / NORM_BYTE7); // round-off
+                                final double dlr = (dls * alpha + dld * (NORM_ALPHA - alpha)) / NORM_ALPHA; // eq (1) linear RGB
 
-                                for (int a = 0; a <= NORM_BYTE; a++) {
-                                    // Precompute adjusted alpha:
-                                    int alpha = a;
+                                if (dl_old != dlr) {
+                                    // [0; 32385] / [0; 32385] 
+                                    // compare linear luminance:
+                                    final int delta = (int) Math.round(((NORM_BYTE7 * CONTRAST) * (dlr - dl_old)) / (dld - dls)); // 127 x 255 range
 
-                                    if ((alpha != 0) && (alpha != NORM_BYTE)) {
-
-                                        // shifts faster (but better precision) :
-                                        // [0; 32385]: alpha in [0; 255] x [0; 7] * 16
-                                        final int ll_old = y2l_dir[sls * alpha + sld * (NORM_BYTE - alpha)]; // round-off
-                                        final int lr = (lls * alpha + lld * (NORM_BYTE - alpha) + NORM_BYTE7) / NORM_BYTE; // eq (1) linear RGB
-
-                                        if (ll_old != lr) {
-                                            // [0; 32385] / [0; 32385] 
-                                            // compare linear luminance:
-                                            final int delta = (NORM_BYTE7 * CONTRAST * (lr - ll_old)) / (lld - lls); // 64x 255 range
-
-                                            if (delta != 0) {
-                                                final int old_alpha = alpha;
+                                    if (delta != 0) {
+                                        final int old_alpha = alpha;
 //                                            System.out.println("delta: " + delta);
-                                                alpha = (alpha * NORM_BYTE7 + delta + 63) / NORM_BYTE7;
+                                        alpha += delta;
 
-                                                // clamp alpha:
-                                                if (alpha > NORM_BYTE) {
-                                                    alpha = NORM_BYTE;
-                                                }
-                                                if (alpha < 0) {
-                                                    alpha = 0;
-                                                }
-                                                if (DEBUG_ALPHA_LUT) {
-                                                    // test again equations:
-                                                    // [0; 32385]:
-                                                    final int l_old_test = sls * old_alpha + sld * (NORM_BYTE - old_alpha);
-                                                    // [0; 32385]:
-                                                    final int lr_test = y2l_inv[(lls * alpha + lld * (NORM_BYTE - alpha) + NORM_BYTE7) / NORM_BYTE]; // eq (1) linear RGB
-                                                    // [0; 255]
-                                                    final int diff = (USE_Y_TO_L) ? (l_old_test - lr_test + 63) / NORM_BYTE7
-                                                            : (l_old_test - lr_test * NORM_BYTE7 + 63) / NORM_BYTE7;
-
-                                                    if ((alpha != 0) && (alpha != NORM_BYTE)) {
-                                                        if (Math.abs(diff) > 1) {
-                                                            System.out.println("diff correction (old_alpha = " + old_alpha + " alpha = " + alpha + "): " + diff);
-                                                            nd++;
-                                                            rms += Math.abs(diff);
-                                                        }
-                                                    }
+                                        // clamp alpha:
+                                        if (alpha > NORM_ALPHA) {
+                                            alpha = NORM_ALPHA;
+                                        }
+                                        if (alpha < 0) {
+                                            alpha = 0;
+                                        }
+                                        if (DEBUG_ALPHA_LUT) {
+                                            // test again equations:
+                                            // [0; 32385]:
+                                            final int l_old_test = (sls * old_alpha + sld * (NORM_ALPHA - old_alpha) + 63) / NORM_BYTE7;
+                                            // [0; 32385]:
+                                            final int lr_test = (int) Math.round(LUMA_LUT.inv((dls * alpha + dld * (NORM_ALPHA - alpha)) / NORM_ALPHA)); // eq (1) linear RGB
+                                            // [0; 255]
+                                            final int diff = (l_old_test - lr_test + 63) / NORM_BYTE7;
+                                            
+                                            if ((alpha != 0) && (alpha != NORM_ALPHA)) {
+                                                if (Math.abs(diff) >= 1) {
+                                                    System.out.println("diff correction (old_alpha = " + old_alpha + " alpha = " + alpha + "): " + diff);
+                                                    nd++;
+                                                    rms += Math.abs(diff);
                                                 }
                                             }
                                         }
                                     }
-                                    // [0; 32385]
-                                    alphaTables[ls][ld][a] = alpha * NORM_BYTE7;
-                                }
-                            }
-                        }
-                    }
-
-                    if (DEBUG_ALPHA_LUT) {
-                        System.out.println("off=" + off + ": total rms (N=" + nd + ") = " + rms);
-                        final long time = System.nanoTime() - start;
-                        System.out.println("duration= " + (1e-6 * time) + " ms.");
-                    }
-                }
-            } else {
-                // old contrast approach: only fix alpha at 0.5
-
-                // Precompute alpha correction table:
-                // indexed by [ls | ld] => contrast factor
-                // ls / ld are Y (luminance) encoded on 7bits (enough ?)
-                for (int ls = 0; ls <= LUM_MAX; ls++) {
-                    int lls = y2l_dir[ls * 8 * NORM_BYTE]; // linear
-
-                    for (int ld = 0; ld <= LUM_MAX; ld++) {
-                        int lld = y2l_dir[ld * 8 * NORM_BYTE]; // linear
-
-                        int c = 0;
-
-                        if (lls != lld) {
-                            // [0; 255]
-                            // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
-                            // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
-
-                            // shifts faster (but better precision) :
-                            int ll_old = y2l_dir[(ls + ld) * 8 * NORM_BYTE7]; // = 255 / 2
-                            int lr = (lls + lld) >> 1; // eq (1) linear RGB
-
-                            if (ll_old != lr) {
-                                // [0; 32385] / [0; 32385] 
-                                // compare linear luminance:
-                                c = ((4 * CONTRAST) * (lr - ll_old)) / (lld - lls); // [0; 255] x 4 (eq 2)
-                            }
-                        }
-
-                        for (int a = 0; a <= NORM_BYTE; a++) {
-                            // Precompute adjusted alpha:
-                            int alpha = a;
-
-                            if (c != 0) {
-                                alpha += ((alpha * (NORM_BYTE - alpha)) * c) / (NORM_BYTE * NORM_BYTE);
-
-                                // clamp alpha:
-                                if (alpha > NORM_BYTE) {
-                                    alpha = NORM_BYTE;
-                                }
-                                if (alpha < 0) {
-                                    alpha = 0;
                                 }
                             }
                             // [0; 32385]
-                            alphaTables[ls][ld][a] = alpha * NORM_BYTE7;
+                            alphaTables[ls][ld][a] = alpha;
                         }
                     }
                 }
             }
-            // System.out.println("contrast: "+ Arrays.toString(contrast));
+
+            if (DEBUG_ALPHA_LUT) {
+                System.out.println("total rms (N=" + nd + ") = " + rms);
+                final long time = System.nanoTime() - start;
+                System.out.println("duration= " + (1e-6 * time) + " ms.");
+            }
+
+            // TODO: test all luminance values in [0; 127] x [0; 127]
         }
     }
 }

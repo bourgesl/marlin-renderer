@@ -27,18 +27,16 @@ package org.marlin.pipe;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import static org.marlin.pipe.BlendComposite.CONTRAST;
-import static org.marlin.pipe.BlendComposite.FIX_CONTRAST;
-import static org.marlin.pipe.BlendComposite.FIX_LUM;
 import static org.marlin.pipe.BlendComposite.GAMMA_LUT;
 import static org.marlin.pipe.BlendComposite.MASK_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE7;
 import static org.marlin.pipe.BlendComposite.TILE_WIDTH;
-import static org.marlin.pipe.BlendComposite.USE_Y_TO_L;
-import static org.marlin.pipe.BlendComposite.Y2L_LUT;
-import static org.marlin.pipe.BlendComposite.brightness_LUT;
 import static org.marlin.pipe.BlendComposite.luminance;
+import static org.marlin.pipe.BlendComposite.LUMA_LUT;
+import static org.marlin.pipe.MarlinCompositor.FIX_CONTRAST;
+import static org.marlin.pipe.MarlinCompositor.FIX_LUM;
 
 final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
 
@@ -81,13 +79,10 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
              System.out.println("dstOut = " + dstOut.getBounds());
          */
         final int[] gamma_dir = GAMMA_LUT.dir;
-        final int[] gamma_dirL = GAMMA_LUT.dirL;
         final int[] gamma_inv = GAMMA_LUT.inv;
 
-        final int[] bright_dir = (FIX_LUM) ? brightness_LUT.dir : null;
-        final int[] bright_inv = (FIX_LUM) ? brightness_LUT.inv : null;
-
-        final int[] y2l_dir = (USE_Y_TO_L) ? Y2L_LUT.dirL : gamma_dirL;
+        final int[] luma_dir = LUMA_LUT.dir;
+        final int[] luma_inv = LUMA_LUT.inv;
 
         final int extraAlpha = this._extraAlpha; // 7 bits
 
@@ -103,6 +98,7 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
         int rr, rg, rb, ra;
 
         int ls = 0, lls = 0;
+        double dls = 0.0;
 
         // Prepare source pixel if constant in tile:
         if (srcIn == null) {
@@ -121,7 +117,13 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
             // c_srcPixel is Gamma-corrected Linear RGBA.
             if (FIX_CONTRAST) {
                 ls = luminance(csr, csg, csb); // Y
-                lls = y2l_dir[ls]; // linear
+                lls = luma_dir[ls]; // linear
+                dls = LUMA_LUT.dir(ls);
+
+                // System.out.println("sb: " + csb + " ls: " + ls + " lls: " + lls + " dls: " + dls);
+            }
+            if (FIX_LUM) {
+                ls = luma_inv[luminance(csr, csg, csb)];
             }
         } else {
             csr = 0;
@@ -130,12 +132,11 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
             csa = 0;
         }
 
-        final int contrast_scale = 4 * CONTRAST;
         int am, alpha, fs, fd;
         int offTile;
 
         int ld, lld, ll_old, lro, lr;
-        int contrast;
+        double dld, dl_old, dlro, dlr;
 
         for (int j = 0; j < h; j++) {
             // TODO: use directly DataBufferInt (offsets + stride)
@@ -236,38 +237,47 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                     // in range [0; 32385] (15bits):
                     if (srcIn != null) {
                         ls = luminance(sr, sg, sb); // Y
-                        lls = y2l_dir[ls]; // linear
+                        lls = luma_dir[ls]; // linear
+                        dls = LUMA_LUT.dir(ls);
                     }
                     ld = luminance(dr, dg, db); // Y
-                    lld = y2l_dir[ld]; // linear
 
-                    if (lls != lld) {
-                        // [0; 255]
-                        // (alpha * ls + (1-alpha) * ld) for alpha = 0.5 (midtone)
-                        // sRGB classical: 0.5cov => half (use gamma_dirL to have linear comparisons (see eq 2)
-//                        ll_old = y2l_dir[(128 * ls + 128 * ld) >> 8];
-//                        lr = (128 * lls + 128 * lld) >> 8; // eq (1) linear RGB
+                    lld = luma_dir[ld]; // linear
+                    dld = LUMA_LUT.dir(ld);
+
+                    // System.out.println("db: " + db + " ld: " + ld + " lld: " + lld + " dld: " + dld + " sa: " + sa);
+
+                    if (dls != dld) {
+                        // Precompute adjusted alpha:
+                        alpha = sa;
 
                         // shifts faster (but better precision) :
-                        ll_old = y2l_dir[(ls + ld + 1) >> 1];
-                        lr = (lls + lld + 1) >> 1; // eq (1) linear RGB
+                        // [0; 32385]: alpha in [0; 255] x [0; 7] * 16
+                        dl_old = LUMA_LUT.dir((ls * alpha + ld * (NORM_ALPHA - alpha)) / NORM_ALPHA); // round-off
+                        dlr = (dls * alpha + dld * (NORM_ALPHA - alpha)) / NORM_ALPHA; // eq (1) linear RGB
 
-                        // [0; 32385] / [0; 32385] 
-                        // compare linear luminance:
-                        contrast = (contrast_scale * (lr - ll_old)) / (lld - lls); // [0; 255] x 4 (eq 2)
-//                            System.out.println("contrast: " + contrast);
+                        // System.out.println("dl_old: " + dl_old + " dlr: " + dlr);
 
-                        // ALPHA in range [0; 32385] (15bits):
-                        sa += (((sa * (NORM_ALPHA - sa)) / NORM_ALPHA) * contrast) / NORM_BYTE;
-//                            System.out.println("Sa (fix): " + alpha);
+                        if (dl_old != dlr) {
+                            // [0; 32385] / [0; 32385] 
+                            // compare linear luminance:
+                            final int delta = (int)Math.round(((NORM_BYTE7 * CONTRAST) * (dlr - dl_old)) / (dld - dls)); // 127 x 255 range
 
-                        // clamp alpha:
-                        if (sa > NORM_ALPHA) {
-                            // System.out.println("overflow : "+alpha);
-                            sa = NORM_ALPHA;
-                        } else if (sa < 0) {
-                            // System.out.println("undeflow");
-                            sa = 0;
+                            // System.out.println("alpha: " + alpha + " delta: " + delta);
+
+                            if (delta != 0) {
+                                alpha += delta;
+
+                                // clamp alpha:
+                                if (alpha > NORM_ALPHA) {
+                                    alpha = NORM_ALPHA;
+                                }
+                                if (alpha < 0) {
+                                    alpha = 0;
+                                }
+                                // Fix ALPHA in range [0; 32385] (15bits):
+                                sa = alpha;
+                            }
                         }
                     }
                 }
@@ -314,38 +324,30 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                 // alpha in range [0; 255]
                 ra = alpha / NORM_BYTE7;
 
-                // From https://stackoverflow.com/questions/22607043/color-gradient-algorithm
-                // Brightness or Relative Luminance correction ?
+                // Brightness or Relative Luminance correction :
                 if (FIX_LUM) {
+                    // Idea from https://stackoverflow.com/questions/22607043/color-gradient-algorithm
+
+                    // linear RGB luminance Result :
                     lro = luminance(rr, rg, rb);
 
                     if (lro != 0) {
-                        /*
-                        gamma ← 0.43
-                        brightness1 ← Pow(r1+g1+b1, gamma)
-                        brightness2 ← Pow(r2+g2+b2, gamma)
-                         */
-                        ls = bright_dir[luminance(sr, sg, sb)];
-                        ld = bright_dir[luminance(dr, dg, db)];
+                        // perceptual luminance (linear RGB) :
+                        // in range [0; 32385] (15bits):
+                        if (srcIn != null) {
+                            ls = luma_inv[luminance(sr, sg, sb)];
+                        }
+                        ld = luma_inv[luminance(dr, dg, db)];
 
                         if (ls != ld) {
-                            // Interpolate a new brightness value, and convert back to linear light
-                            // brightness ← LinearInterpolation(brightness1, brightness2, mix)
+                            // linear interpolation of perceptual luminance
                             lr = (ls * fs + ld * fd) / alpha;
 
-                            // intensity ← Pow(brightness, 1 / gamma)
-                            lr = bright_inv[lr];
+                            // Fixed linear RGB luminance Result
+                            lr = luma_dir[lr];
 
                             if (lr != lro) {
-                                // Apply adjustment factor to each rgb value based
-                                /*
-                                    if ((r+g+b) != 0) then
-                                       factor ← (intensity / (r+g+b))
-                                       r ← r * factor
-                                       g ← g * factor
-                                       b ← b * factor
-                                    end if
-                                 */
+                                // proportional correction of linear RGB luminance
                                 rr = (rr * lr) / lro;
                                 rg = (rg * lr) / lro;
                                 rb = (rb * lr) / lro;

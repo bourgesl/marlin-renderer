@@ -47,7 +47,13 @@ import org.marlin.pisces.MarlinProperties;
  */
 public class LineWidthColorGridTest {
 
-    private final static int N = 20;
+    private final static int N = 50;
+
+    private final static boolean DO_LINES = true;
+
+    private final static boolean DO_TEXT = true;
+
+    private final static boolean DO_RAMP = true;
 
     private final static String FILE_NAME = "LineWidthColorGridTest_";
 
@@ -62,6 +68,11 @@ public class LineWidthColorGridTest {
         Color.YELLOW,
         Color.CYAN
     };
+    /*
+    private final static Color[] COLORS = new Color[]{
+        Color.BLACK,
+        Color.BLUE,};
+     */
     /* PINK, ORANGE */
 
     private final static int MARGIN = 8;
@@ -96,18 +107,19 @@ public class LineWidthColorGridTest {
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         g2d.setClip(0, 0, width, height);
-        g2d.setBackground(Color.LIGHT_GRAY); // unused color
-        g2d.clearRect(0, 0, width, height);
 
         final AffineTransform ident = g2d.getTransform();
 
         for (int n = 0; n < N; n++) {
 
+            g2d.setTransform(ident);
+
+            g2d.setBackground(Color.LIGHT_GRAY); // unused color
+            g2d.clearRect(0, 0, width, height);
+
             final long start = System.nanoTime();
 
             for (int j = 0; j < nColors; j++) {
-
-                g2d.setTransform(ident);
 
                 for (int i = 0; i < nColors; i++) {
 
@@ -145,7 +157,7 @@ public class LineWidthColorGridTest {
 
     private static void paint(final Graphics2D g2d, final Color color, final Color bgcolor) {
         g2d.setBackground(bgcolor);
-        {
+        if (DO_LINES) {
             g2d.clearRect(MARGIN - 1, MARGIN - 1, WIDTH + 2, HALF_HEIGHT + 2);
 
             g2d.setColor(color);
@@ -160,7 +172,7 @@ public class LineWidthColorGridTest {
                 off = Math.ceil(off + width + 4.0);
             }
         }
-        {
+        if (DO_TEXT) {
             final AffineTransform oldAt = g2d.getTransform();
 
             final int y = MARGIN + HALF_HEIGHT + MARGIN;
@@ -187,6 +199,7 @@ public class LineWidthColorGridTest {
 
             g2d.setTransform(oldAt);
         }
+        if (DO_RAMP)
         {
             final int y = MARGIN + HALF_HEIGHT + MARGIN + QUARTER_HEIGHT + MARGIN;
 
