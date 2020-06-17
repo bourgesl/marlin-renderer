@@ -42,7 +42,7 @@ import static org.marlin.pipe.MarlinCompositor.FIX_LUM;
 
 final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
-    protected final static boolean DEBUG_ALPHA_LUT = true;
+    protected final static boolean DEBUG_ALPHA_LUT = false;
 
     private final static AlphaLUT ALPHA_LUT = new AlphaLUT();
 

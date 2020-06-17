@@ -42,19 +42,19 @@ public final class BlendComposite {
 
     protected final static int TILE_WIDTH = 128;
 
-    protected final static int NORM_BYTE = 0xFF; // 255
-    protected final static int NORM_BYTE7 = 0x7F; // 127
-    protected final static int NORM_ALPHA = (NORM_BYTE * NORM_BYTE7); // 32385 = 255 x 127
-    protected final static int MASK_ALPHA = (1 << (8 + 7)) - 1; // 32767
+    public final static int NORM_BYTE = 0xFF; // 255
+    public final static int NORM_BYTE7 = 0x7F; // 127
+    public final static int NORM_ALPHA = (NORM_BYTE * NORM_BYTE7); // 32385 = 255 x 127
+    public final static int MASK_ALPHA = (1 << (8 + 7)) - 1; // 32767
 
     // contrast scale in [0; 255]
     protected final static int CONTRAST = (int) Math.round(255f * BLEND_CONTRAST); // [0; 255]
 
     // Device Gamma LUT:
-    protected final static BlendComposite.GammaLUT GAMMA_LUT = new BlendComposite.GammaLUT(GAMMA, false);
+    public final static BlendComposite.GammaLUT GAMMA_LUT = new BlendComposite.GammaLUT(GAMMA, false);
 
     // Luma (gamma) LUT:
-    protected final static BlendComposite.GammaLUT LUMA_LUT = new BlendComposite.GammaLUT(LUMA_GAMMA, true);
+    public final static BlendComposite.GammaLUT LUMA_LUT = new BlendComposite.GammaLUT(LUMA_GAMMA, true);
 
     private final static BlendComposite BLEND_SRC_OVER_NO_EXTRA_ALPHA
                                         = new BlendComposite(BlendComposite.BlendingMode.SRC_OVER, 1f);
@@ -72,7 +72,9 @@ public final class BlendComposite {
                 + "_L(" + ((LUMA_GAMMA == GAMMA_Y_to_L) ? "Y" : ((LUMA_GAMMA == GAMMA_sRGB) ? "sRGB" : LUMA_GAMMA)) + ")";
     }
 
-    final static class GammaLUT {
+    public final static class GammaLUT {
+
+        private final static boolean ALLOW_FUNCS = true;
 
         // TODO: use Unsafe (off-heap table)
         private final double gamma;
@@ -97,9 +99,9 @@ public final class BlendComposite {
             }
         }
 
-        double dir(final int i) {
+        public double dir(final double i) {
             // Luma LUT is full range and should not use sRGB or Y to L profiles:
-            if (range == NORM_BYTE) {
+            if (ALLOW_FUNCS || range == NORM_BYTE) {
                 if (gamma == GAMMA_Y_to_L) {
                     // Y -> L (useless)
                     return NORM_ALPHA * Y_to_L(i / ((double) range));
@@ -111,8 +113,8 @@ public final class BlendComposite {
             return NORM_ALPHA * Math.pow(i / ((double) range), gamma);
         }
 
-        double inv(final double i) {
-            if (range == NORM_BYTE) {
+        public double inv(final double i) {
+            if (ALLOW_FUNCS || range == NORM_BYTE) {
                 if (gamma == GAMMA_Y_to_L) {
                     // Y -> L (useless)
                     return range * L_to_Y(i / ((double) NORM_ALPHA));
@@ -124,7 +126,7 @@ public final class BlendComposite {
             return range * Math.pow(i / ((double) NORM_ALPHA), 1.0 / gamma);
         }
 
-        private static double RGB_to_sRGB(final double c) {
+        public static double RGB_to_sRGB(final double c) {
             if (c <= 0.0) {
                 return 0.0;
             }
@@ -138,7 +140,7 @@ public final class BlendComposite {
             }
         }
 
-        private static double sRGB_to_RGB(final double c) {
+        public static double sRGB_to_RGB(final double c) {
             // Convert non-linear RGB coordinates to linear ones,
             //  numbers from the w3 spec.
             if (c <= 0.0) {
@@ -154,18 +156,19 @@ public final class BlendComposite {
             }
         }
 
-        private static double Y_to_L(final double Y) {
+        public static double Y_to_L(final double Y) {
             // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-            if (Y > 0.008856452) {
+            if (Y > 0.08) {
                 final double y = (Y + 0.16) / 1.16;
                 return y * y * y;
             }
             return Y / 9.033;
         }
 
-        private static double L_to_Y(final double L) {
+        public static double L_to_Y(final double L) {
             // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-            if (L > 0.000980455) {
+            // 0.08 / 9.033 = 0.008856415
+            if (L > 0.008856415) {
                 return 1.16 * Math.cbrt(L) - 0.16;
             }
             return L * 9.033;
