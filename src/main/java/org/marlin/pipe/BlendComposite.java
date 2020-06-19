@@ -32,7 +32,7 @@ import static org.marlin.pipe.MarlinCompositor.FIX_CONTRAST;
 import static org.marlin.pipe.MarlinCompositor.FIX_LUM;
 
 import static org.marlin.pipe.MarlinCompositor.GAMMA;
-import static org.marlin.pipe.MarlinCompositor.GAMMA_Y_to_L;
+import static org.marlin.pipe.MarlinCompositor.GAMMA_L_to_Y;
 import static org.marlin.pipe.MarlinCompositor.GAMMA_sRGB;
 import static org.marlin.pipe.MarlinCompositor.LUMA_GAMMA;
 
@@ -56,6 +56,9 @@ public final class BlendComposite {
     // Luma (gamma) LUT:
     public final static BlendComposite.GammaLUT LUMA_LUT = new BlendComposite.GammaLUT(LUMA_GAMMA, true);
 
+    // Luma (gamma) LUT:
+    public final static BlendComposite.GammaLUT L_TO_Y_LUT = new BlendComposite.GammaLUT(GAMMA_L_to_Y, true);
+
     private final static BlendComposite BLEND_SRC_OVER_NO_EXTRA_ALPHA
                                         = new BlendComposite(BlendComposite.BlendingMode.SRC_OVER, 1f);
 
@@ -69,7 +72,7 @@ public final class BlendComposite {
                 + ((FIX_LUM) ? "_lum" : "")
                 + ((FIX_CONTRAST) ? ("_contrast_" + BLEND_CONTRAST) : "")
                 + ((LUMA_Y) ? "_lumaY" : "_lumaGray")
-                + "_L(" + ((LUMA_GAMMA == GAMMA_Y_to_L) ? "Y" : ((LUMA_GAMMA == GAMMA_sRGB) ? "sRGB" : LUMA_GAMMA)) + ")";
+                + "_L(" + ((LUMA_GAMMA == GAMMA_L_to_Y) ? "Y" : ((LUMA_GAMMA == GAMMA_sRGB) ? "sRGB" : LUMA_GAMMA)) + ")";
     }
 
     public final static class GammaLUT {
@@ -102,9 +105,9 @@ public final class BlendComposite {
         public double dir(final double i) {
             // Luma LUT is full range and should not use sRGB or Y to L profiles:
             if (ALLOW_FUNCS || range == NORM_BYTE) {
-                if (gamma == GAMMA_Y_to_L) {
+                if (gamma == GAMMA_L_to_Y) {
                     // Y -> L (useless)
-                    return NORM_ALPHA * Y_to_L(i / ((double) range));
+                    return NORM_ALPHA * L_to_Y(i / ((double) range));
                 } else if (gamma == GAMMA_sRGB) {
                     // sRGB -> RGB
                     return NORM_ALPHA * sRGB_to_RGB(i / ((double) range));
@@ -115,9 +118,9 @@ public final class BlendComposite {
 
         public double inv(final double i) {
             if (ALLOW_FUNCS || range == NORM_BYTE) {
-                if (gamma == GAMMA_Y_to_L) {
+                if (gamma == GAMMA_L_to_Y) {
                     // Y -> L (useless)
-                    return range * L_to_Y(i / ((double) NORM_ALPHA));
+                    return range * Y_to_L(i / ((double) NORM_ALPHA));
                 } else if (gamma == GAMMA_sRGB) {
                     // sRGB -> RGB
                     return range * RGB_to_sRGB(i / ((double) NORM_ALPHA));
@@ -156,22 +159,24 @@ public final class BlendComposite {
             }
         }
 
-        public static double Y_to_L(final double Y) {
-            // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-            if (Y > 0.08) {
-                final double y = (Y + 0.16) / 1.16;
-                return y * y * y;
-            }
-            return Y / 9.033;
-        }
-
+//old:        public static double Y_to_L(final double Y) {
         public static double L_to_Y(final double L) {
             // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-            // 0.08 / 9.033 = 0.008856415
-            if (L > 0.008856415) {
-                return 1.16 * Math.cbrt(L) - 0.16;
+            if (L > 0.08) {
+                final double l = (L + 0.16) / 1.16;
+                return l * l * l;
             }
-            return L * 9.033;
+            return L / 9.033;
+        }
+
+//old:        public static double L_to_Y(final double L) {
+        public static double Y_to_L(final double Y) {
+            // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
+            // 0.08 / 9.033 = 0.008856415
+            if (Y > 0.008856415) {
+                return 1.16 * Math.cbrt(Y) - 0.16;
+            }
+            return Y * 9.033;
         }
     }
 

@@ -39,8 +39,9 @@ public final class MarlinCompositor {
             && "true".equals(System.getProperty("sun.java2d.renderer.compositor.fill", "true"));
 
     public final static double GAMMA_sRGB = 2.4;
-    public final static double GAMMA_LUMA = 2.4; // 2.2 or 2.4 or 3.0 (Y to L)
-    public final static double GAMMA_Y_to_L = 3.0;
+    public final static double GAMMA_L_to_Y = 3.0;
+    
+    public final static double GAMMA_LUMA = GAMMA_sRGB; // 2.2 or 2.4 or 3.0 (Y to L)
 
     /* 2.4 is the standard sRGB gamma */
     public final static double GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.gamma", GAMMA_sRGB, 0.1, 3.0);

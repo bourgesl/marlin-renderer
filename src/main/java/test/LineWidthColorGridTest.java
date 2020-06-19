@@ -76,7 +76,7 @@ public class LineWidthColorGridTest {
     /* PINK, ORANGE */
 
     private final static int MARGIN = 8;
-    private final static int WIDTH = 128;
+    private final static int WIDTH = 13 * 10; // gradient
     private final static int HALF_HEIGHT = 52;
     private final static int QUARTER_HEIGHT = 30;
 
@@ -206,12 +206,12 @@ public class LineWidthColorGridTest {
             g2d.setBackground(bgcolor);
             g2d.clearRect(MARGIN - 1, y - 1, WIDTH + 2, QUARTER_HEIGHT + 2);
 
-            final int w = 8;
-            final int ns = WIDTH / w;
+            final int ns = 13;
+            final int w = WIDTH / ns;
 
             for (int i = 0; i < ns; i++) {
                 final int a = (int) Math.round((255.0 * i) / (ns - 1));
-                //System.out.println("alpha: " + a);
+                // System.out.println("alpha: " + a);
                 g2d.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), a));
                 // TODO: fix fill rect (ref rountines)
                 final double x1 = MARGIN + (i * w);
