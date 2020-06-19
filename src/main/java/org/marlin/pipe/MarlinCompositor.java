@@ -40,19 +40,19 @@ public final class MarlinCompositor {
 
     public final static double GAMMA_sRGB = 2.4;
     public final static double GAMMA_L_to_Y = 3.0;
-    
-    public final static double GAMMA_LUMA = GAMMA_sRGB; // 2.2 or 2.4 or 3.0 (Y to L)
 
     /* 2.4 is the standard sRGB gamma */
     public final static double GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.gamma", GAMMA_sRGB, 0.1, 3.0);
 
-    public final static String BLEND_FIX = System.getProperty("sun.java2d.renderer.compositor.fix", "contrast"); // 'contrast' or 'lum'
+    public final static String BLEND_FIX = System.getProperty("sun.java2d.renderer.compositor.fix", "contrastL"); // 'contrast' or 'lum'
 
     public final static boolean FIX_LUM = BLEND_FIX.equals("lum");
-    public final static boolean FIX_CONTRAST = BLEND_FIX.equals("contrast");
+    public final static boolean FIX_CONTRAST = BLEND_FIX.startsWith("contrast");
+    public final static boolean USE_CONTRAST_L = BLEND_FIX.equals("contrastL");
 
     /* 3.0 is the standard L*(Y) gamma */
-    public final static double LUMA_GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.blend.gamma", GAMMA_LUMA, 0.1, 3.0);
+    public final static double LUMA_GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.blend.gamma",
+            (USE_CONTRAST_L) ? GAMMA_L_to_Y : GAMMA_sRGB, 0.1, 3.0);
 
     public final static boolean BLEND_QUALITY = "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
 

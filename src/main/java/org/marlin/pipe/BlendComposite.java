@@ -38,8 +38,6 @@ import static org.marlin.pipe.MarlinCompositor.LUMA_GAMMA;
 
 public final class BlendComposite {
 
-    protected final static boolean LUMA_Y = true;
-
     protected final static int TILE_WIDTH = 128;
 
     public final static int NORM_BYTE = 0xFF; // 255
@@ -54,10 +52,7 @@ public final class BlendComposite {
     public final static BlendComposite.GammaLUT GAMMA_LUT = new BlendComposite.GammaLUT(GAMMA, false);
 
     // Luma (gamma) LUT:
-    public final static BlendComposite.GammaLUT LUMA_LUT = new BlendComposite.GammaLUT(LUMA_GAMMA, true);
-
-    // Luma (gamma) LUT:
-    public final static BlendComposite.GammaLUT L_TO_Y_LUT = new BlendComposite.GammaLUT(GAMMA_L_to_Y, true);
+    public final static BlendComposite.GammaLUT LUMA_LUT = new BlendComposite.GammaLUT(LUMA_GAMMA, true, FIX_LUM || BLEND_QUALITY);
 
     private final static BlendComposite BLEND_SRC_OVER_NO_EXTRA_ALPHA
                                         = new BlendComposite(BlendComposite.BlendingMode.SRC_OVER, 1f);
@@ -71,8 +66,8 @@ public final class BlendComposite {
                 + ((BLEND_QUALITY) ? "_qual" : "")
                 + ((FIX_LUM) ? "_lum" : "")
                 + ((FIX_CONTRAST) ? ("_contrast_" + BLEND_CONTRAST) : "")
-                + ((LUMA_Y) ? "_lumaY" : "_lumaGray")
-                + "_L(" + ((LUMA_GAMMA == GAMMA_L_to_Y) ? "Y" : ((LUMA_GAMMA == GAMMA_sRGB) ? "sRGB" : LUMA_GAMMA)) + ")";
+                + "_lumaY"
+                + "_lerp_" + ((LUMA_GAMMA == GAMMA_L_to_Y) ? "L-Y" : ((LUMA_GAMMA == GAMMA_sRGB) ? "sRGB" : LUMA_GAMMA));
     }
 
     public final static class GammaLUT {
@@ -86,6 +81,10 @@ public final class BlendComposite {
         final int[] inv;
 
         GammaLUT(final double gamma, final boolean fullRange) {
+            this(gamma, fullRange, true);
+        }
+
+        GammaLUT(final double gamma, final boolean fullRange, final boolean prepareTables) {
             this.gamma = gamma;
             this.range = (fullRange) ? NORM_ALPHA : NORM_BYTE;
 
@@ -288,11 +287,8 @@ public final class BlendComposite {
 [M]= 0.2126729  0.7151522  0.0721750
      0.0193339  0.1191920  0.9503041
          */
-        if (LUMA_Y) {
-            // luminance means Y:
-            return (r * 13938 + g * 46868 + b * 4730) >> 16;
-        }
-        return (r + g + b) / 3;
+        // luminance means Y:
+        return (r * 13938 + g * 46868 + b * 4730) >> 16;
     }
 
     // Lum bits = 4 (16 levels is enough)
@@ -312,11 +308,8 @@ public final class BlendComposite {
         255×0.2126729÷17 = 3,190        => 3 max
         255×0.0721750÷17 = 1,083        => 1 max
          */
-        if (LUMA_Y) {
-            // luminance means Y:
-            return (r * 109 + g * 366 + b * 37 + 196095) >> 20; // 196095 = 32768*512-32385*512
+        // luminance means Y:
+        return (r * 109 + g * 366 + b * 37 + 196095) >> 20; // 196095 = 32768*512-32385*512
 //            return (r * 7 + g * 23 + (b << 1) + 12224) >> 16; // 12224 = 32*(32767-32385)
-        }
-        return (luminance(r, g, b) + 1079) / 2159;
     }
 }
