@@ -26,12 +26,16 @@ package org.marlin.pipe;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Paint;
 import java.awt.PaintContext;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import static org.marlin.pipe.MarlinCompositor.BLEND_SPEED;
+import static org.marlin.pipe.MarlinCompositor.USE_OLD_BLENDER;
 import sun.java2d.SunGraphics2D;
+import static sun.java2d.SunGraphics2D.PAINT_ALPHACOLOR;
 import sun.java2d.SurfaceData;
 import sun.java2d.loops.SurfaceType;
 import sun.java2d.pipe.CompositePipe;
@@ -65,7 +69,7 @@ public final class GammaCompositePipe implements CompositePipe {
                 // only SrcOver implemented for now
                 // TODO: implement all Porter-Duff rules 
                 // set (optional) extra alpha:
-                blendComposite = BlendComposite.getInstance(BlendComposite.BlendingMode.SRC_OVER, ac.getAlpha());
+                blendComposite = BlendComposite.getInstance(ctx, BlendComposite.BlendingMode.SRC_OVER, ac.getAlpha());
             }
         }
 
@@ -74,20 +78,22 @@ public final class GammaCompositePipe implements CompositePipe {
             return null; // means invalid pipe
         }
 
-        final BlendComposite.BlendingContext compositeContext = ctx.init(blendComposite, sdt);
+        // TODO: use Sungraphics2D.eargb ? ie extra alpha is pre-blended into SRC ALPHA !
+        final BlendComposite.BlendingContext compositeContext = ctx.init(blendComposite, sdt, sg);
         if (compositeContext == null) {
             // System.out.println("Unable to create BlendingContext");
             return null; // means invalid pipe
         }
 
-        final int colorRGBA;
+        final int colorEARGB;
         final PaintContext paintContext;
 
-        if (sg.paint instanceof Color) {
-            colorRGBA = ((Color) sg.paint).getRGB();
+        if (sg.paintState <= PAINT_ALPHACOLOR) {
+            // use Sungraphics2D.eargb = ie extra alpha is pre-blended into SRC ALPHA:
+            colorEARGB = sg.eargb;
             paintContext = null;
         } else {
-            colorRGBA = 0;
+            colorEARGB = 0;
             // warning: clone hints map:
             paintContext = sg.paint.createContext(sg.getDeviceColorModel(), devR, s.getBounds2D(),
                     sg.cloneTransform(), sg.getRenderingHints());
@@ -95,7 +101,7 @@ public final class GammaCompositePipe implements CompositePipe {
 
         // use ThreadLocal (to reduce memory footprint):
         final TileContext tc = ctx.getGammaCompositePipeTileContext();
-        tc.init(sd, colorRGBA, paintContext, compositeContext, blendComposite);
+        tc.init(sd, colorEARGB, paintContext, compositeContext, blendComposite);
         return tc;
     }
 
@@ -116,7 +122,7 @@ public final class GammaCompositePipe implements CompositePipe {
         final TileContext context = (TileContext) ctx;
         final BlendComposite.BlendingContext compCtxt = context.compCtxt;
 
-        int rgba = 0;
+        int colorEARGB = 0;
         final PaintContext paintCtxt = context.paintCtxt;
         final Raster srcRaster;
 
@@ -125,7 +131,7 @@ public final class GammaCompositePipe implements CompositePipe {
             srcRaster = paintCtxt.getRaster(x, y, w, h);
         } else {
             // hack ColorPaintContext -> to avoid fill color on complete tile (cached tile is limited to 64x64):
-            rgba = context.colorRGBA;
+            colorEARGB = context.colorEARGB;
             srcRaster = null;
         }
 
@@ -138,7 +144,7 @@ public final class GammaCompositePipe implements CompositePipe {
         // System.out.println("createWritableChild: (" + w + " x " + h + ")");
         final WritableRaster dstOut;
 
-        if (MarlinCompositor.USE_OLD_BLENDER) {
+        if (USE_OLD_BLENDER || BLEND_SPEED) {
             dstOut = (WritableRaster) dstRaster;
         } else {
             dstOut = ((WritableRaster) dstRaster).createWritableChild(x, y, w, h, 0, 0, null);
@@ -148,7 +154,7 @@ public final class GammaCompositePipe implements CompositePipe {
         // srcRaster = paint raster
         // dstIn = surface destination raster (input)
         // dstOut = writable destination raster (output)
-        compCtxt.compose(rgba, srcRaster, dstOut,
+        compCtxt.compose(colorEARGB, srcRaster, dstOut,
                 x, y, w, h,
                 atile, offset, tilesize);
     }
@@ -164,7 +170,7 @@ public final class GammaCompositePipe implements CompositePipe {
 
     final static class TileContext {
 
-        int colorRGBA;
+        int colorEARGB;
         PaintContext paintCtxt;
         BlendComposite.BlendingContext compCtxt;
         BlendComposite blendComposite = null;
@@ -175,11 +181,11 @@ public final class GammaCompositePipe implements CompositePipe {
         }
 
         void init(final SurfaceData sd,
-                  final int colorRGBA, final PaintContext pCtx,
+                  final int colorEARGB, final PaintContext pCtx,
                   final BlendComposite.BlendingContext cCtx,
                   final BlendComposite blendComposite) {
 
-            this.colorRGBA = colorRGBA;
+            this.colorEARGB = colorEARGB;
             this.paintCtxt = pCtx;
             this.compCtxt = cCtx;
             this.blendComposite = blendComposite;
@@ -187,7 +193,7 @@ public final class GammaCompositePipe implements CompositePipe {
         }
 
         void dispose() {
-            this.colorRGBA = 0;
+            this.colorEARGB = 0;
             if (paintCtxt != null) {
                 paintCtxt.dispose();
                 paintCtxt = null;

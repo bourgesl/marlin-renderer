@@ -165,8 +165,7 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
 
                 if (srcIn == null) {
                     // short-cut ?
-//                    if (((extraAlpha << 16) | (am << 8) | (srcPixel[3])) == 0x7FFFFF) {
-                    if ((am == NORM_BYTE) && (csa == NORM_BYTE) && (extraAlpha == NORM_BYTE7)) {
+                    if ((am == NORM_BYTE) && (csa == NORM_BYTE)) {
                         // mask with full opacity
                         // output = source OVER (totally)
                         // Source pixel Linear RGBA:
@@ -190,6 +189,10 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                     sg = gamma_dir[(pixel >> 8) & NORM_BYTE];
                     sb = gamma_dir[(pixel) & NORM_BYTE];
                     sa = (pixel >> 24) & NORM_BYTE;
+                    
+                    if (extraAlpha != NORM_BYTE7) {
+                         sa = (sa * extraAlpha + 63) / NORM_BYTE7;
+                    }
                 }
                 // srcPixel is Gamma-corrected Linear RGBA.
 
@@ -203,7 +206,7 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                 // Rs = As x Coverage
                 // alpha in range [0; 32385] (15bits)
                 // Apply extra alpha:
-                sa = (sa * am * extraAlpha) / NORM_BYTE;
+                sa = (sa * am) / 2;
 
                 // Ensure src not opaque to be properly blended below:
                 if (sa == NORM_ALPHA) {

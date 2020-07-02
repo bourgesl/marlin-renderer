@@ -22,7 +22,6 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-
 package sun.java2d.pipe;
 
 import java.awt.Rectangle;
@@ -39,58 +38,58 @@ import sun.java2d.SunGraphics2D;
  * color, according to one of the rules in the AlphaComposite class.
  */
 public class AlphaColorPipe implements CompositePipe, ParallelogramPipe {
-    
+
     // Hack to detect this class patch is present
     public final static boolean isMarlinPatched() {
         return true;
     }
-    
+
     public AlphaColorPipe() {
     }
 
+    @Override
     public Object startSequence(final SunGraphics2D sg, final Shape s, final Rectangle dev, final int[] abox) {
-        
-        final CompositorSettings settings = (MarlinCompositor.ENABLE_COMPOSITOR) ? MarlinCompositor.getCompositorSettings() : null;
-        
-        final Object ctx = (settings != null && settings.isGammaCorrectionEnabled()) 
-                ? GammaCompositePipe.INSTANCE.startSequence(settings.getCompositorContext(), sg, s, dev, abox) : null;
-        
-        if (ctx != null) {
-            // gamma correction is enabled
-            return ctx;
-        }        
+        if (MarlinCompositor.ENABLE_COMPOSITOR && MarlinCompositor.isSupported(sg)) {
+            final Object ctx = GammaCompositePipe.INSTANCE.startSequence(MarlinCompositor.getCompositorSettings().getCompositorContext(), sg, s, dev, abox);
+            if (ctx != null) {
+                // gamma correction is enabled
+                return ctx;
+            }
+        }
         return sg;
     }
 
+    @Override
     public boolean needTile(final Object context, final int x, final int y, final int w, final int h) {
         return true;
     }
 
+    @Override
     public void renderPathTile(final Object context,
                                final byte[] atile, final int offset, final int tilesize,
                                final int x, final int y, final int w, final int h) {
-        
+
         if (context instanceof SunGraphics2D) {
             // System.out.println("renderPathTile uses MaskFill !");
-            
+
             final SunGraphics2D sg = (SunGraphics2D) context;
 
             sg.alphafill.MaskFill(sg, sg.getSurfaceData(), sg.composite,
-                                  x, y, w, h,
-                                  atile, offset, tilesize);
+                    x, y, w, h,
+                    atile, offset, tilesize);
             return;
         }
 
         // GammaCompositePipe in action
         // System.out.println("renderPathTile uses GammaCompositePipe !");
-
         GammaCompositePipe.INSTANCE.renderPathTile(context, atile, offset, tilesize, x, y, w, h);
-
     }
 
+    @Override
     public void skipTile(final Object context, final int x, final int y) {
     }
 
+    @Override
     public void endSequence(final Object context) {
         if (!(context instanceof SunGraphics2D)) {
             // GammaCompositePipe in action
@@ -98,6 +97,7 @@ public class AlphaColorPipe implements CompositePipe, ParallelogramPipe {
         }
     }
 
+    @Override
     public void fillParallelogram(SunGraphics2D sg,
                                   double ux1, double uy1,
                                   double ux2, double uy2,
@@ -109,6 +109,7 @@ public class AlphaColorPipe implements CompositePipe, ParallelogramPipe {
                                  x, y, dx1, dy1, dx2, dy2);
     }
 
+    @Override
     public void drawParallelogram(SunGraphics2D sg,
                                   double ux1, double uy1,
                                   double ux2, double uy2,

@@ -27,9 +27,6 @@ package org.marlin.pipe;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE7;
@@ -71,9 +68,9 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
 
         int offSrc = 0;
 
-        final Unsafe _unsafe = UNSAFE;
+        final Unsafe _unsafe = OffHeapArray.UNSAFE;
 
-        long addrDst = OFF_INT + ((y * dstScan + x) << 2L); // ints
+        long addrDst = OffHeapArray.OFF_INT + ((y * dstScan + x) << 2L); // ints
         final long dstSkip = (dstScan - w) << 2L; // ints
 
         if (mask == null) {
@@ -95,7 +92,6 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
                             // pixels are stored as INT_ARGB
                             // our arrays are [R, G, B, A]
                             // Source pixel sRGBA:
-//                            dstBuffer[offDst + i] = srcRGBA;
                             _unsafe.putInt(dstBuffer, addrDst, srcRGBA);
                         }
                         addrDst += dstSkip;
@@ -111,7 +107,6 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
                         // pixels are stored as INT_ARGB
                         // our arrays are [R, G, B, A]
                         // Source pixel sRGBA:
-//                        dstBuffer[offDst + i] = srcBuffer[offSrc + i];
                         _unsafe.putInt(dstBuffer, addrDst, srcBuffer[offSrc + i]);
                     }
                     addrDst += dstSkip;
@@ -183,7 +178,6 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
                     // Destination pixel:
                     {
                         // Dest pixel sRGBA:
-//                        pixel = dstBuffer[offDst + i];
                         pixel = _unsafe.getInt(dstBuffer, addrDst);
 
                         // sRGBA components are not pre-multiplied by alpha:
@@ -229,7 +223,6 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
                     if (alpha == 0) {
                         // output = none
                         // Source pixel sRGBA:
-//                        dstBuffer[offDst + i] = 0;
                         _unsafe.putInt(dstBuffer, addrDst, 0);
                         continue;
                     }
@@ -252,7 +245,6 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
 
                     // sRGBA components are not pre-multiplied by alpha:
                     // NOP
-//                    dstBuffer[offDst + i] = pixel;
                     _unsafe.putInt(dstBuffer, addrDst, pixel);
                 }
                 addrDst += dstSkip;
@@ -281,7 +273,7 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
             csa = 0;
         }
 
-        long addrMask = OFF_BYTE + maskOff; // bytes
+        long addrMask = OffHeapArray.OFF_BYTE + maskOff; // bytes
         final long maskSkip = maskScan; // bytes
 
 //        int offDst;
@@ -328,7 +320,6 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
                         // mask with full opacity
                         // output = source OVER (totally)
                         // Source pixel sRGBA:
-//                        dstBuffer[offDst + i] = (srcIn != null) ? srcBuffer[offSrc + i] : srcRGBA;
                         _unsafe.putInt(dstBuffer, addrDst, (srcIn != null) ? srcBuffer[offSrc + i] : srcRGBA);
                         continue;
                     }
@@ -361,7 +352,6 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
                     // Destination pixel:
                     {
                         // Dest pixel sRGBA:
-//                        pixel = dstBuffer[offDst + i];
                         pixel = _unsafe.getInt(dstBuffer, addrDst);
 
                         // sRGBA components are not pre-multiplied by alpha:
@@ -407,7 +397,6 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
                     if (alpha == 0) {
                         // output = none
                         // Source pixel sRGBA:
-//                        dstBuffer[offDst + i] = 0;
                         _unsafe.putInt(dstBuffer, addrDst, 0);
                         continue;
                     }
@@ -430,42 +419,11 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
 
                     // sRGBA components are not pre-multiplied by alpha:
                     // NOP
-//                    dstBuffer[offDst + i] = pixel;
                     _unsafe.putInt(dstBuffer, addrDst, pixel);
                 }
             }
             addrDst += dstSkip;
             addrMask += maskSkip;
         }
-    }
-
-    // unsafe reference
-    static final Unsafe UNSAFE;
-    // offset of int[]
-    static final long OFF_BYTE;
-// offset of int[]
-    static final long OFF_INT;
-
-    static {
-        UNSAFE = AccessController.doPrivileged(new PrivilegedAction<Unsafe>() {
-            @Override
-            public Unsafe run() {
-                Unsafe ref = null;
-                try {
-                    final Field field = Unsafe.class.getDeclaredField("theUnsafe");
-                    field.setAccessible(true);
-                    ref = (Unsafe) field.get(null);
-                } catch (Exception e) {
-                    throw new InternalError("Unable to get sun.misc.Unsafe instance", e);
-                }
-                return ref;
-            }
-        });
-
-        OFF_BYTE = Unsafe.ARRAY_BYTE_BASE_OFFSET; // 16
-        OFF_INT = Unsafe.ARRAY_INT_BASE_OFFSET; // 12
-
-        // System.out.println("OFF_BYTE: " + OFF_BYTE);
-        // System.out.println("OFF_INT: " + OFF_INT);
     }
 }

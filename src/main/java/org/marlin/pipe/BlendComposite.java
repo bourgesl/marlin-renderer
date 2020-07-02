@@ -28,6 +28,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import static org.marlin.pipe.MarlinCompositor.BLEND_CONTRAST;
 import static org.marlin.pipe.MarlinCompositor.BLEND_QUALITY;
+import static org.marlin.pipe.MarlinCompositor.BLEND_SPEED;
 import static org.marlin.pipe.MarlinCompositor.FIX_CONTRAST;
 import static org.marlin.pipe.MarlinCompositor.FIX_LUM;
 
@@ -35,6 +36,7 @@ import static org.marlin.pipe.MarlinCompositor.GAMMA;
 import static org.marlin.pipe.MarlinCompositor.GAMMA_L_to_Y;
 import static org.marlin.pipe.MarlinCompositor.GAMMA_sRGB;
 import static org.marlin.pipe.MarlinCompositor.LUMA_GAMMA;
+import sun.java2d.SunGraphics2D;
 
 public final class BlendComposite {
 
@@ -49,13 +51,10 @@ public final class BlendComposite {
     protected final static int CONTRAST = (int) Math.round(255f * BLEND_CONTRAST); // [0; 255]
 
     // Device Gamma LUT:
-    public final static BlendComposite.GammaLUT GAMMA_LUT = new BlendComposite.GammaLUT(GAMMA, false);
+    public final static GammaLUT GAMMA_LUT = new GammaLUT(GAMMA, false);
 
     // Luma (gamma) LUT:
-    public final static BlendComposite.GammaLUT LUMA_LUT = new BlendComposite.GammaLUT(LUMA_GAMMA, true, FIX_LUM || BLEND_QUALITY);
-
-    private final static BlendComposite BLEND_SRC_OVER_NO_EXTRA_ALPHA
-                                        = new BlendComposite(BlendComposite.BlendingMode.SRC_OVER, 1f);
+    public final static GammaLUT LUMA_LUT = new GammaLUT(LUMA_GAMMA, true, FIX_LUM || BLEND_QUALITY);
 
     static {
         System.out.println("INFO: Marlin Compositor advanced blending mode: " + getBlendingMode());
@@ -63,120 +62,11 @@ public final class BlendComposite {
 
     public static String getBlendingMode() {
         return "gamma_" + ((GAMMA == GAMMA_sRGB) ? "sRGB" : GAMMA)
-                + ((BLEND_QUALITY) ? "_qual" : "")
+                + ((BLEND_SPEED) ? "_speed" : ((BLEND_QUALITY) ? "_qual" : ""))
                 + ((FIX_LUM) ? "_lum" : "")
                 + ((FIX_CONTRAST) ? ("_contrast_" + BLEND_CONTRAST) : "")
                 + "_lumaY"
                 + "_lerp_" + ((LUMA_GAMMA == GAMMA_L_to_Y) ? "L-Y" : ((LUMA_GAMMA == GAMMA_sRGB) ? "sRGB" : LUMA_GAMMA));
-    }
-
-    public final static class GammaLUT {
-
-        private final static boolean ALLOW_FUNCS = true;
-
-        // TODO: use Unsafe (off-heap table)
-        private final double gamma;
-        private final int range;
-        final int[] dir;
-        final int[] inv;
-
-        GammaLUT(final double gamma, final boolean fullRange) {
-            this(gamma, fullRange, true);
-        }
-
-        GammaLUT(final double gamma, final boolean fullRange, final boolean prepareTables) {
-            this.gamma = gamma;
-            this.range = (fullRange) ? NORM_ALPHA : NORM_BYTE;
-
-            this.dir = new int[range + 1];
-
-            for (int i = 0; i <= range; i++) {
-                dir[i] = (int) Math.round(dir(i));
-            }
-
-            this.inv = new int[MASK_ALPHA + 1]; // larger to use bit masking
-
-            for (int i = 0; i <= NORM_ALPHA; i++) {
-                inv[i] = (int) Math.round(inv(i));
-            }
-        }
-
-        public double dir(final double i) {
-            // Luma LUT is full range and should not use sRGB or Y to L profiles:
-            if (ALLOW_FUNCS || range == NORM_BYTE) {
-                if (gamma == GAMMA_L_to_Y) {
-                    // Y -> L (useless)
-                    return NORM_ALPHA * L_to_Y(i / ((double) range));
-                } else if (gamma == GAMMA_sRGB) {
-                    // sRGB -> RGB
-                    return NORM_ALPHA * sRGB_to_RGB(i / ((double) range));
-                }
-            }
-            return NORM_ALPHA * Math.pow(i / ((double) range), gamma);
-        }
-
-        public double inv(final double i) {
-            if (ALLOW_FUNCS || range == NORM_BYTE) {
-                if (gamma == GAMMA_L_to_Y) {
-                    // Y -> L (useless)
-                    return range * Y_to_L(i / ((double) NORM_ALPHA));
-                } else if (gamma == GAMMA_sRGB) {
-                    // sRGB -> RGB
-                    return range * RGB_to_sRGB(i / ((double) NORM_ALPHA));
-                }
-            }
-            return range * Math.pow(i / ((double) NORM_ALPHA), 1.0 / gamma);
-        }
-
-        public static double RGB_to_sRGB(final double c) {
-            if (c <= 0.0) {
-                return 0.0;
-            }
-            if (c >= 1.0) {
-                return 1.0;
-            }
-            if (c <= 0.0031308) {
-                return c * 12.92;
-            } else {
-                return 1.055 * Math.pow(c, 1.0 / GAMMA_sRGB) - 0.055;
-            }
-        }
-
-        public static double sRGB_to_RGB(final double c) {
-            // Convert non-linear RGB coordinates to linear ones,
-            //  numbers from the w3 spec.
-            if (c <= 0.0) {
-                return 0.0;
-            }
-            if (c >= 1.0) {
-                return 1.0;
-            }
-            if (c <= 0.04045) {
-                return c / 12.92;
-            } else {
-                return Math.pow((c + 0.055) / 1.055, GAMMA_sRGB);
-            }
-        }
-
-//old:        public static double Y_to_L(final double Y) {
-        public static double L_to_Y(final double L) {
-            // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-            if (L > 0.08) {
-                final double l = (L + 0.16) / 1.16;
-                return l * l * l;
-            }
-            return L / 9.033;
-        }
-
-//old:        public static double L_to_Y(final double L) {
-        public static double Y_to_L(final double Y) {
-            // http://brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-            // 0.08 / 9.033 = 0.008856415
-            if (Y > 0.008856415) {
-                return 1.16 * Math.cbrt(Y) - 0.16;
-            }
-            return Y * 9.033;
-        }
     }
 
     public enum BlendingMode {
@@ -185,20 +75,26 @@ public final class BlendComposite {
     }
 
     /* members */
-    final BlendComposite.BlendingMode mode;
-    final float extraAlpha;
+    BlendComposite.BlendingMode mode;
+    float extraAlpha;
 
-    private BlendComposite(final BlendComposite.BlendingMode mode, final float extraAlpha) {
+    BlendComposite() {
+        this(BlendComposite.BlendingMode.SRC_OVER, 1f);
+    }
+    
+    BlendComposite(final BlendComposite.BlendingMode mode, final float extraAlpha) {
+        set(mode, extraAlpha);
+    }
+    
+    void set(final BlendComposite.BlendingMode mode, final float extraAlpha) {
         this.mode = mode;
         this.extraAlpha = extraAlpha;
     }
 
-    static BlendComposite getInstance(final BlendComposite.BlendingMode mode, final float extraAlpha) {
-        if (extraAlpha == 1f) {
-            return BLEND_SRC_OVER_NO_EXTRA_ALPHA;
-        }
-        // System.out.println("getInstance(mode: " + mode + " extraAlpha:" + extraAlpha + ")");
-        return new BlendComposite(mode, extraAlpha);
+    static BlendComposite getInstance(final CompositorContext ctx, final BlendComposite.BlendingMode mode, final float extraAlpha) {
+        final BlendComposite composite = ctx.getComposite();
+        composite.set(mode, extraAlpha);
+        return composite;
     }
 
     BlendComposite.BlendingMode getMode() {
@@ -220,16 +116,20 @@ public final class BlendComposite {
 
     // TODO: use 1 compositor context
     static abstract class BlendingContext {
+        
+        protected final static boolean USE_LONG = true;
+
+        protected final static boolean USE_PREV_RES = true; // higher probability (no info on density ie typical alpha ?
 
         /* members */
         protected int _extraAlpha;
-        protected BlendComposite.Blender _blender;
+        protected BlendComposite.Blender _blender = null;
 
         BlendingContext() {
             // System.out.println("new BlendingContext: "+getClass().getSimpleName());
         }
 
-        final BlendComposite.BlendingContext init(final BlendComposite composite) {
+        BlendComposite.BlendingContext init(final BlendComposite composite, final SunGraphics2D sg) {
             this._blender = BlendComposite.Blender.getBlenderFor(composite);
             this._extraAlpha = Math.round(127f * composite.extraAlpha); // [0; 127] ie 7 bits
             return this; // fluent API
@@ -299,17 +199,10 @@ public final class BlendComposite {
         // r/g/b in [0; 32385] ie 255 * 127 ie 8+7 ~ 15 bits        
         // scale down [0; 32385] to [0; 15]:
 
-        // TODO: use jmh to establish a faster approximation using only add / shift (no mult)
-        // ( (r * 13938 + g * 46868 + b * 4730) >> 16)  + 1079) / 2159;
         /* sRGB (D65):
-        [Y] = [0.2126729  0.7151522  0.0721750] [RGB linear]        
-        255 -> 15 means divide by 17
-        255×0.7151522÷17 = 10,727       => 11 max
-        255×0.2126729÷17 = 3,190        => 3 max
-        255×0.0721750÷17 = 1,083        => 1 max
-         */
+        [Y] = [0.2126729  0.7151522  0.0721750] [RGB linear]     
+        */
         // luminance means Y:
         return (r * 109 + g * 366 + b * 37 + 196095) >> 20; // 196095 = 32768*512-32385*512
-//            return (r * 7 + g * 23 + (b << 1) + 12224) >> 16; // 12224 = 32*(32767-32385)
     }
 }

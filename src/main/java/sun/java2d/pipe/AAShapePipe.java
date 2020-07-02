@@ -32,8 +32,6 @@ import sun.awt.SunHints;
 import org.marlin.ReentrantContext;
 import org.marlin.ReentrantContextProvider;
 import org.marlin.ReentrantContextProviderTL;
-import org.marlin.pipe.CompositorSettings;
-import org.marlin.pipe.MarlinCompositor;
 import sun.java2d.SunGraphics2D;
 
 /**
@@ -141,21 +139,6 @@ public final class AAShapePipe
         final boolean adjust = (bs != null &&
                           sg.strokeHint != SunHints.INTVAL_STROKE_PURE);
         final boolean thin = (sg.strokeState <= SunGraphics2D.STROKE_THINDASHED);
-
-        // Only enable gamma correction on stroked shapes:
-        CompositorSettings settings = null;
-        if (MarlinCompositor.ENABLE_FILL 
-                || MarlinCompositor.ENABLE_COMPOSITOR && (bs != null)) {
-
-            // check supported operations:
-            if (MarlinCompositor.isSupported(sg)) {
-                settings = MarlinCompositor.getCompositorSettings();
-                // Mark this pipeline to enable gamma-correction:
-                settings.setGammaCorrection(true);
-            }
-        }
-        // System.out.println("AAShapePipe.renderPath() enableGammaCorrection: "+enableGammaCorrection);
-                
         final TileState ts = TILE_STATE_PROVIDER.acquire();
         try {
             final int[] abox = ts.abox;
@@ -167,11 +150,7 @@ public final class AAShapePipe
                 renderTiles(sg, s, aatg, abox, ts);
             }
         } finally {
-            TILE_STATE_PROVIDER.release(ts);
-            
-            if (settings != null) {
-                settings.setGammaCorrection(false);
-            }
+            TILE_STATE_PROVIDER.release(ts);            
         }
     }
 

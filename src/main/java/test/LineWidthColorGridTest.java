@@ -47,7 +47,7 @@ import org.marlin.pisces.MarlinProperties;
  */
 public class LineWidthColorGridTest {
 
-    private final static int N = 50;
+    private final static int N = 30;
 
     private final static boolean DO_LINES = true;
 
@@ -73,7 +73,7 @@ public class LineWidthColorGridTest {
         Color.BLACK,
         Color.BLUE,};
      */
-    /* PINK, ORANGE */
+ /* PINK, ORANGE */
 
     private final static int MARGIN = 8;
     private final static int WIDTH = 13 * 10; // gradient
@@ -111,32 +111,7 @@ public class LineWidthColorGridTest {
         final AffineTransform ident = g2d.getTransform();
 
         for (int n = 0; n < N; n++) {
-
-            g2d.setTransform(ident);
-
-            g2d.setBackground(Color.LIGHT_GRAY); // unused color
-            g2d.clearRect(0, 0, width, height);
-
-            final long start = System.nanoTime();
-
-            for (int j = 0; j < nColors; j++) {
-
-                for (int i = 0; i < nColors; i++) {
-
-                    // test same color FG = BG if any colorspace bug does not return Identity
-                    if (false && (i == j)) {
-                        continue;
-                    }
-
-                    g2d.setTransform(ident);
-                    g2d.translate(i * square, j * square);
-
-                    paint(g2d, COLORS[i], COLORS[j]);
-                }
-            }
-
-            final long time = System.nanoTime() - start;
-            System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
+            paint(g2d, ident, width, height, square);
         }
 
         try {
@@ -155,10 +130,63 @@ public class LineWidthColorGridTest {
         }
     }
 
+    private static void paint(final Graphics2D g2d, final AffineTransform ident,
+                              final int width, final int height, final int square) {
+
+        final int nColors = COLORS.length;
+
+        g2d.setTransform(ident);
+
+        fillPathRect(g2d, Color.LIGHT_GRAY, 0, 0, width, height); // unused color
+
+        final long start = System.nanoTime();
+
+        for (int j = 0; j < nColors; j++) {
+
+            for (int i = 0; i < nColors; i++) {
+
+                // test same color FG = BG if any colorspace bug does not return Identity
+                if (false && (i == j)) {
+                    continue;
+                }
+
+                g2d.setTransform(ident);
+                g2d.translate(i * square, j * square);
+
+                paint(g2d, COLORS[i], COLORS[j]);
+            }
+        }
+
+        final long time = System.nanoTime() - start;
+        System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
+
+        // cleanup();
+    }
+
+    /**
+     * Cleanup (GC + pause)
+     */
+    static void cleanup() {
+        final long freeBefore = Runtime.getRuntime().freeMemory();
+        // Perform GC:
+        System.runFinalization();
+        System.gc();
+        System.gc();
+        System.gc();
+
+        // pause for 500 ms :
+        try {
+            Thread.sleep(100l);
+        } catch (InterruptedException ie) {
+            System.out.println("thread interrupted");
+        }
+        final long freeAfter = Runtime.getRuntime().freeMemory();
+        System.out.println(String.format("cleanup (explicit Full GC): %,d / %,d bytes free.", freeBefore, freeAfter));
+    }
+
     private static void paint(final Graphics2D g2d, final Color color, final Color bgcolor) {
-        g2d.setBackground(bgcolor);
         if (DO_LINES) {
-            g2d.clearRect(MARGIN - 1, MARGIN - 1, WIDTH + 2, HALF_HEIGHT + 2);
+            fillPathRect(g2d, bgcolor, MARGIN - 1, MARGIN - 1, WIDTH + 2, HALF_HEIGHT + 2);
 
             g2d.setColor(color);
             double off = MARGIN;
@@ -177,8 +205,7 @@ public class LineWidthColorGridTest {
 
             final int y = MARGIN + HALF_HEIGHT + MARGIN;
 
-            g2d.setBackground(bgcolor);
-            g2d.clearRect(MARGIN - 1, y - 1, WIDTH + 2, QUARTER_HEIGHT + 2);
+            fillPathRect(g2d, bgcolor, MARGIN - 1, y - 1, WIDTH + 2, QUARTER_HEIGHT + 2);
 
             g2d.setColor(color);
 
@@ -199,12 +226,10 @@ public class LineWidthColorGridTest {
 
             g2d.setTransform(oldAt);
         }
-        if (DO_RAMP)
-        {
+        if (DO_RAMP) {
             final int y = MARGIN + HALF_HEIGHT + MARGIN + QUARTER_HEIGHT + MARGIN;
 
-            g2d.setBackground(bgcolor);
-            g2d.clearRect(MARGIN - 1, y - 1, WIDTH + 2, QUARTER_HEIGHT + 2);
+            fillPathRect(g2d, bgcolor, MARGIN - 1, y - 1, WIDTH + 2, QUARTER_HEIGHT + 2);
 
             final int ns = 13;
             final int w = WIDTH / ns;
@@ -221,6 +246,12 @@ public class LineWidthColorGridTest {
                 g2d.fill(PATH);
             }
         }
+    }
+
+    private static void fillPathRect(final Graphics2D g2d, final Color color, int x, int y, int width, int height) {
+        g2d.setColor(color);
+        setPathRect(PATH, x, y, x + width, y + height);
+        g2d.fill(PATH);
     }
 
     private static final Path2D.Double PATH = new Path2D.Double();

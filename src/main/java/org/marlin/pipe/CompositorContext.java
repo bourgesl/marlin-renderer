@@ -23,11 +23,16 @@
  * questions.
  */package org.marlin.pipe;
 
+import java.awt.Color;
 import org.marlin.ReentrantContext;
 import org.marlin.pipe.BlendComposite.BlendingContext;
 import static org.marlin.pipe.MarlinCompositor.BLEND_QUALITY;
+import static org.marlin.pipe.MarlinCompositor.BLEND_SPEED;
 import static org.marlin.pipe.MarlinCompositor.USE_OLD_BLENDER;
+import sun.java2d.SunGraphics2D;
+import static sun.java2d.SunGraphics2D.PAINT_ALPHACOLOR;
 import sun.java2d.loops.SurfaceType;
+import static org.marlin.pipe.MarlinCompositor.BLEND_SPEED_COLOR;
 
 final class CompositorContext extends ReentrantContext {
 
@@ -45,9 +50,11 @@ final class CompositorContext extends ReentrantContext {
     };
      */
     // members
+    private final BlendComposite composite = new BlendComposite();
     private final GammaCompositePipe.TileContext gcp_tile_ctx = new GammaCompositePipe.TileContext();
     // lazy initialized blenders:
     private BlendingContext bcInt = null;
+    private BlendingContext bcIntCol = null;
     private BlendingContext bcByte = null;
 
     CompositorContext() {
@@ -58,22 +65,36 @@ final class CompositorContext extends ReentrantContext {
         // TODO !
     }
 
+    BlendComposite getComposite() {
+        return composite;
+    }
+
     GammaCompositePipe.TileContext getGammaCompositePipeTileContext() {
         return gcp_tile_ctx;
     }
 
-    BlendComposite.BlendingContext init(final BlendComposite composite, final SurfaceType sdt) {
+    BlendComposite.BlendingContext init(final BlendComposite composite, final SurfaceType sdt,
+                                        final SunGraphics2D sg) {
+
         if ((sdt == SurfaceType.IntArgb) || (sdt == SurfaceType.IntArgbPre)) {
+            if (BLEND_SPEED_COLOR && (sg.paintState <= PAINT_ALPHACOLOR)) {
+                if (bcIntCol == null) {
+                    bcIntCol = new BlendingContextIntARGBFastColor();
+                }
+                return bcIntCol.init(composite, sg);
+            }
             if (bcInt == null) {
                 bcInt = (USE_OLD_BLENDER) ? new BlendingContextIntSRGB()
-                        : ((BLEND_QUALITY) ? new BlendingContextIntARGBExact() : new BlendingContextIntARGB());
+                        : ((BLEND_SPEED) ? new BlendingContextIntARGBFast()
+                                : ((BLEND_QUALITY) ? new BlendingContextIntARGBExact()
+                                        : new BlendingContextIntARGB()));
             }
-            return bcInt.init(composite);
+            return bcInt.init(composite, sg);
         } else if ((sdt == SurfaceType.FourByteAbgr) || (sdt == SurfaceType.FourByteAbgrPre)) {
             if (bcByte == null) {
                 bcByte = new BlendingContextByteABGR();
             }
-            return bcByte.init(composite);
+            return bcByte.init(composite, sg);
         }
         return null;
     }

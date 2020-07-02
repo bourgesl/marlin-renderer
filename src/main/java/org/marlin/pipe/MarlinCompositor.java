@@ -35,9 +35,6 @@ public final class MarlinCompositor {
     public final static boolean ENABLE_COMPOSITOR = "true".equals(System.getProperty("sun.java2d.renderer.compositor", "true"))
             && isJava2dPipelinePatched();
 
-    public final static boolean ENABLE_FILL = ENABLE_COMPOSITOR
-            && "true".equals(System.getProperty("sun.java2d.renderer.compositor.fill", "true"));
-
     public final static double GAMMA_sRGB = 2.4;
     public final static double GAMMA_L_to_Y = 3.0;
 
@@ -54,7 +51,9 @@ public final class MarlinCompositor {
     public final static double LUMA_GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.blend.gamma",
             (USE_CONTRAST_L) ? GAMMA_L_to_Y : GAMMA_sRGB, 0.1, 3.0);
 
-    public final static boolean BLEND_QUALITY = "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
+    public final static boolean BLEND_SPEED = "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed", "true"));
+    public final static boolean BLEND_SPEED_COLOR = BLEND_SPEED && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed.color", "true"));
+    public final static boolean BLEND_QUALITY = !BLEND_SPEED && "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
 
     /* contrast adjustement (0..1) */
     public final static double BLEND_CONTRAST = MarlinProperties.getDouble("sun.java2d.renderer.contrast", 1.0, 0.0, 2.0);
@@ -66,10 +65,13 @@ public final class MarlinCompositor {
         System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor = " + ENABLE_COMPOSITOR);
 
         if (ENABLE_COMPOSITOR) {
-            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fill = " + ENABLE_FILL);
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.gamma = " + GAMMA);
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fix = " + BLEND_FIX);
+
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.quality = " + BLEND_QUALITY);
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.speed = " + BLEND_SPEED);
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.speed.color = " + BLEND_SPEED_COLOR);
+
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.blend.gamma = " + LUMA_GAMMA);
             if (FIX_CONTRAST && !USE_OLD_BLENDER) {
                 System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.contrast = " + BLEND_CONTRAST);
@@ -95,8 +97,8 @@ public final class MarlinCompositor {
     }
 
     public final static boolean isSupported(final SunGraphics2D sg) {
-
-        if (sg.composite instanceof AlphaComposite) {
+        if ((sg.compositeState <= SunGraphics2D.COMP_ALPHA)
+                && (sg.composite instanceof AlphaComposite)) {
             final AlphaComposite ac = (AlphaComposite) sg.composite;
 
             if (ac.getRule() != AlphaComposite.SRC_OVER) {
@@ -110,7 +112,7 @@ public final class MarlinCompositor {
 
     public final static boolean isSurfaceSupported(final SurfaceType sdt) {
         // check supported types (basic surfaces, not volatile or accelerated surfaces):
-        if ((sdt != SurfaceType.IntArgb) && (sdt != SurfaceType.IntArgbPre) // TODO: fix 4bytes belnding ...
+        if ((sdt != SurfaceType.IntArgb) && (sdt != SurfaceType.IntArgbPre) // TODO: fix 4bytes blending ...
                 /*  && (sdt != SurfaceType.FourByteAbgr) && (sdt != SurfaceType.FourByteAbgrPre) */) {
             System.out.println("Unsupported surface type: " + sdt);
             return false; // means invalid pipe
@@ -131,7 +133,30 @@ public final class MarlinCompositor {
         return settingsThreadLocal.get();
     }
 
-    public final static boolean isGammaCorrectionEnabled() {
-        return getCompositorSettings().isGammaCorrectionEnabled();
+    private static void test(final SunGraphics2D sg) {
+        CompositorSettings settings = null;
+
+        if (MarlinCompositor.ENABLE_COMPOSITOR) {
+            // check supported operations:
+            if (MarlinCompositor.isSupported(sg)) {
+                settings = MarlinCompositor.getCompositorSettings();
+                // Mark this pipeline to enable gamma-correction:
+                settings.setGammaCorrection(true);
+            }
+        }
+        try {
+            // Test using:
+            final CompositorSettings settings2 = (MarlinCompositor.ENABLE_COMPOSITOR) ? MarlinCompositor.getCompositorSettings() : null;
+
+            if (settings2 != null && settings2.isGammaCorrectionEnabled()) {
+                // OPS
+            }
+
+        } finally {
+            if (settings != null) {
+                settings.setGammaCorrection(false);
+            }
+        }
+
     }
 }
