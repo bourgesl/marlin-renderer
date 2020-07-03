@@ -51,7 +51,7 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
     BlendComposite.BlendingContext init(final BlendComposite composite, final SunGraphics2D sg) {
         // this._blender = BlendComposite.Blender.getBlenderFor(composite);
         this._extraAlpha = Math.round(127f * composite.extraAlpha); // [0; 127] ie 7 bits
-        
+
         // Prepare source pixel if constant in tile:
         if (sg.paintState <= PAINT_ALPHACOLOR) {
             // use Sungraphics2D.eargb = ie extra alpha is pre-blended into SRC ALPHA:
@@ -199,7 +199,6 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
         final long maskSkip = maskScan; // bytes
 
 //        final boolean checkPrev = (w >= 8) && (h >= 8); // higher probability (no info on density ie typical alpha ?
-        
         for (int j = 0; j < h; j++) {
             if (srcIn != null) {
                 offSrc = (y + j) * srcScan + x;
@@ -243,8 +242,12 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
                         }
 
                         if (doEA) {
-                            sa *= (extraAlpha << 1);
-                            sa = (sa + ((sa + 257) >> 8)) >> 8; // div 255
+                            if (DO_DIVIDE) {
+                                sa = (sa * (extraAlpha << 1)) / NORM_BYTE;
+                            } else {
+                                sa *= (extraAlpha << 1);
+                                sa = (sa + ((sa + 257) >> 8)) >> 8; // div 255
+                            }
                         }
 
                         sr = _unsafe.getInt(gam_addr_dir + (((pixel >> 16) & NORM_BYTE) << 2L));

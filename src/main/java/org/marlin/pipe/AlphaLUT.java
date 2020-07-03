@@ -35,7 +35,7 @@ import sun.misc.Unsafe;
 
 final class AlphaLUT {
 
-    protected final static boolean USE_BYTE = true;
+    protected final static boolean USE_BYTE = MarlinCompositor.BLEND_SPEED;
 
     protected final static boolean DEBUG_ALPHA_LUT = false;
 

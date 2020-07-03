@@ -26,27 +26,17 @@ package org.marlin.pipe;
 
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import static org.marlin.pipe.AlphaLUT.ALPHA_LUT;
-import static org.marlin.pipe.BlendComposite.GAMMA_LUT;
-import static org.marlin.pipe.BlendComposite.MASK_ALPHA;
-import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
-import static org.marlin.pipe.BlendComposite.NORM_BYTE;
-import static org.marlin.pipe.BlendComposite.NORM_BYTE7;
-import static org.marlin.pipe.BlendComposite.TILE_WIDTH;
 import static org.marlin.pipe.BlendComposite.luminance;
 import static org.marlin.pipe.BlendComposite.luminance4b;
-import static org.marlin.pipe.BlendComposite.LUMA_LUT;
-import static org.marlin.pipe.MarlinCompositor.FIX_CONTRAST;
-import static org.marlin.pipe.MarlinCompositor.FIX_LUM;
 
 final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
-    private final static boolean OPT_DIVIDE = false;
+    private final static boolean DO_DIVIDE = false;
 
     // recycled arrays into context (shared):
     // horiz arrays:
-    private int[] _srcPixels = new int[TILE_WIDTH];
-    private int[] _dstPixels = new int[TILE_WIDTH];
+    private int[] _srcPixels = new int[BlendComposite.TILE_WIDTH];
+    private int[] _dstPixels = new int[BlendComposite.TILE_WIDTH];
 
     BlendingContextIntARGB() {
         super();
@@ -76,22 +66,28 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
     void compose(final int srcRGBA, final Raster srcIn,
                  final WritableRaster dstOut,
                  final int x, final int y, final int w, final int h,
-                 final byte[] mask, final int maskoff, final int maskscan) {
+                 final byte[] mask, final int maskOff, final int maskScan) {
 
         /*
              System.out.println("srcIn = " + srcIn.getBounds());
              System.out.println("dstOut = " + dstOut.getBounds());
          */
-        final int[] gamma_dir = GAMMA_LUT.dir;
-        final int[] gamma_inv = GAMMA_LUT.inv;
-
-        final int[] luma_dir = LUMA_LUT.dir;
-        final int[] luma_inv = LUMA_LUT.inv;
-
-        final int[][][] alpha_tables = ALPHA_LUT.alphaTables;
-        int[][] src_alpha_tables = null;
-
         final int extraAlpha = this._extraAlpha; // 7 bits
+        final boolean doEA = (extraAlpha != BlendComposite.NORM_BYTE7);
+
+        final int[] gamma_dir = BlendComposite.GAMMA_LUT.dir;
+        final int[] gamma_inv = BlendComposite.GAMMA_LUT.inv;
+
+        final int[] luma_dir = BlendComposite.LUMA_LUT.dir;
+        final int[] luma_inv = BlendComposite.LUMA_LUT.inv;
+
+        final int MASK_ALPHA = BlendComposite.MASK_ALPHA;
+        final int NORM_ALPHA = BlendComposite.NORM_ALPHA;
+        final int NORM_BYTE = BlendComposite.NORM_BYTE;
+        final int NORM_BYTE7 = BlendComposite.NORM_BYTE7;
+
+        final int[][][] alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables;
+        int[][] src_alpha_tables = null;
 
 //            final BlendComposite.Blender blender = _blender;
         // use shared arrays:
@@ -115,17 +111,24 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
             // NOP
             // Gamma-correction on Linear RGBA: 
             // color components in range [0; 32385]
+            csa = (pixel >> 24) & NORM_BYTE;
+
+            if (csa == 0) {
+                // Invisible Source
+                // result = destination (already the case)
+                return;
+            }
+
             csr = gamma_dir[(pixel >> 16) & NORM_BYTE];
             csg = gamma_dir[(pixel >> 8) & NORM_BYTE];
             csb = gamma_dir[(pixel) & NORM_BYTE];
-            csa = (pixel >> 24) & NORM_BYTE;
 
             // c_srcPixel is Gamma-corrected Linear RGBA.
-            if (FIX_CONTRAST) {
+            if (MarlinCompositor.FIX_CONTRAST) {
                 ls = luminance4b(csr, csg, csb); // Y (4bits)
                 src_alpha_tables = alpha_tables[ls & 0x0F];
             }
-            if (FIX_LUM) {
+            if (MarlinCompositor.FIX_LUM) {
                 ls = luma_inv[luminance(csr, csg, csb)];
             }
         } else {
@@ -147,7 +150,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
             }
             dstOut.getDataElements(0, j, w, 1, dstPixels);
 
-            offTile = j * maskscan + maskoff;
+            offTile = j * maskScan + maskOff;
 
             for (int i = 0; i < w; i++) {
                 // pixels are stored as INT_ARGB
@@ -167,7 +170,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
                 if (srcIn == null) {
                     // short-cut ?
-                    if ((am == NORM_BYTE) && (csa == NORM_BYTE) && (extraAlpha == NORM_BYTE7)) {
+                    if ((am == NORM_BYTE) && (csa == NORM_BYTE)) {
                         // mask with full opacity
                         // output = source OVER (totally)
                         // Source pixel Linear RGBA:
@@ -187,16 +190,34 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                     // NOP
                     // Gamma-correction on Linear RGBA: 
                     // color components in range [0; 32385]
+                    sa = (pixel >> 24) & NORM_BYTE;
+
+                    if (sa == 0) {
+                        // Invisible Source
+                        // result = destination (already the case) 
+                        continue;
+                    }
+
+                    if (doEA) {
+                        if (DO_DIVIDE) {
+                            sa = (sa * (extraAlpha << 1)) / NORM_BYTE;
+                        } else {
+                            sa *= (extraAlpha << 1);
+                            sa = (sa + ((sa + 257) >> 8)) >> 8; // div 255
+                        }
+                    }
                     sr = gamma_dir[(pixel >> 16) & NORM_BYTE];
                     sg = gamma_dir[(pixel >> 8) & NORM_BYTE];
                     sb = gamma_dir[(pixel) & NORM_BYTE];
-                    sa = (pixel >> 24) & NORM_BYTE;
                 }
                 // srcPixel is Gamma-corrected Linear RGBA.
 
-                if (sa == 0) {
-                    // Invisible Source
-                    // result = destination (already the case) 
+                // short-cut ?
+                if ((am == NORM_BYTE) && (sa == NORM_BYTE)) {
+                    // mask with full opacity
+                    // output = source OVER (totally)
+                    // Source pixel Linear RGBA:
+                    dstPixels[i] = (srcIn != null) ? srcPixels[i] : srcRGBA;
                     continue;
                 }
 
@@ -204,16 +225,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 // Rs = As x Coverage
                 // alpha in range [0; 32385] (15bits)
                 // Apply extra alpha:
-                sa = (sa * am * extraAlpha) / NORM_BYTE; // TODO: avoid divide and use [0; 255]
-
-                // Ensure src not opaque to be properly blended below:
-                if (sa == NORM_ALPHA) {
-                    // mask with full opacity
-                    // output = source OVER (totally)
-                    // Source pixel Linear RGBA:
-                    dstPixels[i] = (srcIn != null) ? srcPixels[i] : srcRGBA;
-                    continue;
-                }
+                sa = (sa >> 1) * am;
 
                 // Destination pixel:
                 {
@@ -234,7 +246,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 }
                 // dstPixel is Gamma-corrected Linear RGBA.
 
-                if (FIX_CONTRAST) {
+                if (MarlinCompositor.FIX_CONTRAST) {
                     // in range [0; 32385] (15bits):
                     if (srcIn != null) {
                         ls = luminance4b(sr, sg, sb); // Y (4bits)
@@ -244,7 +256,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                     ld = luminance4b(dr, dg, db); // Y (4bits)
 
                     // ALPHA in range [0; 32385] (15bits):
-                    if (OPT_DIVIDE) {
+                    if (DO_DIVIDE) {
                         sa = src_alpha_tables[ld & 0x0F][(((sa + 65) * 129) >> 14) & NORM_BYTE]; // NO DIVIDE
                     } else {
                         sa = src_alpha_tables[ld & 0x0F][((sa + 63) / NORM_BYTE7) & NORM_BYTE]; // DIVIDE
@@ -277,14 +289,14 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 rg = (sg * fs + dg * fd) / alpha;
                 rb = (sb * fs + db * fd) / alpha;
                 // alpha in range [0; 255]
-                if (OPT_DIVIDE) {
+                if (DO_DIVIDE) {
                     ra = (((alpha + 65) * 129) >> 14); // NO DIVIDE
                 } else {
                     ra = alpha / NORM_BYTE7; // DIVIDE
                 }
 
                 // Brightness or Relative Luminance correction :
-                if (FIX_LUM) {
+                if (MarlinCompositor.FIX_LUM) {
                     // Idea from https://stackoverflow.com/questions/22607043/color-gradient-algorithm
 
                     // linear RGB luminance Result :

@@ -206,7 +206,7 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                 // Rs = As x Coverage
                 // alpha in range [0; 32385] (15bits)
                 // Apply extra alpha:
-                sa = (sa * am) / 2;
+                sa = (sa >> 1) * am;
 
                 // Ensure src not opaque to be properly blended below:
                 if (sa == NORM_ALPHA) {

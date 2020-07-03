@@ -51,9 +51,10 @@ public final class MarlinCompositor {
     public final static double LUMA_GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.blend.gamma",
             (USE_CONTRAST_L) ? GAMMA_L_to_Y : GAMMA_sRGB, 0.1, 3.0);
 
-    public final static boolean BLEND_SPEED = "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed", "true"));
+    public final static boolean BLEND_QUALITY = "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
+
+    public final static boolean BLEND_SPEED = !BLEND_QUALITY && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed", "true"));
     public final static boolean BLEND_SPEED_COLOR = BLEND_SPEED && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed.color", "true"));
-    public final static boolean BLEND_QUALITY = !BLEND_SPEED && "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
 
     /* contrast adjustement (0..1) */
     public final static double BLEND_CONTRAST = MarlinProperties.getDouble("sun.java2d.renderer.contrast", 1.0, 0.0, 2.0);
@@ -77,7 +78,7 @@ public final class MarlinCompositor {
                 System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.contrast = " + BLEND_CONTRAST);
             }
             System.out.println("INFO: Marlin Compositor: Gamma correction only supports following surface types [IntArgb]."); // , FourByteAbgr
-            System.out.println("INFO: Marlin Compositor: Premultiplied formats [IntArgbPre] are also working with lower visual quality."); // , FourByteAbgrPre
+            System.out.println("INFO: Marlin Compositor: Premultiplied formats [IntArgbPre] are working but not premultiplied (bad for alpha != 255)."); // , FourByteAbgrPre
         }
     }
 
