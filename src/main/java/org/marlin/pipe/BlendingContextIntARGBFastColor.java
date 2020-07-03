@@ -39,7 +39,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
 
     private final static boolean DO_DIVIDE = false;
 
-    private final static boolean UNSAFE_ALPHA_LUT = true;
+    private final static boolean UNSAFE_ALPHA_LUT = false;
 
     BlendingContextIntARGBFastColor() {
         super();
@@ -116,7 +116,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
         int[][] src_alpha_tables = null;
         int[] dst_alpha_tables = null;
 
-        long at_addr_ls, at_addr_ld = 0;
+        long at_addr_ls, at_addr_ld;
         int pixel, last_out_pixel = 0, last_dst_pixel = 0;
         int sa, sr, sg, sb;
         int da = 0, dr = 0, dg = 0, db = 0;
@@ -191,8 +191,10 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
             sb = _sb;
             if (UNSAFE_ALPHA_LUT) {
                 at_addr_ls = _at_addr_ls;
+                at_addr_ld = at_addr_ls; // for ld=0 (default)
             } else {
                 src_alpha_tables = _src_alpha_tables;
+                dst_alpha_tables = src_alpha_tables[0]; // for ld=0 (default)
             }
         }
 

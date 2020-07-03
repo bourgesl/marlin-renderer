@@ -185,6 +185,7 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
             sg = _sg;
             sb = _sb;
             src_alpha_tables = _src_alpha_tables;
+            dst_alpha_tables = src_alpha_tables[0]; // for ld=0 (default)
         } else {
             sa = 0;
             sr = 0;
