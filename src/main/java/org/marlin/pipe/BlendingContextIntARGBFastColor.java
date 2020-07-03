@@ -39,7 +39,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
 
     private final static boolean DO_DIVIDE = false;
 
-    private final static boolean UNSAFE_ALPHA_LUT = false;
+    private final static boolean UNSAFE_ALPHA_LUT = true;
 
     BlendingContextIntARGBFastColor() {
         super();
