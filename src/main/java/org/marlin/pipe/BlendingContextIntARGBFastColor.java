@@ -24,8 +24,6 @@
  */
 package org.marlin.pipe;
 
-import java.awt.Color;
-import java.awt.Paint;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -39,15 +37,15 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
 
     private final static boolean DO_DIVIDE = false;
 
-    private final static boolean UNSAFE_ALPHA_LUT = true;
-
     BlendingContextIntARGBFastColor() {
         super();
     }
 
     // members
+    private final long _gam_addr_dir = BlendComposite.GAMMA_LUT.LUT_UNSAFE_dir.start;
+    private final long _gam_addr_inv = BlendComposite.GAMMA_LUT.LUT_UNSAFE_inv.start;
+    private final long _at_addr = AlphaLUT.ALPHA_LUT.LUT_UNSAFE.start;
     private int _sa, _sr, _sg, _sb;
-    private int[][] _src_alpha_tables = null;
     private long _at_addr_ls;
 
     @Override
@@ -60,8 +58,8 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
             // use Sungraphics2D.eargb = ie extra alpha is pre-blended into SRC ALPHA:
             int pixel = sg.eargb;
 
-            final long gam_addr_dir = BlendComposite.GAMMA_LUT.LUT_UNSAFE_dir.start;
-            final long at_addr = (UNSAFE_ALPHA_LUT) ? AlphaLUT.ALPHA_LUT.LUT_UNSAFE.start : 0L;
+            final long gam_addr_dir = _gam_addr_dir;
+            final long at_addr = _at_addr;
 
             final int NORM_BYTE = BlendComposite.NORM_BYTE;
 
@@ -81,11 +79,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
             // c_srcPixel is Gamma-corrected Linear RGBA.
             int ls = luminance4b(_sr, _sg, _sb); // Y (4bits)
             // TODO: use sa to weight luminance ls ?
-            if (UNSAFE_ALPHA_LUT) {
-                _at_addr_ls = at_addr + (ls << 14);
-            } else {
-                _src_alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables[ls & 0x0F];
-            }
+            _at_addr_ls = at_addr + (ls << 14);
         }
         return this; // fluent API
     }
@@ -93,11 +87,10 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
     @Override
     void compose(final int srcRGBA, final Raster srcIn,
                  final WritableRaster dstOut,
-                 final int x, final int y, final int w, final int h,
+                 final int x, final int y, final int w, int h,
                  final byte[] mask, final int maskOff, final int maskScan) {
 
         // Ignore srcIn (color only)
-
         /*
              System.out.println("dstOut = " + dstOut.getBounds());
          */
@@ -106,16 +99,17 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
         final int dstScan = ((IntegerInterleavedRaster) dstOut).getScanlineStride();
 
 //            final BlendComposite.Blender blender = _blender;
-        final long gam_addr_dir = BlendComposite.GAMMA_LUT.LUT_UNSAFE_dir.start;
-        final long gam_addr_inv = BlendComposite.GAMMA_LUT.LUT_UNSAFE_inv.start;
+        final long gam_addr_dir = _gam_addr_dir;
+        final long gam_addr_inv = _gam_addr_inv;
 
-        final int NORM_ALPHA = BlendComposite.NORM_ALPHA;
         final int NORM_BYTE = BlendComposite.NORM_BYTE;
+        // less round precision but enough for now !
+//        final int NORM_BYTE7 = BlendComposite.NORM_BYTE7;
+//        final int NORM_ALPHA = BlendComposite.NORM_ALPHA;
 
 //        final int[][][] alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables;
-        int[][] src_alpha_tables = null;
-        int[] dst_alpha_tables = null;
-
+//        int[][] src_alpha_tables = null;
+//        int[] dst_alpha_tables = null;
         long at_addr_ls, at_addr_ld;
         int pixel, last_out_pixel = 0, last_dst_pixel = 0;
         int sa, sr, sg, sb;
@@ -141,15 +135,15 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
             if ((mask == null) && (sa == NORM_BYTE)) {
                 // mask with full opacity
                 // output = source OVER (totally)
-                if (USE_LONG && (w >= 4)) {
+                if (USE_LONG && (w >= 2)) {
                     final int w2 = (w >> 1);
                     final long l2_srcRGBA = (((long) srcRGBA) << 32L) + (srcRGBA & 0xFFFFFFFFL);
 
                     if ((w & 1) == 1) {
                         final long dstSkip = (dstScan - w + 1) << 2L; // ints
 
-                        for (int j = h; j > 0; --j) {
-                            for (int i = w2; i > 0; --i) {
+                        for (; --h >= 0;) {
+                            for (int i = w2; --i >= 0;) {
                                 _unsafe.putLong(dstBuffer, addrDst, l2_srcRGBA);
                                 addrDst += 8L;
                             }
@@ -161,8 +155,8 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                     // else:
                     final long dstSkip = (dstScan - w) << 2L; // ints
 
-                    for (int j = h; j > 0; --j) {
-                        for (int i = w2; i > 0; --i) {
+                    for (; --h >= 0;) {
+                        for (int i = w2; --i >= 0;) {
                             _unsafe.putLong(dstBuffer, addrDst, l2_srcRGBA);
                             addrDst += 8L;
                         }
@@ -173,8 +167,8 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                 // else:
                 final long dstSkip = (dstScan - w) << 2L; // ints
 
-                for (int j = h; j > 0; --j) {
-                    for (int i = w; i > 0; --i) {
+                for (; --h >= 0;) {
+                    for (int i = w; --i >= 0;) {
                         // pixels are stored as INT_ARGB
                         // our arrays are [R, G, B, A]
                         // Source pixel sRGBA:
@@ -189,91 +183,87 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
             sr = _sr;
             sg = _sg;
             sb = _sb;
-            if (UNSAFE_ALPHA_LUT) {
-                at_addr_ls = _at_addr_ls;
-                at_addr_ld = at_addr_ls; // for ld=0 (default)
-            } else {
-                src_alpha_tables = _src_alpha_tables;
-                dst_alpha_tables = src_alpha_tables[0]; // for ld=0 (default)
-            }
+            at_addr_ld = at_addr_ls = _at_addr_ls; // for ld=0 (default)
         }
 
+        // cases done: (sa == 0) and (sa == FF & mask null = FF)
         final long dstSkip = (dstScan - w) << 2L; // ints
 
         long addrMask = OffHeapArray.OFF_BYTE + maskOff; // bytes
-        final long maskSkip = maskScan; // bytes
+        final long maskSkip = maskScan - w; // bytes
 
 //        final boolean checkPrev = (w >= 8) && (h >= 8); // higher probability (no info on density ie typical alpha ?
-        for (int j = h; j > 0; --j) {
-            for (int i = 0; i < w; i++) {
+        for (; --h >= 0;) {
+            for (int i = w; --i >= 0;) {
+//            for (int i = 0; i < w; i++) {
                 // pixels are stored as INT_ARGB
                 // our arrays are [R, G, B, A]
 
                 // coverage is stored directly as byte in maskPixel:
-                am = (mask != null) ? (_unsafe.getByte(mask, addrMask + i) & NORM_BYTE) : NORM_BYTE;
-
+//                am = (mask != null) ? (_unsafe.getByte(mask, addrMask++) & NORM_BYTE) : NORM_BYTE; 
+                am = (mask != null) ? (_unsafe.getByte(mask, addrMask++) & NORM_BYTE) : NORM_BYTE;
                 /*
                  * coverage = 0 means translucent: 
                  * result = destination (already the case)
                  */
                 if (am != 0) {
                     // ELSE: coverage between [1;255]:
-
                     // srcPixel is Gamma-corrected Linear RGBA.
-                    // short-cut ?
                     if ((am == NORM_BYTE) && (sa == NORM_BYTE)) {
                         // mask with full opacity
                         // output = source OVER (totally)
                         // Source pixel sRGBA:
                         _unsafe.putInt(dstBuffer, addrDst, srcRGBA);
                     } else {
+                        // case done: (sa == FF & mask = FF)
+
                         // use heuristics: enable prev checks only for large tiles (higher probability) or FILLs only ?
                         boolean prev = USE_PREV_RES; // src pixel
 
                         // Destination pixel:
-                        {
-                            // Dest pixel Linear RGBA:
-                            pixel = _unsafe.getInt(dstBuffer, addrDst);
+                        // Dest pixel Linear RGBA:
+                        pixel = _unsafe.getInt(dstBuffer, addrDst);
 
-                            if (pixel != last_dst_pixel) {
-                                last_dst_pixel = pixel;
-                                if (USE_PREV_RES) {
-                                    prev = false;
-                                }
-
-                                // Linear RGBA components are not pre-multiplied by alpha:
-                                // NOP
-                                // Gamma-correction on Linear RGBA: 
-                                // color components in range [0; 32385]
-                                da = (pixel >> 24) & NORM_BYTE; // [0; 255]
-
-// TODO: TEST using not int by short + shift (smaller cache ?)
-                                dr = _unsafe.getInt(gam_addr_dir + (((pixel >> 16) & NORM_BYTE) << 2));
-                                dg = _unsafe.getInt(gam_addr_dir + (((pixel >> 8) & NORM_BYTE) << 2));
-                                db = _unsafe.getInt(gam_addr_dir + (((pixel) & NORM_BYTE) << 2));
-
-                                // in range [0; 32385] (15bits):
-                                ld = luminance4b(dr, dg, db); // Y (4bits)
-                                // TODO: use da to weight luminance ld ?
-                                if (UNSAFE_ALPHA_LUT) {
-                                    at_addr_ld = at_addr_ls + (ld << 10);
-                                } else {
-                                    dst_alpha_tables = src_alpha_tables[ld & 0x0F];
-                                }
+                        if (pixel != last_dst_pixel) {
+                            last_dst_pixel = pixel;
+                            if (USE_PREV_RES) {
+                                prev = false;
                             }
+
+                            // Linear RGBA components are not pre-multiplied by alpha:
+                            // NOP
+                            // Gamma-correction on Linear RGBA: 
+                            // color components in range [0; 32385]
+                            da = (pixel >> 24) & NORM_BYTE; // [0; 255]
+
+                            dr = _unsafe.getInt(gam_addr_dir + (((pixel >> 16) & NORM_BYTE) << 2));
+                            dg = _unsafe.getInt(gam_addr_dir + (((pixel >> 8) & NORM_BYTE) << 2));
+                            db = _unsafe.getInt(gam_addr_dir + (((pixel) & NORM_BYTE) << 2));
+
+                            // in range [0; 32385] (15bits):
+                            ld = luminance4b(dr, dg, db); // Y (4bits)
+                            // TODO: use da to weight luminance ld ?
+                            at_addr_ld = at_addr_ls + (ld << 10);
                         }
                         // dstPixel is Gamma-corrected Linear RGBA.
 
                         // fade operator:
                         // Rs = As x Coverage
-                        // Apply extra alpha:
-                        if (DO_DIVIDE) {
-                            alpha = (sa * am) / NORM_ALPHA; // ALPHA in range [0; 255]                            
+                        // ALPHA in range [0; 255]
+                        if (am == NORM_BYTE) {
+                            alpha = sa;
+                        } else if (sa == NORM_BYTE) {
+                            alpha = am;
                         } else {
-                            // DivideBy255(int value): return (value + 1 + (value >> 8)) >> 8;
-                            // or (((x) + (((x) + 257) >> 8)) >> 8)
-                            alpha = sa * am;
-                            alpha = (alpha + ((alpha + 257) >> 8)) >> 8; // div 255
+                            if (DO_DIVIDE) {
+                                alpha = (sa * am) / NORM_BYTE;
+                            } else {
+                                // DivideBy255(int value): return (value + 1 + (value >> 8)) >> 8;
+                                // or (((x) + (((x) + 257) >> 8)) >> 8)
+                                alpha = sa * am; // no-round
+                                // alpha = sa * am + NORM_BYTE7; // round
+                                alpha = (alpha + ((alpha + 257) >> 8)) >> 8; // div 255
+                            }
                         }
 
                         if (USE_PREV_RES && (alpha != last_alpha)) {
@@ -287,11 +277,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                             _unsafe.putInt(dstBuffer, addrDst, last_out_pixel);
                         } else {
                             // Adjust ALPHA (linear in L*):
-                            if (UNSAFE_ALPHA_LUT) {
-                                alpha = _unsafe.getInt(at_addr_ld + (alpha << 2)); // ALPHA in range [0; 255]
-                            } else {
-                                alpha = dst_alpha_tables[alpha & NORM_BYTE]; // ALPHA in range [0; 255]
-                            }
+                            alpha = _unsafe.getInt(at_addr_ld + (alpha << 2)); // ALPHA in range [0; 255]
 
                             // Ported-Duff rules in action:
                             // R = S x fs + D x fd
@@ -302,17 +288,23 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                             fs = (alpha); // alpha
 
                             // fix da -> alpha:
-                            if (DO_DIVIDE) {
-                                fd = (da * (NORM_BYTE - alpha)) / NORM_BYTE; // TODO: avoid divide and use [0; 255]
-                            } else {
-                                fd = da * (NORM_BYTE - alpha);
-                                fd = (fd + ((fd + 257) >> 8)) >> 8; // div 255
+                            fd = (NORM_BYTE - alpha);
+
+                            if ((da != NORM_BYTE) && (fd != 0)) {
+                                if (DO_DIVIDE) {
+                                    fd = (da * fd) / NORM_BYTE; // TODO: avoid divide and use [0; 255]
+                                } else {
+                                    fd *= da; // no-round
+                                    // fd = fd * da + NORM_BYTE7; // round
+                                    fd = (fd + ((fd + 257) >> 8)) >> 8; // div 255
+                                }
                             }
 
-//                              blender.blend(srcPixel, dstPixel, fs, fd, result);
+                            //                    blender.blend(srcPixel, dstPixel, fs, fd, result);
                             // ALPHA in range [0; 255]
                             alpha = fs + fd;
 
+                            // TODO: special case ALPHA = 0xFF to do fix divide !
                             if (alpha == 0) {
                                 // output = none
                                 // Source pixel Linear RGBA:
@@ -322,17 +314,29 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                                 }
                             } else {
                                 // alpha in range [0; 255]
-                                ra = alpha;
                                 // color components in range [0; 32385]
-                                // no overflow: 15b + 15b < 31b
-                                rr = (sr * fs + dr * fd) / alpha;
-                                rg = (sg * fs + dg * fd) / alpha;
-                                rb = (sb * fs + db * fd) / alpha;
+                                // no overflow: 15b + 8b
+                                rr = (sr * fs + dr * fd);
+                                rg = (sg * fs + dg * fd);
+                                rb = (sb * fs + db * fd);
+
+                                if (DO_DIVIDE || (alpha != NORM_BYTE)) {
+                                    rr /= alpha;
+                                    rg /= alpha;
+                                    rb /= alpha;
+                                } else {
+                                    // rr += NORM_BYTE7; // round
+                                    rr = (rr + ((rr + 257) >> 8)) >> 8; // div 255
+                                    // rg += NORM_BYTE7; // round
+                                    rg = (rg + ((rg + 257) >> 8)) >> 8; // div 255
+                                    // rb += NORM_BYTE7; // round
+                                    rb = (rb + ((rb + 257) >> 8)) >> 8; // div 255
+                                }
 
                                 // result is Gamma-corrected Linear RGBA.
                                 // Inverse Gamma-correction on Linear RGBA: 
                                 // color components in range [0; 32385]
-                                pixel = (ra << 24)
+                                pixel = (alpha << 24)
                                         | (_unsafe.getInt(gam_addr_inv + (rr << 2))) << 16
                                         | (_unsafe.getInt(gam_addr_inv + (rg << 2))) << 8
                                         | (_unsafe.getInt(gam_addr_inv + (rb << 2)));
