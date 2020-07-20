@@ -47,7 +47,6 @@ public final class CompositorSettings {
     public CompositorContext getCompositorContext() {
         if (ctx == null) {
             ctx = new CompositorContext();
-            // System.out.println("new CompositorContext");
         }
         return ctx;
     }

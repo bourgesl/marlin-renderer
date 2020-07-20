@@ -253,7 +253,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                             at_addr_a = at_addr;
                             if (ld != 0) {
                                 // lookup offset to table:
-                                at_addr_a += _unsafe.getInt(ai_addr_ls 
+                                at_addr_a += _unsafe.getInt(ai_addr_ls
                                         + (_unsafe.getInt(lt_addr + (ld << 2)) << 2));
                             }
                         }

@@ -68,6 +68,8 @@ public final class MarlinCompositor {
 
     public final static boolean USE_OLD_BLENDER = (GAMMA == 1.0);
 
+    private final static boolean TRACE_INVALID_SURFACE = false;
+
     static {
         System.out.println("INFO: Marlin Compositor (Java implementation of correct alpha compositing)");
         System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor = " + ENABLE_COMPOSITOR);
@@ -123,7 +125,9 @@ public final class MarlinCompositor {
         // check supported types (basic surfaces, not volatile or accelerated surfaces):
         if ((sdt != SurfaceType.IntArgb) && (sdt != SurfaceType.IntArgbPre) // TODO: fix 4bytes blending ...
                 /*  && (sdt != SurfaceType.FourByteAbgr) && (sdt != SurfaceType.FourByteAbgrPre) */) {
-            System.out.println("Unsupported surface type: " + sdt);
+            if (TRACE_INVALID_SURFACE) {
+                System.out.println("Unsupported surface type: " + sdt);
+            }
             return false; // means invalid pipe
         }
         // System.out.println("Supported surface type: " + sdt);
@@ -142,7 +146,7 @@ public final class MarlinCompositor {
         return settingsThreadLocal.get();
     }
 
-    private static void test(final SunGraphics2D sg) {
+    private static void testGammaCorrectionEnabled(final SunGraphics2D sg) {
         CompositorSettings settings = null;
 
         if (MarlinCompositor.ENABLE_COMPOSITOR) {

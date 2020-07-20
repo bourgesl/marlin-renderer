@@ -43,8 +43,6 @@ final class CompositorContext extends ReentrantContext {
                     ReentrantContextProvider.REF_HARD) {
         @Override
         protected CompositorContext newContext() {
-
-            System.out.println("new CompositorContext");
             return new CompositorContext();
         }
     };
