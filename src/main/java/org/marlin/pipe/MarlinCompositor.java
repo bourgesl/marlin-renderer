@@ -61,7 +61,7 @@ public final class MarlinCompositor {
     public final static boolean BLEND_QUALITY = "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
 
     public final static boolean BLEND_SPEED = !BLEND_QUALITY && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed", "true"));
-    public final static boolean BLEND_SPEED_COLOR = BLEND_SPEED && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed.color", "false"));
+    public final static boolean BLEND_SPEED_COLOR = BLEND_SPEED && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed.color", "true"));
 
     /* contrast adjustement (0..1) */
     public final static double BLEND_CONTRAST = MarlinProperties.getDouble("sun.java2d.renderer.contrast", 1.0, 0.0, 2.0);
