@@ -15,20 +15,21 @@ import org.jfree.data.function.Function2D;
 import org.jfree.data.general.DatasetUtils;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.marlin.pipe.AlphaLUT;
 import org.marlin.pipe.BlendComposite;
 import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
 
 /**
- * Basic Plot of sRGB, Y to L and gamma functions
+ * Basic Plot of constrast functions
  */
-public class ColorFunctionPlot extends ApplicationFrame {
+public class ContrastFunctionPlot extends ApplicationFrame {
 
     /**
      * Creates a new demo.
      *
      * @param title  the frame title.
      */
-    public ColorFunctionPlot(final String title) {
+    public ContrastFunctionPlot(final String title) {
         super(title);
         JPanel chartPanel = createDemoPanel();
         chartPanel.setPreferredSize(new java.awt.Dimension(2000, 2000));
@@ -66,73 +67,76 @@ public class ColorFunctionPlot extends ApplicationFrame {
         final double end = 1.0;
 
         final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
-            @Override
-            public double getValue(final double x) {
-                return x;
+
+        // show alphatables:
+        final int[][][] alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables;
+        if (alpha_tables != null) {
+            dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
+                @Override
+                public double getValue(final double x) {
+                    return x;
+                }
+            }, start, end, samples, "Identity Profile"));
+
+            final int nLuma = alpha_tables.length; // first dim
+            final int[] luma_values = AlphaLUT.ALPHA_LUT.lumaValues;
+
+            final int l_ref = 0;
+
+            // show table[ls=0][ld=0..max]
+            for (int i = 0; i < nLuma; i++) {
+                final int l_idx = i;
+                final int[] alphas = alpha_tables[l_ref][i];
+
+                dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
+                    @Override
+                    public double getValue(final double x) {
+                        final int n = (int) Math.round(255.0 * x);
+                        return alphas[n] / 255.0 + (l_idx / 10000.0);
+                    }
+                }, start, end, samples, "alpha_tables[Y=" + (luma_values[l_ref] / 1023.0) + "]"
+                        + "[Y=" + (luma_values[l_idx] / 1023.0) + "] Profile"));
             }
-        }, start, end, samples, "Linear"));
-
-        if (true) {
-            dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
-                @Override
-                public double getValue(final double x) {
-                    return BlendComposite.GAMMA_LUT.sRGB_to_RGB(x);
-                }
-            }, start, end, samples, "sRGB dir"));
-
-            dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
-                @Override
-                public double getValue(final double x) {
-                    return BlendComposite.GAMMA_LUT.RGB_to_sRGB(x);
-                }
-            }, start, end, samples, "sRGB inv"));
         }
+
         if (false) {
             dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
                 @Override
                 public double getValue(final double x) {
-                    return BlendComposite.GAMMA_LUT.Y_to_L(x);
+                    return 1.0 - x;
                 }
-            }, start, end, samples, "Y2L dir"));
-            if (false) {
-                dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
-                    @Override
-                    public double getValue(final double x) {
-                        return x / 9.033;
-                    }
-                }, start, end, samples, "Y2L dir LIN"));
-            }
+            }, start, end, samples, "Normal Edge Profile"));
 
             dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
                 @Override
                 public double getValue(final double x) {
-                    return BlendComposite.GAMMA_LUT.L_to_Y(x);
+                    final double alpha = x + (1.0 - x) * 0.25 * x;
+                    return 1.0 - alpha;
                 }
-            }, start, end, samples, "Y2L inv"));
-            if (false) {
-                dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
-                    @Override
-                    public double getValue(final double x) {
-                        return x * 9.033;
-                    }
-                }, start, end, samples, "Y2L inv LIN"));
-            }
-        }
-        if (false) {
-            dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
-                @Override
-                public double getValue(final double x) {
-                    return BlendComposite.LUMA_LUT.dir(x * NORM_ALPHA) / NORM_ALPHA;
-                }
-            }, start, end, samples, "Luma dir"));
+            }, start, end, samples, "Contrast +25% Edge Profile"));
 
             dataset.addSeries(DatasetUtils.sampleFunction2DToSeries(new Function2D() {
+                private final static double w = 0.56789789;
+                private final static double a = 1.0 / (w - 1.0);
+
                 @Override
                 public double getValue(final double x) {
-                    return BlendComposite.LUMA_LUT.inv(x * NORM_ALPHA) / NORM_ALPHA;
+                    // y = ax + b
+                    if (x <= w) {
+                        // y(w) = 1.0 =>    a * w + b = 1
+                        return 1.0;
+                    }
+                    // y(1) = 0 = a + b
+
+                    // solution:
+                    // a + b = 0
+                    // a * w + b = 1
+                    // b = -a
+                    // => a * ( w - 1 ) = 1 
+                    // => a = 1 / ( w - 1 )
+                    return a * (x - 1.0);
                 }
-            }, start, end, samples, "Luma inv"));
+            }, start, end, samples, "Shifted Edge profile"));
         }
         return dataset;
     }
@@ -148,8 +152,8 @@ public class ColorFunctionPlot extends ApplicationFrame {
         // create the chart...
         final JFreeChart chart = ChartFactory.createXYLineChart(
                 "Color Functions ", // chart title
-                "Y (intensity)", // x axis label
-                "L (brightness)", // y axis label
+                "X", // x axis label
+                "Y", // y axis label
                 dataset, // data
                 PlotOrientation.VERTICAL,
                 true, // include legend
@@ -183,10 +187,7 @@ public class ColorFunctionPlot extends ApplicationFrame {
      * @param args  ignored.
      */
     public static void main(String[] args) {
-
-        System.setProperty("sun.java2d.renderer.blend.gamma", "3.0");
-
-        final ColorFunctionPlot plot = new ColorFunctionPlot("Color Function Plot");
+        final ContrastFunctionPlot plot = new ContrastFunctionPlot("Contrast Function Plot");
         plot.pack();
         UIUtils.centerFrameOnScreen(plot);
         plot.setVisible(true);

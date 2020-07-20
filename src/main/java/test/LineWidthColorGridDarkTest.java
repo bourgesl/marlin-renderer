@@ -45,11 +45,11 @@ import org.marlin.pisces.MarlinProperties;
 /**
  * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers
  */
-public class LineWidthColorGridTest {
-    
-    private final static int SCALE = 1;
+public class LineWidthColorGridDarkTest {
 
-    private final static int N = 20;
+    private final static int N = 5;
+
+    private final static boolean USE_ALPHA = false;
 
     private final static boolean DO_LINES = true;
 
@@ -57,28 +57,38 @@ public class LineWidthColorGridTest {
 
     private final static boolean DO_RAMP = true;
 
-    private final static String FILE_NAME = "LineWidthColorGridTest_";
+    private final static String FILE_NAME = "LineWidthColorGridDarkTest_"
+            + ((USE_ALPHA) ? "alpha_" : "");
 
-    private final static Color[] COLORS = new Color[]{
-        Color.BLACK,
-        Color.GRAY,
-        Color.WHITE,
-        Color.RED,
-        Color.GREEN,
-        Color.BLUE,
-        Color.MAGENTA,
-        Color.YELLOW,
-        Color.CYAN
-    };
-    /*
-    private final static Color[] COLORS = new Color[]{
-        Color.BLACK,
-        Color.BLUE,};
-     */
- /* PINK, ORANGE */
+    // Dark colors:
+    private final static Color BG_COLOR = (USE_ALPHA) ? Color.BLACK : Color.GRAY;
+
+    //  [Y] = [0.2126729  0.7151522  0.0721750] [RGB linear]     
+    /* take car to use only colors with ALPHA=1.0 (to avoid overlapping issues) */
+    private final static Color[] COLORS = (USE_ALPHA)
+            ? new Color[]{
+                Color.BLACK,
+                Color.DARK_GRAY, // 1/4 = 0.25
+                new Color(255, 0, 0, 128), // RED:      0.2 * 0.50 = 0.1
+                new Color(0, 255, 0, 32), // GREEN:    0.7 * 0.125 = 0.0875
+                Color.BLUE, // BLUE:     0.07
+                new Color(255, 0, 0, 64), // DARK RED:      0.2 * 0.25 = 0.05
+                new Color(0, 255, 0, 16), // DARK GREEN:   0.7 / 16 = 0.04375
+                new Color(0, 0, 255, 64) // DARK BLUE:    0.07 * 0.25 = 0.0175
+            }
+            : new Color[]{
+                Color.BLACK,
+                Color.DARK_GRAY, // 1/4 = 0.25
+                new Color(128, 0, 0), // RED:      0.2 * 0.50 = 0.1
+                new Color(0, 32, 0), // GREEN:    0.7 * 0.125 = 0.0875
+                Color.BLUE, // BLUE:     0.07
+                new Color(64, 0, 0), // DARK RED:      0.2 * 0.25 = 0.05
+                new Color(0, 16, 0), // DARK GREEN:   0.7 / 16 = 0.04375
+                new Color(0, 0, 64) // DARK BLUE:    0.07 * 0.25 = 0.0175
+            };
 
     private final static int MARGIN = 8;
-    private final static int WIDTH = 128; // gradient
+    private final static int WIDTH = 13 * 10; // gradient
     private final static int HALF_HEIGHT = 52;
     private final static int QUARTER_HEIGHT = 30;
 
@@ -92,10 +102,10 @@ public class LineWidthColorGridTest {
 
         final int nColors = COLORS.length;
 
-        final int width = SCALE * square * nColors;
+        final int width = square * nColors;
         final int height = width;
 
-        System.out.println("LineWidthColorGridTest: size = " + width + " x " + height);
+        System.out.println("LineWidthColorGridDarkTest: size = " + width + " x " + height);
 
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
@@ -111,7 +121,6 @@ public class LineWidthColorGridTest {
         g2d.setClip(0, 0, width, height);
 
         final AffineTransform ident = g2d.getTransform();
-        ident.scale(SCALE, SCALE);
 
         for (int n = 0; n < N; n++) {
             paint(g2d, ident, width, height, square);
@@ -140,7 +149,7 @@ public class LineWidthColorGridTest {
 
         g2d.setTransform(ident);
 
-        fillPathRect(g2d, Color.LIGHT_GRAY, 0, 0, width, height); // unused color
+        fillPathRect(g2d, BG_COLOR, 0, 0, width, height); // unused color
 
         final long start = System.nanoTime();
 
@@ -234,13 +243,18 @@ public class LineWidthColorGridTest {
 
             fillPathRect(g2d, bgcolor, MARGIN - 1, y - 1, WIDTH + 2, QUARTER_HEIGHT + 2);
 
-            final int ns = 32;
+            final int ns = 13;
             final int w = WIDTH / ns;
 
+            final double sa = color.getAlpha();
+            final int sr = color.getRed();
+            final int sg = color.getGreen();
+            final int sb = color.getBlue();
+
             for (int i = 0; i < ns; i++) {
-                final int a = (int) Math.round((255.0 * i) / (ns - 1));
+                final int a = (int) Math.round((sa * i) / (ns - 1));
                 // System.out.println("alpha: " + a);
-                g2d.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), a));
+                g2d.setColor(new Color(sr, sg, sb, a));
                 // TODO: fix fill rect (ref rountines)
                 final double x1 = MARGIN + (i * w);
                 final double x2 = x1 + w;
@@ -272,11 +286,10 @@ public class LineWidthColorGridTest {
         dy = width * (x2 - x1) / d;
 
         path.reset();
-        // CW orientation:
-        path.moveTo(x1 + dx, y1 - dy);
-        path.lineTo(x2 + dx, y2 - dy);
+        path.moveTo(x1 - dx, y1 + dy);
         path.lineTo(x2 - dx, y2 + dy);
-        path.lineTo(x1 - dx, y1 + dy);
+        path.lineTo(x2 + dx, y2 - dy);
+        path.lineTo(x1 + dx, y1 - dy);
         path.closePath();
     }
 
@@ -284,7 +297,6 @@ public class LineWidthColorGridTest {
                                     final double x1, final double y1,
                                     final double x2, final double y2) {
         path.reset();
-        // CW orientation:
         path.moveTo(x1, y1);
         path.lineTo(x2, y1);
         path.lineTo(x2, y2);

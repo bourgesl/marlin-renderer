@@ -32,16 +32,23 @@ import sun.java2d.pipe.AlphaColorPipe;
 
 public final class MarlinCompositor {
 
-    public final static boolean ENABLE_COMPOSITOR = "true".equals(System.getProperty("sun.java2d.renderer.compositor", "true"))
-            && isJava2dPipelinePatched();
-
     public final static double GAMMA_sRGB = 2.4;
     public final static double GAMMA_L_to_Y = 3.0;
+
+    public final static boolean ENABLE_COMPOSITOR = "true".equals(System.getProperty("sun.java2d.renderer.compositor", "true"))
+            && isJava2dPipelinePatched();
 
     /* 2.4 is the standard sRGB gamma */
     public final static double GAMMA = MarlinProperties.getDouble("sun.java2d.renderer.gamma", GAMMA_sRGB, 0.1, 3.0);
 
-    public final static String BLEND_FIX = System.getProperty("sun.java2d.renderer.compositor.fix", "contrastL"); // 'contrast' or 'lum'
+    // perceptual or hybrid or linear
+    public final static String BLEND_MODE = System.getProperty("sun.java2d.renderer.compositor.mode", "hybrid");
+
+    public final static boolean IS_LINEAR = "linear".equals(BLEND_MODE);
+    public final static boolean IS_PERCEPTUAL = "perceptual".equals(BLEND_MODE);
+
+    // 'contrast' or 'contrastL' or 'lum'
+    public final static String BLEND_FIX = (IS_LINEAR) ? "linear" : System.getProperty("sun.java2d.renderer.compositor.fix", "contrast");
 
     public final static boolean FIX_LUM = BLEND_FIX.equals("lum");
     public final static boolean FIX_CONTRAST = BLEND_FIX.startsWith("contrast");
@@ -54,7 +61,7 @@ public final class MarlinCompositor {
     public final static boolean BLEND_QUALITY = "true".equals(System.getProperty("sun.java2d.renderer.compositor.quality", "false"));
 
     public final static boolean BLEND_SPEED = !BLEND_QUALITY && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed", "true"));
-    public final static boolean BLEND_SPEED_COLOR = BLEND_SPEED && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed.color", "true"));
+    public final static boolean BLEND_SPEED_COLOR = BLEND_SPEED && "true".equals(System.getProperty("sun.java2d.renderer.compositor.speed.color", "false"));
 
     /* contrast adjustement (0..1) */
     public final static double BLEND_CONTRAST = MarlinProperties.getDouble("sun.java2d.renderer.contrast", 1.0, 0.0, 2.0);
@@ -67,6 +74,7 @@ public final class MarlinCompositor {
 
         if (ENABLE_COMPOSITOR) {
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.gamma = " + GAMMA);
+            System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.mode = " + BLEND_MODE);
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.fix = " + BLEND_FIX);
 
             System.out.println("INFO: Marlin Compositor: sun.java2d.renderer.compositor.quality = " + BLEND_QUALITY);

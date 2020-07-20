@@ -27,7 +27,7 @@ package org.marlin.pipe;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import static org.marlin.pipe.BlendComposite.luminance;
-import static org.marlin.pipe.BlendComposite.luminance4b;
+import static org.marlin.pipe.BlendComposite.luminance10b;
 
 final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
@@ -86,6 +86,7 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
         final int NORM_BYTE = BlendComposite.NORM_BYTE;
         final int NORM_BYTE7 = BlendComposite.NORM_BYTE7;
 
+        final int[] luma_table = AlphaLUT.ALPHA_LUT.lumaTable;
         final int[][][] alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables;
         int[][] src_alpha_tables = null;
 
@@ -125,8 +126,8 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
 
             // c_srcPixel is Gamma-corrected Linear RGBA.
             if (MarlinCompositor.FIX_CONTRAST) {
-                ls = luminance4b(csr, csg, csb); // Y (4bits)
-                src_alpha_tables = alpha_tables[ls & 0x0F];
+                ls = luminance10b(csr, csg, csb); // Y (10bits)
+                src_alpha_tables = alpha_tables[luma_table[ls]];
             }
             if (MarlinCompositor.FIX_LUM) {
                 ls = luma_inv[luminance(csr, csg, csb)];
@@ -249,17 +250,16 @@ final class BlendingContextIntARGB extends BlendComposite.BlendingContext {
                 if (MarlinCompositor.FIX_CONTRAST) {
                     // in range [0; 32385] (15bits):
                     if (srcIn != null) {
-                        ls = luminance4b(sr, sg, sb); // Y (4bits)
-                        src_alpha_tables = alpha_tables[ls & 0x0F];
+                        ls = luminance10b(csr, csg, csb); // Y (10bits)
+                        src_alpha_tables = alpha_tables[luma_table[ls]];
                     }
-                    // TODO: try caching last luminance computation ?
-                    ld = luminance4b(dr, dg, db); // Y (4bits)
+                    ld = luminance10b(dr, dg, db); // Y (10bits)
 
                     // ALPHA in range [0; 32385] (15bits):
                     if (DO_DIVIDE) {
-                        sa = src_alpha_tables[ld & 0x0F][(((sa + 65) * 129) >> 14) & NORM_BYTE]; // NO DIVIDE
+                        sa = src_alpha_tables[luma_table[ld]][(((sa + 65) * 129) >> 14) & NORM_BYTE]; // NO DIVIDE
                     } else {
-                        sa = src_alpha_tables[ld & 0x0F][((sa + 63) / NORM_BYTE7) & NORM_BYTE]; // DIVIDE
+                        sa = src_alpha_tables[luma_table[ld]][((sa + 63) / NORM_BYTE7) & NORM_BYTE]; // DIVIDE
                     }
                 }
 

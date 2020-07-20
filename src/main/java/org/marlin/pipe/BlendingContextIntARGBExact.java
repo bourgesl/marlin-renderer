@@ -28,15 +28,17 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import static org.marlin.pipe.BlendComposite.CONTRAST;
 import static org.marlin.pipe.BlendComposite.GAMMA_LUT;
+import static org.marlin.pipe.BlendComposite.LUMA_LUT;
 import static org.marlin.pipe.BlendComposite.MASK_ALPHA;
 import static org.marlin.pipe.BlendComposite.NORM_ALPHA;
-import static org.marlin.pipe.BlendComposite.NORM_BYTE;
 import static org.marlin.pipe.BlendComposite.NORM_BYTE7;
 import static org.marlin.pipe.BlendComposite.TILE_WIDTH;
 import static org.marlin.pipe.BlendComposite.luminance;
-import static org.marlin.pipe.BlendComposite.LUMA_LUT;
+import static org.marlin.pipe.BlendComposite.NORM_BYTE;
 import static org.marlin.pipe.MarlinCompositor.FIX_CONTRAST;
 import static org.marlin.pipe.MarlinCompositor.FIX_LUM;
+import static org.marlin.pipe.MarlinCompositor.IS_PERCEPTUAL;
+import static org.marlin.pipe.MarlinCompositor.USE_CONTRAST_L;
 
 final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
 
@@ -97,7 +99,7 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
         int dr, dg, db, da;
         int rr, rg, rb, ra;
 
-        int ls = 0, lls = 0;
+        int ls = 0;
         double dls = 0.0;
 
         // Prepare source pixel if constant in tile:
@@ -117,10 +119,7 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
             // c_srcPixel is Gamma-corrected Linear RGBA.
             if (FIX_CONTRAST) {
                 ls = luminance(csr, csg, csb); // Y
-                lls = luma_dir[ls]; // linear
-                dls = LUMA_LUT.dir(ls);
-
-                // System.out.println("sb: " + csb + " ls: " + ls + " lls: " + lls + " dls: " + dls);
+                dls = (USE_CONTRAST_L) ? ls : LUMA_LUT.dir(ls); // linear Y
             }
             if (FIX_LUM) {
                 ls = luma_inv[luminance(csr, csg, csb)];
@@ -132,11 +131,11 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
             csa = 0;
         }
 
-        int am, alpha, fs, fd;
+        int am, alpha, old_alpha, fs, fd;
         int offTile;
 
-        int ld, lld, ll_old, lro, lr;
-        double dld, dl_old, dlro, dlr;
+        int ld, lro, lr;
+        double dld, dl_old;
 
         for (int j = 0; j < h; j++) {
             // TODO: use directly DataBufferInt (offsets + stride)
@@ -189,9 +188,9 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                     sg = gamma_dir[(pixel >> 8) & NORM_BYTE];
                     sb = gamma_dir[(pixel) & NORM_BYTE];
                     sa = (pixel >> 24) & NORM_BYTE;
-                    
+
                     if (extraAlpha != NORM_BYTE7) {
-                         sa = (sa * extraAlpha + 63) / NORM_BYTE7;
+                        sa = (sa * extraAlpha + 63) / NORM_BYTE7;
                     }
                 }
                 // srcPixel is Gamma-corrected Linear RGBA.
@@ -240,37 +239,44 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                     // in range [0; 32385] (15bits):
                     if (srcIn != null) {
                         ls = luminance(sr, sg, sb); // Y
-                        lls = luma_dir[ls]; // linear
-                        dls = LUMA_LUT.dir(ls);
+                        dls = (USE_CONTRAST_L) ? ls : LUMA_LUT.dir(ls); // linear Y
                     }
                     ld = luminance(dr, dg, db); // Y
-
-                    lld = luma_dir[ld]; // linear
-                    dld = LUMA_LUT.dir(ld);
+                    dld = (USE_CONTRAST_L) ? ld : LUMA_LUT.dir(ld); // linear Y
 
                     // System.out.println("db: " + db + " ld: " + ld + " lld: " + lld + " dld: " + dld + " sa: " + sa);
-
                     if (dls != dld) {
                         // Precompute adjusted alpha:
-                        alpha = sa;
+                        old_alpha = alpha = sa;
 
-                        // shifts faster (but better precision) :
-                        // [0; 32385]: alpha in [0; 255] x [0; 7] * 16
-                        dl_old = LUMA_LUT.dir((ls * alpha + ld * (NORM_ALPHA - alpha)) / NORM_ALPHA); // round-off
-                        dlr = (dls * alpha + dld * (NORM_ALPHA - alpha)) / NORM_ALPHA; // eq (1) linear RGB
+                        if (USE_CONTRAST_L) {
+                            // Use L*(CIE) to interpolate among L*(Y) values:
+                            // linear interpolation on L -> Y
+                            // [0; 32385]:
+                            dl_old = LUMA_LUT.dir(
+                                    (LUMA_LUT.inv(dls) * old_alpha + LUMA_LUT.inv(dld) * (NORM_ALPHA - old_alpha)) / NORM_ALPHA
+                            );
+                        } else {
+                            // Use LUMA_LUT(Linear RGB) to interpolate among Y values:
+                            // linear interpolation on Y
+                            // [0; 32385]:
+                            dl_old = LUMA_LUT.dir(
+                                    ((double) (ls * old_alpha + ld * (NORM_ALPHA - old_alpha))) / NORM_ALPHA
+                            );
+                        }
 
-                        // System.out.println("dl_old: " + dl_old + " dlr: " + dlr);
-
-                        if (dl_old != dlr) {
+                        if (dl_old != dld) {
                             // [0; 32385] / [0; 32385] 
-                            // compare linear luminance:
-                            final int delta = (int)Math.round(((NORM_BYTE7 * CONTRAST) * (dlr - dl_old)) / (dld - dls)); // 127 x 255 range
+                            alpha = (int) Math.round((NORM_ALPHA * (dl_old - dld)) / (dls - dld)); // 127 x 255 range
 
-                            // System.out.println("alpha: " + alpha + " delta: " + delta);
-
-                            if (delta != 0) {
-                                alpha += delta;
-
+                            if (alpha != old_alpha) {
+                                // Only add light, never remove:
+                                if (!IS_PERCEPTUAL && (alpha < old_alpha)) {
+                                    alpha = old_alpha;
+                                } else if (CONTRAST != NORM_BYTE) {
+                                    // adjust contrast:
+                                    alpha = old_alpha + ((alpha - old_alpha) * CONTRAST + NORM_BYTE7) / NORM_BYTE;
+                                }
                                 // clamp alpha:
                                 if (alpha > NORM_ALPHA) {
                                     alpha = NORM_ALPHA;
@@ -294,12 +300,12 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                 fs = (sa); // alpha
                 fd = (da * (NORM_ALPHA - sa)) / NORM_ALPHA;
                 /*
-            if (fs > NORM_ALPHA || fs < 0) {
-                System.out.println("fs overflow");
-            }
-            if (fd > NORM_ALPHA || fd < 0) {
-                System.out.println("fd overflow");
-            }
+                if (fs > NORM_ALPHA || fs < 0) {
+                    System.out.println("fs overflow");
+                }
+                if (fd > NORM_ALPHA || fd < 0) {
+                    System.out.println("fd overflow");
+                }
                  */
  /*
             System.out.println("fs: " + fs);
@@ -367,26 +373,6 @@ final class BlendingContextIntARGBExact extends BlendComposite.BlendingContext {
                                 }
                             }
                         }
-                    }
-                }
-
-                // System.out.println("result: " + Arrays.toString(result));
-                if (false) {
-                    // Faster with explicit bound checks !
-                    if (rr > NORM_ALPHA || rg > NORM_ALPHA || rb > NORM_ALPHA
-                            || ra > NORM_BYTE) {
-                        System.out.println("overflow");
-                        rr = NORM_ALPHA;
-                        rg = NORM_ALPHA;
-                        rb = NORM_ALPHA;
-                        ra = NORM_BYTE;
-                    }
-                    if (rr < 0 || rg < 0 || rb < 0 || ra < 0) {
-                        System.out.println("underflow");
-                        rr = 0;
-                        rg = 0;
-                        rb = 0;
-                        ra = 0;
                     }
                 }
 

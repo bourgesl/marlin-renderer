@@ -27,7 +27,7 @@ package org.marlin.pipe;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import static org.marlin.pipe.BlendComposite.luminance4b;
+import static org.marlin.pipe.BlendComposite.luminance10b;
 import sun.awt.image.IntegerInterleavedRaster;
 import sun.java2d.SunGraphics2D;
 import static sun.java2d.SunGraphics2D.PAINT_ALPHACOLOR;
@@ -45,11 +45,13 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
     // members
     private final long _gam_addr_dir = BlendComposite.GAMMA_LUT.LUT_UNSAFE_dir.start;
     private final long _gam_addr_inv = BlendComposite.GAMMA_LUT.LUT_UNSAFE_inv.start;
-    private final long _at_addr = AlphaLUT.ALPHA_LUT.LUT_UNSAFE.start;
+    private final long _lt_addr = AlphaLUT.ALPHA_LUT.LUMA_TABLE_UNSAFE.start;
+    private final long _ai_addr = AlphaLUT.ALPHA_LUT.ALPHA_INDEX_UNSAFE.start;
+    private final long _at_addr = AlphaLUT.ALPHA_LUT.ALPHA_TABLES_UNSAFE.start;
     // initialize values for (0,0,0)
     private int _last_src_pixel = 0;
     private int _sa = 0, _sr = 0, _sg = 0, _sb = 0;
-    private long _at_addr_ls = _at_addr; // for ls=0 (default)
+    private long _ai_addr_ls = _ai_addr; // for ls=0 (default)
 
     @Override
     BlendComposite.BlendingContext init(final BlendComposite composite, final SunGraphics2D sg) {
@@ -82,9 +84,12 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                 _sb = _unsafe.getInt(gam_addr_dir + (((pixel) & NORM_BYTE) << 2));
 
                 // src Pixel is Gamma-corrected Linear RGBA.
-                int ls = luminance4b(_sr, _sg, _sb); // Y (4bits)
-                // TODO: use sa to weight luminance ls ?
-                _at_addr_ls = _at_addr + (ls << 14);
+                final int ls = luminance10b(_sr, _sg, _sb); // Y (10bits)
+                _ai_addr_ls = _ai_addr;
+                if (ls != 0) {
+                    // lookup offset to table:
+                    _ai_addr_ls += (_unsafe.getInt(_lt_addr + (ls << 2)) << 7);
+                }
             }
         }
         return this; // fluent API
@@ -100,9 +105,12 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
         /*
              System.out.println("dstOut = " + dstOut.getBounds());
          */
+        // Ensure srcRGBA == _last_src_pixel
+        // srcRGBA = _last_src_pixel;
         final int[] dstBuffer = ((DataBufferInt) dstOut.getDataBuffer()).getData();
 
-        final int dstScan = ((IntegerInterleavedRaster) dstOut).getScanlineStride();
+        // use long to make later math ops in 64b.
+        final long dstScan = ((IntegerInterleavedRaster) dstOut).getScanlineStride();
 
 //            final BlendComposite.Blender blender = _blender;
         final long gam_addr_dir = _gam_addr_dir;
@@ -111,22 +119,19 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
         final int NORM_BYTE = BlendComposite.NORM_BYTE;
         // less round precision but enough for now !
         final int NORM_BYTE7 = BlendComposite.NORM_BYTE7;
-//        final int NORM_ALPHA = BlendComposite.NORM_ALPHA;
 
-//        final int[][][] alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables;
-//        int[][] src_alpha_tables = null;
-//        int[] dst_alpha_tables = null;
-        long at_addr_ls, at_addr_ld;
+        long ai_addr_ls, at_addr_a;
         int pixel, last_out_pixel = 0, last_dst_pixel = 0;
         int sa, sr, sg, sb;
         int da = 0, dr = 0, dg = 0, db = 0;
         int am, alpha, last_alpha = 0, fs, fd;
-        int ra, rr, rg, rb;
-
-        int ld = 0;
+        int rr, rg, rb;
+        int ld;
 
         final Unsafe _unsafe = OffHeapArray.UNSAFE;
         long addrDst = OffHeapArray.OFF_INT + ((y * dstScan + x) << 2); // ints
+
+        final long at_addr = _at_addr;
 
         // Prepare source pixel if constant in tile:
         {
@@ -189,7 +194,8 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
             sr = _sr;
             sg = _sg;
             sb = _sb;
-            at_addr_ld = at_addr_ls = _at_addr_ls; // for ld=0 (default)
+            ai_addr_ls = _ai_addr_ls; // for ld=0 (default)
+            at_addr_a = at_addr;
         }
 
         // cases done: (sa == 0) and (sa == FF & mask null = FF)
@@ -198,15 +204,14 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
         long addrMask = OffHeapArray.OFF_BYTE + maskOff; // bytes
         final long maskSkip = maskScan - w; // bytes
 
-//        final boolean checkPrev = (w >= 8) && (h >= 8); // higher probability (no info on density ie typical alpha ?
+        final long lt_addr = _lt_addr;
+
         for (; --h >= 0;) {
             for (int i = w; --i >= 0;) {
-//            for (int i = 0; i < w; i++) {
                 // pixels are stored as INT_ARGB
                 // our arrays are [R, G, B, A]
 
                 // coverage is stored directly as byte in maskPixel:
-//                am = (mask != null) ? (_unsafe.getByte(mask, addrMask++) & NORM_BYTE) : NORM_BYTE; 
                 am = (mask != null) ? (_unsafe.getByte(mask, addrMask++) & NORM_BYTE) : NORM_BYTE;
 
                 // coverage = 0 means translucent:
@@ -222,8 +227,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                     } else {
                         // case done: (sa == FF & mask = FF)
 
-                        // use heuristics: enable prev checks only for large tiles (higher probability) or FILLs only ?
-                        boolean prev = true; // src pixel
+                        boolean prev = true; // same src pixel
 
                         // Destination pixel:
                         // Dest pixel Linear RGBA:
@@ -244,9 +248,14 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                             db = _unsafe.getInt(gam_addr_dir + (((pixel) & NORM_BYTE) << 2));
 
                             // in range [0; 32385] (15bits):
-                            ld = luminance4b(dr, dg, db); // Y (4bits)
+                            ld = luminance10b(dr, dg, db); // Y (10bits)
                             // TODO: use da to weight luminance ld ?
-                            at_addr_ld = at_addr_ls + (ld << 10);
+                            at_addr_a = at_addr;
+                            if (ld != 0) {
+                                // lookup offset to table:
+                                at_addr_a += _unsafe.getInt(ai_addr_ls 
+                                        + (_unsafe.getInt(lt_addr + (ld << 2)) << 2));
+                            }
                         }
                         // dstPixel is Gamma-corrected Linear RGBA.
 
@@ -282,7 +291,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                         // same src, dst pixels and alpha:
                         if (!prev) {
                             // Adjust ALPHA (linear in L*):
-                            alpha = _unsafe.getInt(at_addr_ld + (alpha << 2)); // ALPHA in range [0; 255]
+                            alpha = _unsafe.getInt(at_addr_a + (alpha << 2)); // ALPHA in range [0; 255]
 
                             // check again extrema: 0 or 255 after correction:
                             if (alpha == 0) {
@@ -290,7 +299,7 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
                                 // result = destination (already the case)
                                 last_out_pixel = last_dst_pixel;
                             } else {
-                                if (alpha == NORM_BYTE) {
+                                if ((alpha == NORM_BYTE) && (sa == NORM_BYTE)) {
                                     // mask with full opacity
                                     // output = source OVER (totally)
                                     last_out_pixel = srcRGBA;

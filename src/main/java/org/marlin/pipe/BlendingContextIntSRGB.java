@@ -55,7 +55,8 @@ final class BlendingContextIntSRGB extends BlendComposite.BlendingContext {
         final int[] dstBuffer = ((DataBufferInt) dstOut.getDataBuffer()).getData();
 
         final int srcScan = (srcIn != null) ? ((IntegerInterleavedRaster) srcIn).getScanlineStride() : 0;
-        final int dstScan = ((IntegerInterleavedRaster) dstOut).getScanlineStride();
+        // use long to make later math ops in 64b.
+        final long dstScan = ((IntegerInterleavedRaster) dstOut).getScanlineStride();
 
 //            final BlendComposite.Blender blender = _blender;
         int pixel;

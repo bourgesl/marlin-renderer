@@ -37,19 +37,23 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import org.marlin.pipe.BlendComposite;
+import static org.marlin.pipe.GammaLUT.RGB_to_sRGB;
 import org.marlin.pipe.MarlinCompositor;
 import org.marlin.pisces.MarlinProperties;
 
 /**
  * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers
  */
-public class LineWidthColorGridTest {
-    
+public class LineWidthColorGridBlueTest {
+
     private final static int SCALE = 1;
 
-    private final static int N = 20;
+    private final static boolean USE_INV_GAMMA = true;
+
+    private final static int N = 5;
 
     private final static boolean DO_LINES = true;
 
@@ -57,30 +61,54 @@ public class LineWidthColorGridTest {
 
     private final static boolean DO_RAMP = true;
 
-    private final static String FILE_NAME = "LineWidthColorGridTest_";
+    private final static String FILE_NAME = "LineWidthColorGridBlueTest_";
 
-    private final static Color[] COLORS = new Color[]{
-        Color.BLACK,
-        Color.GRAY,
-        Color.WHITE,
-        Color.RED,
-        Color.GREEN,
-        Color.BLUE,
-        Color.MAGENTA,
-        Color.YELLOW,
-        Color.CYAN
-    };
-    /*
-    private final static Color[] COLORS = new Color[]{
-        Color.BLACK,
-        Color.BLUE,};
-     */
- /* PINK, ORANGE */
+    private final static Color[] COLORS = generateColors();
 
     private final static int MARGIN = 8;
     private final static int WIDTH = 128; // gradient
     private final static int HALF_HEIGHT = 52;
     private final static int QUARTER_HEIGHT = 30;
+
+    private static Color[] generateColors() {
+        final int b = 0xFF;
+
+        final double dlb = 0.0721750 * b / 255.0;
+        final double dlg = (0.2126729 + 0.7151522);
+
+        final ArrayList<Color> colorList = new ArrayList<Color>(8);
+
+        // L ramp:
+        for (int l = 0; l <= 256; l += 32) {
+            final double dl = (l * 255.0) / 256.0;
+
+            /* sRGB (D65):
+        [Y] = [0.2126729  0.7151522  0.0721750] [RGB linear]     
+             */
+            int g = (int) Math.round((dl - dlb) / dlg);
+            System.out.println("g(l = " + (dl / 255.0) + ") = " + g + " <=> l = " + (g * dlg + dlb));
+
+            if (g < 0) {
+                g = 0;
+            } else if (g > 0xFF) {
+                g = 0xFF;
+            }
+            // linear RGB / Y => sRGB:
+            // use inverse gamma correction ?
+            colorList.add(new Color(to_sRGB(g), to_sRGB(g), to_sRGB(b)));
+        }
+
+        System.out.println("colorList: " + colorList);
+
+        return colorList.toArray(new Color[0]);
+    }
+
+    private static int to_sRGB(final int val) {
+        if (USE_INV_GAMMA) {
+            return (int) Math.round(255.0 * RGB_to_sRGB(val / 255.0));
+        }
+        return val;
+    }
 
     public static void main(String[] args) {
         final int sqW = MARGIN + WIDTH;
@@ -95,7 +123,7 @@ public class LineWidthColorGridTest {
         final int width = SCALE * square * nColors;
         final int height = width;
 
-        System.out.println("LineWidthColorGridTest: size = " + width + " x " + height);
+        System.out.println("LineWidthColorGridBlueTest: size = " + width + " x " + height);
 
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
@@ -122,7 +150,9 @@ public class LineWidthColorGridTest {
             final File file = new File(FILE_NAME + MarlinProperties.getSubPixel_Log2_X()
                     + "x" + MarlinProperties.getSubPixel_Log2_Y()
                     + ((MarlinCompositor.ENABLE_COMPOSITOR) ? ("_comp_"
-                            + BlendComposite.getBlendingMode()) : "_REF") + ".png");
+                            + BlendComposite.getBlendingMode()) : "_REF")
+                    + ((USE_INV_GAMMA) ? "_g2.4" : "_g1.0")
+                    + ".png");
 
             System.out.println("Writing file: " + file.getAbsolutePath());;
             ImageIO.write(image, "PNG", file);

@@ -24,12 +24,10 @@
  */
 package org.marlin.pipe;
 
-import java.awt.Color;
-import java.awt.Paint;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import static org.marlin.pipe.BlendComposite.luminance4b;
+import static org.marlin.pipe.BlendComposite.luminance10b;
 import sun.awt.image.IntegerInterleavedRaster;
 import sun.java2d.SunGraphics2D;
 import static sun.java2d.SunGraphics2D.PAINT_ALPHACOLOR;
@@ -75,9 +73,9 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
             _sb = _unsafe.getInt(gam_addr_dir + (((pixel) & NORM_BYTE) << 2L));
 
             // c_srcPixel is Gamma-corrected Linear RGBA.
-            int ls = luminance4b(_sr, _sg, _sb); // Y (4bits)
+            int ls = luminance10b(_sr, _sg, _sb); // Y (10bits)
             // TODO: use sa to weight luminance ls ?
-            _src_alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables[ls & 0x0F];
+            _src_alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables[AlphaLUT.ALPHA_LUT.lumaTable[ls]];
         }
         return this; // fluent API
     }
@@ -99,7 +97,8 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
         final int[] dstBuffer = ((DataBufferInt) dstOut.getDataBuffer()).getData();
 
         final int srcScan = (srcIn != null) ? ((IntegerInterleavedRaster) srcIn).getScanlineStride() : 0;
-        final int dstScan = ((IntegerInterleavedRaster) dstOut).getScanlineStride();
+        // use long to make later math ops in 64b.
+        final long dstScan = ((IntegerInterleavedRaster) dstOut).getScanlineStride();
 
 //            final BlendComposite.Blender blender = _blender;
         final long gam_addr_dir = BlendComposite.GAMMA_LUT.LUT_UNSAFE_dir.start;
@@ -109,6 +108,7 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
         final int NORM_BYTE = BlendComposite.NORM_BYTE;
 
         final int[][][] alpha_tables = AlphaLUT.ALPHA_LUT.alphaTables;
+        final int[] luma_table = AlphaLUT.ALPHA_LUT.lumaTable;
         int[][] src_alpha_tables = null;
         int[] dst_alpha_tables = null;
 
@@ -120,6 +120,8 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
 
         int ls, ld = 0;
 
+        // Warning : crash if very large image 12600 x 126000 !!
+        // TODO: fix
         final Unsafe _unsafe = OffHeapArray.UNSAFE;
         long addrDst = OffHeapArray.OFF_INT + ((y * dstScan + x) << 2L); // ints
 
@@ -256,9 +258,8 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
                         sb = _unsafe.getInt(gam_addr_dir + (((pixel) & NORM_BYTE) << 2L));
 
                         // in range [0; 32385] (15bits):
-                        ls = luminance4b(sr, sg, sb); // Y (4bits)
-                        // TODO: use sa to weight luminance ls ?
-                        src_alpha_tables = alpha_tables[ls & 0x0F];
+                        ls = luminance10b(sr, sg, sb); // Y (10bits)
+                        src_alpha_tables = alpha_tables[luma_table[ls]];
                     }
                     // srcPixel is Gamma-corrected Linear RGBA.
 
@@ -292,11 +293,11 @@ final class BlendingContextIntARGBFast extends BlendComposite.BlendingContext {
                                 db = _unsafe.getInt(gam_addr_dir + (((pixel) & NORM_BYTE) << 2L));
 
                                 // in range [0; 32385] (15bits):
-                                ld = luminance4b(dr, dg, db); // Y (4bits)
+                                ld = luminance10b(dr, dg, db); // Y (10bits)
                                 // TODO: use da to weight luminance ld ?
-                                dst_alpha_tables = src_alpha_tables[ld & 0x0F];
+                                dst_alpha_tables = src_alpha_tables[luma_table[ld]];
                             } else if (srcIn != null) {
-                                dst_alpha_tables = src_alpha_tables[ld & 0x0F];
+                                dst_alpha_tables = src_alpha_tables[luma_table[ld]];
                             }
                         }
                         // dstPixel is Gamma-corrected Linear RGBA.

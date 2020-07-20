@@ -91,7 +91,7 @@ public final class GammaLUT {
         if (gamma == GAMMA_L_to_Y) {
             // Y -> L (useless)
             return NORM_ALPHA * L_to_Y(i / ((double) range));
-        } else if ((gamma == GAMMA_sRGB) && (range == NORM_BYTE)) {
+        } else if (gamma == GAMMA_sRGB) {
             // sRGB -> RGB
             return NORM_ALPHA * sRGB_to_RGB(i / ((double) range));
         }
@@ -102,7 +102,7 @@ public final class GammaLUT {
         if (gamma == GAMMA_L_to_Y) {
             // Y -> L (useless)
             return range * Y_to_L(i / ((double) NORM_ALPHA));
-        } else if ((gamma == GAMMA_sRGB) && (range == NORM_BYTE)) {
+        } else if (gamma == GAMMA_sRGB) {
             // sRGB -> RGB
             return range * RGB_to_sRGB(i / ((double) NORM_ALPHA));
         }
