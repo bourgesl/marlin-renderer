@@ -249,13 +249,9 @@ final class BlendingContextIntARGBFastColor extends BlendComposite.BlendingConte
 
                             // in range [0; 32385] (15bits):
                             ld = luminance10b(dr, dg, db); // Y (10bits)
-                            // TODO: use da to weight luminance ld ?
-                            at_addr_a = at_addr;
-                            if (ld != 0) {
-                                // lookup offset to table:
-                                at_addr_a += _unsafe.getInt(ai_addr_ls
-                                        + (_unsafe.getInt(lt_addr + (ld << 2)) << 2));
-                            }
+                            // lookup offset to table:
+                            at_addr_a = at_addr + _unsafe.getInt(ai_addr_ls
+                                    + ((ld != 0) ? (_unsafe.getInt(lt_addr + (ld << 2)) << 2) : 0));
                         }
                         // dstPixel is Gamma-corrected Linear RGBA.
 
