@@ -49,7 +49,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                                           implements MarlinConst
 {
     // slightly slower ~2% if enabled stroker clipping (lines) but skipping cap / join handling is few percents faster in specific cases
-    static final boolean DISABLE_2ND_STROKER_CLIPPING = true;
+    static final boolean DISABLE_2ND_STROKER_CLIPPING = false;
 
     static final boolean DO_TRACE_PATH = false;
 
@@ -251,7 +251,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
         final DRendererContext rdrCtx = getRendererContext();
         try {
-            if ((clip != null) && 
+            if ((clip != null) &&
                     (DO_CLIP || (DO_CLIP_RUNTIME_ENABLE && MarlinProperties.isDoClipAtRuntime()))) {
                 // Define the initial clip bounds:
                 final double[] clipRect = rdrCtx.clipRect;
@@ -280,7 +280,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 // Enable clipping:
                 rdrCtx.doClip = true;
             }
-            
+
             strokeTo(rdrCtx, src, _at, bs, thin, norm, antialias,
                      rdrCtx.p2dAdapter.init(consumer));
         } finally {
