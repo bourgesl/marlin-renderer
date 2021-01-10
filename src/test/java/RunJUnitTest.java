@@ -103,4 +103,10 @@ public class RunJUnitTest {
     public void flipBitTest() {
         FlipBitTest.main(NO_ARGS);
     }
+
+    @Test(timeout = 5000)
+    public void strokedLinePerf() throws Exception {
+        StrokedLinePerf.main(NO_ARGS);
+    }
+
 }

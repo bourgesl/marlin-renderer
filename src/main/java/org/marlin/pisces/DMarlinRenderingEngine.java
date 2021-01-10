@@ -49,7 +49,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                                           implements MarlinConst
 {
     // slightly slower ~2% if enabled stroker clipping (lines) but skipping cap / join handling is few percents faster in specific cases
-    static final boolean DISABLE_2ND_STROKER_CLIPPING = false;
+    static final boolean DISABLE_2ND_STROKER_CLIPPING = true;
 
     static final boolean DO_TRACE_PATH = false;
 
@@ -175,7 +175,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
      * @param src the source path to be widened
      * @param at the transform to be applied to the shape and the
      *           stroke attributes
-     * @param bs the {@code BasicSroke} object specifying the
+     * @param bs the {@code BasicStroke} object specifying the
      *           decorations to be applied to the widened path
      * @param thin true if the transformed stroke attributes are smaller
      *             than the minimum dropout pen width
@@ -219,7 +219,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
      * @param at the transform to be applied to the shape and the
      *           stroke attributes
      * @param clip the current clip in effect in device coordinates
-     * @param bs the {@code BasicSroke} object specifying the
+     * @param bs the {@code BasicStroke} object specifying the
      *           decorations to be applied to the widened path
      * @param thin true if the transformed stroke attributes are smaller
      *             than the minimum dropout pen width
