@@ -43,8 +43,10 @@ final class DCollinearSimplifier implements DPathConsumer2D {
     DCollinearSimplifier() {
     }
 
-    public DCollinearSimplifier init(DPathConsumer2D delegate) {
-        this.delegate = delegate;
+    public DCollinearSimplifier init(final DPathConsumer2D delegate) {
+        if (this.delegate != delegate) {
+            this.delegate = delegate;
+        }
         this.state = SimplifierState.Empty;
 
         return this; // fluent API

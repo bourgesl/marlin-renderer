@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.4.2-Unsafe-OpenJDK9</version>
+    <version>0.9.4.5-Unsafe-OpenJDK9</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -20,7 +20,6 @@
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
         <integration.skip>false</integration.skip>
-        <integration.skip.long.float>false</integration.skip.long.float>
         <integration.skip.long.double>false</integration.skip.long.double>
         <javadoc.skip>true</javadoc.skip>
     </properties>
@@ -36,7 +35,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.2.0</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -46,7 +45,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.1.2</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies-libs</id>
@@ -70,8 +69,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <source>9</source>
-                    <target>9</target>
+                    <source>11</source>
+                    <target>11</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
                     <showDeprecation>true</showDeprecation>
@@ -108,7 +107,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -124,7 +123,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.2.1</version>
                 <configuration>
                     <skipSource>false</skipSource>
                 </configuration>
@@ -140,7 +139,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.0</version>
                 <configuration>
                     <failOnError>false</failOnError>
                     <skip>${javadoc.skip}</skip>
@@ -158,7 +157,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20.1</version>
+                <version>2.22.2</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -167,7 +166,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.20.1</version>
+                <version>2.22.2</version>
                 <configuration>
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>
@@ -190,32 +189,12 @@
                             <includes>
                                 <include>**/RunJUnitTest.java</include>
                             </includes>
+                            <!-- -Dsun.java2d.renderer.trace=true -->
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
-                                --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
-                                --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>integration-test-float</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${integration.skip}</skip>
-                            <includes>
-                                <include>**/RunJUnitTest.java</include>
-                            </includes>
-                            <argLine>
-                                -Xms1g -Xmx1g
-                                -Dsun.java2d.renderer.log=true
-                                -Djava.util.logging.config.file=src/test/resources/logging.properties
-                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                                 --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
                                 --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
                         </configuration>
@@ -239,27 +218,6 @@
                                 -Dsun.java2d.renderer.log=true
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
-                                --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
-                                --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>integration-long-test-float</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${integration.skip.long.float}</skip>
-                            <includes>
-                                <include>**/RunJUnitLongTest.java</include>
-                            </includes>
-                            <argLine>
-                                -Xms1g -Xmx1g
-                                -Dsun.java2d.renderer.log=true
-                                -Djava.util.logging.config.file=src/test/resources/logging.properties
-                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                                 --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED
                                 --patch-module java.desktop=${basedir}/target/${project.build.finalName}.jar</argLine>
                         </configuration>

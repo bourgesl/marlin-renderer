@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -180,7 +180,7 @@ public abstract class RenderingEngine {
                                              int caps,
                                              int join,
                                              float miterlimit,
-                                             float dashes[],
+                                             float[] dashes,
                                              float dashphase);
 
     /**
@@ -200,8 +200,12 @@ public abstract class RenderingEngine {
      * {@link PathConsumer2D} object as it is calculated.
      *
      * @param src the source path to be widened
-     * @param bs the {@code BasicSroke} object specifying the
+     * @param at the transform to be applied to the shape and the
+     *           stroke attributes
+     * @param bs the {@code BasicStroke} object specifying the
      *           decorations to be applied to the widened path
+     * @param thin true if the transformed stroke attributes are smaller
+     *             than the minimum dropout pen width
      * @param normalize indicates whether stroke normalization should
      *                  be applied
      * @param antialias indicates whether or not adjustments appropriate
@@ -217,6 +221,53 @@ public abstract class RenderingEngine {
                                   boolean normalize,
                                   boolean antialias,
                                   PathConsumer2D consumer);
+
+    /**
+     * Sends the geometry for a widened path as specified by the parameters
+     * to the specified consumer.
+     * <p>
+     * The specified {@code src} {@link Shape} is widened according
+     * to the parameters specified by the {@link BasicStroke} object.
+     * The clip region can be optionally given to let the renderer only
+     * send geometries overlapping the clip region.
+     * Adjustments are made to the path as appropriate for the
+     * {@link java.awt.RenderingHints#VALUE_STROKE_NORMALIZE} hint if the
+     * {@code normalize} boolean parameter is true.
+     * Adjustments are made to the path as appropriate for the
+     * {@link java.awt.RenderingHints#VALUE_ANTIALIAS_ON} hint if the
+     * {@code antialias} boolean parameter is true.
+     * <p>
+     * The geometry of the widened path is forwarded to the indicated
+     * {@link PathConsumer2D} object as it is calculated.
+     *
+     * @param src the source path to be widened
+     * @param at the transform to be applied to the shape and the
+     *           stroke attributes
+     * @param clip the current clip in effect in device coordinates
+     * @param bs the {@code BasicStroke} object specifying the
+     *           decorations to be applied to the widened path
+     * @param thin true if the transformed stroke attributes are smaller
+     *             than the minimum dropout pen width
+     * @param normalize indicates whether stroke normalization should
+     *                  be applied
+     * @param antialias indicates whether or not adjustments appropriate
+     *                  to antialiased rendering should be applied
+     * @param consumer the {@code PathConsumer2D} instance to forward
+     *                 the widened geometry to
+     * @since 17
+     */
+    public void strokeTo(Shape src,
+                         AffineTransform at,
+                         Region clip,
+                         BasicStroke bs,
+                         boolean thin,
+                         boolean normalize,
+                         boolean antialias,
+                         final PathConsumer2D consumer)
+    {
+        // As default implementation, call the strokeTo() method without the clip region.
+        strokeTo(src, at, bs, thin, normalize, antialias, consumer);
+    }
 
     /**
      * Construct an antialiased tile generator for the given shape with
@@ -271,7 +322,7 @@ public abstract class RenderingEngine {
                                                        BasicStroke bs,
                                                        boolean thin,
                                                        boolean normalize,
-                                                       int bbox[]);
+                                                       int[] bbox);
 
     /**
      * Construct an antialiased tile generator for the given parallelogram
@@ -337,7 +388,7 @@ public abstract class RenderingEngine {
                                                        double dx2, double dy2,
                                                        double lw1, double lw2,
                                                        Region clip,
-                                                       int bbox[]);
+                                                       int[] bbox);
 
     /**
      * Returns the minimum pen width that the antialiasing rasterizer
@@ -353,7 +404,7 @@ public abstract class RenderingEngine {
      * feeding the consumer a segment at a time.
      */
     public static void feedConsumer(PathIterator pi, PathConsumer2D consumer) {
-        float coords[] = new float[6];
+        float[] coords = new float[6];
         while (!pi.isDone()) {
             switch (pi.currentSegment(coords)) {
             case PathIterator.SEG_MOVETO:
@@ -393,7 +444,7 @@ public abstract class RenderingEngine {
                                         int caps,
                                         int join,
                                         float miterlimit,
-                                        float dashes[],
+                                        float[] dashes,
                                         float dashphase)
         {
             System.out.println(name+".createStrokedShape("+
@@ -428,6 +479,28 @@ public abstract class RenderingEngine {
             target.strokeTo(src, at, bs, thin, normalize, antialias, consumer);
         }
 
+        public void strokeTo(Shape src,
+                             AffineTransform at,
+                             Region clip,
+                             BasicStroke bs,
+                             boolean thin,
+                             boolean normalize,
+                             boolean antialias,
+                             PathConsumer2D consumer)
+        {
+            System.out.println(name+".strokeTo("+
+                               src.getClass().getName()+", "+
+                               at+", "+
+                               clip+", "+
+                               bs+", "+
+                               (thin ? "thin" : "wide")+", "+
+                               (normalize ? "normalized" : "pure")+", "+
+                               (antialias ? "AA" : "non-AA")+", "+
+                               consumer.getClass().getName()+")");
+            target.strokeTo(src, at, clip, bs, thin, normalize, antialias, consumer);
+        }
+
+
         public float getMinimumAAPenSize() {
             System.out.println(name+".getMinimumAAPenSize()");
             return target.getMinimumAAPenSize();
@@ -439,7 +512,7 @@ public abstract class RenderingEngine {
                                                   BasicStroke bs,
                                                   boolean thin,
                                                   boolean normalize,
-                                                  int bbox[])
+                                                  int[] bbox)
         {
             System.out.println(name+".getAATileGenerator("+
                                s.getClass().getName()+", "+
@@ -457,7 +530,7 @@ public abstract class RenderingEngine {
                                                   double dx2, double dy2,
                                                   double lw1, double lw2,
                                                   Region clip,
-                                                  int bbox[])
+                                                  int[] bbox)
         {
             System.out.println(name+".getAATileGenerator("+
                                x+", "+y+", "+

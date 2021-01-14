@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,14 +21,28 @@
  * questions.
  */
 
-package sun.java2d.marlin;
+/* @test
+ * @summary Pass if no RuntimeException.
+ * @bug 6812600
+ */
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
-interface IRendererContext extends MarlinConst {
+public class JoinMiterTest {
 
-    public RendererStats stats();
-
-    public OffHeapArray newOffHeapArray(final long initialSize);
-
-    public ArrayCacheIntClean.Reference newCleanIntArrayRef(final int initialSize);
-
+  public static void main(String[] args) throws Exception {
+    BufferedImage image = new BufferedImage(200, 200,
+BufferedImage.TYPE_INT_RGB);
+    Graphics2D g = image.createGraphics();
+    g.setPaint(Color.WHITE);
+    g.fill(new Rectangle(image.getWidth(), image.getHeight()));
+    g.translate(25, 100);
+    g.setPaint(Color.BLACK);
+    g.setStroke(new BasicStroke(20, BasicStroke.CAP_BUTT,
+                                BasicStroke.JOIN_MITER));
+    g.draw(new Polygon(new int[] {0, 150, 0}, new int[] {75, 0, -75}, 3));
+    if (image.getRGB(16, 10) == Color.WHITE.getRGB()) {
+      throw new RuntimeException("Miter is not rendered.");
+    }
+  }
 }

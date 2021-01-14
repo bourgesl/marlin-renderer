@@ -144,14 +144,14 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
     private int activeEdgeMaxUsed;
 
     // crossings ref (dirty)
-    private final IntArrayCache.Reference crossings_ref;
+    private final ArrayCacheInt.Reference crossings_ref;
     // edgePtrs ref (dirty)
-    private final IntArrayCache.Reference edgePtrs_ref;
+    private final ArrayCacheInt.Reference edgePtrs_ref;
     // merge sort initial arrays (large enough to satisfy most usages) (1024)
     // aux_crossings ref (dirty)
-    private final IntArrayCache.Reference aux_crossings_ref;
+    private final ArrayCacheInt.Reference aux_crossings_ref;
     // aux_edgePtrs ref (dirty)
-    private final IntArrayCache.Reference aux_edgePtrs_ref;
+    private final ArrayCacheInt.Reference aux_edgePtrs_ref;
 
 //////////////////////////////////////////////////////////////////////////////
 //  EDGE LIST
@@ -171,9 +171,9 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
     private int buckets_maxY;
 
     // edgeBuckets ref (clean)
-    private final IntArrayCache.Reference edgeBuckets_ref;
+    private final ArrayCacheIntClean.Reference edgeBuckets_ref;
     // edgeBucketCounts ref (clean)
-    private final IntArrayCache.Reference edgeBucketCounts_ref;
+    private final ArrayCacheIntClean.Reference edgeBucketCounts_ref;
 
     // Flattens using adaptive forward differencing. This only carries out
     // one iteration of the AFD loop. All it does is update AFD variables (i.e.
@@ -511,7 +511,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
     private int[] alphaLine;
 
     // alphaLine ref (clean)
-    private final IntArrayCache.Reference alphaLine_ref;
+    private final ArrayCacheIntClean.Reference alphaLine_ref;
 
     private boolean enableBlkFlags = false;
     private boolean prevUseBlkFlags = false;
@@ -520,7 +520,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
     private int[] blkFlags;
 
     // blkFlags ref (clean)
-    private final IntArrayCache.Reference blkFlags_ref;
+    private final ArrayCacheIntClean.Reference blkFlags_ref;
 
     DRenderer(final DRendererContext rdrCtx) {
         this.rdrCtx = rdrCtx;
@@ -613,14 +613,26 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
             rdrCtx.stats.totalOffHeap += edges.length;
         }
         // Return arrays:
-        crossings = crossings_ref.putArray(crossings);
-        aux_crossings = aux_crossings_ref.putArray(aux_crossings);
+        if (crossings_ref.doCleanRef(crossings)) {
+            crossings = crossings_ref.putArray(crossings);
+        }
+        if (aux_crossings_ref.doCleanRef(aux_crossings)) {
+            aux_crossings = aux_crossings_ref.putArray(aux_crossings);
+        }
 
-        edgePtrs = edgePtrs_ref.putArray(edgePtrs);
-        aux_edgePtrs = aux_edgePtrs_ref.putArray(aux_edgePtrs);
+        if (edgePtrs_ref.doCleanRef(edgePtrs)) {
+            edgePtrs = edgePtrs_ref.putArray(edgePtrs);
+        }
+        if (aux_edgePtrs_ref.doCleanRef(aux_edgePtrs)) {
+            aux_edgePtrs = aux_edgePtrs_ref.putArray(aux_edgePtrs);
+        }
 
-        alphaLine = alphaLine_ref.putArray(alphaLine, 0, 0); // already zero filled
-        blkFlags  = blkFlags_ref.putArray(blkFlags, 0, 0); // already zero filled
+        if (alphaLine_ref.doSetRef(alphaLine)) {
+            alphaLine = alphaLine_ref.putArrayClean(alphaLine); // already zero filled
+        }
+        if (blkFlags_ref.doSetRef(blkFlags)) {
+            blkFlags  = blkFlags_ref.putArrayClean(blkFlags); // already zero filled
+        }
 
         if (edgeMinY != Integer.MAX_VALUE) {
             // if context is maked as DIRTY:
@@ -638,8 +650,12 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
                                                              buckets_maxY + 1);
         } else {
             // unused arrays
-            edgeBuckets = edgeBuckets_ref.putArray(edgeBuckets, 0, 0);
-            edgeBucketCounts = edgeBucketCounts_ref.putArray(edgeBucketCounts, 0, 0);
+            if (edgeBuckets_ref.doSetRef(edgeBuckets)) {
+                edgeBuckets = edgeBuckets_ref.putArrayClean(edgeBuckets);
+            }
+            if (edgeBucketCounts_ref.doSetRef(edgeBucketCounts)) {
+                edgeBucketCounts = edgeBucketCounts_ref.putArrayClean(edgeBucketCounts);
+            }
         }
 
         // At last: resize back off-heap edges to initial size
@@ -878,7 +894,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
                             rdrCtx.stats.stat_array_renderer_edgePtrs.add(ptrEnd);
                         }
                         this.edgePtrs = _edgePtrs
-                            = edgePtrs_ref.widenArray(_edgePtrs, numCrossings,
+                            = edgePtrs_ref.widenArray(_edgePtrs, edgePtrsLen, // bad mark ? TODO: fix edge ptr mark
                                                       ptrEnd);
 
                         edgePtrsLen = _edgePtrs.length;
@@ -1061,7 +1077,7 @@ final class DRenderer implements DPathConsumer2D, MarlinRenderer {
                     // (ie i < prevNumCrossings):
 
                     skipISort = (prevNumCrossings >= MergeSort.DISABLE_ISORT_THRESHOLD);
-                    useDPQS   = MergeSort.USE_DPQS && (skipISort || (ptrLen >= MergeSort. DPQS_THRESHOLD));
+                    useDPQS   = MergeSort.USE_DPQS && (skipISort || (ptrLen >= MergeSort.DPQS_THRESHOLD));
 
                     if (DO_STATS && useDPQS) {
                         rdrCtx.stats.stat_rdr_crossings_dpqs.add((skipISort) ? numCrossings : ptrLen);

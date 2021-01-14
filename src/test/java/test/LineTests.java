@@ -33,8 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import sun.java2d.marlin.MarlinProperties;
-import sun.java2d.marlin.MarlinRenderingEngine;
-import sun.java2d.pipe.RenderingEngine;
 
 /**
  * Simple Line rendering test using GeneralPath to enable Pisces / marlin / ductus renderers

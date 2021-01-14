@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -22,8 +20,6 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-
-
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.CompositeContext;
@@ -35,45 +31,26 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+import java.awt.image.RasterFormatException;
 
 /**
- * Test program that demonstrates a bug in OpenJDK 1.7.0.60 (and
- * probably in all other OpenJDK versions, too).
- *
- * @see #main(String[])
- *
- * @author Rami Hanninen
+ * @test
+ * @bug 8048782
+ * @summary Test program that demonstrates PiscesRendering bug in
+ * OpenJDK 1.7.0.60 (and probably in all other OpenJDK versions, too).
  */
-public class OpenJDKFillBug {
 
+public class OpenJDKFillBug
+{
     /**
      * Test program that demonstrates a bug in OpenJDK 1.7.0.60 (and
      * probably in all other OpenJDK versions, too). To see the bug, simply run
      * the 'main' program with OpenJDK. The bug makes the 'g2d.fill'
      * method fail with the following exception:
      *
-     * <PRE>
-     * Exception in thread "main" java.awt.image.RasterFormatException: (x + width) is outside raster
-     * at sun.awt.image.IntegerInterleavedRaster.createWritableChild(IntegerInterleavedRaster.java:467)
-     * at sun.awt.image.IntegerInterleavedRaster.createChild(IntegerInterleavedRaster.java:514)
-     * at sun.java2d.pipe.GeneralCompositePipe.renderPathTile(GeneralCompositePipe.java:106)
-     * at sun.java2d.pipe.AAShapePipe.renderTiles(AAShapePipe.java:201)
-     * at sun.java2d.pipe.AAShapePipe.renderPath(AAShapePipe.java:159)
-     * at sun.java2d.pipe.AAShapePipe.fill(AAShapePipe.java:68)
-     * at sun.java2d.pipe.PixelToParallelogramConverter.fill(PixelToParallelogramConverter.java:164)
-     * at sun.java2d.pipe.ValidatePipe.fill(ValidatePipe.java:160)
-     * at sun.java2d.SunGraphics2D.fill(SunGraphics2D.java:2466)
-     * at OpenJDKFillBug.main(OpenJDKFillBug.java:55)
-     * </PRE>
-     *
-     * The bug is OpenJDK specific. This program runs with Oracle JDK
-     * just fine (it still does not do anything sensible, but it does
-     * not fail with a RasterFormatException, either).
-     *
-     * <P>
+     * This bug is found in OpenJDK but also is present in OracleJDK
+     * if run with
+     * -Dsun.java2d.renderer=sun.java2d.pisces.PiscesRenderingEngine
      *
      * The bug is related to sun.java2d.pisces.PiscesCache constructor
      * that accepts '(int minx,int miny,int maxx,int maxy)' arguments:
@@ -99,8 +76,6 @@ public class OpenJDKFillBug {
      * original raster, and therefore the 'createWritableChild' method
      * correctly throws 'RasterFormatException'.
      *
-     * <P>
-     *
      * The bug is closely related to the use of a custom Composite
      * implementation, which are quite rare. The application where this
      * bug was first detected implements a high-quality PDF rendering
@@ -108,33 +83,18 @@ public class OpenJDKFillBug {
      * implement PDF advanced color blending and masking operators.
      */
 
-    public static void main(String args[]) {
-        // First display which renderer is tested:
-        // JDK9 only:
-        System.setProperty("sun.java2d.renderer.verbose", "true");
-        System.out.println("Testing renderer: ");
-        // Other JDK:
-        String renderer = "undefined";
-        try {
-            renderer = sun.java2d.pipe.RenderingEngine.getInstance().getClass().getName();
-            System.out.println(renderer);
-        } catch (Throwable th) {
-            // may fail with JDK9 jigsaw (jake)
-            if (false) {
-                System.err.println("Unable to get RenderingEngine.getInstance()");
-                th.printStackTrace();
-            }
-        }
-
-        BufferedImage bi = new BufferedImage(801, 1202, BufferedImage.TYPE_INT_ARGB);
+    public static void main(String args[])
+    {
+        BufferedImage bi = new BufferedImage(801,1202,
+                                             BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = bi.createGraphics();
         GeneralPath gp = new GeneralPath();
         AffineTransform m = new AffineTransform(2.483489907915543,
-                0.0,
-                0.0,
-                -2.4844977263331955,
-                0.0,
-                1202.0);
+                                                0.0,
+                                                0.0,
+                                                -2.4844977263331955,
+                                                0.0,
+                                                1202.0);
         Composite c = new CustomComposite();
 
         gp.moveTo(-4.511, -14.349);
@@ -144,64 +104,68 @@ public class OpenJDKFillBug {
         gp.closePath();
 
         g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+                             RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY);
+                             RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-                RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+                             RenderingHints.VALUE_COLOR_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_LCD_CONTRAST,
-                Integer.valueOf(140));
+                             Integer.valueOf(140));
         g2d.setRenderingHint(RenderingHints.KEY_DITHERING,
-                RenderingHints.VALUE_DITHER_ENABLE);
+                             RenderingHints.VALUE_DITHER_ENABLE);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+                             RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+                             RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-                RenderingHints.VALUE_STROKE_NORMALIZE);
+                             RenderingHints.VALUE_STROKE_NORMALIZE);
         g2d.setPaint(Color.red);
         g2d.setComposite(c);
         g2d.setTransform(m);
-        g2d.fill(gp);
-
         try {
-            final File file = new File("OpenJDKFillBugTest.png");
-
-            System.out.println("Writing file: " + file.getAbsolutePath());
-            ImageIO.write(bi, "PNG", file);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            g2d.dispose();
+            g2d.fill(gp);
+        } catch (RasterFormatException rfe) {
+            System.out.println("Test failed");
+            throw new RuntimeException("xmax/ymax rounding cause RasterFormatException: " + rfe);
         }
+        g2d.dispose();
+        System.out.println("Test passed");
     }
 
-  // === CustomComposite ===
+    // === CustomComposite ===
+
     /**
      * Dummy custom Composite implementation.
      */
-    public static class CustomComposite implements Composite {
 
+    public static class CustomComposite implements Composite
+    {
         @Override
         public CompositeContext createContext(ColorModel srcColorModel,
                                               ColorModel dstColorModel,
-                                              RenderingHints hints) {
+                                              RenderingHints hints)
+        {
             return new CustomCompositeContext();
         }
 
-    // === CustomCompositeContext ===
+        // === CustomCompositeContext ===
+
         /**
          * Dummy custom CompositeContext implementation.
          */
-        public static class CustomCompositeContext implements CompositeContext {
+
+        public static class CustomCompositeContext implements CompositeContext
+        {
 
             @Override
-            public void dispose() {
+            public void dispose()
+            {
                 // NOP
             }
 
             @Override
-            public void compose(Raster src, Raster dstIn, WritableRaster dstOut) {
+            public void compose(Raster src,Raster dstIn,WritableRaster dstOut)
+            {
                 // NOP
             }
         }

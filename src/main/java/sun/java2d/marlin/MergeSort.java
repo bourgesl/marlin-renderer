@@ -26,7 +26,7 @@
 package sun.java2d.marlin;
 
 import java.util.Arrays;
-import static sun.java2d.marlin.DualPivotQuicksort20190501Ext.sort;
+import static sun.java2d.marlin.DualPivotQuicksort20191112Ext.sort;
 
 /**
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[])
@@ -36,6 +36,8 @@ import static sun.java2d.marlin.DualPivotQuicksort20190501Ext.sort;
 final class MergeSort {
 
     static final boolean USE_DPQS = MarlinProperties.isUseDPQS();
+
+    static final String SORT_TYPE = USE_DPQS ? "DPQS_20191112" : "MERGE";
 
     static final int DPQS_THRESHOLD = 256;
     static final int DISABLE_ISORT_THRESHOLD = 1000;
@@ -63,6 +65,12 @@ final class MergeSort {
                                 final boolean skipISort,
                                 final DPQSSorterContext sorter,
                                 final boolean useDPQS) {
+        // Gather array data:
+        if (RendererStats.DUMP_ARRAY_DATA && !useDPQS && !skipISort) {
+            // Copy presorted data from auxX to x:
+            System.arraycopy(auxX, 0, x, 0, insertionSortIndex);
+            RendererStats.getADC().addData(x, 0, toIndex, insertionSortIndex);
+        }
 
         if ((toIndex > x.length) || (toIndex > y.length)
                 || (toIndex > auxX.length) || (toIndex > auxY.length)) {
@@ -130,7 +138,7 @@ final class MergeSort {
     }
 
     // insertion sort threshold for MergeSort()
-    private static final int INSERTION_SORT_THRESHOLD = 14;
+    static final int INSERTION_SORT_THRESHOLD = 14;
 
     /**
      * Src is the source array that starts at index 0

@@ -258,7 +258,9 @@ final class DTransformingPathConsumer2D {
         DeltaScaleFilter init(DPathConsumer2D out,
                               double mxx, double myy)
         {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             sx = mxx;
             sy = myy;
             return this; // fluent API
@@ -318,7 +320,9 @@ final class DTransformingPathConsumer2D {
                                   double mxx, double mxy,
                                   double myx, double myy)
         {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             this.mxx = mxx;
             this.mxy = mxy;
             this.myx = myx;
@@ -383,7 +387,9 @@ final class DTransformingPathConsumer2D {
         Path2DWrapper() {}
 
         Path2DWrapper init(Path2D.Double p2d) {
-            this.p2d = p2d;
+            if (this.p2d != p2d) {
+                this.p2d = p2d;
+            }
             return this;
         }
 
@@ -444,7 +450,9 @@ final class DTransformingPathConsumer2D {
         }
 
         ClosedPathDetector init(DPathConsumer2D out) {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             return this; // fluent API
         }
 
@@ -555,7 +563,9 @@ final class DTransformingPathConsumer2D {
         }
 
         PathClipFilter init(final DPathConsumer2D out) {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
 
             if (MarlinConst.DO_CLIP_SUBDIVIDER) {
                 // adjust padded clip rectangle:
@@ -1159,7 +1169,9 @@ final class DTransformingPathConsumer2D {
         }
 
         PathTracer init(DPathConsumer2D out) {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             return this; // fluent API
         }
 

@@ -99,4 +99,50 @@ public class RunJUnitTest {
     public void flipBitTest() {
         FlipBitTest.main(NO_ARGS);
     }
+
+    @Test
+    public void test7019861() throws Exception {
+        Test7019861.main(NO_ARGS);
+    }
+
+    @Test
+    public void testNPE() {
+        TestNPE.main(NO_ARGS);
+    }
+
+    @Test
+    public void dashStrokeTest() {
+        DashStrokeTest.main(NO_ARGS);
+    }
+
+    @Test
+    public void thinLineTest() throws Exception {
+        ThinLineTest.main(NO_ARGS);
+    }
+
+    @Test
+    public void test7036754() {
+        Test7036754.main(NO_ARGS);
+    }
+
+    @Test
+    public void strokeShapeTest() throws Exception {
+        StrokeShapeTest.main(NO_ARGS);
+    }
+
+    @Test
+    public void scaleTest() throws Exception {
+        ScaleTest.main(NO_ARGS);
+    }
+
+    @Test
+    public void joinMiterTest() throws Exception {
+        JoinMiterTest.main(NO_ARGS);
+    }
+
+    @Test(timeout = 5000)
+    public void strokedLinePerf() throws Exception {
+        StrokedLinePerf.main(NO_ARGS);
+    }
+
 }

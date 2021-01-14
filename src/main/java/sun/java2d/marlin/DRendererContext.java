@@ -65,7 +65,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     // MarlinRenderingEngine NearestPixelQuarter NormalizingPathIterator:
     final NormalizingPathIterator nPQPathIterator;
     // MarlinRenderingEngine.TransformingPathConsumer2D
-    final DTransformingPathConsumer2D transformerPC2D;
+    final DTransformingPathConsumer2D transformerPC2D; // TODO: clear if dirty ?
     // recycled Path2D instance (weak)
     private WeakReference<Path2D.Double> refPath2D = null;
     final DRenderer renderer;
@@ -89,6 +89,8 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     double clipInvScale = 0.0d;
     // CurveBasicMonotonizer instance
     final CurveBasicMonotonizer monotonizer;
+    // flag indicating to force the stroker to process joins
+    boolean isFirstSegment = true;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
     // DPQS Sorter context
@@ -96,13 +98,13 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
 
     // Array caches:
     /* clean int[] cache (zero-filled) = 5 refs */
-    private final IntArrayCache cleanIntCache = new IntArrayCache(true, 5);
+    private final ArrayCacheIntClean cleanIntCache = new ArrayCacheIntClean(5);
     /* dirty int[] cache = 5 refs */
-    private final IntArrayCache dirtyIntCache = new IntArrayCache(false, 5);
+    private final ArrayCacheInt dirtyIntCache = new ArrayCacheInt(5);
     /* dirty double[] cache = 4 refs (2 polystack) */
-    private final DoubleArrayCache dirtyDoubleCache = new DoubleArrayCache(false, 4);
+    private final ArrayCacheDouble dirtyDoubleCache = new ArrayCacheDouble(4);
     /* dirty byte[] cache = 2 ref (2 polystack) */
-    private final ByteArrayCache dirtyByteCache = new ByteArrayCache(false, 2);
+    private final ArrayCacheByte dirtyByteCache = new ArrayCacheByte(2);
 
     // RendererContext statistics
     final RendererStats stats;
@@ -168,6 +170,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         doClip     = false;
         closedPath = false;
         clipInvScale = 0.0d;
+        isFirstSegment = true;
 
         // if context is maked as DIRTY:
         if (dirty) {
@@ -217,19 +220,19 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     }
 
     @Override
-    public IntArrayCache.Reference newCleanIntArrayRef(final int initialSize) {
+    public ArrayCacheIntClean.Reference newCleanIntArrayRef(final int initialSize) {
         return cleanIntCache.createRef(initialSize);
     }
 
-    IntArrayCache.Reference newDirtyIntArrayRef(final int initialSize) {
+    ArrayCacheInt.Reference newDirtyIntArrayRef(final int initialSize) {
         return dirtyIntCache.createRef(initialSize);
     }
 
-    DoubleArrayCache.Reference newDirtyDoubleArrayRef(final int initialSize) {
+    ArrayCacheDouble.Reference newDirtyDoubleArrayRef(final int initialSize) {
         return dirtyDoubleCache.createRef(initialSize);
     }
 
-    ByteArrayCache.Reference newDirtyByteArrayRef(final int initialSize) {
+    ArrayCacheByte.Reference newDirtyByteArrayRef(final int initialSize) {
         return dirtyByteCache.createRef(initialSize);
     }
 
@@ -239,7 +242,9 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         PathConsumer2DAdapter() {}
 
         PathConsumer2DAdapter init(sun.awt.geom.PathConsumer2D out) {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             return this;
         }
 
