@@ -24,7 +24,7 @@
  */
 package sun.java2d.marlin;
 
-final class DPathSimplifier implements DPathConsumer2D {
+final class PathSimplifier implements DPathConsumer2D {
 
     // distance threshold in pixels (device)
     private static final double PIX_THRESHOLD = MarlinProperties.getPathSimplifierPixelTolerance();
@@ -40,10 +40,10 @@ final class DPathSimplifier implements DPathConsumer2D {
     // last skipped point
     private double sx, sy;
 
-    DPathSimplifier() {
+    PathSimplifier() {
     }
 
-    DPathSimplifier init(final DPathConsumer2D delegate) {
+    PathSimplifier init(final DPathConsumer2D delegate) {
         if (this.delegate != delegate) {
             this.delegate = delegate;
         }
