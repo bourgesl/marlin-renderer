@@ -35,6 +35,9 @@ import org.marlin.pisces.DTransformingPathConsumer2D.CurveClipSplitter;
 // has methods like plus(Point), minus(Point), dot(Point), cross(Point)and such
 final class DStroker implements DPathConsumer2D, MarlinConst {
 
+    static final boolean DO_CHECK_CURVE_WIDTH = MarlinProperties.isDoSubdivideCurves();
+    static final boolean DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE = true && MarlinProperties.isDoSubdivideCurvesRuntimeFlag();
+
     private static final int MOVE_TO = 0;
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
     private static final int CLOSE = 2;
@@ -55,6 +58,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     private int joinStyle;
 
     private double lineWidth2;
+    private double lineWidth2Sq;
     private double invHalfLineWidth2Sq;
 
     private final double[] offset0 = new double[2];
@@ -79,6 +83,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
     private final PolyStack reverse;
 
+    private final double[] cp = new double[8];
     private final double[] lp = new double[8];
     private final double[] rp = new double[8];
 
@@ -152,7 +157,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         this.out = pc2d;
 
         this.lineWidth2 = lineWidth / 2.0d;
-        this.invHalfLineWidth2Sq = 1.0d / (2.0d * lineWidth2 * lineWidth2);
+        this.lineWidth2Sq = lineWidth2 * lineWidth2;
+        this.invHalfLineWidth2Sq = 1.0d / (2.0d * lineWidth2Sq);
         this.monotonize = subdivideCurves;
 
         this.capStyle = capStyle;
@@ -228,6 +234,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             Arrays.fill(offset1, 0.0d);
             Arrays.fill(offset2, 0.0d);
             Arrays.fill(miter, 0.0d);
+            Arrays.fill(cp, 0.0d);
             Arrays.fill(lp, 0.0d);
             Arrays.fill(rp, 0.0d);
         }
@@ -781,7 +788,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                 this.smx = mx;
                 this.smy = my;
             }
-        } else if (rdrCtx.doDrawJoins) {
+        } else if (rdrCtx.isFirstSegment) {
             // Precision on isCW is causing instabilities with Dasher !!
             final boolean cw = isCW(pdx, pdy, dx, dy);
             if (outcode == 0) {
@@ -793,6 +800,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             }
             emitLineTo(x0, y0, !cw);
         }
+        // reset trigger to process further joins (normal operations)
+        rdrCtx.isFirstSegment = true;
+
         prev = DRAWING_OP_TO;
     }
 
@@ -820,6 +830,20 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                                    final double[] leftOff,
                                    final double[] rightOff)
     {
+        return computeOffsetCubic(pts, off, leftOff, rightOff, true, true, true);
+    }
+
+    private final static boolean DEBUG_CUBIC_MID_POINTS = false;
+
+    private final static boolean FIX_EAR_LOOP = true;
+    private final static boolean DEBUG_FIX_EAR_LOOP = false;
+    
+    private int computeOffsetCubic(final double[] pts, final int off,
+                                   final double[] leftOff,
+                                   final double[] rightOff,
+                                   final boolean checkCtrlPoints,
+                                   final boolean left, final boolean right)
+    {
         // if p1=p2 or p3=p4 it means that the derivative at the endpoint
         // vanishes, which creates problems with computeOffset. Usually
         // this happens when this stroker object is trying to widen
@@ -830,48 +854,36 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         final double x1 = pts[off    ]; final double y1 = pts[off + 1];
         final double x2 = pts[off + 2]; final double y2 = pts[off + 3];
         final double x3 = pts[off + 4]; final double y3 = pts[off + 5];
-        final double x4 = pts[off + 6]; final double  y4 = pts[off + 7];
+        final double x4 = pts[off + 6]; final double y4 = pts[off + 7];
 
-        final double dx12 = x2 - x1; final double dy12 = y2 - y1;
-        final double dx34 = x4 - x3; final double dy34 = y4 - y3;
+        double dx1 = x2 - x1; double dy1 = y2 - y1;
+        double dx4 = x4 - x3; double dy4 = y4 - y3;
 
-        // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
-        // in which case ignore if p1 == p2
-        final boolean p1eqp2 = DHelpers.withinD(dx12, dy12, 6.0d * Math.ulp(y2));
-        final boolean p3eqp4 = DHelpers.withinD(dx34, dy34, 6.0d * Math.ulp(y4));
+        if (checkCtrlPoints) {
+            // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
+            // in which case ignore if p1 == p2
+            final boolean p1eqp2 = DHelpers.withinD(dx1, dy1, 6.0d * Math.ulp(y2));
+            final boolean p3eqp4 = DHelpers.withinD(dx4, dy4, 6.0d * Math.ulp(y4));
 
-        if (p1eqp2 && p3eqp4) {
-            return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
-        } else if (p1eqp2) {
-            // shift 3-4 to 2-3 to computeOffsetQuad(1-3-4)
-            pts[off + 2] = pts[off + 4];
-            pts[off + 3] = pts[off + 5];
-            pts[off + 4] = pts[off + 6];
-            pts[off + 5] = pts[off + 7];
-            return computeOffsetQuad(pts, off, leftOff, rightOff, false);
-        } else if (p3eqp4) {
-            // computeOffsetQuad(1-2-3)
-            return computeOffsetQuad(pts, off, leftOff, rightOff, false);
-        }
+            if (p1eqp2 && p3eqp4) {
+                return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
+            } else if (p1eqp2) {
+                dx1 = x3 - x1;
+                dy1 = y3 - y1;
+            } else if (p3eqp4) {
+                dx4 = x4 - x2;
+                dy4 = y4 - y2;
+            }
 
-        final double dx23 = x3 - x2; final double dy23 = y3 - y2;
+            // if p2-p1 and p4-p3 are parallel, that must mean this curve is a line
+            double dotsq = (dx1 * dx4 + dy1 * dy4);
+            dotsq *= dotsq;
+            final double l1sq = dx1 * dx1 + dy1 * dy1;
+            final double l4sq = dx4 * dx4 + dy4 * dy4;
 
-        final boolean p2eqp3 = DHelpers.withinD(dx23, dy23, 6.0d * Math.ulp(y3));
-        if (p2eqp3) {
-            // shift 4 to 3 to computeOffsetQuad(1-2-4)
-            pts[off + 4] = pts[off + 6];
-            pts[off + 5] = pts[off + 7];
-            return computeOffsetQuad(pts, off, leftOff, rightOff, false);
-        }
-
-        // if p2-p1 and p4-p3 are parallel, that must mean this curve is a line
-        double dotsq = (dx12 * dx34 + dy12 * dy34);
-        dotsq *= dotsq;
-        final double l1sq = dx12 * dx12 + dy12 * dy12;
-        final double l4sq = dx34 * dx34 + dy34 * dy34;
-
-        if (DHelpers.within(dotsq, l1sq * l4sq, 4.0d * Math.ulp(dotsq))) {
-            return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
+            if (DHelpers.within(dotsq, l1sq * l4sq, 4.0d * Math.ulp(dotsq))) {
+                return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
+            }
         }
 
 //      What we're trying to do in this function is to approximate an ideal
@@ -931,104 +943,108 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         // this computes the offsets at t=0, 0.5, 1, using the property that
         // for any bezier curve the vectors p2-p1 and p4-p3 are parallel to
         // the (dx/dt, dy/dt) vectors at the endpoints.
-        computeOffset(dx12, dy12, lineWidth2, offset0);
+        computeOffset(dx1, dy1, lineWidth2, offset0);
         computeOffset(dxm, dym, lineWidth2, offset1);
-        computeOffset(dx34, dy34, lineWidth2, offset2);
+        computeOffset(dx4, dy4, lineWidth2, offset2);
 
-        // left side:
-        double x1p = x1 + offset0[0]; // start
-        double y1p = y1 + offset0[1]; // point
-        double xi  = xm  + offset1[0]; // interpolation
-        double yi  = ym  + offset1[1]; // point
-        double x4p = x4 + offset2[0]; // end
-        double y4p = y4 + offset2[1]; // point
-
-if (false) {
-        final MarlinDebugThreadLocal dbgCtx = MarlinDebugThreadLocal.get();
-        // never release (reset):
-        dbgCtx.addPoint(xi, yi);
-}
-
-        final double invdet43 = 4.0d / (3.0d * (dx12 * dy34 - dy12 * dx34));
-
-        double two_pi_m_p1_m_p4x = 2.0d * xi - (x1p + x4p);
-        double two_pi_m_p1_m_p4y = 2.0d * yi - (y1p + y4p);
-
-        double c1 = invdet43 * (dy34 * two_pi_m_p1_m_p4x - dx34 * two_pi_m_p1_m_p4y);
-        double c2 = invdet43 * (dx12 * two_pi_m_p1_m_p4y - dy12 * two_pi_m_p1_m_p4x);
-
+        final double invdet43 = 4.0d / (3.0d * (dx1 * dy4 - dy1 * dx4));
+        
+        double x1p, y1p, xi, yi, x4p, y4p;
+        double two_pi_m_p1_m_p4x, two_pi_m_p1_m_p4y;
+        double c1, c2;
         double x2p, y2p, x3p, y3p;
+        
+        if (left) {
+            // left side:
+            x1p = x1 + offset0[0]; // start
+            y1p = y1 + offset0[1]; // point
+            xi  = xm  + offset1[0]; // interpolation
+            yi  = ym  + offset1[1]; // point
+            x4p = x4 + offset2[0]; // end
+            y4p = y4 + offset2[1]; // point
 
-        if (c1 * c2 > 0.0) {
-//            System.out.println("Buggy solver (left): c1 = " + c1 + " c2 = " + c2);
+            if (DEBUG_CUBIC_MID_POINTS) {
+                MarlinDebugThreadLocal.get().addPoint(xi, yi);
+            }
 
-            // use lower quality approximation but good enough
-            // to ensure cuve being in its convex hull
-            x2p = x2 + offset1[0]; // 2nd
-            y2p = y2 + offset1[1]; // point
-            x3p = x3 + offset1[0]; // 3nd
-            y3p = y3 + offset1[1]; // point
+            two_pi_m_p1_m_p4x = 2.0d * xi - (x1p + x4p);
+            two_pi_m_p1_m_p4y = 2.0d * yi - (y1p + y4p);
 
-            safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x2p, y2p, x2p-dxm, y2p-dym, leftOff);
-            x2p = leftOff[2]; y2p = leftOff[3];
+            c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
+            c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
 
-            safeComputeMiter(x4p, y4p, x4p+dx34, y4p+dy34, x3p, y3p, x3p-dxm, y3p-dym, leftOff);
-            x3p = leftOff[2]; y3p = leftOff[3];
-        } else {
-            x2p = x1p + c1 * dx12; y2p = y1p + c1 * dy12;
-            x3p = x4p + c2 * dx34; y3p = y4p + c2 * dy34;
+            if (FIX_EAR_LOOP && (c1 * c2 > 0.0)) {
+                if (DEBUG_FIX_EAR_LOOP) {
+                    System.out.println("Buggy solver (left): c1 = " + c1 + " c2 = " + c2);
+                }
+                // use lower quality approximation but good enough
+                // to ensure cuve being in its convex hull
+                x2p = x2 + offset1[0]; // 2nd
+                y2p = y2 + offset1[1]; // point
+                x3p = x3 + offset1[0]; // 3nd
+                y3p = y3 + offset1[1]; // point
+
+                safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x2p, y2p, x2p-dxm, y2p-dym, leftOff);
+                x2p = leftOff[2]; y2p = leftOff[3];
+
+                safeComputeMiter(x4p, y4p, x4p+dx4, y4p+dy4, x3p, y3p, x3p-dxm, y3p-dym, leftOff);
+                x3p = leftOff[2]; y3p = leftOff[3];
+            } else {
+                x2p = x1p + c1 * dx1; y2p = y1p + c1 * dy1;
+                x3p = x4p + c2 * dx4; y3p = y4p + c2 * dy4;
+            }
+
+            leftOff[0] = x1p; leftOff[1] = y1p;
+            leftOff[2] = x2p; leftOff[3] = y2p;
+            leftOff[4] = x3p; leftOff[5] = y3p;
+            leftOff[6] = x4p; leftOff[7] = y4p;
         }
 
-        leftOff[0] = x1p; leftOff[1] = y1p;
-        leftOff[2] = x2p; leftOff[3] = y2p;
-        leftOff[4] = x3p; leftOff[5] = y3p;
-        leftOff[6] = x4p; leftOff[7] = y4p;
+        if (right) {
+            // Right side:
+            x1p = x1 - offset0[0]; // start
+            y1p = y1 - offset0[1]; // point
+            xi =  xm  - offset1[0]; // interpolation
+            yi =  ym  - offset1[1]; // point
+            x4p = x4 - offset2[0]; // end
+            y4p = y4 - offset2[1]; // point
 
-        // Right side:
-        x1p = x1 - offset0[0]; // start
-        y1p = y1 - offset0[1]; // point
-        xi =  xm  - offset1[0]; // interpolation
-        yi =  ym  - offset1[1]; // point
-        x4p = x4 - offset2[0]; // end
-        y4p = y4 - offset2[1]; // point
+            if (DEBUG_CUBIC_MID_POINTS) {
+                MarlinDebugThreadLocal.get().addPoint(xi, yi);
+            }
 
-if (false) {
-        final MarlinDebugThreadLocal dbgCtx = MarlinDebugThreadLocal.get();
-        // never release (reset):
-        dbgCtx.addPoint(xi, yi);
-}
+            two_pi_m_p1_m_p4x = 2.0d * xi - (x1p + x4p);
+            two_pi_m_p1_m_p4y = 2.0d * yi - (y1p + y4p);
 
-        two_pi_m_p1_m_p4x = 2.0d * xi - (x1p + x4p);
-        two_pi_m_p1_m_p4y = 2.0d * yi - (y1p + y4p);
+            c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
+            c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
 
-        c1 = invdet43 * (dy34 * two_pi_m_p1_m_p4x - dx34 * two_pi_m_p1_m_p4y);
-        c2 = invdet43 * (dx12 * two_pi_m_p1_m_p4y - dy12 * two_pi_m_p1_m_p4x);
+            if (FIX_EAR_LOOP && (c1 * c2 > 0.0)) {
+                if (DEBUG_FIX_EAR_LOOP) {
+                    System.out.println("Buggy solver (left): c1 = " + c1 + " c2 = " + c2);
+                }
+                // use lower quality approximation but good enough
+                // to ensure cuve being in its convex hull
+                x2p = x2 - offset1[0]; // 2nd
+                y2p = y2 - offset1[1]; // point
+                x3p = x3 - offset1[0]; // 3nd
+                y3p = y3 - offset1[1]; // point
 
-        if (c1 * c2 > 0.0) {
-//            System.out.println("Buggy solver (right): c1 = " + c1 + " c2 = " + c2);
+                safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x2p, y2p, x2p-dxm, y2p-dym, rightOff);
+                x2p = rightOff[2]; y2p = rightOff[3];
 
-            // use lower quality approximation but good enough
-            // to ensure cuve being in its convex hull
-            x2p = x2 - offset1[0]; // 2nd
-            y2p = y2 - offset1[1]; // point
-            x3p = x3 - offset1[0]; // 3nd
-            y3p = y3 - offset1[1]; // point
+                safeComputeMiter(x4p, y4p, x4p+dx4, y4p+dy4, x3p, y3p, x3p-dxm, y3p-dym, rightOff);
+                x3p = rightOff[2]; y3p = rightOff[3];
+            } else {
+                x2p = x1p + c1 * dx1; y2p = y1p + c1 * dy1;
+                x3p = x4p + c2 * dx4; y3p = y4p + c2 * dy4;
+            }
 
-            safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x2p, y2p, x2p-dxm, y2p-dym, rightOff);
-            x2p = rightOff[2]; y2p = rightOff[3];
-
-            safeComputeMiter(x4p, y4p, x4p+dx34, y4p+dy34, x3p, y3p, x3p-dxm, y3p-dym, rightOff);
-            x3p = rightOff[2]; y3p = rightOff[3];
-        } else {
-            x2p = x1p + c1 * dx12; y2p = y1p + c1 * dy12;
-            x3p = x4p + c2 * dx34; y3p = y4p + c2 * dy34;
+            rightOff[0] = x1p; rightOff[1] = y1p;
+            rightOff[2] = x2p; rightOff[3] = y2p;
+            rightOff[4] = x3p; rightOff[5] = y3p;
+            rightOff[6] = x4p; rightOff[7] = y4p;
         }
-
-        rightOff[0] = x1p; rightOff[1] = y1p;
-        rightOff[2] = x2p; rightOff[3] = y2p;
-        rightOff[4] = x3p; rightOff[5] = y3p;
-        rightOff[6] = x4p; rightOff[7] = y4p;
-
         return 8;
     }
 
@@ -1039,13 +1055,14 @@ if (false) {
                                   final double[] leftOff,
                                   final double[] rightOff)
     {
-        return computeOffsetQuad(pts, off, leftOff, rightOff, true);
+        return computeOffsetQuad(pts, off, leftOff, rightOff, true, true, true);
     }
 
     private int computeOffsetQuad(final double[] pts, final int off,
                                   final double[] leftOff,
                                   final double[] rightOff,
-                                  final boolean checkCtrlPoints)
+                                  final boolean checkCtrlPoints,
+                                  final boolean left, final boolean right)
     {
         final double x1 = pts[off    ]; final double y1 = pts[off + 1];
         final double x2 = pts[off + 2]; final double y2 = pts[off + 3];
@@ -1088,24 +1105,27 @@ if (false) {
         computeOffset(dx12, dy12, lineWidth2, offset0);
         computeOffset(dx23, dy23, lineWidth2, offset1);
 
-        double x1p = x1 + offset0[0]; // start
-        double y1p = y1 + offset0[1]; // point
-        double x3p = x3 + offset1[0]; // end
-        double y3p = y3 + offset1[1]; // point
+        double x1p, y1p, x3p, y3p;
+        if (left) {
+            x1p = x1 + offset0[0]; // start
+            y1p = y1 + offset0[1]; // point
+            x3p = x3 + offset1[0]; // end
+            y3p = y3 + offset1[1]; // point
 
-        safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x3p, y3p, x3p-dx23, y3p-dy23, leftOff);
-        leftOff[0] = x1p; leftOff[1] = y1p;
-        leftOff[4] = x3p; leftOff[5] = y3p;
+            safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x3p, y3p, x3p-dx23, y3p-dy23, leftOff);
+            leftOff[0] = x1p; leftOff[1] = y1p;
+            leftOff[4] = x3p; leftOff[5] = y3p;
+        }
+        if (right) {
+            x1p = x1 - offset0[0]; // start
+            y1p = y1 - offset0[1]; // point
+            x3p = x3 - offset1[0]; // end
+            y3p = y3 - offset1[1]; // point
 
-        x1p = x1 - offset0[0]; // start
-        y1p = y1 - offset0[1]; // point
-        x3p = x3 - offset1[0]; // end
-        y3p = y3 - offset1[1]; // point
-
-        safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x3p, y3p, x3p-dx23, y3p-dy23, rightOff);
-        rightOff[0] = x1p; rightOff[1] = y1p;
-        rightOff[4] = x3p; rightOff[5] = y3p;
-
+            safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x3p, y3p, x3p-dx23, y3p-dy23, rightOff);
+            rightOff[0] = x1p; rightOff[1] = y1p;
+            rightOff[4] = x3p; rightOff[5] = y3p;
+        }
         return 6;
     }
 
@@ -1156,6 +1176,8 @@ if (false) {
         _curveTo(x1, y1, x2, y2, x3, y3, outcode0);
     }
 
+    private final static boolean DEBUG_CUBIC_INFO = false;
+
     private void _curveTo(final double x1, final double y1,
                           final double x2, final double y2,
                           final double x3, final double y3,
@@ -1205,8 +1227,7 @@ if (false) {
             dxf /= len;
             dyf /= len;
         }
-        // Take care: joins are generated tons by tons by Dasher (subdivision and many small curves ...) !
-        // TODO: discard join from Dasher ie only for REAL inputs
+
         computeOffset(dxs, dys, lineWidth2, offset0);
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, offset0[0], offset0[1], outcode0);
 
@@ -1222,11 +1243,7 @@ if (false) {
             nSplits = monotonizer.nbSplits;
             mid = monotonizer.middle;
         } else {
-            // Dasher case: curve is already monotonized
-            // reset draw join flag to avoid emitting joins on dasher sub-curves (not from inputs)
-            rdrCtx.doDrawJoins = false;
-            // use left instead:
-            mid = l;
+            mid = cp;
             mid[0] = cx0; mid[1] = cy0;
             mid[2] = x1;  mid[3] = y1;
             mid[4] = x2;  mid[5] = y2;
@@ -1236,29 +1253,54 @@ if (false) {
 
         int kind = 0;
         for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
-/*
-            MarlinUtils.logInfo("Dstroker:_curveTo: p.curveTo(" + mid[off + 0] + ", " + mid[off + 1] + ", "
-                    + mid[off + 2] + ", " + mid[off + 3]  + ", " + mid[off + 4] + ", " + mid[off + 5]  + ", " + mid[off + 6] + ", " + mid[off + 7] + ");");
-*/
+            if (DEBUG_CUBIC_INFO) {
+                MarlinUtils.logInfo("Dstroker:_curveTo: p.curveTo(" 
+                        + mid[off + 0] + ", " + mid[off + 1] + ", "
+                        + mid[off + 2] + ", " + mid[off + 3]  + ", " 
+                        + mid[off + 4] + ", " + mid[off + 5]  + ", " 
+                        + mid[off + 6] + ", " + mid[off + 7] + ");");
+            }
+            
+            // kind = 4 (line) or 8 (cubic):
             kind = computeOffsetCubic(mid, off, l, r);
 
+            // start left line:
             emitLineTo(l[0], l[1]);
+            
+            boolean lok = true;
+            boolean rok = true;
 
-            switch(kind) {
-                case 8:
-                    emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
-                    emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
-                    break;
-                case 6:
-                    emitQuadTo(l[2], l[3], l[4], l[5]);
-                    emitQuadToRev(r[0], r[1], r[2], r[3]);
-                    break;
-                case 4:
-                    emitLineTo(l[2], l[3]);
-                    emitLineToRev(r[0], r[1]);
-                    break;
-                default:
+            if ((kind == 8) && (DO_CHECK_CURVE_WIDTH
+                    || (DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE && MarlinProperties.isDoSubdivideCurvesAtRuntime()))) {
+                // check left curve distance to progenitor curve
+                lok = checkCurveDistance(mid, off, l, kind, true, 0);
+                
+                // check right curve distance to progenitor curve
+                rok = checkCurveDistance(mid, off, r, kind, false, 0);
             }
+            
+            if (lok || rok) {
+                switch(kind) {
+                    case 8:
+                        if (lok) {
+                            emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
+                        }
+                        if (rok) {
+                            emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
+                        }
+                        break;
+                    case 4:
+                        if (lok) {
+                            emitLineTo(l[2], l[3]);
+                        }
+                        if (rok) {
+                            emitLineToRev(r[0], r[1]);
+                        }
+                        break;
+                    default:
+                }
+            }
+            // end right line
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }
 
@@ -1270,6 +1312,304 @@ if (false) {
         this.cmx = (l[kind - 2] - r[kind - 2]) / 2.0d;
         this.cmy = (l[kind - 1] - r[kind - 1]) / 2.0d;
     }
+    
+    // dirty curve
+    private final DCurve curveRef = new DCurve();
+    private final DCurve curveOff = new DCurve();
+
+    private static int nDist = 32;
+    
+    private final static double[] tDist = new double[nDist];
+    
+    static {
+        double step = 1.0 / (nDist + 1);
+        for (int i = 0; i < nDist; i++) {
+            tDist[i] = step * (i + 1);
+        }
+        // System.out.println("tDist: " + Arrays.toString(tDist));
+    }
+    private final static double[] errorDist = new double[tDist.length];
+
+    private final double[] ts = new double[4];
+
+    static final int REC_LIMIT = 8;
+    
+    private final double[][] curveParts = new double[REC_LIMIT][8 * 2];
+    
+    private final static boolean TRACE_CHECK_CURVE = false;
+
+    private final static boolean DEBUG_CHECK_CURVE_PT_REF = false;
+    private final static boolean DEBUG_CHECK_CURVE_PT_OFF = false;
+    private final static boolean DEBUG_CHECK_CURVE_PT_INVALID = true;
+    
+    private boolean checkCurveDistance(final double[] ptsRef, final int off,
+                                       final double[] ptsOff, final int type, final boolean left,
+                                       final int recLevel)
+    {
+
+        final double epsThreshold = 0.5; // half unit
+        
+        
+        // Initial guess of large curvature:
+        // cubic => t=0.5 is good, but 0.25 or 0.75 is ?
+        // quad => t=0.5 is bad
+        // but curves can be degenerated or arms very asymetric
+        /*
+        final double x1 = pts[off    ]; final double y1 = pts[off + 1];
+        final double x2 = pts[off + 2]; final double y2 = pts[off + 3];
+        final double x3 = pts[off + 4]; final double y3 = pts[off + 5];
+        final double x4 = pts[off + 6]; final double y4 = pts[off + 7];
+        */
+        
+        // Initialize curves:
+        curveRef.set(ptsRef, off, type);
+        curveOff.set(ptsOff, type);
+        
+        boolean invalid = false;
+
+        for (int i = 0; i < tDist.length; i++) {
+            final double t = tDist[i];
+
+            // Ref Point:
+            final double xr = curveRef.xat(t);
+            final double yr = curveRef.yat(t);
+
+            if (DEBUG_CHECK_CURVE_PT_REF) {
+                // System.out.println("Cr: (" + xr + ", " + yr + ")");
+                MarlinDebugThreadLocal.get().addPoint(xr, yr);
+            }
+
+            // Ref tangent:
+            final double dxr = curveRef.dxat(t);
+            final double dyr = curveRef.dyat(t);
+
+            // normal orientation n = (dyr, -dxr)
+            double nxr;
+            double nyr;
+            if (left) {
+                nxr = dyr;
+                nyr = -dxr;
+            } else {
+                // right
+                nxr = -dyr;
+                nyr = dxr;
+            }
+
+            if (false) {
+                if (false) {
+                    double len = nxr * nxr + nyr * nyr;
+                    if (len != 0.0d) {
+                        len = Math.sqrt(len);
+                        nxr /= len;
+                        nyr /= len;
+                    }
+                }
+                final double w = 1000.0;
+                // show normal
+                MarlinDebugThreadLocal.get().addSegment(xr, yr, xr + w * nxr, yr + w * nyr);
+            }
+
+            // line to curve intersection:
+            final int n = curveOff.lineCrossings(ts, xr, yr, nxr, nyr);
+
+            if (false && (n != 1)) {
+                System.out.println("roots(Coff): n = " + n + " for t = " + t);
+                
+                // cusps => no intersection with the curve !
+                if (false && (n == 0)) {
+                    // System.out.println("Cr: (" + xr + ", " + yr + ")");
+                    MarlinDebugThreadLocal.get().addPoint(xr, yr);
+                    final double w = 1000.0;
+                    MarlinDebugThreadLocal.get().addSegment(xr, yr, xr + w * nxr, yr + w * nyr);
+                }
+            }
+
+            double epsT = 0.0;
+            
+            if (n != 0) {
+                // smallest dist among intersections:
+                double minEps = Double.MAX_VALUE;
+                int io = 0;
+
+                for (int j = 0; j < n; j++) {
+                    final double to = ts[j];
+                    final double xo = curveOff.xat(to);
+                    final double yo = curveOff.yat(to);
+
+                    final double dx = xo - xr;
+                    final double dy = yo - yr;
+
+                    final double dist = Math.sqrt((dx * dx) + (dy * dy));
+
+                    // espilon = dist - (w/2)
+                    final double eps = Math.abs(dist - lineWidth2);
+
+                    if (eps < minEps) {
+                        minEps = eps;
+                        io = j;
+                    }
+
+                    if (DEBUG_CHECK_CURVE_PT_OFF) {
+                        // System.out.println("Co: (" + xo + ", " + yo + ")");
+                        MarlinDebugThreadLocal.get().addPoint(xo, yo);
+                    }
+                }
+                
+                epsT = minEps;
+
+                boolean ok = true;
+
+                if (minEps > epsThreshold) {
+                    /*
+                    System.out.println("Step["+split+"] distance error (offset - progenitor) = " + (minEps) + " unit"
+                            + " for t = " + ts[io]);
+                    */
+                    ok = false;
+                    invalid = true;
+                }
+
+                if (DEBUG_CHECK_CURVE_PT_INVALID && (recLevel != 0) && !ok) {
+                    final double to = ts[io];
+                    final double xo = curveOff.xat(to);
+                    final double yo = curveOff.yat(to);
+
+                    // System.out.println("Co: (" + xo + ", " + yo + ")");
+                    MarlinDebugThreadLocal.get().addPoint(xo, yo);
+                }
+            }
+            errorDist[i] = epsT;
+        }
+        if (invalid) {
+            if (TRACE_CHECK_CURVE) {
+                System.out.println("Step["+recLevel+"] Invalid offset curve: ");
+            }
+            
+            // quintic so max 5 maxima ?
+            int imax = -1;
+            
+            for (int i = 0; i < tDist.length - 1; i++) {
+                // 1 or multiple maximums (3) ?
+                final double delta = errorDist[i + 1] - errorDist[i];
+                if (delta < 0.0) {
+                    if (errorDist[i]  > epsThreshold) {
+                        // decreasing:
+                        if (imax == -1) {
+                            // first maxima found:
+                            imax = i;
+                        }
+                    }
+                }
+                if (TRACE_CHECK_CURVE) {
+                    if (i == 0) {
+                        System.out.println("t: " + tDist[0] + " e: " + errorDist[0]);
+                    }
+                    System.out.println("t: " + tDist[i + 1] + " e: " + errorDist[i + 1]);
+                }
+            }
+            if (imax == -1) {
+                // last:
+                imax = tDist.length - 1;
+            }
+            if (TRACE_CHECK_CURVE) {
+                System.out.println("subdivide at t_max = " + tDist[imax] + " error = " + errorDist[imax] + " unit");
+            }
+            
+            if (recLevel < REC_LIMIT) {
+                final double[] subPts = curveParts[recLevel];
+                // subdivide at t
+                DHelpers.subdivideAt(tDist[imax], ptsRef, off, subPts, 0, type);
+
+                final double[] l;
+                final double[] r;
+                if (left) {
+                    l = lp;
+                    r = null;
+                } else {
+                    l = null;
+                    r = rp;
+                }
+
+                // 1th part is in ptsRef (in place):
+                computeOffsetCurveRecursive(subPts, 0, l, r, type, left, recLevel + 1);
+                // 2th part is in curveEnd
+                computeOffsetCurveRecursive(subPts, type, l, r, type, left, recLevel + 1);
+            } else {
+                if (TRACE_CHECK_CURVE) {
+                    System.out.println("max reclevel :" + recLevel);
+                }
+            }
+        } else {
+            if (TRACE_CHECK_CURVE) {
+                System.out.println("Step["+recLevel+"] valid offset curve ");
+            }
+        }
+        return !invalid;
+    }
+    
+    private void computeOffsetCurveRecursive(final double[] mid, final int off,
+                                             final double[] l, final double[] r,
+                                             final int type, 
+                                             final boolean left,
+                                             final int recLevel)
+     {
+        boolean lok = left;
+        boolean rok = !left;
+        
+        final int kind;
+        switch (type) {
+            case 8:
+                // kind = 4 (line) or 8 (cubic):
+                kind = computeOffsetCubic(mid, off, l, r, false, lok, rok);
+                break;
+            case 6:
+                // kind = 4 (line) or 6 (quad):
+                kind = computeOffsetQuad(mid, off, l, r, false, lok, rok);
+                break;
+            default:
+                return;
+        }
+
+        if (kind >= 6) {
+            if (lok) {
+                // check left curve distance to progenitor curve
+                lok = checkCurveDistance(mid, off, l, kind, true, recLevel);
+            }
+            if (rok) {
+                // check right curve distance to progenitor curve
+                rok = checkCurveDistance(mid, off, r, kind, false, recLevel);
+            }
+        }
+
+        if (lok || rok) {
+            switch(kind) {
+                case 8:
+                    if (lok) {
+                        emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
+                    }
+                    if (rok) {
+                        emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
+                    }
+                    break;
+                case 6:
+                    if (lok) {
+                        emitQuadTo(l[2], l[3], l[4], l[5]);
+                    }
+                    if (rok) {
+                        emitQuadToRev(r[0], r[1], r[2], r[3]);
+                    }
+                    break;
+                case 4:
+                    if (lok) {
+                        emitLineTo(l[2], l[3]);
+                    }
+                    if (rok) {
+                        emitLineToRev(r[0], r[1]);
+                    }
+                    break;
+                default:
+            }
+        }
+     }
 
     @Override
     public void quadTo(final double x1, final double y1,
@@ -1352,8 +1692,6 @@ if (false) {
             dyf /= len;
         }
 
-        // Take care: joins are generated tons by tons by Dasher (subdivision and many small curves ...) !
-        // TODO: discard join from Dasher ie only for REAL inputs
         computeOffset(dxs, dys, lineWidth2, offset0);
         drawJoin(cdx, cdy, cx0, cy0, dxs, dys, cmx, cmy, offset0[0], offset0[1], outcode0);
 
@@ -1369,11 +1707,7 @@ if (false) {
             nSplits = monotonizer.nbSplits;
             mid = monotonizer.middle;
         } else {
-            // Dasher case: curve is already monotonized
-            // reset draw join flag to avoid emitting joins on dasher sub-curves (not from inputs)
-            rdrCtx.doDrawJoins = false;
-            // use left instead:
-            mid = l;
+            mid = cp;
             mid[0] = cx0; mid[1] = cy0;
             mid[2] = x1;  mid[3] = y1;
             mid[4] = x2;  mid[5] = y2;
@@ -1382,21 +1716,46 @@ if (false) {
 
         int kind = 0;
         for (int i = 0, off = 0; i <= nSplits; i++, off += 4) {
+            // kind = 4 (line) or 6 (quad):
             kind = computeOffsetQuad(mid, off, l, r);
 
+            // start left line:
             emitLineTo(l[0], l[1]);
+            
+            boolean lok = true;
+            boolean rok = true;
 
-            switch(kind) {
-                case 6:
-                    emitQuadTo(l[2], l[3], l[4], l[5]);
-                    emitQuadToRev(r[0], r[1], r[2], r[3]);
-                    break;
-                case 4:
-                    emitLineTo(l[2], l[3]);
-                    emitLineToRev(r[0], r[1]);
-                    break;
-                default:
+            if ((kind == 6) && (DO_CHECK_CURVE_WIDTH
+                    || (DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE && MarlinProperties.isDoSubdivideCurvesAtRuntime()))) {
+                // check left curve distance to progenitor curve
+                lok = checkCurveDistance(mid, off, l, kind, true, 0);
+                
+                // check right curve distance to progenitor curve
+                rok = checkCurveDistance(mid, off, r, kind, false, 0);
             }
+            
+            if (lok || rok) {
+                switch(kind) {
+                    case 6:
+                        if (lok) {
+                            emitQuadTo(l[2], l[3], l[4], l[5]);
+                        }
+                        if (rok) {
+                            emitQuadToRev(r[0], r[1], r[2], r[3]);
+                        }
+                        break;
+                    case 4:
+                        if (lok) {
+                            emitLineTo(l[2], l[3]);
+                        }
+                        if (rok) {
+                            emitLineToRev(r[0], r[1]);
+                        }
+                        break;
+                    default:
+                }
+            }
+            // end right line
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }
 

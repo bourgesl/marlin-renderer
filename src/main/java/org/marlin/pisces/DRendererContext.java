@@ -92,7 +92,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     // CurveBasicMonotonizer instance
     final CurveBasicMonotonizer monotonizer;
     // flag indicating to force the stroker to process joins
-    boolean doDrawJoins = true;
+    boolean isFirstSegment = true;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
     // DPQS Sorter context
@@ -172,7 +172,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         doClip     = false;
         closedPath = false;
         clipInvScale = 0.0d;
-        doDrawJoins = true;
+        isFirstSegment = true;
 
         // if context is maked as DIRTY:
         if (dirty) {

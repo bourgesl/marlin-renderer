@@ -50,6 +50,23 @@ final class DCurve {
         }
     }
 
+    void set(final double[] points, final int off, final int type) {
+        // if instead of switch (perf + most probable cases first)
+        if (type == 8) {
+            set(points[off + 0], points[off + 1],
+                points[off + 2], points[off + 3],
+                points[off + 4], points[off + 5],
+                points[off + 6], points[off + 7]);
+        } else if (type == 4) {
+            set(points[off + 0], points[off + 1],
+                points[off + 2], points[off + 3]);
+        } else {
+            set(points[off + 0], points[off + 1],
+                points[off + 2], points[off + 3],
+                points[off + 4], points[off + 5]);
+        }
+    }
+
     void set(final double x1, final double y1,
              final double x2, final double y2,
              final double x3, final double y3,
@@ -155,6 +172,26 @@ final class DCurve {
     int yPoints(final double[] ts, final int off, final double y)
     {
         return DHelpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off, 0.0d, 1.0d);
+    }
+
+    /**
+    * Compute line intersections with this curve
+    * @param px reference point X
+    * @param py reference point Y
+    * @param ldx line slope X
+    * @param ldy line slope Y
+    * @return t values corresponding to line / curve intersections (0 to 3)
+    */
+    int lineCrossings(final double[] ts, final double px, final double py,
+                      final double ldx, final double ldy)
+    {
+        final double a = ldy * ax - ldx * ay;
+        final double b = ldy * bx - ldx * by;
+        final double c = ldy * cx - ldx * cy;
+        final double d = ldy * (dx - px) - ldx * (dy - py);
+
+        // solve cubic:
+        return DHelpers.cubicRootsInAB(a, b, c, d, ts, 0, 0.0d, 1.0d);
     }
 
     // finds points where the first and second derivative are

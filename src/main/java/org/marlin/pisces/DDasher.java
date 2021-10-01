@@ -410,9 +410,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         final double cx = dx / len;
         final double cy = dy / len;
 
-        // test: tell stroker to process joins:
-        rdrCtx.doDrawJoins = true;
-
         final double[] _curCurvepts = curCurvepts;
         final double[] _dash = dash;
         final int _dashLen = this.dashLen;
@@ -969,9 +966,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                           final double x2, final double y2,
                           final double x3, final double y3)
     {
-        // test: tell stroker to process joins:
-        rdrCtx.doDrawJoins = true;
-
         final double[] _curCurvepts = curCurvepts;
 
         // monotonize curve:
@@ -984,6 +978,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
+
+            // set flag (cleared automatically):
+            rdrCtx.isFirstSegment = (i == 0); // TODO: handle conflict with clipper
 
             somethingTo(8);
         }
@@ -1057,9 +1054,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
     private void _quadTo(final double x1, final double y1,
                          final double x2, final double y2)
     {
-        // test: tell stroker to process joins:
-        rdrCtx.doDrawJoins = true;
-
         final double[] _curCurvepts = curCurvepts;
 
         // monotonize quad:
@@ -1072,6 +1066,9 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         for (int i = 0, off = 0; i <= nSplits; i++, off += 4) {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
+
+            // set flag (cleared automatically):
+            rdrCtx.isFirstSegment = (i == 0); // TODO: handle conflict with clipper
 
             somethingTo(6);
         }

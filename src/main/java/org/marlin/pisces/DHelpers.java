@@ -32,13 +32,20 @@ import org.marlin.pisces.stats.StatLong;
 
 final class DHelpers implements MarlinConst {
 
-    static final boolean DO_SUBDIVIDE_CURVE_ANGLE = MarlinProperties.isDoSubdivideCurves();
-    static final boolean DO_SUBDIVIDE_CURVE_RUNTIME_ENABLE = MarlinProperties.isDoSubdivideCurvesRuntimeFlag();
+    static final boolean DO_SUBDIVIDE_CURVE_ANGLE = false && MarlinProperties.isDoSubdivideCurves();
+    static final boolean DO_SUBDIVIDE_CURVE_RUNTIME_ENABLE = DO_SUBDIVIDE_CURVE_ANGLE 
+            && MarlinProperties.isDoSubdivideCurvesRuntimeFlag();
 
     // PI/8 (22.5 deg) or PI/12 (15 deg)
-    private final static double MIN_ANGLE = Math.PI / 12.0d; // 15 deg ie divide 90° in 5 parts
+    private final static double MIN_ANGLE = (Math.PI / 2.0) / 6.0; // 15 deg ie divide 90° in 5 parts
     private final static double COS2_MIN_ANGLE = Math.pow(Math.cos(MIN_ANGLE), 2.0d);
 
+    static {
+        if (DO_SUBDIVIDE_CURVE_RUNTIME_ENABLE) {
+            System.out.println("MIN_ANGLE: "+ Math.toDegrees(MIN_ANGLE));
+        }
+    }
+    
     private static final double EPS = 1e-9d;
 
     private static final double T_MIN = 1e-6d;
