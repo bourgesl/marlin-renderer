@@ -310,6 +310,10 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.doChecks", "false");
     }
 
+    public static boolean isDebugThreadLocal() {
+        return getBoolean("sun.java2d.renderer.doDebugTL", "false");
+    }
+
     // logging parameters
 
     public static boolean isLoggingEnabled() {

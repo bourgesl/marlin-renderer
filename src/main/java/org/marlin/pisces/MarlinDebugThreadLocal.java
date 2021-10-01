@@ -24,6 +24,7 @@
  */
 package org.marlin.pisces;
 
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,10 @@ import org.marlin.ReentrantContext;
  * Marlin renderer debugging context (internal purposes only)
  */
 public final class MarlinDebugThreadLocal extends ReentrantContext {
+
+    private static final boolean USE_CTX = MarlinProperties.isDebugThreadLocal();
+
+    private static final int STORAGE_CAPACITY = USE_CTX ? 100 : 0;
 
     // Thread-local storage:
     private static final ThreadLocal<MarlinDebugThreadLocal> ctxTL = new ThreadLocal<MarlinDebugThreadLocal>();
@@ -48,22 +53,44 @@ public final class MarlinDebugThreadLocal extends ReentrantContext {
         return ctx;
     }
 
-    public static void release(final MarlinDebugThreadLocal ctx) {
-        ctx.reset();
+    public static void startRecord() {
+        if (USE_CTX) {
+            get().setRecording(true);
+        }
     }
 
-    public static void sampleUsage() {
-        final MarlinDebugThreadLocal dbgCtx = get();
+    public static void stopRecord() {
+        if (USE_CTX) {
+            get().setRecording(false);
+        }
+    }
+
+    public static void release(final MarlinDebugThreadLocal ctx) {
+        if (USE_CTX) {
+            ctx.reset();
+        }
+    }
+
+    private static void sampleUsage() {
+        // start recording Marlin's debug info:
+        MarlinDebugThreadLocal.startRecord();
+        // do some graphics operations
+        // stop recording Marlin's debug info:
+        MarlinDebugThreadLocal.stopRecord();
+
+        final MarlinDebugThreadLocal dbgCtx = MarlinDebugThreadLocal.get();
         try {
-            // use MarlinDebugThreadLocal ...
-            dbgCtx.addPoint(0, 0);
+            // consume points in MarlinDebugThreadLocal ...
+            dbgCtx.getPoints();
         } finally {
-            release(dbgCtx);
+            MarlinDebugThreadLocal.release(dbgCtx);
         }
     }
 
     /* members */
-    private final ArrayList<Point2D> points = new ArrayList<Point2D>(10);
+    private boolean recording = false;
+    private final ArrayList<Point2D> points = new ArrayList<Point2D>(STORAGE_CAPACITY);
+    private final ArrayList<Line2D> segments = new ArrayList<Line2D>(STORAGE_CAPACITY);
 
     private MarlinDebugThreadLocal() {
         super();
@@ -71,14 +98,35 @@ public final class MarlinDebugThreadLocal extends ReentrantContext {
 
     public void reset() {
         points.clear();
+        segments.clear();
+    }
+
+    public boolean isRecording() {
+        return USE_CTX && recording;
+    }
+
+    public void setRecording(boolean recording) {
+        this.recording = USE_CTX && recording;
+    }
+
+    void addPoint(final double x, final double y) {
+        if (isRecording()) {
+            points.add(new Point2D.Double(x, y));
+        }
     }
 
     public List<Point2D> getPoints() {
         return points;
     }
 
-    public void addPoint(final double x, final double y) {
-        points.add(new Point2D.Double(x, y));
+    void addSegment(final double x1, final double y1, final double x2, final double y2) {
+        if (isRecording()) {
+            segments.add(new Line2D.Double(x1, y1, x2, y2));
+        }
+    }
+
+    public List<Line2D> getSegments() {
+        return segments;
     }
 
 }

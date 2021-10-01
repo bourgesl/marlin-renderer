@@ -1162,6 +1162,8 @@ public final class MarlinRenderingEngine extends RenderingEngine
                 + MarlinConst.DO_MONITORS);
         logInfo("sun.java2d.renderer.doChecks         = "
                 + MarlinConst.DO_CHECKS);
+        logInfo("sun.java2d.renderer.doDebugTL        = "
+                + MarlinProperties.isDebugThreadLocal());
 
         // logging parameters
         logInfo("sun.java2d.renderer.useLogger        = "
