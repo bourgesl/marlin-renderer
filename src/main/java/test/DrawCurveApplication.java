@@ -31,6 +31,7 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -38,7 +39,6 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JFrame;
@@ -46,8 +46,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 import org.marlin.pisces.MarlinDebugThreadLocal;
-import static org.marlin.pisces.MarlinDebugThreadLocal.get;
-import static org.marlin.pisces.MarlinDebugThreadLocal.release;
 
 /**
  * Basic curve drawing application
@@ -56,12 +54,18 @@ Loop case:
 p2d.moveTo(1690.0, 191.0);
 p2d.curveTo(1650.0, 557.0, 503.0, 680.0, 915.0, 694.0);
 
+Bug cubic:
+--------------------------------------------------
+p2d.moveTo(250.0, 750.0);
+p2d.curveTo(3024.0, 792.0, 2470.0, 774.0, 3374.0, 1758.0);
+
  */
 public final class DrawCurveApplication extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    private static final boolean USE_SPECIFIC_TEST = false; // ear / loop case
+    private static final boolean USE_SPECIFIC_TEST = false;
+    private static final boolean TEST_EAR_LOOP = true; // ear / loop case
 
     /**
      * Main
@@ -128,6 +132,7 @@ public final class DrawCurveApplication extends JPanel {
     AtomicBoolean betterCurves = new AtomicBoolean(true);
 
     // stroke parameters:
+    int alphaPaint = 200;
     float strokeWidth = 400.0f;
     int strokeCap = BasicStroke.CAP_BUTT;
     int strokeJoin = BasicStroke.JOIN_BEVEL;
@@ -148,6 +153,7 @@ public final class DrawCurveApplication extends JPanel {
     boolean paintControls = true;
     boolean paintDetails = true;
     boolean paintDetailsTangent = true;
+    boolean paintMidpoint = false;
 
     // members
     private final CanvasPanel canvas;
@@ -206,6 +212,13 @@ public final class DrawCurveApplication extends JPanel {
             150 * 5, 200 * 5
     );
 
+    // TODO: test bad case:
+    /*
+p2d.moveTo(250.0, 750.0);
+p2d.curveTo(816.0, 1949.0, 1199.0, 1666.0, 2029.0, 1359.0);
+    */
+    
+    
     /*
     Loop sample with artefact:
 p2d.moveTo(2995.0, 442.0);
@@ -224,10 +237,17 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
         canvas.addMouseMotionListener(handler);
 
         if (USE_SPECIFIC_TEST) {
-            cubicStart.setLocation(997.4651258477551, 1122.8952188708217);
-            cubicCtrl1.setLocation(998.0416661761394, 1123.1895282578275);
-            cubicCtrl2.setLocation(998.3357637878879, 1123.3431861242257);
-            cubicEnd.setLocation(998.3357637878879, 1123.3503852683693);
+            if (!TEST_EAR_LOOP) {
+                cubicStart.setLocation(250.0, 750.0);
+                cubicCtrl1.setLocation(2500.0, 838.0);
+                cubicCtrl2.setLocation(2388.0, 799.0);
+                cubicEnd.setLocation(3374.0, 1758.0);
+            } else {
+                cubicStart.setLocation(997.4651258477551, 1122.8952188708217);
+                cubicCtrl1.setLocation(998.0416661761394, 1123.1895282578275);
+                cubicCtrl2.setLocation(998.3357637878879, 1123.3431861242257);
+                cubicEnd.setLocation(998.3357637878879, 1123.3503852683693);
+            }
         }
 
         // Quad
@@ -273,6 +293,7 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
 
         CanvasPanel() {
             super();
+            reset();
         }
 
         private void reset() {
@@ -280,6 +301,38 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
             ellipseOutline = null;
             quadOutline = null;
             cubicOutline = null;
+            if (showExtra && paintDetails) {
+                computeBrush();
+            }
+        }
+
+        float oldw = 0.0f;
+        double[] xc = null;
+        double[] yc = null;
+
+        private final double MIN_ANG = Math.toRadians(0.0);
+
+        private void computeBrush() {
+            if ((xc == null) || (oldw != strokeWidth)) {
+                oldw = strokeWidth;
+                final double w = strokeWidth / 2.0;
+
+                final double angStep = Math.max(MIN_ANG, Math.atan2(1.0, w));
+//            System.out.println("angStep: " + Math.toDegrees(angStep));
+
+                final int np = (int) Math.ceil((2.0 * Math.PI) / angStep);
+                System.out.println("np: " + np);
+
+                xc = new double[np];
+                yc = new double[np];
+
+                for (int i = 0; i < np; i++) {
+                    double ang = angStep * i;
+                    xc[i] = w * Math.cos(ang);
+                    yc[i] = w * Math.sin(ang);
+//                System.out.println("c["+i+"]: (" + xc[i] + ", "+yc[i]+")");
+                }
+            }
         }
 
         void refresh() {
@@ -296,9 +349,26 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
             g2d.setBackground(Color.WHITE);
             g2d.clearRect(0, 0, getWidth(), getHeight());
 
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+            // draw outlines:
+            if (showExtra && paintDetails) {
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
+                // draw enveloppe using sampled brush:
+                if (showQuad.get()) {
+                    drawEnveloppe(g2d, quadCurve, xc, yc);
+                }
+                if (showCubic.get()) {
+                    drawEnveloppe(g2d, cubicCurve, xc, yc);
+                }
+                if (showEllipse) {
+                    drawEnveloppe(g2d, ellipse, xc, yc);
+                }
+            }
+
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             if (isMarlin) {
                 // Enable or Disable curve subdivision:
@@ -312,10 +382,15 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
                 );
             }
             g2d.setStroke(stroke);
-            g2d.setPaint(Color.LIGHT_GRAY);
 
+            final Color paint = new Color(192, 192, 192, alphaPaint);
+            g2d.setPaint(paint);
+
+            // start recording Marlin's debug info:
+            MarlinDebugThreadLocal.startRecord();
 //            System.out.println("g2D.draw() before");
-            if (USE_SPECIFIC_TEST) {
+
+            if (USE_SPECIFIC_TEST && TEST_EAR_LOOP) {
                 g2d.translate(-2800.0, -2700);
                 g2d.scale(3.3, 3.3);
             }
@@ -329,7 +404,10 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
                 g2d.draw(ellipse);
             }
 
+            // stop recording Marlin's debug info:
+            MarlinDebugThreadLocal.stopRecord();
 //            System.out.println("g2D.draw() after");
+
             if (paintControls) {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // xrender calls Marlin anyway
                 g2d.setStroke(strokeInfo);
@@ -605,6 +683,31 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
         System.out.println("--------------------------------------------------");
     }
 
+    // --- draw enveloppe ---
+    private static void drawEnveloppe(final Graphics2D g2d, final Shape shape,
+                                      final double[] xc, final double[] yc) {
+        if (xc == null) {
+            return;
+        }
+
+        final Stroke oldStroke = g2d.getStroke();
+        final Color oldColor = g2d.getColor();
+        final AffineTransform oldat = g2d.getTransform();
+
+        g2d.setColor(Color.GREEN);
+        g2d.setStroke(STROKE_ODD);
+
+        for (int i = 0, len = xc.length; i < len; i++) {
+            g2d.setTransform(oldat);
+            g2d.translate(xc[i], yc[i]);
+            g2d.draw(shape);
+        }
+
+        g2d.setTransform(oldat);
+        g2d.setStroke(oldStroke);
+        g2d.setColor(oldColor);
+    }
+
     // --- paint details ---
     static final double POINT_DIAM = 10.0;
     static final double POINT_OFF = POINT_DIAM / 2.0 - 0.5;
@@ -615,6 +718,9 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
     static final Color COLOR_MOVETO = new Color(0, 255, 0, COLOR_ALPHA);
     static final Color COLOR_LINETO_ODD = new Color(0, 0, 255, COLOR_ALPHA);
     static final Color COLOR_LINETO_EVEN = new Color(255, 0, 0, COLOR_ALPHA);
+
+    static final Stroke STROKE_MARLIN_DBG = new BasicStroke(2.0f);
+    static final Color COLOR_MARLIN_DBG = new Color(Color.ORANGE.getRGB() & 0x00FFFFFF | 0xC0000000);
 
     private final QuadCurve2D.Double QUAD = new QuadCurve2D.Double();
     private final CubicCurve2D.Double CUBIC = new CubicCurve2D.Double();
@@ -686,6 +792,8 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
                         drawLine(g2d, x0, y0, coords[0], coords[1]);
                         drawLine(g2d, coords[0], coords[1], coords[2], coords[3]);
                         drawLine(g2d, coords[2], coords[3], coords[4], coords[5]);
+                    }
+                    if (showExtra && paintMidpoint) {
                         // P12
                         final double x12 = (x0 + coords[0]) / 2.0;
                         final double y12 = (y0 + coords[1]) / 2.0;
@@ -733,16 +841,23 @@ p2d.curveTo(354.0, 1849.0, 1723.0, 132.0, 1269.0, 2026.0);
         }
 
         if (showExtra) {
-            g2d.setColor(Color.CYAN);
-
-            final MarlinDebugThreadLocal dbgCtx = get();
+            final MarlinDebugThreadLocal dbgCtx = MarlinDebugThreadLocal.get();
             try {
-                // use MarlinDebugThreadLocal ...
+                // use MarlinDebugThreadLocal to get internal points...
+                g2d.setColor(COLOR_MARLIN_DBG);
+
                 for (Point2D p : dbgCtx.getPoints()) {
                     drawPoint(g2d, p.getX(), p.getY());
                 }
+                
+                g2d.setStroke(STROKE_MARLIN_DBG);
+                
+                for (Line2D l : dbgCtx.getSegments()) {
+                    g2d.draw(l);
+                }
+                
             } finally {
-                release(dbgCtx);
+                MarlinDebugThreadLocal.release(dbgCtx);
             }
         }
 

@@ -56,7 +56,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 /**
  * @test
- * @bug 
+ * @bug
  * @summary Verifies that Marlin rendering generates the same
  * images with and without better curve optimization optimization with all possible
  * stroke (cap/join) and/or dashes
@@ -67,7 +67,7 @@ import javax.imageio.stream.ImageOutputStream;
  * @run main/othervm/timeout=300 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine BetterCurveShapeTest -cubic -doDash
  * @run main/othervm/timeout=300 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine BetterCurveShapeTest -cubic
  * @run main/othervm/timeout=300 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine BetterCurveShapeTest -cubic -doDash
-*/
+ */
 public final class BetterCurveShapeTest {
 
     // test options:
@@ -87,7 +87,6 @@ public final class BetterCurveShapeTest {
 
     static final boolean TEST_STROKER = true;
 
-    static final boolean SUBDIVIDE_CURVE = false;
     static final double SUBDIVIDE_LEN_TH = 50.0;
     static final boolean TRACE_SUBDIVIDE_CURVE = false;
 
@@ -102,8 +101,10 @@ public final class BetterCurveShapeTest {
     static final boolean SHOW_POINTS = true;
     static final boolean SHOW_INFO = false;
 
+    static final boolean SHOW_WORST_ONLY = true;
+
     static final int MAX_SHOW_FRAMES = 10;
-    static final int MAX_SAVE_FRAMES = 50;
+    static final int MAX_SAVE_FRAMES = 100;
 
     // use fixed seed to reproduce always same polygons between tests
     static final boolean FIXED_SEED = true;
@@ -134,7 +135,6 @@ public final class BetterCurveShapeTest {
         Locale.setDefault(Locale.US);
 
         // FIRST: Get Marlin runtime state from its log:
-
         // initialize j.u.l Looger:
         final Logger log = Logger.getLogger("sun.java2d.marlin");
         log.addHandler(new Handler() {
@@ -181,7 +181,7 @@ public final class BetterCurveShapeTest {
         // disable static curve subdivision setting:
         System.setProperty("sun.java2d.renderer.betterCurves", "false");
         System.setProperty("sun.java2d.renderer.betterCurves.runtime.enable", "true");
-        
+
         // If any curve, increase curve accuracy:
         // curve length max error:
         System.setProperty("sun.java2d.renderer.curve_len_err", "1e-4");
@@ -215,7 +215,7 @@ public final class BetterCurveShapeTest {
             final Graphics2D g2d = initialize(img, null);
 
             try {
-                paintShape(new Line2D.Double(0,0,100,100), g2d, true, false);
+                paintShape(new Line2D.Double(0, 0, 100, 100), g2d, true, false);
             } finally {
                 g2d.dispose();
             }
@@ -264,27 +264,21 @@ public final class BetterCurveShapeTest {
                 // curve subdivision causes curves to be smaller
                 // then curve offsets are different (more accurate)
 /*
-*/
+                 */
                 THRESHOLD_DELTA = 64;
                 THRESHOLD_NBPIX = (USE_DASHES) ? 40 : 420;
-                if (SUBDIVIDE_CURVE) {
-                    THRESHOLD_NBPIX = 10;
-                }
                 break;
             default:
             case TWO_CUBICS:
                 // Define uncertainty for curves:
 /*
-*/
+                 */
                 THRESHOLD_DELTA = 32;
                 THRESHOLD_NBPIX = (USE_DASHES) ? 50 : 200;
-                if (SUBDIVIDE_CURVE) {
-                    THRESHOLD_NBPIX = 4;
-                }
                 break;
         }
 
-// Visual inspection (low threshold):
+        // Visual inspection (low threshold):
         THRESHOLD_NBPIX = 2;
 
         System.out.println("THRESHOLD_DELTA: " + THRESHOLD_DELTA);
@@ -306,8 +300,6 @@ public final class BetterCurveShapeTest {
         if (!DO_FAIL) {
             System.out.println("DO_FAIL: disabled.");
         }
-        
-        System.out.println("SUBDIVIDE_CURVE: "+SUBDIVIDE_CURVE+".");
 
         System.out.println("---------------------------------------");
 
@@ -318,21 +310,21 @@ public final class BetterCurveShapeTest {
         final long start = System.nanoTime();
         try {
             if (TEST_STROKER) {
-                final float[][] dashArrays = (USE_DASHES) ?
-// small
-//                        new float[][]{new float[]{1f, 2f}}
-// normal
+                final float[][] dashArrays = (USE_DASHES)
+                        ? // small
+                        //                        new float[][]{new float[]{1f, 2f}}
+                        // normal
                         new float[][]{new float[]{13f, 7f}}
-// large (prime)
-//                        new float[][]{new float[]{41f, 7f}}
-// none
+                        // large (prime)
+                        //                        new float[][]{new float[]{41f, 7f}}
+                        // none
                         : new float[][]{null};
 
                 System.out.println("dashes: " + Arrays.deepToString(dashArrays));
 
                 final float[] strokeWidths = (USE_VAR_STROKE)
-                                                ? new float[5] :
-                                                  new float[]{10f};
+                        ? new float[5]
+                        : new float[]{10f};
 
                 int nsw = 0;
                 if (USE_VAR_STROKE) {
@@ -403,27 +395,38 @@ public final class BetterCurveShapeTest {
         final DiffContext testWorstCtx = new DiffContext("Worst");
         final DiffContext testWorstThCtx = new DiffContext("Worst(>threshold)");
 
-        int nd = 0;
+        int nd = 0, nSave = 0;
         try {
             final DiffContext testCtx = new DiffContext("Test");
             final DiffContext testThCtx = new DiffContext("Test(>threshold)");
             BufferedImage diffImage;
 
             for (int n = 0; n < NUM_TESTS; n++) {
-                genShape(p2d, ts);
+                // first do not subdivide => test case
+                genShape(p2d, ts, false);
+                // secondly subdivide path => another path (reference case)
+                genShape(p2d, ts, false);
 
-                // Runtime subdivide setting OFF:
-                paintShape(p2d, g2dOff, fill, false);
+                if (true) {
+                    // Runtime subdivide setting OFF:
+                    paintShape(p2d, g2dOff, fill, false);
 
-                // Runtime subdivide setting ON:
-                paintShape(p2d, g2dOn, fill, true);
+                    // Runtime subdivide setting ON:
+                    paintShape(p2d, g2dOn, fill, true);
+                } else {
+                    // Compare subdivide setting ON with REFERENCE case:
+
+                }
 
                 /* compute image difference if possible */
                 diffImage = computeDiffImage(testCtx, testThCtx, imgOn, imgOff, imgDiff);
 
+                boolean worst = false;
+
                 // Worst (total)
                 if (testCtx.isDiff()) {
                     if (testWorstCtx.isWorse(testCtx, false)) {
+                        worst = true;
                         testWorstCtx.set(testCtx);
                     }
                     if (testWorstThCtx.isWorse(testCtx, true)) {
@@ -435,22 +438,23 @@ public final class BetterCurveShapeTest {
                 if (diffImage != null) {
                     nd++;
 
-                    testThCtx.dump();
-                    testCtx.dump();
+                    if (!SHOW_WORST_ONLY || worst) {
+                        testThCtx.dump();
+                        testCtx.dump();
 
-                    if (nd < MAX_SHOW_FRAMES) {
-                        if (SHOW_DETAILS) {
-                            paintShapeDetails(g2dOff, p2d);
-                            paintShapeDetails(g2dOn, p2d);
+                        if (nd < MAX_SHOW_FRAMES) {
+                            if (SHOW_DETAILS) {
+                                paintShapeDetails(g2dOff, p2d);
+                                paintShapeDetails(g2dOn, p2d);
+                            }
                         }
-
-                        if (nd < MAX_SAVE_FRAMES) {
+                        if (nSave < MAX_SAVE_FRAMES) {
                             if (DUMP_SHAPE) {
                                 dumpShape(p2d);
                             }
 
                             final String testName = "Setup_" + ts.id + "_test_" + n;
-
+                            nSave++;
                             saveImage(imgOff, OUTPUT_DIR, testName + "-off.png");
                             saveImage(imgOn, OUTPUT_DIR, testName + "-on.png");
                             saveImage(imgDiff, OUTPUT_DIR, testName + "-diff.png");
@@ -505,8 +509,8 @@ public final class BetterCurveShapeTest {
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-// Test normalize:
-//                RenderingHints.VALUE_STROKE_NORMALIZE
+                // Test normalize:
+                //                RenderingHints.VALUE_STROKE_NORMALIZE
                 RenderingHints.VALUE_STROKE_PURE
         );
 
@@ -535,47 +539,63 @@ public final class BetterCurveShapeTest {
         System.setProperty("sun.java2d.renderer.betterCurves.runtime", (subdivide) ? "true" : "false");
     }
 
-    static void genShape(final Path2D p2d, final TestSetup ts) {
+    // TODO: genShape => Path2D (no subdivide)
+    // 2nd step: subdivide Path2D directly into another Path2D (same random)
+    static void genShape(final Path2D p2d, final TestSetup ts, final boolean SUBDIVIDE_CURVE) {
         p2d.reset();
 
         /*
             Test closed path:
             0: moveTo + (draw)To + closePath
             1: (draw)To + closePath (closePath + (draw)To sequence)
-        */
-        final int end  = (ts.closed) ? 2 : 1;
+         */
+        final int end = (ts.closed) ? 2 : 1;
 
-        final double[] in = new double[8];
+        final double[] in = SUBDIVIDE_INPUT;
 
         double sx0 = 0.0, sy0 = 0.0, x0 = 0.0, y0 = 0.0;
 
         for (int p = 0; p < end; p++) {
             if (p <= 0) {
-                x0 = randX(); y0 = randY();
+                x0 = randX();
+                y0 = randY();
                 p2d.moveTo(x0, y0);
-                sx0 = x0; sy0 = y0;
+                sx0 = x0;
+                sy0 = y0;
             }
 
             switch (ts.shapeMode) {
                 case MIXED:
                 case TWO_CUBICS:
                     if (SUBDIVIDE_CURVE) {
-                        in[0] = x0; in[1] = y0;
-                        in[2] = randX(); in[3] = randY();
-                        in[4] = randX(); in[5] = randY();
-                        x0 = randX(); y0 = randY();
-                        in[6] = x0; in[7] = y0;
+                        in[0] = x0;
+                        in[1] = y0;
+                        in[2] = randX();
+                        in[3] = randY();
+                        in[4] = randX();
+                        in[5] = randY();
+                        x0 = randX();
+                        y0 = randY();
+                        in[6] = x0;
+                        in[7] = y0;
                         subdivide(p2d, 8, in);
-                        in[0] = x0; in[1] = y0;
-                        in[2] = randX(); in[3] = randY();
-                        in[4] = randX(); in[5] = randY();
-                        x0 = randX(); y0 = randY();
-                        in[6] = x0; in[7] = y0;
+                        in[0] = x0;
+                        in[1] = y0;
+                        in[2] = randX();
+                        in[3] = randY();
+                        in[4] = randX();
+                        in[5] = randY();
+                        x0 = randX();
+                        y0 = randY();
+                        in[6] = x0;
+                        in[7] = y0;
                         subdivide(p2d, 8, in);
                     } else {
-                        x0 = randX(); y0 = randY();
+                        x0 = randX();
+                        y0 = randY();
                         p2d.curveTo(randX(), randY(), randX(), randY(), x0, y0);
-                        x0 = randX(); y0 = randY();
+                        x0 = randX();
+                        y0 = randY();
                         p2d.curveTo(randX(), randY(), randX(), randY(), x0, y0);
                     }
                     if (ts.shapeMode == ShapeMode.TWO_CUBICS) {
@@ -583,34 +603,54 @@ public final class BetterCurveShapeTest {
                     }
                 case FOUR_QUADS:
                     if (SUBDIVIDE_CURVE) {
-                        in[0] = x0; in[1] = y0;
-                        in[2] = randX(); in[3] = randY();
-                        x0 = randX(); y0 = randY();
-                        in[4] = x0; in[5] = y0;
+                        in[0] = x0;
+                        in[1] = y0;
+                        in[2] = randX();
+                        in[3] = randY();
+                        x0 = randX();
+                        y0 = randY();
+                        in[4] = x0;
+                        in[5] = y0;
                         subdivide(p2d, 6, in);
-                        in[0] = x0; in[1] = y0;
-                        in[2] = randX(); in[3] = randY();
-                        x0 = randX(); y0 = randY();
-                        in[4] = x0; in[5] = y0;
+                        in[0] = x0;
+                        in[1] = y0;
+                        in[2] = randX();
+                        in[3] = randY();
+                        x0 = randX();
+                        y0 = randY();
+                        in[4] = x0;
+                        in[5] = y0;
                         subdivide(p2d, 6, in);
-                        in[0] = x0; in[1] = y0;
-                        in[2] = randX(); in[3] = randY();
-                        x0 = randX(); y0 = randY();
-                        in[4] = x0; in[5] = y0;
+                        in[0] = x0;
+                        in[1] = y0;
+                        in[2] = randX();
+                        in[3] = randY();
+                        x0 = randX();
+                        y0 = randY();
+                        in[4] = x0;
+                        in[5] = y0;
                         subdivide(p2d, 6, in);
-                        in[0] = x0; in[1] = y0;
-                        in[2] = randX(); in[3] = randY();
-                        x0 = randX(); y0 = randY();
-                        in[4] = x0; in[5] = y0;
+                        in[0] = x0;
+                        in[1] = y0;
+                        in[2] = randX();
+                        in[3] = randY();
+                        x0 = randX();
+                        y0 = randY();
+                        in[4] = x0;
+                        in[5] = y0;
                         subdivide(p2d, 6, in);
                     } else {
-                        x0 = randX(); y0 = randY();
+                        x0 = randX();
+                        y0 = randY();
                         p2d.quadTo(randX(), randY(), x0, y0);
-                        x0 = randX(); y0 = randY();
+                        x0 = randX();
+                        y0 = randY();
                         p2d.quadTo(randX(), randY(), x0, y0);
-                        x0 = randX(); y0 = randY();
+                        x0 = randX();
+                        y0 = randY();
                         p2d.quadTo(randX(), randY(), x0, y0);
-                        x0 = randX(); y0 = randY();
+                        x0 = randX();
+                        y0 = randY();
                         p2d.quadTo(randX(), randY(), x0, y0);
                     }
                     if (ts.shapeMode == ShapeMode.FOUR_QUADS) {
@@ -621,11 +661,13 @@ public final class BetterCurveShapeTest {
 
             if (ts.closed) {
                 p2d.closePath();
-                x0 = sx0; y0 = sy0;
+                x0 = sx0;
+                y0 = sy0;
             }
         }
     }
 
+    static final double[] SUBDIVIDE_INPUT = new double[8];
     static final int SUBDIVIDE_LIMIT = 5;
     static final double[][] SUBDIVIDE_CURVES = new double[SUBDIVIDE_LIMIT + 1][];
 
@@ -1296,10 +1338,8 @@ public final class BetterCurveShapeTest {
         }
     }
 
-
     static double linelen(final double x0, final double y0,
-                          final double x1, final double y1)
-    {
+                          final double x1, final double y1) {
         final double dx = x1 - x0;
         final double dy = y1 - y0;
         return Math.sqrt(dx * dx + dy * dy);
@@ -1307,8 +1347,7 @@ public final class BetterCurveShapeTest {
 
     static double quadlen(final double x0, final double y0,
                           final double x1, final double y1,
-                          final double x2, final double y2)
-    {
+                          final double x2, final double y2) {
         return (linelen(x0, y0, x1, y1)
                 + linelen(x1, y1, x2, y2)
                 + linelen(x0, y0, x2, y2)) / 2.0d;
@@ -1317,11 +1356,10 @@ public final class BetterCurveShapeTest {
     static double curvelen(final double x0, final double y0,
                            final double x1, final double y1,
                            final double x2, final double y2,
-                           final double x3, final double y3)
-    {
+                           final double x3, final double y3) {
         return (linelen(x0, y0, x1, y1)
-              + linelen(x1, y1, x2, y2)
-              + linelen(x2, y2, x3, y3)
-              + linelen(x0, y0, x3, y3)) / 2.0d;
+                + linelen(x1, y1, x2, y2)
+                + linelen(x2, y2, x3, y3)
+                + linelen(x0, y0, x3, y3)) / 2.0d;
     }
 }

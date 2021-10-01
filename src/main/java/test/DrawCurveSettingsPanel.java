@@ -46,6 +46,9 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
             // set to null to disable event loop:
             this.app = null;
 
+            jSliderAlphaSlider.setValue(a.alphaPaint);
+            jSliderAlphaSliderStateChanged(null);
+            
             // stroke parameters:
             jSliderStrokeWidthSlider.setValue((int) (a.strokeWidth * 100f));
             jSliderStrokeWidthSliderStateChanged(null);
@@ -106,6 +109,8 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         jComboBoxJoin = new javax.swing.JComboBox();
         jLabelStrokeUseDashes = new javax.swing.JLabel();
         jToggleButtonUseDashes = new javax.swing.JToggleButton();
+        jLabelAlpha = new javax.swing.JLabel();
+        jSliderAlphaSlider = new javax.swing.JSlider();
         jPanelShape = new javax.swing.JPanel();
         jLabelShowQuad = new javax.swing.JLabel();
         jToggleButtonShowQuad = new javax.swing.JToggleButton();
@@ -132,7 +137,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         jLabelStrokeWidth.setName("jLabelStrokeWidth"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanelStroke.add(jLabelStrokeWidth, gridBagConstraints);
 
@@ -146,13 +151,16 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
                 jSliderStrokeWidthSliderStateChanged(evt);
             }
         });
-        jPanelStroke.add(jSliderStrokeWidthSlider, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        jPanelStroke.add(jSliderStrokeWidthSlider, gridBagConstraints);
 
         jLabelStrokeCap.setText("Cap:");
         jLabelStrokeCap.setName("jLabelStrokeCap"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanelStroke.add(jLabelStrokeCap, gridBagConstraints);
 
@@ -165,7 +173,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanelStroke.add(jComboBoxCap, gridBagConstraints);
 
@@ -173,7 +181,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         jLabelStrokeJoin.setName("jLabelStrokeJoin"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanelStroke.add(jLabelStrokeJoin, gridBagConstraints);
 
@@ -186,7 +194,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanelStroke.add(jComboBoxJoin, gridBagConstraints);
 
@@ -194,7 +202,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         jLabelStrokeUseDashes.setName("jLabelStrokeUseDashes"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanelStroke.add(jLabelStrokeUseDashes, gridBagConstraints);
 
@@ -207,8 +215,27 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         jPanelStroke.add(jToggleButtonUseDashes, gridBagConstraints);
+
+        jLabelAlpha.setText("Alpha:");
+        jLabelAlpha.setName("jLabelAlpha"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanelStroke.add(jLabelAlpha, gridBagConstraints);
+
+        jSliderAlphaSlider.setMaximum(255);
+        jSliderAlphaSlider.setPaintTicks(true);
+        jSliderAlphaSlider.setValue(200);
+        jSliderAlphaSlider.setName("jSliderAlphaSlider"); // NOI18N
+        jSliderAlphaSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSliderAlphaSliderStateChanged(evt);
+            }
+        });
+        jPanelStroke.add(jSliderAlphaSlider, new java.awt.GridBagConstraints());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -427,10 +454,20 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jToggleButtonMarlinBetterCurvesActionPerformed
 
+    private void jSliderAlphaSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSliderAlphaSliderStateChanged
+        int alpha = jSliderAlphaSlider.getValue();
+        System.out.println("DrawCurveSettingsPanel: alpha: " + alpha);
+        if (app != null) {
+            app.alphaPaint = alpha;
+            app.refresh();
+        }
+    }//GEN-LAST:event_jSliderAlphaSliderStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jComboBoxCap;
     private javax.swing.JComboBox jComboBoxJoin;
+    private javax.swing.JLabel jLabelAlpha;
     private javax.swing.JLabel jLabelMarlinBetterCurves;
     private javax.swing.JLabel jLabelShowCubic;
     private javax.swing.JLabel jLabelShowEllipse;
@@ -444,6 +481,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanelShape;
     private javax.swing.JPanel jPanelStroke;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSlider jSliderAlphaSlider;
     private javax.swing.JSlider jSliderStrokeWidthSlider;
     private javax.swing.JToggleButton jToggleButtonMarlinBetterCurves;
     private javax.swing.JToggleButton jToggleButtonShowCubic;
