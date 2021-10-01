@@ -38,6 +38,12 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     static final boolean DO_CHECK_CURVE_WIDTH = MarlinProperties.isDoSubdivideCurves();
     static final boolean DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE = true && MarlinProperties.isDoSubdivideCurvesRuntimeFlag();
 
+    // half-width of 5 pixels to start checking curves:
+    private static final double W2_THRESHOLD = Math.pow(5.0d / 2.0d, 2.0d);
+
+    // offset error = 1 subpixel
+    private static final double ERR_OFFSET_DIST = (1.0 / MIN_SUBPIXELS);
+
     private static final int MOVE_TO = 0;
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
     private static final int CLOSE = 2;
@@ -1270,36 +1276,39 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             boolean lok = true;
             boolean rok = true;
 
-            if ((kind == 8) && (DO_CHECK_CURVE_WIDTH
-                    || (DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE && MarlinProperties.isDoSubdivideCurvesAtRuntime()))) {
+            if ((kind == 8) && (lineWidth2Sq >= W2_THRESHOLD) 
+                    && (DO_CHECK_CURVE_WIDTH || (DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE 
+                            && MarlinProperties.isDoSubdivideCurvesAtRuntime())))
+            {
                 // check left curve distance to progenitor curve
                 lok = checkCurveDistance(mid, off, l, kind, true, 0);
                 
                 // check right curve distance to progenitor curve
                 rok = checkCurveDistance(mid, off, r, kind, false, 0);
             }
-            
-            if (lok || rok) {
+
+            if (lok) {
                 switch(kind) {
                     case 8:
-                        if (lok) {
-                            emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
-                        }
-                        if (rok) {
-                            emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
-                        }
+                        emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
                         break;
                     case 4:
-                        if (lok) {
-                            emitLineTo(l[2], l[3]);
-                        }
-                        if (rok) {
-                            emitLineToRev(r[0], r[1]);
-                        }
+                        emitLineTo(l[2], l[3]);
                         break;
                     default:
                 }
             }
+            if (rok) {
+                switch(kind) {
+                    case 8:
+                        emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
+                        break;
+                    case 4:
+                        emitLineToRev(r[0], r[1]);
+                        break;
+                    default:
+                }
+            }            
             // end right line
             emitLineToRev(r[kind - 2], r[kind - 1]);
         }
@@ -1346,9 +1355,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                                        final double[] ptsOff, final int type, final boolean left,
                                        final int recLevel)
     {
-
-        final double epsThreshold = 0.5; // half unit
-        
+        final double epsThreshold = ERR_OFFSET_DIST;
         
         // Initial guess of large curvature:
         // cubic => t=0.5 is good, but 0.25 or 0.75 is ?
@@ -1580,31 +1587,30 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             }
         }
 
-        if (lok || rok) {
+        if (lok) {
             switch(kind) {
                 case 8:
-                    if (lok) {
-                        emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
-                    }
-                    if (rok) {
-                        emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
-                    }
+                    emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
                     break;
                 case 6:
-                    if (lok) {
-                        emitQuadTo(l[2], l[3], l[4], l[5]);
-                    }
-                    if (rok) {
-                        emitQuadToRev(r[0], r[1], r[2], r[3]);
-                    }
+                    emitQuadTo(l[2], l[3], l[4], l[5]);
                     break;
                 case 4:
-                    if (lok) {
-                        emitLineTo(l[2], l[3]);
-                    }
-                    if (rok) {
-                        emitLineToRev(r[0], r[1]);
-                    }
+                    emitLineTo(l[2], l[3]);
+                    break;
+                default:
+            }
+        }
+        if (rok) {
+            switch(kind) {
+                case 8:
+                    emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
+                    break;
+                case 6:
+                    emitQuadToRev(r[0], r[1], r[2], r[3]);
+                    break;
+                case 4:
+                    emitLineToRev(r[0], r[1]);
                     break;
                 default:
             }
@@ -1725,32 +1731,35 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             boolean lok = true;
             boolean rok = true;
 
-            if ((kind == 6) && (DO_CHECK_CURVE_WIDTH
-                    || (DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE && MarlinProperties.isDoSubdivideCurvesAtRuntime()))) {
+            if ((kind == 6) && (lineWidth2Sq >= W2_THRESHOLD) 
+                    && (DO_CHECK_CURVE_WIDTH || (DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE 
+                            && MarlinProperties.isDoSubdivideCurvesAtRuntime())))
+            {
                 // check left curve distance to progenitor curve
                 lok = checkCurveDistance(mid, off, l, kind, true, 0);
                 
                 // check right curve distance to progenitor curve
                 rok = checkCurveDistance(mid, off, r, kind, false, 0);
             }
-            
-            if (lok || rok) {
+
+            if (lok) {
                 switch(kind) {
                     case 6:
-                        if (lok) {
-                            emitQuadTo(l[2], l[3], l[4], l[5]);
-                        }
-                        if (rok) {
-                            emitQuadToRev(r[0], r[1], r[2], r[3]);
-                        }
+                        emitQuadTo(l[2], l[3], l[4], l[5]);
                         break;
                     case 4:
-                        if (lok) {
-                            emitLineTo(l[2], l[3]);
-                        }
-                        if (rok) {
-                            emitLineToRev(r[0], r[1]);
-                        }
+                        emitLineTo(l[2], l[3]);
+                        break;
+                    default:
+                }
+            }
+            if (rok) {
+                switch(kind) {
+                    case 6:
+                        emitQuadToRev(r[0], r[1], r[2], r[3]);
+                        break;
+                    case 4:
+                        emitLineToRev(r[0], r[1]);
                         break;
                     default:
                 }

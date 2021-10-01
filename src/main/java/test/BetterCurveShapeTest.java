@@ -328,7 +328,7 @@ public final class BetterCurveShapeTest {
 
                 int nsw = 0;
                 if (USE_VAR_STROKE) {
-                    for (float width = 0.25f; width < 110f; width *= 5f) {
+                    for (float width = 2f; width < 110f; width *= 5f) {
                         strokeWidths[nsw++] = width;
                     }
                 } else {
