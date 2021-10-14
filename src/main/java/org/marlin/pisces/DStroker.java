@@ -535,15 +535,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
     @Override
     public void lineTo(final double x1, final double y1) {
-        lineTo(x1, y1, false);
-    }
-
-    private void lineTo(final double x1, final double y1,
-                        final boolean force)
-    {
         final int outcode0 = this.cOutCode;
 
-        if (!force && clipRect != null) {
+        if (clipRect != null) {
             final int outcode1 = DHelpers.outcode(x1, y1, clipRect);
 
             // Should clip
@@ -630,17 +624,21 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         // basic acceptance criteria
         if ((sOutCode & cOutCode) == 0) {
             if (cx0 != sx0 || cy0 != sy0) {
-                lineTo(sx0, sy0, true);
+                // may subdivide line:
+                lineTo(sx0, sy0);
             }
 
-            drawJoin(cdx, cdy, cx0, cy0, sdx, sdy, cmx, cmy, smx, smy, sOutCode);
+            // ignore starting point outside:
+            if (sOutCode == 0) {
+                drawJoin(cdx, cdy, cx0, cy0, sdx, sdy, cmx, cmy, smx, smy, sOutCode);
 
-            emitLineTo(sx0 + smx, sy0 + smy);
+                emitLineTo(sx0 + smx, sy0 + smy);
 
-            if (opened) {
-                emitLineTo(sx0 - smx, sy0 - smy);
-            } else {
-                emitMoveTo(sx0 - smx, sy0 - smy);
+                if (opened) {
+                    emitLineTo(sx0 - smx, sy0 - smy);
+                } else {
+                    emitMoveTo(sx0 - smx, sy0 - smy);
+                }
             }
         }
         // Ignore caps like finish(false)
@@ -795,7 +793,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                 this.smy = my;
             }
         } else if (rdrCtx.isFirstSegment) {
-            // Precision on isCW is causing instabilities with Dasher !!
+            // Precision on isCW is causing instabilities with Dasher !
             final boolean cw = isCW(pdx, pdy, dx, dy);
             if (outcode == 0) {
                 if (joinStyle == JOIN_MITER) {
@@ -964,8 +962,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             // left side:
             x1p = x1 + offset0[0]; // start
             y1p = y1 + offset0[1]; // point
-            xi  = xm  + offset1[0]; // interpolation
-            yi  = ym  + offset1[1]; // point
+            xi  = xm + offset1[0]; // interpolation
+            yi  = ym + offset1[1]; // point
             x4p = x4 + offset2[0]; // end
             y4p = y4 + offset2[1]; // point
 
