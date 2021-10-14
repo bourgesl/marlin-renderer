@@ -150,7 +150,7 @@ public final class AAShapePipe
                 renderTiles(sg, s, aatg, abox, ts);
             }
         } finally {
-            TILE_STATE_PROVIDER.release(ts);            
+            TILE_STATE_PROVIDER.release(ts);
         }
     }
 

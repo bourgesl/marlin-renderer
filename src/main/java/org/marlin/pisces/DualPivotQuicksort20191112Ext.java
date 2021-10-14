@@ -738,6 +738,13 @@ public final class DualPivotQuicksort20191112Ext {
                 }
             }
             run[count] = (last = k);
+            
+            if (true) {
+                // fix ALMOST_CONTIGUOUS ie consecutive (ascending / descending runs)
+                if (k < high - 1) {
+                    k++; // LBO
+                }
+            }
         }
 
         /*
