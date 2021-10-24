@@ -783,7 +783,6 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 this.smx = mx;
                 this.smy = my;
             }
-            prev = DRAWING_OP_TO;
         } else if (rdrCtx.isFirstSegment) {
             // Precision on isCW is causing instabilities with Dasher !
             final boolean cw = isCW(pdx, pdy, dx, dy);
@@ -800,6 +799,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             // reset trigger to process further joins (normal operations)
             rdrCtx.isFirstSegment = true;
         }
+        prev = DRAWING_OP_TO;
     }
 
     private int getLineOffsets(final float x1, final float y1,
