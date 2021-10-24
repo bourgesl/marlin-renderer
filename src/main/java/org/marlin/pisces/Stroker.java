@@ -614,7 +614,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         // basic acceptance criteria
         if ((sOutCode & cOutCode) == 0) {
-            if (cx0 != sx0 || cy0 != sy0) {
+            if ((cx0 != sx0) || (cy0 != sy0)) {
                 // may subdivide line:
                 lineTo(sx0, sy0);
             }
@@ -783,6 +783,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 this.smx = mx;
                 this.smy = my;
             }
+            prev = DRAWING_OP_TO;
         } else if (rdrCtx.isFirstSegment) {
             // Precision on isCW is causing instabilities with Dasher !
             final boolean cw = isCW(pdx, pdy, dx, dy);
@@ -799,8 +800,6 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             // reset trigger to process further joins (normal operations)
             rdrCtx.isFirstSegment = true;
         }
-
-        prev = DRAWING_OP_TO;
     }
 
     private int getLineOffsets(final float x1, final float y1,
