@@ -101,7 +101,7 @@ Since we contribute this renderer into OpenJDK, we accept contributions from peo
 Support our work
 ================
 
-To support my efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, please contribute to the gofundme campaign 'Marlin renderer 0.9 dev & FX port': https://www.gofundme.com/marlin-09 or for long-term support, you can become my patron: https://www.patreon.com/user?u=9339017
+To support my efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, you can become my patron: https://www.patreon.com/user?u=9339017
 
 Please help if you appreciate the Marlin project:
    * share your benchmark & test results (quality ?)
