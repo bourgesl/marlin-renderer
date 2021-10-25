@@ -901,7 +901,7 @@ final class DHelpers implements MarlinConst {
          * clean up before reusing this instance
          */
         void dispose() {
-            end = 0;
+            end       = 0;
             numCurves = 0;
 
             if (DO_STATS) {
@@ -1181,14 +1181,24 @@ final class DHelpers implements MarlinConst {
             }
         }
 
-        void pullAll(final double[] points, final DPathConsumer2D io) {
+        void pullAll(final double[] points, final DPathConsumer2D io, 
+                     final boolean moveFirst)
+        {
             final int nc = end;
             if (nc == 0) {
                 return;
             }
             final int[] _values = indices;
+            
+            int i = 0;
+            
+            if (moveFirst) {
+                int j = _values[i] << 1;
+                io.moveTo(points[j], points[j + 1]);
+                i++;
+            }
 
-            for (int i = 0, j; i < nc; i++) {
+            for (int j; i < nc; i++) {
                 j = _values[i] << 1;
                 io.lineTo(points[j], points[j + 1]);
             }

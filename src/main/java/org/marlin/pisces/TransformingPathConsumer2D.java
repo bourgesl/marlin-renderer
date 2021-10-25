@@ -513,7 +513,15 @@ final class TransformingPathConsumer2D {
 
     static final class PathClipFilter implements PathConsumer2D {
 
+        private static final boolean TRACE = false;
+
+        private static final int MOVE_TO = 0;
+        private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
+        private static final int CLOSE = 2;
+
         private PathConsumer2D out;
+
+        private int prev;
 
         // Bounds of the drawing region, at pixel precision.
         private final float[] clipRect;
@@ -526,6 +534,9 @@ final class TransformingPathConsumer2D {
         // the current outcode of the current sub path
         private int cOutCode = 0;
 
+        // the outcode of the starting point
+        private int sOutCode = 0;
+        
         // the cumulated (and) outcode of the complete path
         private int gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
 
@@ -536,9 +547,6 @@ final class TransformingPathConsumer2D {
 
         // The current point (TODO stupid repeated info)
         private float cx0, cy0;
-
-        // The current point OUTSIDE
-        private float cox0, coy0;
 
         private boolean subdivide = MarlinConst.DO_CLIP_SUBDIVIDER;
         private final CurveClipSplitter curveSplitter;
@@ -565,6 +573,7 @@ final class TransformingPathConsumer2D {
 
             this.init_corners = true;
             this.gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
+            this.prev = CLOSE;
 
             return this; // fluent API
         }
@@ -578,14 +587,12 @@ final class TransformingPathConsumer2D {
         }
 
         private void finishPath() {
-            if (outside) {
-                // criteria: inside or totally outside ?
-                if (gOutCode == 0) {
-                    finish();
-                } else {
-                    this.outside = false;
-                    stack.reset();
-                }
+            // criteria: inside or totally outside ?
+            if (gOutCode == 0) {
+                finish();
+            } else {
+                this.outside = false;
+                stack.reset();
             }
         }
 
@@ -611,18 +618,24 @@ final class TransformingPathConsumer2D {
                     _corners[6] = _clipRect[3];
                     _corners[7] = _clipRect[1];
                 }
-                stack.pullAll(corners, out);
+                stack.pullAll(corners, out, (prev == MOVE_TO));
+                prev = DRAWING_OP_TO;
             }
-            out.lineTo(cox0, coy0);
-            this.cx0 = cox0;
-            this.cy0 = coy0;
         }
 
         @Override
         public void pathDone() {
-            finishPath();
+            if (TRACE) {
+                MarlinUtils.logInfo("PathDone(" + sx0 + ", " + sy0 + ") prev: " + prev);
+            }
+            _closePath();
 
+            // note: renderer's pathDone() must handle missing moveTo() if outside
             out.pathDone();
+
+            // this shouldn't matter since this object won't be used
+            // after the call to this method.
+            this.prev = CLOSE;
 
             // TODO: fix possible leak if exception happened
             // Dispose this instance:
@@ -631,27 +644,68 @@ final class TransformingPathConsumer2D {
 
         @Override
         public void closePath() {
-            finishPath();
+            if (TRACE) {
+                MarlinUtils.logInfo("ClosePath(" + sx0 + ", " + sy0 + ") prev: " + prev);
+            }
+            _closePath();
 
-            out.closePath();
+            if (prev == DRAWING_OP_TO) {
+                out.closePath();
+            }
+
+            // if outside, moveTo is needed
+            if (sOutCode != 0) {
+                this.prev = MOVE_TO;
+            } else {
+                this.prev = CLOSE;
+            }
 
             // back to starting point:
-            this.cOutCode = Helpers.outcode(sx0, sy0, clipRect);
+            this.cOutCode = sOutCode;
             this.cx0 = sx0;
             this.cy0 = sy0;
+        }
+        
+        private void _closePath() {
+            // preserve outside flag for the lineTo call below
+            final boolean prevOutside = outside;
+            if (prevOutside) {
+                finishPath();
+            }
+
+            if (prev == DRAWING_OP_TO) {
+                // Should clip
+                final int orCode = (cOutCode | sOutCode);
+                if (orCode != 0) {
+                    if ((cx0 != sx0) || (cy0 != sy0)) {
+                        // restore outside flag before lineTo:
+                        this.outside = prevOutside;
+                        // may subdivide line:
+                        lineTo(sx0, sy0);
+                        // finish if outside caused by lineTo:
+                        if (outside) {
+                            finishPath();
+                        }
+                    }
+                }
+            }
         }
 
         @Override
         public void moveTo(final float x0, final float y0) {
-            finishPath();
+            if (TRACE) {
+                MarlinUtils.logInfo("MoveTo(" + x0 + ", " + y0 + ") prev: " + prev);
+            }
+            _closePath();
 
-            out.moveTo(x0, y0);
+            this.prev = MOVE_TO;
 
             // update starting point:
-            this.cOutCode = Helpers.outcode(x0, y0, clipRect);
+            final int outcode = Helpers.outcode(x0, y0, clipRect);
+            this.cOutCode = outcode;
+            this.sOutCode = outcode;
             this.cx0 = x0;
             this.cy0 = y0;
-
             this.sx0 = x0;
             this.sy0 = y0;
         }
@@ -660,6 +714,14 @@ final class TransformingPathConsumer2D {
         public void lineTo(final float xe, final float ye) {
             final int outcode0 = this.cOutCode;
             final int outcode1 = Helpers.outcode(xe, ye, clipRect);
+
+            if (TRACE) {
+                if (subdivide) {
+                    MarlinUtils.logInfo("----------------------");
+                }
+                MarlinUtils.logInfo("LineTo c  (" + cx0 + ", " + cy0 + ") outcode: " + outcode0);
+                MarlinUtils.logInfo("LineTo (" + xe + ", " + ye + ") outcode: " + outcode1 + " outside: " + outside);
+            }
 
             // Should clip
             final int orCode = (outcode0 | outcode1);
@@ -674,13 +736,8 @@ final class TransformingPathConsumer2D {
                         subdivide = false;
                         boolean ret;
                         // subdivide curve => callback with subdivided parts:
-                        if (outside) {
-                            ret = curveSplitter.splitLine(cox0, coy0, xe, ye,
-                                                          orCode, this);
-                        } else {
-                            ret = curveSplitter.splitLine(cx0, cy0, xe, ye,
-                                                          orCode, this);
-                        }
+                        ret = curveSplitter.splitLine(cx0, cy0, xe, ye,
+                                                      orCode, this);
                         // reentrance is done:
                         subdivide = true;
                         if (ret) {
@@ -693,8 +750,12 @@ final class TransformingPathConsumer2D {
                     this.gOutCode &= sideCode;
                     // keep last point coordinate before entering the clip again:
                     this.outside = true;
-                    this.cox0 = xe;
-                    this.coy0 = ye;
+                    this.cx0 = xe;
+                    this.cy0 = ye;
+
+                    if (TRACE) {
+                        MarlinUtils.logInfo("skipped: (" + cx0 + ", " + cy0 + ")");
+                    }
 
                     clip(sideCode, outcode0, outcode1);
                     return;
@@ -706,11 +767,33 @@ final class TransformingPathConsumer2D {
 
             if (outside) {
                 finish();
+
+                // emit last point outside before entering again...
+                if (outcode0 != 0) {
+                    if (TRACE) {
+                        MarlinUtils.logInfo("add last point outside: (" + cx0 + ", " + cy0 + ")");
+                    }
+                    if (prev == MOVE_TO) {
+                        out.moveTo(cx0, cy0);
+                    } else {
+                        out.lineTo(cx0, cy0);
+                    }
+                    prev = DRAWING_OP_TO;
+                }
             }
             // clipping disabled:
+            if (prev == MOVE_TO) {
+                out.moveTo(cx0, cy0);
+            }
+            prev = DRAWING_OP_TO;
+
             out.lineTo(xe, ye);
             this.cx0 = xe;
             this.cy0 = ye;
+
+            if (TRACE && subdivide) {
+                MarlinUtils.logInfo("----------------------");
+            }
         }
 
         private void clip(final int sideCode,
@@ -760,6 +843,14 @@ final class TransformingPathConsumer2D {
             final int outcode2 = Helpers.outcode(x2, y2, clipRect);
             final int outcode3 = Helpers.outcode(xe, ye, clipRect);
 
+            if (TRACE) {
+                if (subdivide) {
+                    MarlinUtils.logInfo("----------------------");
+                }
+                MarlinUtils.logInfo("CurveTo c  (" + cx0 + ", " + cy0 + ") outcode: " + outcode0);
+                MarlinUtils.logInfo("CurveTo (" + xe + ", " + ye + ") outcode: " + outcode3 + " outside: " + outside);
+            }
+
             // Should clip
             final int orCode = (outcode0 | outcode1 | outcode2 | outcode3);
             if (orCode != 0) {
@@ -773,15 +864,9 @@ final class TransformingPathConsumer2D {
                         subdivide = false;
                         // subdivide curve => callback with subdivided parts:
                         boolean ret;
-                        if (outside) {
-                            ret = curveSplitter.splitCurve(cox0, coy0, x1, y1,
-                                                           x2, y2, xe, ye,
-                                                           orCode, this);
-                        } else {
-                            ret = curveSplitter.splitCurve(cx0, cy0, x1, y1,
-                                                           x2, y2, xe, ye,
-                                                           orCode, this);
-                        }
+                        ret = curveSplitter.splitCurve(cx0, cy0, x1, y1,
+                                                       x2, y2, xe, ye,
+                                                       orCode, this);
                         // reentrance is done:
                         subdivide = true;
                         if (ret) {
@@ -794,8 +879,12 @@ final class TransformingPathConsumer2D {
                     this.gOutCode &= sideCode;
                     // keep last point coordinate before entering the clip again:
                     this.outside = true;
-                    this.cox0 = xe;
-                    this.coy0 = ye;
+                    this.cx0 = xe;
+                    this.cy0 = ye;
+
+                    if (TRACE) {
+                        MarlinUtils.logInfo("skipped: (" + cx0 + ", " + cy0 + ")");
+                    }
 
                     clip(sideCode, outcode0, outcode3);
                     return;
@@ -807,11 +896,33 @@ final class TransformingPathConsumer2D {
 
             if (outside) {
                 finish();
+
+                // emit last point outside before entering again...
+                if (outcode0 != 0) {
+                    if (TRACE) {
+                        MarlinUtils.logInfo("add last point outside: (" + cx0 + ", " + cy0 + ")");
+                    }
+                    if (prev == MOVE_TO) {
+                        out.moveTo(cx0, cy0);
+                    } else {
+                        out.lineTo(cx0, cy0);
+                    }
+                    prev = DRAWING_OP_TO;
+                }
             }
             // clipping disabled:
+            if (prev == MOVE_TO) {
+                out.moveTo(cx0, cy0);
+            }
+            prev = DRAWING_OP_TO;
+
             out.curveTo(x1, y1, x2, y2, xe, ye);
             this.cx0 = xe;
             this.cy0 = ye;
+
+            if (TRACE && subdivide) {
+                MarlinUtils.logInfo("----------------------");
+            }
         }
 
         @Override
@@ -821,6 +932,14 @@ final class TransformingPathConsumer2D {
             final int outcode0 = this.cOutCode;
             final int outcode1 = Helpers.outcode(x1, y1, clipRect);
             final int outcode2 = Helpers.outcode(xe, ye, clipRect);
+
+            if (TRACE) {
+                if (subdivide) {
+                    MarlinUtils.logInfo("----------------------");
+                }
+                MarlinUtils.logInfo("QuadTo c  (" + cx0 + ", " + cy0 + ") outcode: " + outcode0);
+                MarlinUtils.logInfo("QuadTo (" + xe + ", " + ye + ") outcode: " + outcode1 + " outside: " + outside);
+            }
 
             // Should clip
             final int orCode = (outcode0 | outcode1 | outcode2);
@@ -835,13 +954,8 @@ final class TransformingPathConsumer2D {
                         subdivide = false;
                         // subdivide curve => callback with subdivided parts:
                         boolean ret;
-                        if (outside) {
-                            ret = curveSplitter.splitQuad(cox0, coy0, x1, y1,
-                                                          xe, ye, orCode, this);
-                        } else {
-                            ret = curveSplitter.splitQuad(cx0, cy0, x1, y1,
-                                                          xe, ye, orCode, this);
-                        }
+                        ret = curveSplitter.splitQuad(cx0, cy0, x1, y1,
+                                                      xe, ye, orCode, this);
                         // reentrance is done:
                         subdivide = true;
                         if (ret) {
@@ -854,8 +968,8 @@ final class TransformingPathConsumer2D {
                     this.gOutCode &= sideCode;
                     // keep last point coordinate before entering the clip again:
                     this.outside = true;
-                    this.cox0 = xe;
-                    this.coy0 = ye;
+                    this.cx0 = xe;
+                    this.cy0 = ye;
 
                     clip(sideCode, outcode0, outcode2);
                     return;
@@ -867,11 +981,33 @@ final class TransformingPathConsumer2D {
 
             if (outside) {
                 finish();
+
+                // emit last point outside before entering again...
+                if (outcode0 != 0) {
+                    if (TRACE) {
+                        MarlinUtils.logInfo("add last point outside: (" + cx0 + ", " + cy0 + ")");
+                    }
+                    if (prev == MOVE_TO) {
+                        out.moveTo(cx0, cy0);
+                    } else {
+                        out.lineTo(cx0, cy0);
+                    }
+                    prev = DRAWING_OP_TO;
+                }
             }
             // clipping disabled:
+            if (prev == MOVE_TO) {
+                out.moveTo(cx0, cy0);
+            }
+            prev = DRAWING_OP_TO;
+
             out.quadTo(x1, y1, xe, ye);
             this.cx0 = xe;
             this.cy0 = ye;
+
+            if (TRACE && subdivide) {
+                MarlinUtils.logInfo("----------------------");
+            }
         }
 
         @Override
@@ -880,6 +1016,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
+    /* note: CurveClipSplitter uses double-precision for higher accuracy */ 
     static final class CurveClipSplitter {
 
         static final float LEN_TH = MarlinProperties.getSubdividerMinLength();
@@ -898,22 +1035,22 @@ final class TransformingPathConsumer2D {
         final float[] clipRect;
 
         // clip rectangle (ymin, ymax, xmin, xmax) including padding:
-        final float[] clipRectPad = new float[4];
+        final double[] clipRectPad = new double[4];
         private boolean init_clipRectPad = false;
 
         // This is where the curve to be processed is put. We give it
         // enough room to store all curves.
-        final float[] middle = new float[MAX_N_CURVES * 8 + 2];
+        final double[] middle = new double[MAX_N_CURVES * 8 + 2];
         // t values at subdivision points
-        private final float[] subdivTs = new float[MAX_N_CURVES];
+        private final double[] subdivTs = new double[MAX_N_CURVES];
 
         // dirty curve
-        private final Curve curve;
+        private final DCurve curve;
 
         CurveClipSplitter(final RendererContext rdrCtx) {
             this.rdrCtx = rdrCtx;
             this.clipRect = rdrCtx.clipRect;
-            this.curve = rdrCtx.curve;
+            this.curve = /* rdrCtx.curve */ new DCurve(); // double-precision curve
         }
 
         void init() {
@@ -935,7 +1072,7 @@ final class TransformingPathConsumer2D {
             // adjust padded clip rectangle (ymin, ymax, xmin, xmax):
             // add a rounding error (curve subdivision ~ 0.1px):
             final float[] _clipRect = clipRect;
-            final float[] _clipRectPad = clipRectPad;
+            final double[] _clipRectPad = clipRectPad;
 
             _clipRectPad[0] = _clipRect[0] - CLIP_RECT_PADDING;
             _clipRectPad[1] = _clipRect[1] + CLIP_RECT_PADDING;
@@ -961,7 +1098,7 @@ final class TransformingPathConsumer2D {
                 return false;
             }
 
-            final float[] mid = middle;
+            final double[] mid = middle;
             mid[0] = x0;  mid[1] = y0;
             mid[2] = x1;  mid[3] = y1;
 
@@ -982,7 +1119,7 @@ final class TransformingPathConsumer2D {
                 return false;
             }
 
-            final float[] mid = middle;
+            final double[] mid = middle;
             mid[0] = x0;  mid[1] = y0;
             mid[2] = x1;  mid[3] = y1;
             mid[4] = x2;  mid[5] = y2;
@@ -1005,7 +1142,7 @@ final class TransformingPathConsumer2D {
                 return false;
             }
 
-            final float[] mid = middle;
+            final double[] mid = middle;
             mid[0] = x0;  mid[1] = y0;
             mid[2] = x1;  mid[3] = y1;
             mid[4] = x2;  mid[5] = y2;
@@ -1017,15 +1154,15 @@ final class TransformingPathConsumer2D {
         private boolean subdivideAtIntersections(final int type, final int outCodeOR,
                                                  final PathConsumer2D out)
         {
-            final float[] mid = middle;
-            final float[] subTs = subdivTs;
+            final double[] mid = middle;
+            final double[] subTs = subdivTs;
 
             if (init_clipRectPad) {
                 init_clipRectPad = false;
                 initPaddedClip();
             }
 
-            final int nSplits = Helpers.findClipPoints(curve, mid, subTs, type,
+            final int nSplits = DHelpers.findClipPoints(curve, mid, subTs, type,
                                                         outCodeOR, clipRectPad);
 
             if (TRACE) {
@@ -1036,12 +1173,12 @@ final class TransformingPathConsumer2D {
                 // only curve support shortcut
                 return false;
             }
-            float prevT = 0.0f;
+            double prevT = 0.0d;
 
             for (int i = 0, off = 0; i < nSplits; i++, off += type) {
-                final float t = subTs[i];
+                final double t = subTs[i];
 
-                Helpers.subdivideAt((t - prevT) / (1.0f - prevT),
+                DHelpers.subdivideAt((t - prevT) / (1.0d - prevT),
                                      mid, off, mid, off, type);
                 prevT = t;
             }
@@ -1055,19 +1192,19 @@ final class TransformingPathConsumer2D {
             return true;
         }
 
-        static void emitCurrent(final int type, final float[] pts,
+        static void emitCurrent(final int type, final double[] pts,
                                 final int off, final PathConsumer2D out)
         {
             // if instead of switch (perf + most probable cases first)
             if (type == 8) {
-                out.curveTo(pts[off + 2], pts[off + 3],
-                            pts[off + 4], pts[off + 5],
-                            pts[off + 6], pts[off + 7]);
+                out.curveTo((float)pts[off + 2], (float)pts[off + 3],
+                            (float)pts[off + 4], (float)pts[off + 5],
+                            (float)pts[off + 6], (float)pts[off + 7]);
             } else if (type == 4) {
-                out.lineTo(pts[off + 2], pts[off + 3]);
+                out.lineTo((float)pts[off + 2], (float)pts[off + 3]);
             } else {
-                out.quadTo(pts[off + 2], pts[off + 3],
-                           pts[off + 4], pts[off + 5]);
+                out.quadTo((float)pts[off + 2], (float)pts[off + 3],
+                           (float)pts[off + 4], (float)pts[off + 5]);
             }
         }
     }

@@ -1,9 +1,0 @@
-language: java
-sudo: false
-script: "mvn verify"
-jdk:
-  - openjdk8
-
-# disable CI 
-if: branch = master
-

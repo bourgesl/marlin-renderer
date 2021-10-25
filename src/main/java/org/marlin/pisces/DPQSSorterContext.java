@@ -32,19 +32,23 @@ final class DPQSSorterContext {
     static final boolean LOG_ALLOC = false;
     static final boolean CHECK_ALLOC = false && LOG_ALLOC;
 
+    /**
+     * Max capacity of the index array for tracking runs.
+     */
+    static final int MAX_RUN_CAPACITY = DualPivotQuicksort20191112Ext.MAX_RUN_CAPACITY;
+
     /* members */
+    final int[] run;
     int[] auxA;
     int[] auxB;
-    final int[] run;
     boolean runInit;
 
     DPQSSorterContext() {
         // preallocate max runs:
-        final int max = getMaxRunCount(Integer.MAX_VALUE) + 1;
         if (LOG_ALLOC) {
-            MarlinUtils.logInfo("alloc run: " + max);
+            MarlinUtils.logInfo("alloc run: " + MAX_RUN_CAPACITY);
         }
-        run = new int[max];
+        run = new int[MAX_RUN_CAPACITY];
     }
 
     void initBuffers(final int length, final int[] a, final int[] b) {
@@ -63,16 +67,6 @@ final class DPQSSorterContext {
             auxB = new int[length];
         }
         runInit = true;
-    }
-
-    /**
-     * Calculates the max number of runs.
-     *
-     * @param size the array size
-     * @return the max number of runs
-     */
-    static int getMaxRunCount(int size) {
-        return size > 2048000 ? 2000 : size >> 10 | 5;
     }
 
 }

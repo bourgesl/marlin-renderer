@@ -723,7 +723,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
 
     @Override
     public void closePath() {
-        if (x0 != sx0 || y0 != sy0) {
+        if ((x0 != sx0) || (y0 != sy0)) {
             addLine(x0, y0, sx0, sy0);
             x0 = sx0;
             y0 = sy0;
@@ -1065,7 +1065,7 @@ final class Renderer implements PathConsumer2D, MarlinRenderer {
                     // (ie i < prevNumCrossings):
 
                     skipISort = (prevNumCrossings >= MergeSort.DISABLE_ISORT_THRESHOLD);
-                    useDPQS   = MergeSort.USE_DPQS && (skipISort || (ptrLen >= MergeSort. DPQS_THRESHOLD));
+                    useDPQS   = MergeSort.USE_DPQS && (skipISort || (ptrLen >= MergeSort.DPQS_THRESHOLD));
 
                     if (DO_STATS && useDPQS) {
                         rdrCtx.stats.stat_rdr_crossings_dpqs.add((skipISort) ? numCrossings : ptrLen);

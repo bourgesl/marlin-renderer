@@ -612,7 +612,7 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
         // basic acceptance criteria
         if ((sOutCode & cOutCode) == 0) {
-            if (cx0 != sx0 || cy0 != sy0) {
+            if ((cx0 != sx0) || (cy0 != sy0)) {
                 // may subdivide line:
                 lineTo(sx0, sy0);
             }

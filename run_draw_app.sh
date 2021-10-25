@@ -4,7 +4,7 @@
 #RDR="-Dsun.java2d.renderer=sun.java2d.pisces.PiscesRenderingEngine"
 
 MARLIN_PREFIX="/home/marlin/mapbench/lib/marlin-0.9.4.3-Unsafe"
-#MARLIN_PREFIX="./target/marlin-1.0.0-EA-Unsafe"
+MARLIN_PREFIX="./target/marlin-1.0.0-EA-Unsafe"
 
 BOOTCLASSPATH="-Xbootclasspath/a:$MARLIN_PREFIX.jar -Xbootclasspath/p:$MARLIN_PREFIX-sun-java2d.jar"
 RDR="-Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine"
