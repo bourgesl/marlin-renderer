@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.4.5-Unsafe-OpenJDK9</version>
+    <version>0.9.4.5-Unsafe-OpenJDK11</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -69,8 +69,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <source>9</source>
-                    <target>9</target>
+                    <source>11</source>
+                    <target>11</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
                     <showDeprecation>true</showDeprecation>
@@ -216,6 +216,7 @@
                             <argLine>
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
+                                -DClipShapeTest.numTests=5000
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
                                 --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED

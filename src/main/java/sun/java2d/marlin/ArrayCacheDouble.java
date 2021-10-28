@@ -50,9 +50,6 @@ import sun.java2d.marlin.ArrayCacheConst.CacheStats;
  * is edited manually and then [INT/FLOAT/DOUBLE]ArrayCache.java
  * files are generated with the following command lines:
  */
-// % sed -e 's/(b\yte)[ ]*//g' -e 's/b\yte/int/g' -e 's/B\yte/Int/g' < ArrayCacheB\yte.java > ArrayCacheInt.java
-// % sed -e 's/(b\yte)[ ]*0/0.0f/g' -e 's/(b\yte)[ ]*/(float) /g' -e 's/b\yte/float/g' -e 's/B\yte/Float/g' < ArrayCacheB\yte.java > ArrayCacheFloat.java
-// % sed -e 's/(b\yte)[ ]*0/0.0d/g' -e 's/(b\yte)[ ]*/(double) /g' -e 's/b\yte/double/g' -e 's/B\yte/Double/g' < ArrayCacheB\yte.java > ArrayCacheDouble.java
 
 final class ArrayCacheDouble {
 

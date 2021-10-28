@@ -28,6 +28,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
+import static java.awt.geom.Path2D.WIND_NON_ZERO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +41,8 @@ import sun.java2d.marlin.MarlinProperties;
 public class LineTests {
 
     public static void main(String[] args) {
+        
+        final int N = 100;
 
         final float lineStroke = 4f;
         final int size = 1000;
@@ -73,24 +76,25 @@ public class LineTests {
         g2d.setClip(0, 0, size, size);
         g2d.setStroke(new BasicStroke(lineStroke));
 
-        g2d.setBackground(Color.WHITE);
-        g2d.clearRect(0, 0, size, size);
+        for (int i = 0; i < N; i++) {
 
-        g2d.setColor(Color.RED);
+            g2d.setBackground(Color.GRAY); // BLUE
+            g2d.clearRect(0, 0, size, size);
 
-        final long start = System.nanoTime();
+            final long start = System.nanoTime();
 
-        paint(g2d, size - 2f * lineStroke);
+            paint(g2d, size - 2.0 * lineStroke);
 
-        final long time = System.nanoTime() - start;
+            final long time = System.nanoTime() - start;
 
-        System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
+            System.out.println("paint: duration= " + (1e-6 * time) + " ms.");
+        }
 
         try {
             final File file = new File("LinesTest-norm-subpix_lg_" + MarlinProperties.getSubPixel_Log2_X()
                     + "x" + MarlinProperties.getSubPixel_Log2_Y() + ".png");
 
-            System.out.println("Writing file: " + file.getAbsolutePath());;
+            System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -99,27 +103,34 @@ public class LineTests {
         }
     }
 
-    private static void paint(final Graphics2D g2d, final float size) {
+    private static void paint(final Graphics2D g2d, final double size) {
 
-        final float half = size / 2f;
-        final float radius = 166f;
-        g2d.draw(new Ellipse2D.Float(half - radius, half - radius, 2f * radius, 2f * radius));
+        final double half = size / 2.0;
+        final double radius = 266.0;
 
-        if (true) {
-            return;
-        }
+        g2d.setPaint(Color.RED);
+        g2d.fill(new Ellipse2D.Double(half - radius, half - radius, 2f * radius, 2f * radius));
 
-        final Path2D.Float path = new Path2D.Float();
+        final Path2D.Double path = new Path2D.Double(WIND_NON_ZERO, 10);
+        
+        boolean on = false;
 
-        for (float angle = 1f / 3f; angle <= 90f; angle += 1f) {
+        for (double angle = 1.0 / 3; angle <= 90.0; angle += 1.0) {
             double angRad = Math.toRadians(angle);
 
             double cos = Math.cos(angRad);
             double sin = Math.sin(angRad);
 
+            if (on) {
+                g2d.setPaint(Color.WHITE);
+            } else {
+               g2d.setPaint(Color.BLACK); 
+            }
+            on = !on;
+            
             path.reset();
 
-            path.moveTo(5f * cos, 5f * sin);
+            path.moveTo(5.0 * cos, 5.0 * sin);
             path.lineTo(size * cos, size * sin);
 
             g2d.draw(path);

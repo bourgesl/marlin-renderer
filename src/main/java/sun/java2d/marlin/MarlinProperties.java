@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -317,6 +317,7 @@ public final class MarlinProperties {
     }
 
     // quality settings
+
     public static float getCurveLengthError() {
         return getFloat("sun.java2d.renderer.curve_len_err", 0.01f, 1e-6f, 1.0f);
     }
@@ -337,19 +338,22 @@ public final class MarlinProperties {
     }
 
     // system property utilities
+    @SuppressWarnings("removal")
     static String getString(final String key, final String def) {
         return AccessController.doPrivileged(
                   new GetPropertyAction(key, def));
     }
 
+    @SuppressWarnings("removal")
     static boolean getBoolean(final String key, final String def) {
-        return Boolean.valueOf(AccessController.doPrivileged(
+        return Boolean.parseBoolean(AccessController.doPrivileged(
                   new GetPropertyAction(key, def)));
     }
 
     static int getInteger(final String key, final int def,
                                  final int min, final int max)
     {
+        @SuppressWarnings("removal")
         final String property = AccessController.doPrivileged(
                                     new GetPropertyAction(key));
 
@@ -380,6 +384,7 @@ public final class MarlinProperties {
                                    final double min, final double max)
     {
         double value = def;
+        @SuppressWarnings("removal")
         final String property = AccessController.doPrivileged(
                                     new GetPropertyAction(key));
 
