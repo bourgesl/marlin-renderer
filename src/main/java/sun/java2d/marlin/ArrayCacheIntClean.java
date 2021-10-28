@@ -28,10 +28,12 @@ package sun.java2d.marlin;
 import static sun.java2d.marlin.ArrayCacheConst.ARRAY_SIZES;
 import static sun.java2d.marlin.ArrayCacheConst.BUCKETS;
 import static sun.java2d.marlin.ArrayCacheConst.MAX_ARRAY_SIZE;
+
 import static sun.java2d.marlin.MarlinConst.DO_STATS;
 import static sun.java2d.marlin.MarlinConst.DO_CHECKS;
 import static sun.java2d.marlin.MarlinConst.DO_LOG_WIDEN_ARRAY;
 import static sun.java2d.marlin.MarlinConst.DO_LOG_OVERSIZE;
+
 import static sun.java2d.marlin.MarlinUtils.logInfo;
 import static sun.java2d.marlin.MarlinUtils.logException;
 
@@ -47,9 +49,6 @@ import sun.java2d.marlin.ArrayCacheConst.CacheStats;
  * is edited manually and then [INT/FLOAT/DOUBLE]ArrayCache.java
  * files are generated with the following command lines:
  */
-// % sed -e 's/(b\yte)[ ]*//g' -e 's/b\yte/int/g' -e 's/B\yte/Int/g' < ArrayCacheB\yte.java > ArrayCacheInt.java
-// % sed -e 's/(b\yte)[ ]*0/0.0f/g' -e 's/(b\yte)[ ]*/(float) /g' -e 's/b\yte/float/g' -e 's/B\yte/Float/g' < ArrayCacheB\yte.java > ArrayCacheFloat.java
-// % sed -e 's/(b\yte)[ ]*0/0.0d/g' -e 's/(b\yte)[ ]*/(double) /g' -e 's/b\yte/double/g' -e 's/B\yte/Double/g' < ArrayCacheB\yte.java > ArrayCacheDouble.java
 
 final class ArrayCacheIntClean {
 

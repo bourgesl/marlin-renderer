@@ -18,12 +18,6 @@ drawLine(1.0E8) [AA=true]: 42.381105 ms.
 drawLine(1.0E8) [AA=true]: 1.86741 ms.
 drawLine(1.0E8) [AA=true]: 4.550681 ms.
 drawLine(1.0E8) [AA=true]: 1.9914479999999999 ms.
- * - AA org.marlin.pisces.MarlinRenderingEngine:
-drawLine(1.0E8) [AA=true]: 50.357248999999996 ms.
-drawLine(1.0E8) [AA=true]: 1.935198 ms.
-
-drawLine(7.0E15) [AA=true]: 48.779185999999996 ms.
-drawLine(7.0E15) [AA=true]: 1.946686 ms.
  */
 public class EndlessLoop extends JFrame {
 

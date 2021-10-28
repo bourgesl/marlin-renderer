@@ -178,27 +178,6 @@
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>integration-test-float</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${integration.skip}</skip>
-                            <includes>
-                                <include>**/RunJUnitTest.java</include>
-                            </includes>
-                            <argLine>
-                                -Xms1g -Xmx1g
-                                -Dsun.java2d.renderer.log=true
-                                -Djava.util.logging.config.file=src/test/resources/logging.properties
-                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
-                                -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
-                                -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
-                        </configuration>
-                    </execution>
 
                     <!-- RunJUnitLongTest -->
                     <execution>
@@ -219,28 +198,6 @@
                                 -DClipShapeTest.numTests=5000
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
                                 -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
-                                -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
-                                -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>integration-long-test-float</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${integration.skip.long}</skip>
-                            <includes>
-                                <include>**/RunJUnitLongTest.java</include>
-                            </includes>
-                            <argLine>
-                                -Xms1g -Xmx1g
-                                -Dsun.java2d.renderer.log=true
-                                -DClipShapeTest.numTests=5000
-                                -Djava.util.logging.config.file=src/test/resources/logging.properties
-                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
