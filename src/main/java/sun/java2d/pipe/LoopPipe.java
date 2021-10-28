@@ -270,9 +270,15 @@ public class LoopPipe
             boolean normalize =
                 (sg2d.strokeHint != SunHints.INTVAL_STROKE_PURE);
 
-            RenderEngine.strokeTo(s,
-                                  sg2d.transform, clip, bs,
-                                  thin, normalize, false, sr);
+            if (RenderEngine instanceof sun.java2d.marlin.DMarlinRenderingEngine) {
+                ((sun.java2d.marlin.DMarlinRenderingEngine)RenderEngine).strokeTo(s,
+                                      sg2d.transform, clip, bs,
+                                      thin, normalize, false, sr);
+            } else {
+                RenderEngine.strokeTo(s,
+                                      sg2d.transform, bs,
+                                      thin, normalize, false, sr);
+            }
         } catch (Throwable t) {
             sr.dispose();
             sr = null;

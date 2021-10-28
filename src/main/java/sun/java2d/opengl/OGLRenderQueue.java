@@ -32,6 +32,7 @@ import sun.java2d.pipe.RenderQueue;
 import static sun.java2d.pipe.BufferedOpCodes.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import sun.java2d.marlin.MarlinUtils;
 
 /**
  * OGL-specific implementation of RenderQueue.  This class provides a
@@ -161,8 +162,7 @@ public class OGLRenderQueue extends RenderQueue {
 
         public QueueFlusher() {
             String name = "Java2D Queue Flusher";
-            thread = new Thread(ThreadGroupUtils.getRootThreadGroup(),
-                                this, name, 0, false);
+            thread = new Thread(MarlinUtils.getRootThreadGroup(), this, name);
             thread.setDaemon(true);
             thread.setPriority(Thread.MAX_PRIORITY);
             thread.start();

@@ -63,7 +63,7 @@ public abstract class ReentrantContextProviderCLQ<K extends ReentrantContext>
     public final K acquire() {
         K ctx = null;
         // Drain queue if all referent are null:
-        Reference<K> ref = null;
+        Reference<K> ref;
         while ((ctx == null) && ((ref = ctxQueue.poll()) != null)) {
             ctx = ref.get();
         }
