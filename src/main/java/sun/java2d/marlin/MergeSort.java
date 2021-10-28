@@ -22,10 +22,10 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
-import static org.marlin.pisces.DualPivotQuicksort20191112Ext.sort;
+import static sun.java2d.marlin.DualPivotQuicksort20191112Ext.sort;
 
 /**
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[])
@@ -35,7 +35,7 @@ import static org.marlin.pisces.DualPivotQuicksort20191112Ext.sort;
 final class MergeSort {
 
     static final boolean USE_DPQS = MarlinProperties.isUseDPQS();
-    
+
     static final String SORT_TYPE = USE_DPQS ? "DPQS_20191112" : "MERGE";
 
     static final int DPQS_THRESHOLD = 256;

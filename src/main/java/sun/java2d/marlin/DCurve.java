@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 final class DCurve {
 

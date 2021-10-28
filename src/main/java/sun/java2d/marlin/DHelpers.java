@@ -23,12 +23,12 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
 import net.jafama.FastMath;
-import org.marlin.pisces.stats.Histogram;
-import org.marlin.pisces.stats.StatLong;
+import sun.java2d.marlin.stats.Histogram;
+import sun.java2d.marlin.stats.StatLong;
 
 final class DHelpers implements MarlinConst {
 
@@ -658,9 +658,9 @@ final class DHelpers implements MarlinConst {
         int numCurves;
 
         // curves ref (dirty)
-        final DoubleArrayCache.Reference curves_ref;
+        final ArrayCacheDouble.Reference curves_ref;
         // curveTypes ref (dirty)
-        final ByteArrayCache.Reference curveTypes_ref;
+        final ArrayCacheByte.Reference curveTypes_ref;
 
         // used marks (stats only)
         int curveTypesUseMark;
@@ -707,7 +707,7 @@ final class DHelpers implements MarlinConst {
          * clean up before reusing this instance
          */
         void dispose() {
-            end = 0;
+            end       = 0;
             numCurves = 0;
 
             if (DO_STATS) {
@@ -722,8 +722,12 @@ final class DHelpers implements MarlinConst {
 
             // Return arrays:
             // curves and curveTypes are kept dirty
-            curves     = curves_ref.putArray(curves);
-            curveTypes = curveTypes_ref.putArray(curveTypes);
+            if (curves_ref.doCleanRef(curves)) {
+                curves = curves_ref.putArray(curves);
+            }
+            if (curveTypes_ref.doCleanRef(curveTypes)) {
+                curveTypes = curveTypes_ref.putArray(curveTypes);
+            }
         }
 
         private void ensureSpace(final int n) {
@@ -902,7 +906,7 @@ final class DHelpers implements MarlinConst {
         private int[] indices;
 
         // indices ref (dirty)
-        private final IntArrayCache.Reference indices_ref;
+        private final ArrayCacheInt.Reference indices_ref;
 
         // used marks (stats only)
         private int indicesUseMark;
@@ -948,8 +952,10 @@ final class DHelpers implements MarlinConst {
             }
 
             // Return arrays:
-            // values is kept dirty
-            indices = indices_ref.putArray(indices);
+            // indices is kept dirty
+            if (indices_ref.doCleanRef(indices)) {
+                indices = indices_ref.putArray(indices);
+            }
         }
 
         boolean isEmpty() {
@@ -987,14 +993,24 @@ final class DHelpers implements MarlinConst {
             }
         }
 
-        void pullAll(final double[] points, final DPathConsumer2D io) {
+        void pullAll(final double[] points, final DPathConsumer2D io, 
+                     final boolean moveFirst)
+        {
             final int nc = end;
             if (nc == 0) {
                 return;
             }
             final int[] _values = indices;
+            
+            int i = 0;
+            
+            if (moveFirst) {
+                int j = _values[i] << 1;
+                io.moveTo(points[j], points[j + 1]);
+                i++;
+            }
 
-            for (int i = 0, j; i < nc; i++) {
+            for (int j; i < nc; i++) {
                 j = _values[i] << 1;
                 io.lineTo(points[j], points[j + 1]);
             }

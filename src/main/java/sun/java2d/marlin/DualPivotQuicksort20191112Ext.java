@@ -22,7 +22,8 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+
+package sun.java2d.marlin;
 
 import java.util.Arrays; // TODO
 
@@ -103,7 +104,7 @@ public final class DualPivotQuicksort20191112Ext {
      */
     private static final int MAX_RECURSION_DEPTH = 64 * DELTA;
 
-    
+
     /**
      * Sorts the specified range of the array.
      *
@@ -737,6 +738,13 @@ public final class DualPivotQuicksort20191112Ext {
                 }
             }
             run[count] = (last = k);
+            
+            if (true) {
+                // fix ALMOST_CONTIGUOUS ie consecutive (ascending / descending runs)
+                if (k < high - 1) {
+                    k++; // LBO
+                }
+            }
         }
 
         /*

@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 interface IRendererContext extends MarlinConst {
 
@@ -31,6 +31,6 @@ interface IRendererContext extends MarlinConst {
 
     public OffHeapArray newOffHeapArray(final long initialSize);
 
-    public IntArrayCache.Reference newCleanIntArrayRef(final int initialSize);
+    public ArrayCacheIntClean.Reference newCleanIntArrayRef(final int initialSize);
 
 }

@@ -22,12 +22,12 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
-import static org.marlin.pisces.MergeSort.mergeSortNoCopy;
-import org.marlin.pisces.stats.ArraySortData;
-import org.marlin.pisces.stats.ArraySortDataCollection;
+import static sun.java2d.marlin.MergeSort.mergeSortNoCopy;
+import sun.java2d.marlin.stats.ArraySortData;
+import sun.java2d.marlin.stats.ArraySortDataCollection;
 
 /**
  * Test for MergeSort

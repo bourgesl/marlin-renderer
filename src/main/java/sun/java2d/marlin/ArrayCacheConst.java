@@ -23,10 +23,10 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
-import static org.marlin.pisces.MarlinUtils.logInfo;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
 
 public final class ArrayCacheConst implements MarlinConst {
 

@@ -23,11 +23,11 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import static org.marlin.pisces.MarlinUtils.logInfo;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
 import sun.security.action.GetPropertyAction;
 
 public final class MarlinProperties {

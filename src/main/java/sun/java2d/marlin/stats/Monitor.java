@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.marlin.pisces.stats;
+package sun.java2d.marlin.stats;
 
 /**
  * Generic monitor ie gathers time statistics as nanos.

@@ -21,7 +21,7 @@
  * questions.
  */
 
-import org.marlin.pisces.ArrayCacheConst;
+import sun.java2d.marlin.ArrayCacheConst;
 
 /*
  * @test

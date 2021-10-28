@@ -23,13 +23,13 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.util.Arrays;
-import org.marlin.geom.Path2D;
-import org.marlin.pisces.DHelpers.IndexStack;
-import org.marlin.pisces.DHelpers.PolyStack;
+import sun.java2d.marlin.DHelpers.IndexStack;
+import sun.java2d.marlin.DHelpers.PolyStack;
 
 final class DTransformingPathConsumer2D {
 
@@ -258,7 +258,9 @@ final class DTransformingPathConsumer2D {
         DeltaScaleFilter init(DPathConsumer2D out,
                               double mxx, double myy)
         {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             sx = mxx;
             sy = myy;
             return this; // fluent API
@@ -318,7 +320,9 @@ final class DTransformingPathConsumer2D {
                                   double mxx, double mxy,
                                   double myx, double myy)
         {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             this.mxx = mxx;
             this.mxy = mxy;
             this.myx = myx;
@@ -383,7 +387,9 @@ final class DTransformingPathConsumer2D {
         Path2DWrapper() {}
 
         Path2DWrapper init(Path2D.Double p2d) {
-            this.p2d = p2d;
+            if (this.p2d != p2d) {
+                this.p2d = p2d;
+            }
             return this;
         }
 
@@ -444,7 +450,9 @@ final class DTransformingPathConsumer2D {
         }
 
         ClosedPathDetector init(DPathConsumer2D out) {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             return this; // fluent API
         }
 
@@ -512,7 +520,15 @@ final class DTransformingPathConsumer2D {
 
     static final class PathClipFilter implements DPathConsumer2D {
 
+        private static final boolean TRACE = false;
+
+        private static final int MOVE_TO = 0;
+        private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
+        private static final int CLOSE = 2;
+
         private DPathConsumer2D out;
+
+        private int prev;
 
         // Bounds of the drawing region, at pixel precision.
         private final double[] clipRect;
@@ -525,6 +541,9 @@ final class DTransformingPathConsumer2D {
         // the current outcode of the current sub path
         private int cOutCode = 0;
 
+        // the outcode of the starting point
+        private int sOutCode = 0;
+        
         // the cumulated (and) outcode of the complete path
         private int gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
 
@@ -555,7 +574,9 @@ final class DTransformingPathConsumer2D {
         }
 
         PathClipFilter init(final DPathConsumer2D out) {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
 
             if (MarlinConst.DO_CLIP_SUBDIVIDER) {
                 // adjust padded clip rectangle:
@@ -564,6 +585,7 @@ final class DTransformingPathConsumer2D {
 
             this.init_corners = true;
             this.gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
+            this.prev = CLOSE;
 
             return this; // fluent API
         }
@@ -610,18 +632,26 @@ final class DTransformingPathConsumer2D {
                     _corners[6] = _clipRect[3];
                     _corners[7] = _clipRect[1];
                 }
-                stack.pullAll(corners, out);
+                stack.pullAll(corners, out, (prev == MOVE_TO));
+                prev = DRAWING_OP_TO;
             }
-            out.lineTo(cox0, coy0);
+            // go to the last outside point:
             this.cx0 = cox0;
             this.cy0 = coy0;
         }
 
         @Override
         public void pathDone() {
-            finishPath();
+            if (TRACE) {
+                System.out.println("PathDone(" + sx0 + ", " + sy0 + ") prev: " + prev);
+            }
+            _closePath();
 
             out.pathDone();
+
+            // this shouldn't matter since this object won't be used
+            // after the call to this method.
+            this.prev = CLOSE;
 
             // TODO: fix possible leak if exception happened
             // Dispose this instance:
@@ -630,24 +660,59 @@ final class DTransformingPathConsumer2D {
 
         @Override
         public void closePath() {
-            finishPath();
+            if (TRACE) {
+                System.out.println("ClosePath(" + sx0 + ", " + sy0 + ") prev: " + prev);
+            }
+            _closePath();
 
             out.closePath();
 
+            // if outside, moveTo is needed
+            if (sOutCode != 0) {
+                this.prev = MOVE_TO;
+            } else {
+                this.prev = CLOSE;
+            }
+
             // back to starting point:
-            this.cOutCode = DHelpers.outcode(sx0, sy0, clipRect);
+            this.cOutCode = sOutCode;
             this.cx0 = sx0;
             this.cy0 = sy0;
+        }
+        
+        private void _closePath() {
+            // preserve outside flag for the lineTo call below
+            final boolean prevOutside = outside;
+            finishPath();
+
+            if (prev == DRAWING_OP_TO) {
+                // Should clip
+                final int orCode = (cOutCode | sOutCode);
+                if (orCode != 0) {
+                    if (cx0 != sx0 || cy0 != sy0) {
+                        // restore outside flag before lineTo:
+                        this.outside = prevOutside;
+                        // may subdivide line:
+                        lineTo(sx0, sy0);
+                    }
+                }
+            }
+            finishPath();
         }
 
         @Override
         public void moveTo(final double x0, final double y0) {
-            finishPath();
+            if (TRACE) {
+                System.out.println("MoveTo(" + x0 + ", " + y0 + ") prev: " + prev);
+            }
+            _closePath();
 
-            out.moveTo(x0, y0);
+            this.prev = MOVE_TO;
 
             // update starting point:
-            this.cOutCode = DHelpers.outcode(x0, y0, clipRect);
+            final int outcode = DHelpers.outcode(x0, y0, clipRect);
+            this.cOutCode = outcode;
+            this.sOutCode = outcode;
             this.cx0 = x0;
             this.cy0 = y0;
 
@@ -659,6 +724,17 @@ final class DTransformingPathConsumer2D {
         public void lineTo(final double xe, final double ye) {
             final int outcode0 = this.cOutCode;
             final int outcode1 = DHelpers.outcode(xe, ye, clipRect);
+
+            if (TRACE) {
+                if (subdivide) {
+                    System.out.println("----------------------");
+                }
+                if (outside) {
+                    System.out.println("LineTo co (" + cox0 + ", " + coy0 + ")");
+                }
+                System.out.println("LineTo c  (" + cx0 + ", " + cy0 + ") outcode: " + outcode0);
+                System.out.println("LineTo (" + xe + ", " + ye + ") outcode: " + outcode1 + " outside: " + outside);
+            }
 
             // Should clip
             final int orCode = (outcode0 | outcode1);
@@ -695,6 +771,10 @@ final class DTransformingPathConsumer2D {
                     this.cox0 = xe;
                     this.coy0 = ye;
 
+                    if (TRACE) {
+                        System.out.println("skipped: (" + cox0 + ", " + coy0 + ")");
+                    }
+
                     clip(sideCode, outcode0, outcode1);
                     return;
                 }
@@ -705,11 +785,33 @@ final class DTransformingPathConsumer2D {
 
             if (outside) {
                 finish();
+
+                // emit last point outside before entering again...
+                if (outcode0 != 0) {
+                    if (TRACE) {
+                        System.out.println("add last point outside: (" + cox0 + ", " + coy0 + ")");
+                    }
+                    if (prev == MOVE_TO) {
+                        out.moveTo(cox0, coy0);
+                    } else {
+                        out.lineTo(cox0, coy0);
+                    }
+                    prev = DRAWING_OP_TO;
+                }
             }
             // clipping disabled:
+            if (prev == MOVE_TO) {
+                out.moveTo(cx0, cy0);
+            }
+            prev = DRAWING_OP_TO;
+
             out.lineTo(xe, ye);
             this.cx0 = xe;
             this.cy0 = ye;
+
+            if (TRACE && subdivide) {
+                System.out.println("----------------------");
+            }
         }
 
         private void clip(final int sideCode,
@@ -759,6 +861,17 @@ final class DTransformingPathConsumer2D {
             final int outcode2 = DHelpers.outcode(x2, y2, clipRect);
             final int outcode3 = DHelpers.outcode(xe, ye, clipRect);
 
+            if (TRACE) {
+                if (subdivide) {
+                    System.out.println("----------------------");
+                }
+                if (outside) {
+                    System.out.println("CurveTo co (" + cox0 + ", " + coy0 + ")");
+                }
+                System.out.println("CurveTo c  (" + cx0 + ", " + cy0 + ") outcode: " + outcode0);
+                System.out.println("CurveTo (" + xe + ", " + ye + ") outcode: " + outcode3 + " outside: " + outside);
+            }
+
             // Should clip
             final int orCode = (outcode0 | outcode1 | outcode2 | outcode3);
             if (orCode != 0) {
@@ -796,6 +909,10 @@ final class DTransformingPathConsumer2D {
                     this.cox0 = xe;
                     this.coy0 = ye;
 
+                    if (TRACE) {
+                        System.out.println("skipped: (" + cox0 + ", " + coy0 + ")");
+                    }
+
                     clip(sideCode, outcode0, outcode3);
                     return;
                 }
@@ -806,11 +923,33 @@ final class DTransformingPathConsumer2D {
 
             if (outside) {
                 finish();
+
+                // emit last point outside before entering again...
+                if (outcode0 != 0) {
+                    if (TRACE) {
+                        System.out.println("add last point outside: (" + cox0 + ", " + coy0 + ")");
+                    }
+                    if (prev == MOVE_TO) {
+                        out.moveTo(cox0, coy0);
+                    } else {
+                        out.lineTo(cox0, coy0);
+                    }
+                    prev = DRAWING_OP_TO;
+                }
             }
             // clipping disabled:
+            if (prev == MOVE_TO) {
+                out.moveTo(cx0, cy0);
+            }
+            prev = DRAWING_OP_TO;
+
             out.curveTo(x1, y1, x2, y2, xe, ye);
             this.cx0 = xe;
             this.cy0 = ye;
+
+            if (TRACE && subdivide) {
+                System.out.println("----------------------");
+            }
         }
 
         @Override
@@ -820,6 +959,17 @@ final class DTransformingPathConsumer2D {
             final int outcode0 = this.cOutCode;
             final int outcode1 = DHelpers.outcode(x1, y1, clipRect);
             final int outcode2 = DHelpers.outcode(xe, ye, clipRect);
+
+            if (TRACE) {
+                if (subdivide) {
+                    System.out.println("----------------------");
+                }
+                if (outside) {
+                    System.out.println("QuadTo co (" + cox0 + ", " + coy0 + ")");
+                }
+                System.out.println("QuadTo c  (" + cx0 + ", " + cy0 + ") outcode: " + outcode0);
+                System.out.println("QuadTo (" + xe + ", " + ye + ") outcode: " + outcode1 + " outside: " + outside);
+            }
 
             // Should clip
             final int orCode = (outcode0 | outcode1 | outcode2);
@@ -866,11 +1016,33 @@ final class DTransformingPathConsumer2D {
 
             if (outside) {
                 finish();
+
+                // emit last point outside before entering again...
+                if (outcode0 != 0) {
+                    if (TRACE) {
+                        System.out.println("add last point outside: (" + cox0 + ", " + coy0 + ")");
+                    }
+                    if (prev == MOVE_TO) {
+                        out.moveTo(cox0, coy0);
+                    } else {
+                        out.lineTo(cox0, coy0);
+                    }
+                    prev = DRAWING_OP_TO;
+                }
             }
             // clipping disabled:
+            if (prev == MOVE_TO) {
+                out.moveTo(cx0, cy0);
+            }
+            prev = DRAWING_OP_TO;
+
             out.quadTo(x1, y1, xe, ye);
             this.cx0 = xe;
             this.cy0 = ye;
+
+            if (TRACE && subdivide) {
+                System.out.println("----------------------");
+            }
         }
 
         @Override
@@ -1159,7 +1331,9 @@ final class DTransformingPathConsumer2D {
         }
 
         PathTracer init(DPathConsumer2D out) {
-            this.out = out;
+            if (this.out != out) {
+                this.out = out;
+            }
             return this; // fluent API
         }
 

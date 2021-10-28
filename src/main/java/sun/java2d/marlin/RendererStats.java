@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
@@ -33,12 +33,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.marlin.pisces.ArrayCacheConst.CacheStats;
-import static org.marlin.pisces.MarlinUtils.logInfo;
-import org.marlin.pisces.stats.ArraySortDataCollection;
-import org.marlin.pisces.stats.Histogram;
-import org.marlin.pisces.stats.Monitor;
-import org.marlin.pisces.stats.StatLong;
+import sun.java2d.marlin.ArrayCacheConst.CacheStats;
+import static sun.java2d.marlin.MarlinUtils.logInfo;
+import sun.java2d.marlin.stats.ArraySortDataCollection;
+import sun.java2d.marlin.stats.Histogram;
+import sun.java2d.marlin.stats.Monitor;
+import sun.java2d.marlin.stats.StatLong;
 
 /**
  * This class gathers global rendering statistics for debugging purposes only

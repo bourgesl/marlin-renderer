@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.4.3-Unsafe</version>
+    <version>0.9.4.5-Unsafe</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -46,8 +46,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -76,8 +76,8 @@
                         </goals>
                         <configuration>
                             <includes>
-                                <include>org/**</include>
-                                <include>net/**</include>
+                                <include>sun/java2d/ReentrantContext*</include>
+                                <include>sun/java2d/marlin/**</include>
                                 <include>META-INF/services/*</include>
                             </includes>
                         </configuration>
@@ -92,8 +92,8 @@
                             <classifier>sun-java2d</classifier>
                             <includes>
                                 <include>com/sun/imageio/**</include>
-                                <!-- <include>java/awt/geom/**</include> -->
-                                <include>sun/java2d/**</include>
+                                <include>java/awt/**</include>
+                                <include>sun/java2d/pipe/**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -173,7 +173,7 @@
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
-                                -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
+                                -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
@@ -194,7 +194,7 @@
                                 -Xms1g -Xmx1g
                                 -Dsun.java2d.renderer.log=true
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
-                                -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
+                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
@@ -218,7 +218,7 @@
                                 -Dsun.java2d.renderer.log=true
                                 -DClipShapeTest.numTests=5000
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
-                                -Dsun.java2d.renderer=org.marlin.pisces.DMarlinRenderingEngine
+                                -Dsun.java2d.renderer=sun.java2d.marlin.DMarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>
@@ -240,7 +240,7 @@
                                 -Dsun.java2d.renderer.log=true
                                 -DClipShapeTest.numTests=5000
                                 -Djava.util.logging.config.file=src/test/resources/logging.properties
-                                -Dsun.java2d.renderer=org.marlin.pisces.MarlinRenderingEngine
+                                -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
                                 -Xbootclasspath/a:${basedir}/target/${project.build.finalName}.jar
                                 -Xbootclasspath/p:${basedir}/target/${project.build.finalName}-sun-java2d.jar</argLine>
                         </configuration>

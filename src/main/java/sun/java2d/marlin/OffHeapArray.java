@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
@@ -31,7 +31,7 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Vector;
-import static org.marlin.pisces.MarlinConst.LOG_UNSAFE_MALLOC;
+import static sun.java2d.marlin.MarlinConst.LOG_UNSAFE_MALLOC;
 import sun.misc.Unsafe;
 
 /**

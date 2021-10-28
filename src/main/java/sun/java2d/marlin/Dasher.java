@@ -23,11 +23,11 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
-import org.marlin.pisces.TransformingPathConsumer2D.CurveBasicMonotonizer;
-import org.marlin.pisces.TransformingPathConsumer2D.CurveClipSplitter;
+import sun.java2d.marlin.TransformingPathConsumer2D.CurveBasicMonotonizer;
+import sun.java2d.marlin.TransformingPathConsumer2D.CurveClipSplitter;
 import sun.awt.geom.PathConsumer2D;
 
 /**
@@ -91,9 +91,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     private int firstSegidx;
 
     // dashes ref (dirty)
-    final FloatArrayCache.Reference dashes_ref;
+    final ArrayCacheFloat.Reference dashes_ref;
     // firstSegmentsBuffer ref (dirty)
-    final FloatArrayCache.Reference firstSegmentsBuffer_ref;
+    final ArrayCacheFloat.Reference firstSegmentsBuffer_ref;
 
     // Bounds of the drawing region, at pixel precision.
     private float[] clipRect;
@@ -143,7 +143,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     Dasher init(final PathConsumer2D out, final float[] dash, final int dashLen,
                 float phase, final boolean recycleDashes)
     {
-        this.out = out;
+        if (this.out != out) {
+            this.out = out;
+        }
 
         // Normalize so 0 <= phase < dash[0]
         int sidx = 0;
@@ -224,9 +226,13 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         }
         // Return arrays:
         if (recycleDashes) {
-            dash = dashes_ref.putArray(dash);
+            if (dashes_ref.doCleanRef(dash)) {
+                dash = dashes_ref.putArray(dash);
+            }
         }
-        firstSegmentsBuffer = firstSegmentsBuffer_ref.putArray(firstSegmentsBuffer);
+        if (firstSegmentsBuffer_ref.doCleanRef(firstSegmentsBuffer)) {
+            firstSegmentsBuffer = firstSegmentsBuffer_ref.putArray(firstSegmentsBuffer);
+        }
     }
 
     float[] copyDashArray(final float[] dashes) {
@@ -539,7 +545,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
     // that contains the curve we want to dash in the first type elements
     private void somethingTo(final int type) {
         final float[] _curCurvepts = curCurvepts;
-        if (pointCurve(_curCurvepts, type)) {
+        if (Helpers.isPointCurve(_curCurvepts, type)) {
             return;
         }
         final LengthIterator _li = li;
@@ -595,7 +601,7 @@ final class Dasher implements PathConsumer2D, MarlinConst {
 
     private void skipSomethingTo(final int type) {
         final float[] _curCurvepts = curCurvepts;
-        if (pointCurve(_curCurvepts, type)) {
+        if (Helpers.isPointCurve(_curCurvepts, type)) {
             return;
         }
         final LengthIterator _li = li;
@@ -613,15 +619,6 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         // Fix initial move:
         this.needsMoveTo = true;
         this.starting = false;
-    }
-
-    private static boolean pointCurve(final float[] curve, final int type) {
-        for (int i = 2; i < type; i++) {
-            if (curve[i] != curve[i-2]) {
-                return false;
-            }
-        }
-        return true;
     }
 
     // Objects of this class are used to iterate through curves. They return
@@ -705,7 +702,9 @@ final class Dasher implements PathConsumer2D, MarlinConst {
             this.lenAtLastT = 0.0f;
             this.nextT = 0.0f;
             this.lenAtNextT = 0.0f;
-            goLeft(); // initializes nextT and lenAtNextT properly
+            // initializes nextT and lenAtNextT properly
+            goLeft();
+
             this.lenAtLastSplit = 0.0f;
             if (recLevel > 0) {
                 this.sidesRight[0] = false;
@@ -983,12 +982,19 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final int nSplits = monotonizer.nbSplits;
         final float[] mid = monotonizer.middle;
 
+        // Implicitely rdrCtx.isFirstSegment = true
+
         for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
 
             somethingTo(8);
+
+            // set flag rdrCtx.isFirstSegment = false for other parts:
+            rdrCtx.isFirstSegment = false; // TODO: handle conflict with clipper
         }
+        // reset trigger to process further joins (normal operations)
+        rdrCtx.isFirstSegment = true;
     }
 
     private void skipCurveTo(final float x1, final float y1,
@@ -1068,12 +1074,19 @@ final class Dasher implements PathConsumer2D, MarlinConst {
         final int nSplits = monotonizer.nbSplits;
         final float[] mid = monotonizer.middle;
 
+        // Implicitely rdrCtx.isFirstSegment = true
+
         for (int i = 0, off = 0; i <= nSplits; i++, off += 4) {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
 
             somethingTo(6);
+
+            // set flag rdrCtx.isFirstSegment = false for other parts:
+            rdrCtx.isFirstSegment = false; // TODO: handle conflict with clipper
         }
+        // reset trigger to process further joins (normal operations)
+        rdrCtx.isFirstSegment = true;
     }
 
     private void skipQuadTo(final float x1, final float y1,

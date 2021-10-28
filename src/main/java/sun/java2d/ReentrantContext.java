@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin;
+package sun.java2d;
 
 import java.lang.ref.Reference;
 

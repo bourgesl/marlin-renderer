@@ -23,14 +23,15 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
 
 import sun.awt.geom.PathConsumer2D;
-import org.marlin.pisces.Helpers.PolyStack;
-import org.marlin.pisces.TransformingPathConsumer2D.CurveBasicMonotonizer;
-import org.marlin.pisces.TransformingPathConsumer2D.CurveClipSplitter;
+import sun.java2d.marlin.Helpers.PolyStack;
+import sun.java2d.marlin.TransformingPathConsumer2D.CurveBasicMonotonizer;
+import sun.java2d.marlin.TransformingPathConsumer2D.CurveClipSplitter;
+import sun.java2d.marlin.debug.MarlinDebugThreadLocal;
 
 // TODO: some of the arithmetic here is too verbose and prone to hard to
 // debug typos. We should consider making a small Point/Vector class that
@@ -151,7 +152,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                  final float miterLimit,
                  final boolean subdivideCurves)
     {
-        this.out = pc2d;
+        if (this.out != pc2d) {
+            this.out = pc2d;
+        }
 
         this.lineWidth2 = lineWidth / 2.0f;
         this.invHalfLineWidth2Sq = 1.0f / (2.0f * lineWidth2 * lineWidth2);
@@ -524,15 +527,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
 
     @Override
     public void lineTo(final float x1, final float y1) {
-        lineTo(x1, y1, false);
-    }
-
-    private void lineTo(final float x1, final float y1,
-                        final boolean force)
-    {
         final int outcode0 = this.cOutCode;
 
-        if (!force && clipRect != null) {
+        if (clipRect != null) {
             final int outcode1 = Helpers.outcode(x1, y1, clipRect);
 
             // Should clip
@@ -619,17 +616,21 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // basic acceptance criteria
         if ((sOutCode & cOutCode) == 0) {
             if (cx0 != sx0 || cy0 != sy0) {
-                lineTo(sx0, sy0, true);
+                // may subdivide line:
+                lineTo(sx0, sy0);
             }
 
-            drawJoin(cdx, cdy, cx0, cy0, sdx, sdy, cmx, cmy, smx, smy, sOutCode);
+            // ignore starting point outside:
+            if (sOutCode == 0) {
+                drawJoin(cdx, cdy, cx0, cy0, sdx, sdy, cmx, cmy, smx, smy, sOutCode);
 
-            emitLineTo(sx0 + smx, sy0 + smy);
+                emitLineTo(sx0 + smx, sy0 + smy);
 
-            if (opened) {
-                emitLineTo(sx0 - smx, sy0 - smy);
-            } else {
-                emitMoveTo(sx0 - smx, sy0 - smy);
+                if (opened) {
+                    emitLineTo(sx0 - smx, sy0 - smy);
+                } else {
+                    emitMoveTo(sx0 - smx, sy0 - smy);
+                }
             }
         }
         // Ignore caps like finish(false)
@@ -783,7 +784,8 @@ final class Stroker implements PathConsumer2D, MarlinConst {
                 this.smx = mx;
                 this.smy = my;
             }
-        } else {
+        } else if (rdrCtx.isFirstSegment) {
+            // Precision on isCW is causing instabilities with Dasher !
             final boolean cw = isCW(pdx, pdy, dx, dy);
             if (outcode == 0) {
                 if (joinStyle == JOIN_MITER) {
@@ -794,6 +796,11 @@ final class Stroker implements PathConsumer2D, MarlinConst {
             }
             emitLineTo(x0, y0, !cw);
         }
+        if (!rdrCtx.isFirstSegment) {
+            // reset trigger to process further joins (normal operations)
+            rdrCtx.isFirstSegment = true;
+        }
+
         prev = DRAWING_OP_TO;
     }
 
@@ -833,43 +840,29 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         final float x3 = pts[off + 4]; final float y3 = pts[off + 5];
         final float x4 = pts[off + 6]; final float  y4 = pts[off + 7];
 
-        final float dx12 = x2 - x1; final float dy12 = y2 - y1;
-        final float dx34 = x4 - x3; final float dy34 = y4 - y3;
+        float dx1 = x2 - x1; float dy1 = y2 - y1;
+        float dx4 = x4 - x3; float dy4 = y4 - y3;
 
         // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
         // in which case ignore if p1 == p2
-        final boolean p1eqp2 = Helpers.withinD(dx12, dy12, 6.0f * Math.ulp(y2));
-        final boolean p3eqp4 = Helpers.withinD(dx34, dy34, 6.0f * Math.ulp(y4));
+        final boolean p1eqp2 = Helpers.withinD(dx1, dy1, 6.0f * Math.ulp(y2));
+        final boolean p3eqp4 = Helpers.withinD(dx4, dy4, 6.0f * Math.ulp(y4));
 
         if (p1eqp2 && p3eqp4) {
             return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
         } else if (p1eqp2) {
-            // shift 3-4 to 2-3 to computeOffsetQuad(1-3-4)
-            pts[off + 2] = pts[off + 4];
-            pts[off + 3] = pts[off + 5];
-            pts[off + 4] = pts[off + 6];
-            pts[off + 5] = pts[off + 7];
-            return computeOffsetQuad(pts, off, leftOff, rightOff, false);
+            dx1 = x3 - x1;
+            dy1 = y3 - y1;
         } else if (p3eqp4) {
-            // computeOffsetQuad(1-2-3)
-            return computeOffsetQuad(pts, off, leftOff, rightOff, false);
-        }
-
-        final float dx23 = x3 - x2; final float dy23 = y3 - y2;
-
-        final boolean p2eqp3 = Helpers.withinD(dx23, dy23, 6.0f * Math.ulp(y3));
-        if (p2eqp3) {
-            // shift 4 to 3 to computeOffsetQuad(1-2-4)
-            pts[off + 4] = pts[off + 6];
-            pts[off + 5] = pts[off + 7];
-            return computeOffsetQuad(pts, off, leftOff, rightOff, false);
+            dx4 = x4 - x2;
+            dy4 = y4 - y2;
         }
 
         // if p2-p1 and p4-p3 are parallel, that must mean this curve is a line
-        float dotsq = (dx12 * dx34 + dy12 * dy34);
+        float dotsq = (dx1 * dx4 + dy1 * dy4);
         dotsq *= dotsq;
-        final float l1sq = dx12 * dx12 + dy12 * dy12;
-        final float l4sq = dx34 * dx34 + dy34 * dy34;
+        final float l1sq = dx1 * dx1 + dy1 * dy1;
+        final float l4sq = dx4 * dx4 + dy4 * dy4;
 
         if (Helpers.within(dotsq, l1sq * l4sq, 4.0f * Math.ulp(dotsq))) {
             return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
@@ -932,9 +925,9 @@ final class Stroker implements PathConsumer2D, MarlinConst {
         // this computes the offsets at t=0, 0.5, 1, using the property that
         // for any bezier curve the vectors p2-p1 and p4-p3 are parallel to
         // the (dx/dt, dy/dt) vectors at the endpoints.
-        computeOffset(dx12, dy12, lineWidth2, offset0);
+        computeOffset(dx1, dy1, lineWidth2, offset0);
         computeOffset(dxm, dym, lineWidth2, offset1);
-        computeOffset(dx34, dy34, lineWidth2, offset2);
+        computeOffset(dx4, dy4, lineWidth2, offset2);
 
         // left side:
         float x1p = x1 + offset0[0]; // start
@@ -950,13 +943,13 @@ if (false) {
         dbgCtx.addPoint(xi, yi);
 }
 
-        final float invdet43 = 4.0f / (3.0f * (dx12 * dy34 - dy12 * dx34));
+        final float invdet43 = 4.0f / (3.0f * (dx1 * dy4 - dy1 * dx4));
 
         float two_pi_m_p1_m_p4x = 2.0f * xi - (x1p + x4p);
         float two_pi_m_p1_m_p4y = 2.0f * yi - (y1p + y4p);
 
-        float c1 = invdet43 * (dy34 * two_pi_m_p1_m_p4x - dx34 * two_pi_m_p1_m_p4y);
-        float c2 = invdet43 * (dx12 * two_pi_m_p1_m_p4y - dy12 * two_pi_m_p1_m_p4x);
+        float c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
+        float c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
 
         float x2p, y2p, x3p, y3p;
 
@@ -970,14 +963,14 @@ if (false) {
             x3p = x3 + offset1[0]; // 3nd
             y3p = y3 + offset1[1]; // point
 
-            safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x2p, y2p, x2p-dxm, y2p-dym, leftOff);
+            safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x2p, y2p, x2p-dxm, y2p-dym, leftOff);
             x2p = leftOff[2]; y2p = leftOff[3];
 
-            safeComputeMiter(x4p, y4p, x4p+dx34, y4p+dy34, x3p, y3p, x3p-dxm, y3p-dym, leftOff);
+            safeComputeMiter(x4p, y4p, x4p+dx4, y4p+dy4, x3p, y3p, x3p-dxm, y3p-dym, leftOff);
             x3p = leftOff[2]; y3p = leftOff[3];
         } else {
-            x2p = x1p + c1 * dx12; y2p = y1p + c1 * dy12;
-            x3p = x4p + c2 * dx34; y3p = y4p + c2 * dy34;
+            x2p = x1p + c1 * dx1; y2p = y1p + c1 * dy1;
+            x3p = x4p + c2 * dx4; y3p = y4p + c2 * dy4;
         }
 
         leftOff[0] = x1p; leftOff[1] = y1p;
@@ -1002,8 +995,8 @@ if (false) {
         two_pi_m_p1_m_p4x = 2.0f * xi - (x1p + x4p);
         two_pi_m_p1_m_p4y = 2.0f * yi - (y1p + y4p);
 
-        c1 = invdet43 * (dy34 * two_pi_m_p1_m_p4x - dx34 * two_pi_m_p1_m_p4y);
-        c2 = invdet43 * (dx12 * two_pi_m_p1_m_p4y - dy12 * two_pi_m_p1_m_p4x);
+        c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
+        c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
 
         if (c1 * c2 > 0.0) {
 //            System.out.println("Buggy solver (right): c1 = " + c1 + " c2 = " + c2);
@@ -1015,14 +1008,14 @@ if (false) {
             x3p = x3 - offset1[0]; // 3nd
             y3p = y3 - offset1[1]; // point
 
-            safeComputeMiter(x1p, y1p, x1p+dx12, y1p+dy12, x2p, y2p, x2p-dxm, y2p-dym, rightOff);
+            safeComputeMiter(x1p, y1p, x1p+dx1, y1p+dy1, x2p, y2p, x2p-dxm, y2p-dym, rightOff);
             x2p = rightOff[2]; y2p = rightOff[3];
 
-            safeComputeMiter(x4p, y4p, x4p+dx34, y4p+dy34, x3p, y3p, x3p-dxm, y3p-dym, rightOff);
+            safeComputeMiter(x4p, y4p, x4p+dx4, y4p+dy4, x3p, y3p, x3p-dxm, y3p-dym, rightOff);
             x3p = rightOff[2]; y3p = rightOff[3];
         } else {
-            x2p = x1p + c1 * dx12; y2p = y1p + c1 * dy12;
-            x3p = x4p + c2 * dx34; y3p = y4p + c2 * dy34;
+            x2p = x1p + c1 * dx1; y2p = y1p + c1 * dy1;
+            x3p = x4p + c2 * dx4; y3p = y4p + c2 * dy4;
         }
 
         rightOff[0] = x1p; rightOff[1] = y1p;

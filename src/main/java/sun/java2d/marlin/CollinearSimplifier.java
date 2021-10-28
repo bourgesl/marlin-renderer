@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import sun.awt.geom.PathConsumer2D;
 
@@ -47,7 +47,9 @@ final class CollinearSimplifier implements PathConsumer2D {
     }
 
     public CollinearSimplifier init(final PathConsumer2D delegate) {
-        this.delegate = delegate;
+        if (this.delegate != delegate) {
+            this.delegate = delegate;
+        }
         this.state = STATE_EMPTY;
 
         return this; // fluent API

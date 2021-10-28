@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import java.util.Arrays;
 import sun.java2d.pipe.AATileGenerator;

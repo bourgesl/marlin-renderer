@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 final class DPathSimplifier implements DPathConsumer2D {
 
@@ -44,7 +44,9 @@ final class DPathSimplifier implements DPathConsumer2D {
     }
 
     DPathSimplifier init(final DPathConsumer2D delegate) {
-        this.delegate = delegate;
+        if (this.delegate != delegate) {
+            this.delegate = delegate;
+        }
         skipped = false;
         return this; // fluent API
     }

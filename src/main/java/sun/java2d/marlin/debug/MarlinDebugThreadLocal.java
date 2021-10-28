@@ -22,12 +22,13 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+
+package sun.java2d.marlin.debug;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
-import org.marlin.ReentrantContext;
+import sun.java2d.ReentrantContext;
 
 /**
  * Marlin renderer debugging context (internal purposes only)

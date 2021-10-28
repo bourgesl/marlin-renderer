@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.marlin.pisces;
+package sun.java2d.marlin;
 
 import sun.awt.geom.PathConsumer2D;
 
@@ -46,7 +46,9 @@ final class PathSimplifier implements PathConsumer2D {
     }
 
     PathSimplifier init(final PathConsumer2D delegate) {
-        this.delegate = delegate;
+        if (this.delegate != delegate) {
+            this.delegate = delegate;
+        }
         skipped = false;
         return this; // fluent API
     }
