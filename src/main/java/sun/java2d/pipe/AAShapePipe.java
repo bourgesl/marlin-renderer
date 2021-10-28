@@ -118,8 +118,6 @@ public final class AAShapePipe
         final TileState ts = TILE_STATE_PROVIDER.acquire();
         try {
             final int[] abox = ts.abox;
-            
-            // TODO: fix stroke width ?
 
             final AATileGenerator aatg =
                 RDR_ENGINE.getAATileGenerator(x, y, dx1, dy1, dx2, dy2, lw1,
@@ -139,6 +137,7 @@ public final class AAShapePipe
         final boolean adjust = (bs != null &&
                           sg.strokeHint != SunHints.INTVAL_STROKE_PURE);
         final boolean thin = (sg.strokeState <= SunGraphics2D.STROKE_THINDASHED);
+
         final TileState ts = TILE_STATE_PROVIDER.acquire();
         try {
             final int[] abox = ts.abox;

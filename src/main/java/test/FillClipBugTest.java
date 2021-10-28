@@ -136,7 +136,7 @@ public class FillClipBugTest {
 
 // TestSetup{id=91, shapeMode=TWO_CUBICS, closed=false, strokeWidth=10.0, strokeCap=CAP_BUTT, strokeJoin=JOIN_ROUND, dashes: [13.0, 7.0]}
             g2d.setStroke(new BasicStroke(10f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f,
-                    //                    new float[]{1f, 2f}, 0.0f));
+//                    new float[]{1f, 2f}, 0.0f));
                     new float[]{13f, 7f}, 0.0f));
         }
 

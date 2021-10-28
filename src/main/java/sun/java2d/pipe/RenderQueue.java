@@ -94,15 +94,8 @@ public abstract class RenderQueue {
     protected final Set<Object> refSet;
 
     protected RenderQueue() {
-        refSet = new HashSet<Object>(64); // large enough (LBO) ?
+        refSet = new HashSet<>(64); // large enough (LBO) ?
         buf = RenderBuffer.allocate(BUFFER_SIZE);
-    }
-
-    protected final void clear() {
-        // reset the buffer position
-        buf.clear();
-        // clear the set of references, since we no longer need them
-        refSet.clear();
     }
 
     /**

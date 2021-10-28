@@ -274,10 +274,6 @@ public class LoopPipe
                 ((org.marlin.pisces.DMarlinRenderingEngine)RenderEngine).strokeTo(s,
                                       sg2d.transform, clip, bs,
                                       thin, normalize, false, sr);
-            } else if (RenderEngine instanceof org.marlin.pisces.MarlinRenderingEngine) {
-                ((org.marlin.pisces.MarlinRenderingEngine)RenderEngine).strokeTo(s,
-                                      sg2d.transform, clip, bs,
-                                      thin, normalize, false, sr);
             } else {
                 RenderEngine.strokeTo(s,
                                       sg2d.transform, bs,

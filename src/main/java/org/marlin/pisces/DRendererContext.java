@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -48,13 +48,12 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
      * @return new RendererContext instance
      */
     static DRendererContext createContext() {
-        return new DRendererContext("ctx"
-                       + Integer.toString(CTX_COUNT.getAndIncrement()));
+        return new DRendererContext("ctx" + CTX_COUNT.getAndIncrement());
     }
 
     // Smallest object used as Cleaner's parent reference
     private final Object cleanerObj;
-    // dirty flag indicating an exception occured during pipeline in pathTo()
+    // dirty flag indicating an exception occurred during pipeline in pathTo()
     boolean dirty = false;
     // shared data
     final double[] double6 = new double[6];
@@ -206,12 +205,10 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         return p2d;
     }
 
-    @Override
     public RendererStats stats() {
         return stats;
     }
 
-    @Override
     public OffHeapArray newOffHeapArray(final long initialSize) {
         if (DO_STATS) {
             stats.totalOffHeapInitial += initialSize;
@@ -219,7 +216,6 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         return new OffHeapArray(cleanerObj, initialSize);
     }
 
-    @Override
     public ArrayCacheIntClean.Reference newCleanIntArrayRef(final int initialSize) {
         return cleanIntCache.createRef(initialSize);
     }
