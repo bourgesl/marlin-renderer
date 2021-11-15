@@ -69,6 +69,7 @@ public final class MarlinProperties {
         return useLargeTiles;
     }
 
+    @SuppressWarnings("removal")
     private static boolean isHeadless() {
         // Mimics java.awt.GraphicsEnvironment.getHeadlessProperty():
         return AccessController.doPrivileged(
@@ -95,7 +96,7 @@ public final class MarlinProperties {
                                  (display == null || display.trim().isEmpty()));
                         }
                     } else {
-                        return Boolean.valueOf(nm);
+                        return Boolean.parseBoolean(nm);
                     }
                 }
             }

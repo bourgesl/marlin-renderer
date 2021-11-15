@@ -43,10 +43,8 @@ final class CollinearSimplifier implements DPathConsumer2D {
     CollinearSimplifier() {
     }
 
-    public CollinearSimplifier init(final DPathConsumer2D delegate) {
-        if (this.delegate != delegate) {
-            this.delegate = delegate;
-        }
+    public CollinearSimplifier init(DPathConsumer2D delegate) {
+        this.delegate = delegate;
         this.state = SimplifierState.Empty;
 
         return this; // fluent API

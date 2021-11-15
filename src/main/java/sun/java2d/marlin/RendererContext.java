@@ -88,8 +88,11 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
     double clipInvScale = 0.0d;
     // CurveBasicMonotonizer instance
     final CurveBasicMonotonizer monotonizer;
-    // flag indicating to force the stroker to process joins
-    boolean isFirstSegment = true;
+    // bit flags indicating to skip the stroker to process joins
+    // bits: 2 : Dasher CurveClipSplitter
+    // bits: 1 : Dasher CurveBasicMonotonizer
+    // bits: 0 : Stroker CurveClipSplitter
+    int firstFlags = 0;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
     // DPQS Sorter context
@@ -169,7 +172,7 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
         doClip     = false;
         closedPath = false;
         clipInvScale = 0.0d;
-        isFirstSegment = true;
+        firstFlags = 0;
 
         // if context is maked as DIRTY:
         if (dirty) {
@@ -238,9 +241,7 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
         PathConsumer2DAdapter() {}
 
         PathConsumer2DAdapter init(sun.awt.geom.PathConsumer2D out) {
-            if (this.out != out) {
-                this.out = out;
-            }
+            this.out = out;
             return this;
         }
 

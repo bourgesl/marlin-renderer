@@ -30,11 +30,12 @@ import java.util.Arrays;
 import sun.java2d.marlin.Helpers.PolyStack;
 import sun.java2d.marlin.TransformingPathConsumer2D.CurveBasicMonotonizer;
 import sun.java2d.marlin.TransformingPathConsumer2D.CurveClipSplitter;
+import sun.java2d.marlin.TransformingPathConsumer2D.StartFlagPathConsumer2D;
 
 // TODO: some of the arithmetic here is too verbose and prone to hard to
 // debug typos. We should consider making a small Point/Vector class that
 // has methods like plus(Point), minus(Point), dot(Point), cross(Point)and such
-final class Stroker implements DPathConsumer2D, MarlinConst {
+final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
 
     private static final int MOVE_TO = 0;
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
@@ -150,9 +151,7 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
                   final double miterLimit,
                   final boolean subdivideCurves)
     {
-        if (this.out != pc2d) {
-            this.out = pc2d;
-        }
+        this.out = pc2d;
 
         this.lineWidth2 = lineWidth / 2.0d;
         this.invHalfLineWidth2Sq = 1.0d / (2.0d * lineWidth2 * lineWidth2);
@@ -523,6 +522,17 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
         }
     }
 
+    /* Callback from CurveClipSplitter */
+    @Override
+    public void setStartFlag(boolean first) {
+        if (first) {
+            // reset flag:
+            rdrCtx.firstFlags &= 0b110;
+        } else {
+            rdrCtx.firstFlags |= 0b001;
+        }
+    }
+
     @Override
     public void lineTo(final double x1, final double y1) {
         final int outcode0 = this.cOutCode;
@@ -775,6 +785,7 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
                           final int outcode)
     {
         if (prev != DRAWING_OP_TO) {
+            prev = DRAWING_OP_TO;
             emitMoveTo(x0 + mx, y0 + my);
             if (!opened) {
                 this.sdx = dx;
@@ -782,7 +793,7 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
                 this.smx = mx;
                 this.smy = my;
             }
-        } else if (rdrCtx.isFirstSegment) {
+        } else if (rdrCtx.firstFlags == 0) {
             // Precision on isCW is causing instabilities with Dasher !
             final boolean cw = isCW(pdx, pdy, dx, dy);
             if (outcode == 0) {
@@ -794,11 +805,6 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
             }
             emitLineTo(x0, y0, !cw);
         }
-        if (!rdrCtx.isFirstSegment) {
-            // reset trigger to process further joins (normal operations)
-            rdrCtx.isFirstSegment = true;
-        }
-        prev = DRAWING_OP_TO;
     }
 
     private int getLineOffsets(final double x1, final double y1,
@@ -1030,14 +1036,6 @@ if (false) {
                                   final double[] leftOff,
                                   final double[] rightOff)
     {
-        return computeOffsetQuad(pts, off, leftOff, rightOff, true);
-    }
-
-    private int computeOffsetQuad(final double[] pts, final int off,
-                                  final double[] leftOff,
-                                  final double[] rightOff,
-                                  final boolean checkCtrlPoints)
-    {
         final double x1 = pts[off    ]; final double y1 = pts[off + 1];
         final double x2 = pts[off + 2]; final double y2 = pts[off + 3];
         final double x3 = pts[off + 4]; final double y3 = pts[off + 5];
@@ -1045,32 +1043,30 @@ if (false) {
         final double dx12 = x2 - x1; final double dy12 = y2 - y1;
         final double dx23 = x3 - x2; final double dy23 = y3 - y2;
 
-        if (checkCtrlPoints) {
-            // if p1=p2 or p2=p3 it means that the derivative at the endpoint
-            // vanishes, which creates problems with computeOffset. Usually
-            // this happens when this stroker object is trying to widen
-            // a curve with a cusp. What happens is that curveTo splits
-            // the input curve at the cusp, and passes it to this function.
-            // because of inaccuracies in the splitting, we consider points
-            // equal if they're very close to each other.
+        // if p1=p2 or p2=p3 it means that the derivative at the endpoint
+        // vanishes, which creates problems with computeOffset. Usually
+        // this happens when this stroker object is trying to widen
+        // a curve with a cusp. What happens is that curveTo splits
+        // the input curve at the cusp, and passes it to this function.
+        // because of inaccuracies in the splitting, we consider points
+        // equal if they're very close to each other.
 
-            // if p1 == p2 or p2 == p3: draw line from p1->p3
-            final boolean p1eqp2 = Helpers.withinD(dx12, dy12, 6.0d * Math.ulp(y2));
-            final boolean p2eqp3 = Helpers.withinD(dx23, dy23, 6.0d * Math.ulp(y3));
+        // if p1 == p2 or p2 == p3: draw line from p1->p3
+        final boolean p1eqp2 = Helpers.withinD(dx12, dy12, 6.0d * Math.ulp(y2));
+        final boolean p2eqp3 = Helpers.withinD(dx23, dy23, 6.0d * Math.ulp(y3));
 
-            if (p1eqp2 || p2eqp3) {
-                return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
-            }
+        if (p1eqp2 || p2eqp3) {
+            return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
+        }
 
-            // if p2-p1 and p3-p2 are parallel, that must mean this curve is a line
-            double dotsq = (dx12 * dx23 + dy12 * dy23);
-            dotsq *= dotsq;
-            final double l1sq = dx12 * dx12 + dy12 * dy12;
-            final double l3sq = dx23 * dx23 + dy23 * dy23;
+        // if p2-p1 and p3-p2 are parallel, that must mean this curve is a line
+        double dotsq = (dx12 * dx23 + dy12 * dy23);
+        dotsq *= dotsq;
+        final double l1sq = dx12 * dx12 + dy12 * dy12;
+        final double l3sq = dx23 * dx23 + dy23 * dy23;
 
-            if (Helpers.within(dotsq, l1sq * l3sq, 4.0d * Math.ulp(dotsq))) {
-                return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
-            }
+        if (Helpers.within(dotsq, l1sq * l3sq, 4.0d * Math.ulp(dotsq))) {
+            return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
         }
 
         // this computes the offsets at t=0, 0.5, 1, using the property that
