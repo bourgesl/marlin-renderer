@@ -1,0 +1,112 @@
+Comparison:
+
+- JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-b82-20211125
+
+# JMH version: 1.33
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-b82-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11-no-rdr.jar
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                                 (arraySize)    Mode      Cnt      Score   Error  Units
+ArrayCacheIntBenchmark.sort                    262145  sample  5009157     25.383 ± 0.007  us/op
+ArrayCacheIntBenchmark.sort:sort·p0.00         262145  sample              23.104          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.50         262145  sample              24.448          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.90         262145  sample              25.440          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.95         262145  sample              28.064          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.99         262145  sample              51.648          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.999        262145  sample              51.840          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.9999       262145  sample              55.104          us/op
+ArrayCacheIntBenchmark.sort:sort·p1.00         262145  sample             877.568          us/op
+
+ArrayCacheIntBenchmark.sort                   4194305  sample   201928   1236.754 ± 3.159  us/op
+ArrayCacheIntBenchmark.sort:sort·p0.00        4194305  sample             525.312          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.50        4194305  sample            1327.104          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.90        4194305  sample            1687.552          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.95        4194305  sample            1695.744          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.99        4194305  sample            1703.936          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.999       4194305  sample            1720.320          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.9999      4194305  sample           14922.664          us/op
+ArrayCacheIntBenchmark.sort:sort·p1.00        4194305  sample           15351.808          us/op
+
+
+
+- JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+
+# JMH version: 1.33
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11-no-rdr.jar
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                                 (arraySize)    Mode      Cnt      Score   Error  Units
+ArrayCacheIntBenchmark.sort                    262145  sample  5171997     24.102 ± 0.004  us/op
+ArrayCacheIntBenchmark.sort:sort·p0.00         262145  sample              23.136          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.50         262145  sample              24.032          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.90         262145  sample              24.320          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.95         262145  sample              24.448          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.99         262145  sample              24.608          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.999        262145  sample              27.680          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.9999       262145  sample              35.328          us/op
+ArrayCacheIntBenchmark.sort:sort·p1.00         262145  sample             872.448          us/op
+
+ArrayCacheIntBenchmark.sort                   4194305  sample   475367    524.521 ± 1.427  us/op
+ArrayCacheIntBenchmark.sort:sort·p0.00        4194305  sample             488.448          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.50        4194305  sample             519.680          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.90        4194305  sample             536.576          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.95        4194305  sample             543.744          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.99        4194305  sample             581.632          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.999       4194305  sample             633.856          us/op
+ArrayCacheIntBenchmark.sort:sort·p0.9999      4194305  sample           14024.704          us/op
+ArrayCacheIntBenchmark.sort:sort·p1.00        4194305  sample           58195.968          us/op
+
+
+- Comparison on main jmh score:
+
+    - JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-b82-20211125
+        ArrayCacheIntBenchmark.sort                    262145  sample  5009157     25.383 ± 0.007  us/op
+        ArrayCacheIntBenchmark.sort                   4194305  sample   201928   1236.754 ± 3.159  us/op
+
+    - JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+        ArrayCacheIntBenchmark.sort                    262145  sample  5171997     24.102 ± 0.004  us/op
+        ArrayCacheIntBenchmark.sort                   4194305  sample   475367    524.521 ± 1.427  us/op
+
+    Gives:
+        - 25.383 / 24.102       =   1,05 times better
+        - 1236.754 / 524.521    =   2,36 times better
+
+        So the score comparison is good (at larger scale) !
+
+
+- Comparison at p0.999:
+
+    - JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-b82-20211125
+        ArrayCacheIntBenchmark.sort:sort·p0.999        262145  sample              51.840          us/op
+        ArrayCacheIntBenchmark.sort:sort·p0.999       4194305  sample            1720.320          us/op
+
+    - JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+        ArrayCacheIntBenchmark.sort:sort·p0.999        262145  sample              27.680          us/op
+        ArrayCacheIntBenchmark.sort:sort·p0.999       4194305  sample             633.856          us/op
+
+    Gives:
+        - 51.840 / 27.680       =   1,87 times better
+        - 1720.320 / 633.856    =   2,71 times better
+
+        So the comparison at 99.9 percentile is very good !
+
+    Well done, Aleksey Shipilëv !
+
