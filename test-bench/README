@@ -1,0 +1,8 @@
+To build JMH benchmarks, you need maven.
+
+First build parent project using: "mvn clean install"
+
+Then run "mvn clean install"
+
+See ./bench.sh 
+

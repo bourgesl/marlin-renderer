@@ -1,0 +1,666 @@
+# JMH version: 1.33
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-b82-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11-no-rdr.jar
+# Blackhole mode: full + dont-inline hint (default, use -Djmh.blackhole.autoDetect=true to auto-detect)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.sort
+# Parameters: (arraySize = 16777217)
+
+# Run progress: 0.00% complete, ETA 00:05:00
+# Fork: 1 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8313.719 ±(99.9%) 2144.986 us/op
+# Warmup Iteration   2: 7787.378 ±(99.9%) 1942.592 us/op
+# Warmup Iteration   3: 7472.449 ±(99.9%) 512.259 us/op
+# Warmup Iteration   4: 7310.648 ±(99.9%) 212.848 us/op
+# Warmup Iteration   5: 7492.501 ±(99.9%) 464.687 us/op
+Iteration   1: 7260.859 ±(99.9%) 167.409 us/op
+                 sort·p0.00:   7077.888 us/op
+                 sort·p0.50:   7143.424 us/op
+                 sort·p0.90:   7299.072 us/op
+                 sort·p0.95:   7372.800 us/op
+                 sort·p0.99:   7643.136 us/op
+                 sort·p0.999:  37683.200 us/op
+                 sort·p0.9999: 37683.200 us/op
+                 sort·p1.00:   37683.200 us/op
+
+Iteration   2: 7250.704 ±(99.9%) 122.950 us/op
+                 sort·p0.00:   7143.424 us/op
+                 sort·p0.50:   7184.384 us/op
+                 sort·p0.90:   7281.869 us/op
+                 sort·p0.95:   7405.568 us/op
+                 sort·p0.99:   7604.388 us/op
+                 sort·p0.999:  32800.768 us/op
+                 sort·p0.9999: 32800.768 us/op
+                 sort·p1.00:   32800.768 us/op
+
+Iteration   3: 7249.778 ±(99.9%) 40.253 us/op
+                 sort·p0.00:   7168.000 us/op
+                 sort·p0.50:   7217.152 us/op
+                 sort·p0.90:   7290.880 us/op
+                 sort·p0.95:   7380.992 us/op
+                 sort·p0.99:   7585.792 us/op
+                 sort·p0.999:  15450.112 us/op
+                 sort·p0.9999: 15450.112 us/op
+                 sort·p1.00:   15450.112 us/op
+
+Iteration   4: 7236.808 ±(99.9%) 110.883 us/op
+                 sort·p0.00:   7127.040 us/op
+                 sort·p0.50:   7176.192 us/op
+                 sort·p0.90:   7266.304 us/op
+                 sort·p0.95:   7384.269 us/op
+                 sort·p0.99:   7643.136 us/op
+                 sort·p0.999:  30277.632 us/op
+                 sort·p0.9999: 30277.632 us/op
+                 sort·p1.00:   30277.632 us/op
+
+Iteration   5: 7213.275 ±(99.9%) 38.389 us/op
+                 sort·p0.00:   7135.232 us/op
+                 sort·p0.50:   7176.192 us/op
+                 sort·p0.90:   7271.219 us/op
+                 sort·p0.95:   7397.376 us/op
+                 sort·p0.99:   7504.364 us/op
+                 sort·p0.999:  15024.128 us/op
+                 sort·p0.9999: 15024.128 us/op
+                 sort·p1.00:   15024.128 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 10.00% complete, ETA 00:04:39
+# Fork: 2 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8188.508 ±(99.9%) 2108.440 us/op
+# Warmup Iteration   2: 7891.968 ±(99.9%) 1970.857 us/op
+# Warmup Iteration   3: 7394.485 ±(99.9%) 507.762 us/op
+# Warmup Iteration   4: 7375.872 ±(99.9%) 215.862 us/op
+# Warmup Iteration   5: 7424.925 ±(99.9%) 465.892 us/op
+Iteration   1: 7298.582 ±(99.9%) 166.688 us/op
+                 sort·p0.00:   7143.424 us/op
+                 sort·p0.50:   7184.384 us/op
+                 sort·p0.90:   7282.688 us/op
+                 sort·p0.95:   7413.760 us/op
+                 sort·p0.99:   7624.131 us/op
+                 sort·p0.999:  37421.056 us/op
+                 sort·p0.9999: 37421.056 us/op
+                 sort·p1.00:   37421.056 us/op
+
+Iteration   2: 7272.210 ±(99.9%) 74.942 us/op
+                 sort·p0.00:   7184.384 us/op
+                 sort·p0.50:   7225.344 us/op
+                 sort·p0.90:   7290.880 us/op
+                 sort·p0.95:   7405.568 us/op
+                 sort·p0.99:   7643.136 us/op
+                 sort·p0.999:  22740.992 us/op
+                 sort·p0.9999: 22740.992 us/op
+                 sort·p1.00:   22740.992 us/op
+
+Iteration   3: 7242.654 ±(99.9%) 39.464 us/op
+                 sort·p0.00:   7168.000 us/op
+                 sort·p0.50:   7208.960 us/op
+                 sort·p0.90:   7282.688 us/op
+                 sort·p0.95:   7413.760 us/op
+                 sort·p0.99:   7562.691 us/op
+                 sort·p0.999:  15253.504 us/op
+                 sort·p0.9999: 15253.504 us/op
+                 sort·p1.00:   15253.504 us/op
+
+Iteration   4: 7225.190 ±(99.9%) 113.672 us/op
+                 sort·p0.00:   7127.040 us/op
+                 sort·p0.50:   7168.000 us/op
+                 sort·p0.90:   7258.112 us/op
+                 sort·p0.95:   7364.608 us/op
+                 sort·p0.99:   7595.131 us/op
+                 sort·p0.999:  30900.224 us/op
+                 sort·p0.9999: 30900.224 us/op
+                 sort·p1.00:   30900.224 us/op
+
+Iteration   5: 7288.468 ±(99.9%) 40.355 us/op
+                 sort·p0.00:   7225.344 us/op
+                 sort·p0.50:   7258.112 us/op
+                 sort·p0.90:   7315.456 us/op
+                 sort·p0.95:   7389.184 us/op
+                 sort·p0.99:   7570.473 us/op
+                 sort·p0.999:  15499.264 us/op
+                 sort·p0.9999: 15499.264 us/op
+                 sort·p1.00:   15499.264 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 20.00% complete, ETA 00:04:07
+# Fork: 3 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8185.755 ±(99.9%) 2116.029 us/op
+# Warmup Iteration   2: 7851.683 ±(99.9%) 1959.554 us/op
+# Warmup Iteration   3: 7399.257 ±(99.9%) 508.667 us/op
+# Warmup Iteration   4: 7351.573 ±(99.9%) 214.949 us/op
+# Warmup Iteration   5: 7387.377 ±(99.9%) 461.498 us/op
+Iteration   1: 7294.049 ±(99.9%) 167.200 us/op
+                 sort·p0.00:   7143.424 us/op
+                 sort·p0.50:   7184.384 us/op
+                 sort·p0.90:   7274.496 us/op
+                 sort·p0.95:   7403.110 us/op
+                 sort·p0.99:   7726.203 us/op
+                 sort·p0.999:  37486.592 us/op
+                 sort·p0.9999: 37486.592 us/op
+                 sort·p1.00:   37486.592 us/op
+
+Iteration   2: 7256.400 ±(99.9%) 74.568 us/op
+                 sort·p0.00:   7168.000 us/op
+                 sort·p0.50:   7217.152 us/op
+                 sort·p0.90:   7290.880 us/op
+                 sort·p0.95:   7409.664 us/op
+                 sort·p0.99:   7561.216 us/op
+                 sort·p0.999:  22675.456 us/op
+                 sort·p0.9999: 22675.456 us/op
+                 sort·p1.00:   22675.456 us/op
+
+Iteration   3: 7233.014 ±(99.9%) 39.493 us/op
+                 sort·p0.00:   7159.808 us/op
+                 sort·p0.50:   7200.768 us/op
+                 sort·p0.90:   7299.072 us/op
+                 sort·p0.95:   7421.952 us/op
+                 sort·p0.99:   7570.719 us/op
+                 sort·p0.999:  15220.736 us/op
+                 sort·p0.9999: 15220.736 us/op
+                 sort·p1.00:   15220.736 us/op
+
+Iteration   4: 7215.722 ±(99.9%) 113.257 us/op
+                 sort·p0.00:   7118.848 us/op
+                 sort·p0.50:   7159.808 us/op
+                 sort·p0.90:   7225.344 us/op
+                 sort·p0.95:   7323.648 us/op
+                 sort·p0.99:   7488.963 us/op
+                 sort·p0.999:  30867.456 us/op
+                 sort·p0.9999: 30867.456 us/op
+                 sort·p1.00:   30867.456 us/op
+
+Iteration   5: 7269.590 ±(99.9%) 40.845 us/op
+                 sort·p0.00:   7192.576 us/op
+                 sort·p0.50:   7233.536 us/op
+                 sort·p0.90:   7323.648 us/op
+                 sort·p0.95:   7451.034 us/op
+                 sort·p0.99:   7636.746 us/op
+                 sort·p0.999:  15515.648 us/op
+                 sort·p0.9999: 15515.648 us/op
+                 sort·p1.00:   15515.648 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 30.00% complete, ETA 00:03:36
+# Fork: 4 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8170.647 ±(99.9%) 2109.152 us/op
+# Warmup Iteration   2: 7839.871 ±(99.9%) 1963.471 us/op
+# Warmup Iteration   3: 7408.966 ±(99.9%) 512.447 us/op
+# Warmup Iteration   4: 7334.096 ±(99.9%) 211.140 us/op
+# Warmup Iteration   5: 7394.003 ±(99.9%) 465.521 us/op
+Iteration   1: 7341.018 ±(99.9%) 168.297 us/op
+                 sort·p0.00:   7192.576 us/op
+                 sort·p0.50:   7233.536 us/op
+                 sort·p0.90:   7323.648 us/op
+                 sort·p0.95:   7438.336 us/op
+                 sort·p0.99:   7708.508 us/op
+                 sort·p0.999:  37486.592 us/op
+                 sort·p0.9999: 37486.592 us/op
+                 sort·p1.00:   37486.592 us/op
+
+Iteration   2: 7278.121 ±(99.9%) 74.879 us/op
+                 sort·p0.00:   7192.576 us/op
+                 sort·p0.50:   7233.536 us/op
+                 sort·p0.90:   7299.072 us/op
+                 sort·p0.95:   7397.376 us/op
+                 sort·p0.99:   7611.351 us/op
+                 sort·p0.999:  22708.224 us/op
+                 sort·p0.9999: 22708.224 us/op
+                 sort·p1.00:   22708.224 us/op
+
+Iteration   3: 7252.393 ±(99.9%) 40.582 us/op
+                 sort·p0.00:   7176.192 us/op
+                 sort·p0.50:   7225.344 us/op
+                 sort·p0.90:   7282.688 us/op
+                 sort·p0.95:   7372.800 us/op
+                 sort·p0.99:   7567.770 us/op
+                 sort·p0.999:  15532.032 us/op
+                 sort·p0.9999: 15532.032 us/op
+                 sort·p1.00:   15532.032 us/op
+
+Iteration   4: 7270.924 ±(99.9%) 115.205 us/op
+                 sort·p0.00:   7168.000 us/op
+                 sort·p0.50:   7217.152 us/op
+                 sort·p0.90:   7291.699 us/op
+                 sort·p0.95:   7421.952 us/op
+                 sort·p0.99:   7610.368 us/op
+                 sort·p0.999:  31129.600 us/op
+                 sort·p0.9999: 31129.600 us/op
+                 sort·p1.00:   31129.600 us/op
+
+Iteration   5: 7276.189 ±(99.9%) 40.985 us/op
+                 sort·p0.00:   7192.576 us/op
+                 sort·p0.50:   7241.728 us/op
+                 sort·p0.90:   7331.840 us/op
+                 sort·p0.95:   7462.912 us/op
+                 sort·p0.99:   7635.927 us/op
+                 sort·p0.999:  15532.032 us/op
+                 sort·p0.9999: 15532.032 us/op
+                 sort·p1.00:   15532.032 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 40.00% complete, ETA 00:03:05
+# Fork: 5 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8189.516 ±(99.9%) 2108.721 us/op
+# Warmup Iteration   2: 7896.256 ±(99.9%) 1967.408 us/op
+# Warmup Iteration   3: 7399.864 ±(99.9%) 511.895 us/op
+# Warmup Iteration   4: 7397.376 ±(99.9%) 216.616 us/op
+# Warmup Iteration   5: 7386.413 ±(99.9%) 462.259 us/op
+Iteration   1: 7321.585 ±(99.9%) 167.531 us/op
+                 sort·p0.00:   7159.808 us/op
+                 sort·p0.50:   7208.960 us/op
+                 sort·p0.90:   7315.456 us/op
+                 sort·p0.95:   7430.144 us/op
+                 sort·p0.99:   7687.700 us/op
+                 sort·p0.999:  37552.128 us/op
+                 sort·p0.9999: 37552.128 us/op
+                 sort·p1.00:   37552.128 us/op
+
+Iteration   2: 7248.650 ±(99.9%) 74.707 us/op
+                 sort·p0.00:   7159.808 us/op
+                 sort·p0.50:   7208.960 us/op
+                 sort·p0.90:   7266.304 us/op
+                 sort·p0.95:   7347.405 us/op
+                 sort·p0.99:   7513.539 us/op
+                 sort·p0.999:  22740.992 us/op
+                 sort·p0.9999: 22740.992 us/op
+                 sort·p1.00:   22740.992 us/op
+
+Iteration   3: 7253.677 ±(99.9%) 39.551 us/op
+                 sort·p0.00:   7176.192 us/op
+                 sort·p0.50:   7225.344 us/op
+                 sort·p0.90:   7299.072 us/op
+                 sort·p0.95:   7417.856 us/op
+                 sort·p0.99:   7530.906 us/op
+                 sort·p0.999:  15286.272 us/op
+                 sort·p0.9999: 15286.272 us/op
+                 sort·p1.00:   15286.272 us/op
+
+Iteration   4: 7234.176 ±(99.9%) 113.026 us/op
+                 sort·p0.00:   7127.040 us/op
+                 sort·p0.50:   7176.192 us/op
+                 sort·p0.90:   7258.112 us/op
+                 sort·p0.95:   7380.992 us/op
+                 sort·p0.99:   7578.255 us/op
+                 sort·p0.999:  30736.384 us/op
+                 sort·p0.9999: 30736.384 us/op
+                 sort·p1.00:   30736.384 us/op
+
+Iteration   5: 7281.806 ±(99.9%) 40.162 us/op
+                 sort·p0.00:   7208.960 us/op
+                 sort·p0.50:   7249.920 us/op
+                 sort·p0.90:   7307.264 us/op
+                 sort·p0.95:   7389.184 us/op
+                 sort·p0.99:   7604.142 us/op
+                 sort·p0.999:  15433.728 us/op
+                 sort·p0.9999: 15433.728 us/op
+                 sort·p1.00:   15433.728 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 50.00% complete, ETA 00:02:34
+# Fork: 6 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8177.362 ±(99.9%) 2108.936 us/op
+# Warmup Iteration   2: 7881.472 ±(99.9%) 1978.194 us/op
+# Warmup Iteration   3: 7402.413 ±(99.9%) 511.017 us/op
+# Warmup Iteration   4: 7399.002 ±(99.9%) 219.707 us/op
+# Warmup Iteration   5: 7428.566 ±(99.9%) 467.513 us/op
+Iteration   1: 7344.399 ±(99.9%) 167.924 us/op
+                 sort·p0.00:   7192.576 us/op
+                 sort·p0.50:   7233.536 us/op
+                 sort·p0.90:   7331.840 us/op
+                 sort·p0.95:   7454.720 us/op
+                 sort·p0.99:   7706.214 us/op
+                 sort·p0.999:  37552.128 us/op
+                 sort·p0.9999: 37552.128 us/op
+                 sort·p1.00:   37552.128 us/op
+
+Iteration   2: 7241.906 ±(99.9%) 73.803 us/op
+                 sort·p0.00:   7159.808 us/op
+                 sort·p0.50:   7200.768 us/op
+                 sort·p0.90:   7274.496 us/op
+                 sort·p0.95:   7380.992 us/op
+                 sort·p0.99:   7570.145 us/op
+                 sort·p0.999:  22511.616 us/op
+                 sort·p0.9999: 22511.616 us/op
+                 sort·p1.00:   22511.616 us/op
+
+Iteration   3: 7240.068 ±(99.9%) 39.159 us/op
+                 sort·p0.00:   7168.000 us/op
+                 sort·p0.50:   7208.960 us/op
+                 sort·p0.90:   7299.072 us/op
+                 sort·p0.95:   7380.992 us/op
+                 sort·p0.99:   7620.526 us/op
+                 sort·p0.999:  15171.584 us/op
+                 sort·p0.9999: 15171.584 us/op
+                 sort·p1.00:   15171.584 us/op
+
+Iteration   4: 7258.635 ±(99.9%) 115.244 us/op
+                 sort·p0.00:   7135.232 us/op
+                 sort·p0.50:   7176.192 us/op
+                 sort·p0.90:   7348.224 us/op
+                 sort·p0.95:   7532.544 us/op
+                 sort·p0.99:   7931.494 us/op
+                 sort·p0.999:  30932.992 us/op
+                 sort·p0.9999: 30932.992 us/op
+                 sort·p1.00:   30932.992 us/op
+
+Iteration   5: 7293.424 ±(99.9%) 40.962 us/op
+                 sort·p0.00:   7217.152 us/op
+                 sort·p0.50:   7258.112 us/op
+                 sort·p0.90:   7348.224 us/op
+                 sort·p0.95:   7460.045 us/op
+                 sort·p0.99:   7620.690 us/op
+                 sort·p0.999:  15548.416 us/op
+                 sort·p0.9999: 15548.416 us/op
+                 sort·p1.00:   15548.416 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 60.00% complete, ETA 00:02:03
+# Fork: 7 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8217.516 ±(99.9%) 2112.086 us/op
+# Warmup Iteration   2: 7882.368 ±(99.9%) 1974.861 us/op
+# Warmup Iteration   3: 7486.578 ±(99.9%) 504.837 us/op
+# Warmup Iteration   4: 7384.727 ±(99.9%) 219.571 us/op
+# Warmup Iteration   5: 7378.221 ±(99.9%) 460.170 us/op
+Iteration   1: 7385.687 ±(99.9%) 169.417 us/op
+                 sort·p0.00:   7233.536 us/op
+                 sort·p0.50:   7274.496 us/op
+                 sort·p0.90:   7380.992 us/op
+                 sort·p0.95:   7512.883 us/op
+                 sort·p0.99:   7812.383 us/op
+                 sort·p0.999:  37617.664 us/op
+                 sort·p0.9999: 37617.664 us/op
+                 sort·p1.00:   37617.664 us/op
+
+Iteration   2: 7210.189 ±(99.9%) 72.680 us/op
+                 sort·p0.00:   7118.848 us/op
+                 sort·p0.50:   7168.000 us/op
+                 sort·p0.90:   7241.728 us/op
+                 sort·p0.95:   7350.682 us/op
+                 sort·p0.99:   7529.431 us/op
+                 sort·p0.999:  22315.008 us/op
+                 sort·p0.9999: 22315.008 us/op
+                 sort·p1.00:   22315.008 us/op
+
+Iteration   3: 7294.671 ±(99.9%) 42.252 us/op
+                 sort·p0.00:   7225.344 us/op
+                 sort·p0.50:   7258.112 us/op
+                 sort·p0.90:   7315.456 us/op
+                 sort·p0.95:   7435.878 us/op
+                 sort·p0.99:   7662.961 us/op
+                 sort·p0.999:  15515.648 us/op
+                 sort·p0.9999: 15515.648 us/op
+                 sort·p1.00:   15515.648 us/op
+
+Iteration   4: 7274.591 ±(99.9%) 116.399 us/op
+                 sort·p0.00:   7176.192 us/op
+                 sort·p0.50:   7217.152 us/op
+                 sort·p0.90:   7292.518 us/op
+                 sort·p0.95:   7415.398 us/op
+                 sort·p0.99:   7578.583 us/op
+                 sort·p0.999:  31358.976 us/op
+                 sort·p0.9999: 31358.976 us/op
+                 sort·p1.00:   31358.976 us/op
+
+Iteration   5: 7226.859 ±(99.9%) 39.903 us/op
+                 sort·p0.00:   7151.616 us/op
+                 sort·p0.50:   7192.576 us/op
+                 sort·p0.90:   7282.688 us/op
+                 sort·p0.95:   7383.859 us/op
+                 sort·p0.99:   7578.173 us/op
+                 sort·p0.999:  15335.424 us/op
+                 sort·p0.9999: 15335.424 us/op
+                 sort·p1.00:   15335.424 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 70.00% complete, ETA 00:01:32
+# Fork: 8 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8170.513 ±(99.9%) 2109.228 us/op
+# Warmup Iteration   2: 7850.857 ±(99.9%) 1956.145 us/op
+# Warmup Iteration   3: 7409.573 ±(99.9%) 507.423 us/op
+# Warmup Iteration   4: 7386.732 ±(99.9%) 209.239 us/op
+# Warmup Iteration   5: 7405.811 ±(99.9%) 468.632 us/op
+Iteration   1: 7349.465 ±(99.9%) 167.972 us/op
+                 sort·p0.00:   7192.576 us/op
+                 sort·p0.50:   7233.536 us/op
+                 sort·p0.90:   7348.224 us/op
+                 sort·p0.95:   7454.720 us/op
+                 sort·p0.99:   7795.589 us/op
+                 sort·p0.999:  37486.592 us/op
+                 sort·p0.9999: 37486.592 us/op
+                 sort·p1.00:   37486.592 us/op
+
+Iteration   2: 7234.686 ±(99.9%) 73.609 us/op
+                 sort·p0.00:   7159.808 us/op
+                 sort·p0.50:   7192.576 us/op
+                 sort·p0.90:   7258.112 us/op
+                 sort·p0.95:   7326.925 us/op
+                 sort·p0.99:   7569.408 us/op
+                 sort·p0.999:  22511.616 us/op
+                 sort·p0.9999: 22511.616 us/op
+                 sort·p1.00:   22511.616 us/op
+
+Iteration   3: 7311.995 ±(99.9%) 41.873 us/op
+                 sort·p0.00:   7233.536 us/op
+                 sort·p0.50:   7274.496 us/op
+                 sort·p0.90:   7368.704 us/op
+                 sort·p0.95:   7505.920 us/op
+                 sort·p0.99:   7670.170 us/op
+                 sort·p0.999:  15728.640 us/op
+                 sort·p0.9999: 15728.640 us/op
+                 sort·p1.00:   15728.640 us/op
+
+Iteration   4: 7226.563 ±(99.9%) 113.479 us/op
+                 sort·p0.00:   7118.848 us/op
+                 sort·p0.50:   7168.000 us/op
+                 sort·p0.90:   7249.920 us/op
+                 sort·p0.95:   7348.224 us/op
+                 sort·p0.99:   7590.380 us/op
+                 sort·p0.999:  30867.456 us/op
+                 sort·p0.9999: 30867.456 us/op
+                 sort·p1.00:   30867.456 us/op
+
+Iteration   5: 7299.562 ±(99.9%) 40.680 us/op
+                 sort·p0.00:   7225.344 us/op
+                 sort·p0.50:   7266.304 us/op
+                 sort·p0.90:   7340.032 us/op
+                 sort·p0.95:   7419.494 us/op
+                 sort·p0.99:   7668.859 us/op
+                 sort·p0.999:  15515.648 us/op
+                 sort·p0.9999: 15515.648 us/op
+                 sort·p1.00:   15515.648 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 80.00% complete, ETA 00:01:01
+# Fork: 9 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8178.100 ±(99.9%) 2105.081 us/op
+# Warmup Iteration   2: 7887.872 ±(99.9%) 1967.448 us/op
+# Warmup Iteration   3: 7449.016 ±(99.9%) 508.957 us/op
+# Warmup Iteration   4: 7355.639 ±(99.9%) 216.333 us/op
+# Warmup Iteration   5: 7376.294 ±(99.9%) 450.479 us/op
+Iteration   1: 7374.286 ±(99.9%) 169.810 us/op
+                 sort·p0.00:   7217.152 us/op
+                 sort·p0.50:   7258.112 us/op
+                 sort·p0.90:   7365.427 us/op
+                 sort·p0.95:   7487.488 us/op
+                 sort·p0.99:   7723.745 us/op
+                 sort·p0.999:  37748.736 us/op
+                 sort·p0.9999: 37748.736 us/op
+                 sort·p1.00:   37748.736 us/op
+
+Iteration   2: 7248.377 ±(99.9%) 124.318 us/op
+                 sort·p0.00:   7143.424 us/op
+                 sort·p0.50:   7192.576 us/op
+                 sort·p0.90:   7266.304 us/op
+                 sort·p0.95:   7380.992 us/op
+                 sort·p0.99:   7561.216 us/op
+                 sort·p0.999:  33095.680 us/op
+                 sort·p0.9999: 33095.680 us/op
+                 sort·p1.00:   33095.680 us/op
+
+Iteration   3: 7223.166 ±(99.9%) 38.882 us/op
+                 sort·p0.00:   7151.616 us/op
+                 sort·p0.50:   7192.576 us/op
+                 sort·p0.90:   7274.496 us/op
+                 sort·p0.95:   7372.800 us/op
+                 sort·p0.99:   7610.941 us/op
+                 sort·p0.999:  15106.048 us/op
+                 sort·p0.9999: 15106.048 us/op
+                 sort·p1.00:   15106.048 us/op
+
+Iteration   4: 7223.012 ±(99.9%) 110.228 us/op
+                 sort·p0.00:   7127.040 us/op
+                 sort·p0.50:   7176.192 us/op
+                 sort·p0.90:   7241.728 us/op
+                 sort·p0.95:   7315.456 us/op
+                 sort·p0.99:   7487.488 us/op
+                 sort·p0.999:  30212.096 us/op
+                 sort·p0.9999: 30212.096 us/op
+                 sort·p1.00:   30212.096 us/op
+
+Iteration   5: 7291.632 ±(99.9%) 40.893 us/op
+                 sort·p0.00:   7208.960 us/op
+                 sort·p0.50:   7258.112 us/op
+                 sort·p0.90:   7356.416 us/op
+                 sort·p0.95:   7476.429 us/op
+                 sort·p0.99:   7652.393 us/op
+                 sort·p0.999:  15532.032 us/op
+                 sort·p0.9999: 15532.032 us/op
+                 sort·p1.00:   15532.032 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+# Run progress: 90.00% complete, ETA 00:00:30
+# Fork: 10 of 10
+# Preparing profilers: LinuxAffinityHelperProfiler 
+# Warmup Iteration   1: 8200.595 ±(99.9%) 2107.681 us/op
+# Warmup Iteration   2: 7937.152 ±(99.9%) 1969.908 us/op
+# Warmup Iteration   3: 7502.537 ±(99.9%) 504.297 us/op
+# Warmup Iteration   4: 7409.148 ±(99.9%) 222.517 us/op
+# Warmup Iteration   5: 7377.619 ±(99.9%) 467.373 us/op
+Iteration   1: 7337.097 ±(99.9%) 168.972 us/op
+                 sort·p0.00:   7176.192 us/op
+                 sort·p0.50:   7225.344 us/op
+                 sort·p0.90:   7331.840 us/op
+                 sort·p0.95:   7436.698 us/op
+                 sort·p0.99:   7762.248 us/op
+                 sort·p0.999:  37748.736 us/op
+                 sort·p0.9999: 37748.736 us/op
+                 sort·p1.00:   37748.736 us/op
+
+Iteration   2: 7282.891 ±(99.9%) 123.725 us/op
+                 sort·p0.00:   7184.384 us/op
+                 sort·p0.50:   7225.344 us/op
+                 sort·p0.90:   7315.456 us/op
+                 sort·p0.95:   7405.568 us/op
+                 sort·p0.99:   7595.950 us/op
+                 sort·p0.999:  32899.072 us/op
+                 sort·p0.9999: 32899.072 us/op
+                 sort·p1.00:   32899.072 us/op
+
+Iteration   3: 7226.705 ±(99.9%) 38.492 us/op
+                 sort·p0.00:   7151.616 us/op
+                 sort·p0.50:   7192.576 us/op
+                 sort·p0.90:   7258.112 us/op
+                 sort·p0.95:   7367.475 us/op
+                 sort·p0.99:   7553.597 us/op
+                 sort·p0.999:  15073.280 us/op
+                 sort·p0.9999: 15073.280 us/op
+                 sort·p1.00:   15073.280 us/op
+
+Iteration   4: 7211.100 ±(99.9%) 108.938 us/op
+                 sort·p0.00:   7110.656 us/op
+                 sort·p0.50:   7159.808 us/op
+                 sort·p0.90:   7241.728 us/op
+                 sort·p0.95:   7358.874 us/op
+                 sort·p0.99:   7471.596 us/op
+                 sort·p0.999:  29949.952 us/op
+                 sort·p0.9999: 29949.952 us/op
+                 sort·p1.00:   29949.952 us/op
+
+Iteration   5: 7247.391 ±(99.9%) 39.670 us/op
+                 sort·p0.00:   7176.192 us/op
+                 sort·p0.50:   7208.960 us/op
+                 sort·p0.90:   7306.445 us/op
+                 sort·p0.95:   7430.144 us/op
+                 sort·p0.99:   7602.913 us/op
+                 sort·p0.999:  15269.888 us/op
+                 sort·p0.9999: 15269.888 us/op
+                 sort·p1.00:   15269.888 us/op
+
+# Processing profiler results: LinuxAffinityHelperProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.sort":
+  N = 34396
+  mean =   7268.237 ±(99.9%) 14.422 us/op
+
+  Histogram, us/op:
+    [    0.000,  2500.000) = 0 
+    [ 2500.000,  5000.000) = 0 
+    [ 5000.000,  7500.000) = 33534 
+    [ 7500.000, 10000.000) = 782 
+    [10000.000, 12500.000) = 0 
+    [12500.000, 15000.000) = 0 
+    [15000.000, 17500.000) = 40 
+    [17500.000, 20000.000) = 10 
+    [20000.000, 22500.000) = 1 
+    [22500.000, 25000.000) = 6 
+    [25000.000, 27500.000) = 0 
+    [27500.000, 30000.000) = 1 
+    [30000.000, 32500.000) = 9 
+    [32500.000, 35000.000) = 3 
+    [35000.000, 37500.000) = 4 
+
+  Percentiles, us/op:
+      p(0.0000) =   7077.888 us/op
+     p(50.0000) =   7217.152 us/op
+     p(90.0000) =   7307.264 us/op
+     p(95.0000) =   7405.568 us/op
+     p(99.0000) =   7610.368 us/op
+     p(99.9000) =  19320.111 us/op
+     p(99.9900) =  37654.384 us/op
+     p(99.9990) =  37748.736 us/op
+     p(99.9999) =  37748.736 us/op
+    p(100.0000) =  37748.736 us/op
+
+
+# Run complete. Total time: 00:05:09
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                                 (arraySize)    Mode    Cnt      Score    Error  Units
+ArrayCacheIntBenchmark.sort                  16777217  sample  34396   7268.237 ± 14.422  us/op
+ArrayCacheIntBenchmark.sort:sort·p0.00       16777217  sample          7077.888           us/op
+ArrayCacheIntBenchmark.sort:sort·p0.50       16777217  sample          7217.152           us/op
+ArrayCacheIntBenchmark.sort:sort·p0.90       16777217  sample          7307.264           us/op
+ArrayCacheIntBenchmark.sort:sort·p0.95       16777217  sample          7405.568           us/op
+ArrayCacheIntBenchmark.sort:sort·p0.99       16777217  sample          7610.368           us/op
+ArrayCacheIntBenchmark.sort:sort·p0.999      16777217  sample         19320.111           us/op
+ArrayCacheIntBenchmark.sort:sort·p0.9999     16777217  sample         37654.384           us/op
+ArrayCacheIntBenchmark.sort:sort·p1.00       16777217  sample         37748.736           us/op

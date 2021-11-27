@@ -5,3 +5,6 @@
 /nb-configuration.xml
 /src/main/java/TODO.txt
 /src/main/java/sun/java2d/marlin/FloatMathSree.java
+/test-bench/target/
+/test-bench/*.log
+
