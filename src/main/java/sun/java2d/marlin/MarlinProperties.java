@@ -261,6 +261,19 @@ public final class MarlinProperties {
                 10.0f);
     }
 
+    public static float getStrokerJoinError() {
+        final float def = (1.0f / MarlinConst.MIN_SUBPIXELS);
+        float err = getFloat("sun.java2d.renderer.stroker.joinError",
+                def,
+                -1.0f,
+                10.0f);
+        return (err < 0.0f) ? def : err;
+    }
+
+    public static int getStrokerJoinStyle() {
+        return getInteger("sun.java2d.renderer.stroker.joinStyle", -1, -1, 2);
+    }
+
     public static boolean isDoClip() {
         return getBoolean("sun.java2d.renderer.clip", "true");
     }
@@ -297,6 +310,14 @@ public final class MarlinProperties {
 
     public static boolean isDoChecks() {
         return getBoolean("sun.java2d.renderer.doChecks", "false");
+    }
+
+    public static boolean isSkipRenderer() {
+        return getBoolean("sun.java2d.renderer.skip_rdr", "false");
+    }
+
+    public static boolean isSkipRenderTiles() {
+        return getBoolean("sun.java2d.renderer.skip_pipe", "false");
     }
 
     // logging parameters

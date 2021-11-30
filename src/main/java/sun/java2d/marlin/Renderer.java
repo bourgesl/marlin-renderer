@@ -30,7 +30,7 @@ import jdk.internal.misc.Unsafe;
 
 final class Renderer implements DPathConsumer2D, MarlinConst {
 
-    static final boolean DISABLE_RENDER = false;
+    static final boolean DISABLE_RENDER = MarlinProperties.isSkipRenderer();
 
     static final boolean ENABLE_BLOCK_FLAGS = MarlinProperties.isUseTileFlags();
     static final boolean ENABLE_BLOCK_FLAGS_HEURISTICS = MarlinProperties.isUseTileFlagsWithHeuristics();
