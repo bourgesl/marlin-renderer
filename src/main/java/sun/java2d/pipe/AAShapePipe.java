@@ -50,9 +50,8 @@ public final class AAShapePipe
     
     // Per-thread TileState (~1K very small so do not use any Weak Reference)
     private static final ReentrantContextProvider<TileState> TILE_STATE_PROVIDER =
-            new ReentrantContextProviderTL<TileState>(
-                    ReentrantContextProvider.REF_HARD)
-            {
+            new ReentrantContextProviderTL<>(
+                    ReentrantContextProvider.REF_HARD) {
                 @Override
                 protected TileState newContext() {
                     return new TileState();

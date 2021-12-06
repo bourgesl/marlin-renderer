@@ -201,7 +201,7 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
             p2d = new Path2D.Double(WIND_NON_ZERO, INITIAL_EDGES_COUNT); // 32K
 
             // update weak reference:
-            refPath2D = new WeakReference<Path2D.Double>(p2d);
+            refPath2D = new WeakReference<>(p2d);
         }
         // reset the path anyway:
         p2d.reset();

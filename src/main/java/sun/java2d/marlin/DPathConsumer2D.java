@@ -29,30 +29,30 @@ public interface DPathConsumer2D {
     /**
      * @see java.awt.geom.Path2D.Float#moveTo
      */
-    public void moveTo(double x, double y);
+    void moveTo(double x, double y);
 
     /**
      * @see java.awt.geom.Path2D.Float#lineTo
      */
-    public void lineTo(double x, double y);
+    void lineTo(double x, double y);
 
     /**
      * @see java.awt.geom.Path2D.Float#quadTo
      */
-    public void quadTo(double x1, double y1,
-                       double x2, double y2);
+    void quadTo(double x1, double y1,
+                double x2, double y2);
 
     /**
      * @see java.awt.geom.Path2D.Float#curveTo
      */
-    public void curveTo(double x1, double y1,
-                        double x2, double y2,
-                        double x3, double y3);
+    void curveTo(double x1, double y1,
+                 double x2, double y2,
+                 double x3, double y3);
 
     /**
      * @see java.awt.geom.Path2D.Float#closePath
      */
-    public void closePath();
+    void closePath();
 
     /**
      * Called after the last segment of the last subpath when the
@@ -62,7 +62,7 @@ public interface DPathConsumer2D {
      * {@link java.awt.geom.PathIterator PathIterator}
      * returns {@code true} from its {@code done} method.
      */
-    public void pathDone();
+    void pathDone();
 
     /**
      * If a given PathConsumer performs all or most of its work
@@ -74,5 +74,5 @@ public interface DPathConsumer2D {
      * src/share/native/sun/java2d/pipe/PathConsumer2D.h
      * @return a native pointer to a PathConsumerVec structure.
      */
-    public long getNativeConsumer();
+    long getNativeConsumer();
 }

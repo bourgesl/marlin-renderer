@@ -784,9 +784,9 @@ final class MarlinTileGenerator implements AATileGenerator, MarlinConst {
     }
 
     static String hex(int v, int d) {
-        String s = Integer.toHexString(v);
+        StringBuilder s = new StringBuilder(Integer.toHexString(v));
         while (s.length() < d) {
-            s = "0" + s;
+            s.insert(0, "0");
         }
         return s.substring(0, d);
     }

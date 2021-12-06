@@ -61,7 +61,7 @@ final class OffHeapArray  {
         }
 
         // Register a cleaning function to ensure freeing off-heap memory:
-        CleanerFactory.cleaner().register(parent, () -> this.free());
+        CleanerFactory.cleaner().register(parent, this::free);
     }
 
     /*

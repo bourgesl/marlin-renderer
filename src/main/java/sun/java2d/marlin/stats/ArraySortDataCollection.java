@@ -46,7 +46,7 @@ public final class ArraySortDataCollection implements Serializable {
     private transient String filePath = null;
 
     public ArraySortDataCollection() {
-        data = new ArrayList(1000);
+        data = new ArrayList<>(1000);
     }
 
     public synchronized void addData(final int[] x, final int fromIndex, final int toIndex, final int sortedIndex) {
@@ -75,7 +75,7 @@ public final class ArraySortDataCollection implements Serializable {
             final ArraySortDataCollection dc = (ArraySortDataCollection) ois.readObject();
             dc.filePath = inputFile.getAbsolutePath();
 
-            System.out.println("Loaded: " + dc.toString());
+            System.out.println("Loaded: " + dc);
 
             return dc;
         } catch (Exception e) {
@@ -98,7 +98,7 @@ public final class ArraySortDataCollection implements Serializable {
         dc.filePath = outputFile.getAbsolutePath();
         ObjectOutputStream oos = null;
         try {
-            System.out.println("Writing " + dc.toString() + " to: " + dc.filePath);
+            System.out.println("Writing " + dc + " to: " + dc.filePath);
             oos = new ObjectOutputStream(new FileOutputStream(outputFile));
             oos.writeObject(dc);
         } catch (IOException ioe) {

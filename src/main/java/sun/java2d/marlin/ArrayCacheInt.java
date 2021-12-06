@@ -83,7 +83,7 @@ final class ArrayCacheInt {
             }
 
             // update weak reference:
-            refBuckets = new WeakReference<Bucket[]>(buckets);
+            refBuckets = new WeakReference<>(buckets);
         }
         return buckets;
     }
