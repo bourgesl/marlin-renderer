@@ -211,13 +211,7 @@ public class CeilAndFloorTests {
             {-Math.nextUp(0x1.0p22),                   -0x1.0p22},
 
             { Math.nextUp(0x1.0p22),                    0x1.0p22 + 1.0},
-            {-Math.nextDown(0x1.0p22),                 -0x1.0p22 + 1.0},
-
-            { Math.nextDown(0x1.0p23),                  0x1.0p23},
-            {-Math.nextUp(0x1.0p23),                   -0x1.0p23 - 1.0},
-
-            { Math.nextUp(0x1.0p23),                    0x1.0p23 + 1.0},
-            {-Math.nextDown(0x1.0p23),                 -0x1.0p23 + 1.0},
+            {-Math.nextDown(0x1.0p22),                 -0x1.0p22 + 1.0}
         };
 
         for(double[] testCase : testCases) {
