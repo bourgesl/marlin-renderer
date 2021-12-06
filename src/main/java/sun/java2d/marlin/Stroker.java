@@ -45,7 +45,6 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
     private static final double JOIN_ERROR = MarlinProperties.getStrokerJoinError();
     
     private static final double ROUND_JOIN_ERROR = 5.0 * JOIN_ERROR; // = 0,625
-    private static final double ROUND_JOIN_THRESHOLD = ROUND_JOIN_ERROR * ROUND_JOIN_ERROR;
     
     private static final int JOIN_STYLE = MarlinProperties.getStrokerJoinStyle();
 
@@ -69,7 +68,7 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
     private final double[] offset2 = new double[2];
     private final double[] miter = new double[2];
     private double miterLimitSq;
-    private double miterLimitSqMin;
+    private double joinLimitMinSq;
 
     private int prev;
 
@@ -153,7 +152,7 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
     Stroker init(final DPathConsumer2D pc2d,
                   final double lineWidth,
                   final int capStyle,
-                  int joinStyle,
+                  final int joinStyle,
                   final double miterLimit,
                   final boolean subdivideCurves)
     {
@@ -164,18 +163,25 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         this.monotonize = subdivideCurves;
 
         this.capStyle = capStyle;
-        if (JOIN_STYLE != -1) {
-            joinStyle = JOIN_STYLE;
-        }
-        this.joinStyle = joinStyle;
+        this.joinStyle = (JOIN_STYLE != -1) ? JOIN_STYLE : joinStyle;
 
         double miterScaledLimit = 0.0;
+
         if (joinStyle == JOIN_MITER) {
             miterScaledLimit = miterLimit * lineWidth2;
             this.miterLimitSq = miterScaledLimit * miterScaledLimit;
 
-            final double limitMin = lineWidth2 + JOIN_ERROR;
-            this.miterLimitSqMin = limitMin * limitMin;
+            final double limitMin = lineWidth2
+                    + ((this.rdrCtx.clipInvScale == 0.0d) ? JOIN_ERROR
+                            : (JOIN_ERROR * this.rdrCtx.clipInvScale));
+
+            this.joinLimitMinSq = limitMin * limitMin;
+
+        } else if (joinStyle == JOIN_ROUND) {
+            final double limitMin = ((this.rdrCtx.clipInvScale == 0.0d) ? ROUND_JOIN_ERROR
+                            : (ROUND_JOIN_ERROR * this.rdrCtx.clipInvScale));
+
+            this.joinLimitMinSq = limitMin * limitMin;
         }
         this.prev = CLOSE;
 
@@ -289,7 +295,7 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         final double domy = omy - my;
         final double lenSq = domx * domx + domy * domy;
 
-        if (lenSq < ROUND_JOIN_THRESHOLD) {
+        if (lenSq < joinLimitMinSq) {
             return;
         }
         if (rev) {
@@ -494,7 +500,7 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         // thing is that -inf is not possible, because lenSq is a square).
         // For both of those values, the comparison below will fail and
         // no miter will be drawn, which is correct.
-        if ((lenSq < miterLimitSq) && (lenSq >= miterLimitSqMin)) {
+        if ((lenSq < miterLimitSq) && (lenSq >= joinLimitMinSq)) {
             emitLineTo(miterX, miterY, rev);
         }
     }
@@ -856,9 +862,29 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         final double x3 = pts[off + 4]; final double y3 = pts[off + 5];
         final double x4 = pts[off + 6]; final double y4 = pts[off + 7];
 
+       if (DEBUG_CUBIC_INFO) {
+            if ((437.4173312717014 == pts[off])
+                    && (45.489651150173614 == pts[off + 1])) 
+            {
+                System.out.println("Bad case ?");
+            }
+            MarlinUtils.logInfo("Stroker.computeOffsetCubic("
+                    + pts[off] + ", " + pts[off + 1] + ", "
+                    + pts[off + 2] + ", " + pts[off + 3] + ", "
+                    + pts[off + 4] + ", " + pts[off + 5] + ", "
+                    + pts[off + 6] + ", " + pts[off + 7] + ");");
+       }
         double dx1 = x2 - x1; double dy1 = y2 - y1;
         double dx4 = x4 - x3; double dy4 = y4 - y3;
 
+       if (DEBUG_CUBIC_INFO) {
+            System.out.println("dx1: "+dx1);
+            System.out.println("dy1: "+dy1);
+            System.out.println("th: "+(6.0d * Math.ulp(y2)));
+            System.out.println("dx4: "+dx4);
+            System.out.println("dy4: "+dy4);
+            System.out.println("th: "+(6.0d * Math.ulp(y4)));
+       }
         // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
         // in which case ignore if p1 == p2
         final boolean p1eqp2 = Helpers.withinD(dx1, dy1, 6.0d * Math.ulp(y2));
@@ -880,6 +906,19 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         final double l1sq = dx1 * dx1 + dy1 * dy1;
         final double l4sq = dx4 * dx4 + dy4 * dy4;
 
+        if (DEBUG_CUBIC_INFO) {
+            System.out.println("dotsq: "+dotsq);
+            System.out.println("l1sq: "+l1sq);
+            System.out.println("l4sq: "+l4sq);
+
+            System.out.println("l1sq * l4sq: "+(l1sq * l4sq));
+            System.out.println("th: "+(4.0d * Math.ulp(dotsq)));
+            
+            final double th = Math.max(1e-15, 4.0d * Math.ulp(dotsq));
+            System.out.println("th fixed: "+th);
+        }
+        
+//        if (Helpers.within(dotsq, l1sq * l4sq, th)) {
         if (Helpers.within(dotsq, l1sq * l4sq, 4.0d * Math.ulp(dotsq))) {
             return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
         }
@@ -1156,6 +1195,8 @@ if (false) {
         _curveTo(x1, y1, x2, y2, x3, y3, outcode0);
     }
 
+    private final static boolean DEBUG_CUBIC_INFO = false;
+
     private void _curveTo(final double x1, final double y1,
                           final double x2, final double y2,
                           final double x3, final double y3,
@@ -1232,6 +1273,13 @@ if (false) {
 
         int kind = 0;
         for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
+            if (DEBUG_CUBIC_INFO) {
+                MarlinUtils.logInfo("Stroker._curveTo(): p.curveTo(" 
+                        + mid[off] + ", " + mid[off + 1] + ", "
+                        + mid[off + 2] + ", " + mid[off + 3]  + ", " 
+                        + mid[off + 4] + ", " + mid[off + 5]  + ", " 
+                        + mid[off + 6] + ", " + mid[off + 7] + ");");
+            }
             kind = computeOffsetCubic(mid, off, l, r);
 
             emitLineTo(l[0], l[1]);
