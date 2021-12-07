@@ -43,8 +43,8 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
     
     // join threshold = 1 subpixel (1/8th pixel):
     private static final double JOIN_ERROR = MarlinProperties.getStrokerJoinError();
-    
-    private static final double ROUND_JOIN_ERROR = 5.0 * JOIN_ERROR; // = 0,625
+
+    private static final double ROUND_JOIN_ERROR = 8.0 * JOIN_ERROR; // (8 h)
     
     private static final int JOIN_STYLE = MarlinProperties.getStrokerJoinStyle();
 
@@ -171,17 +171,25 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
             miterScaledLimit = miterLimit * lineWidth2;
             this.miterLimitSq = miterScaledLimit * miterScaledLimit;
 
-            final double limitMin = lineWidth2
-                    + ((this.rdrCtx.clipInvScale == 0.0d) ? JOIN_ERROR
-                            : (JOIN_ERROR * this.rdrCtx.clipInvScale));
+            final double limitMin = ((this.rdrCtx.clipInvScale == 0.0d) ? JOIN_ERROR
+                    : (JOIN_ERROR * this.rdrCtx.clipInvScale))
+                    + lineWidth2;
 
             this.joinLimitMinSq = limitMin * limitMin;
 
         } else if (joinStyle == JOIN_ROUND) {
-            final double limitMin = ((this.rdrCtx.clipInvScale == 0.0d) ? ROUND_JOIN_ERROR
-                            : (ROUND_JOIN_ERROR * this.rdrCtx.clipInvScale));
+            // chord:  s = 2 r * sin( phi / 2)
+            // height: h = 2 r * sin( phi / 4)^2
+            // small angles (phi < 90):
+            // h = s² / (8 r)
+            // so s² = (8 h * r)
 
-            this.joinLimitMinSq = limitMin * limitMin;
+            // height max (note ROUND_JOIN_ERROR = 8 * JOIN_ERROR)
+            final double limitMin = ((this.rdrCtx.clipInvScale == 0.0d) ? ROUND_JOIN_ERROR
+                    : (ROUND_JOIN_ERROR * this.rdrCtx.clipInvScale));
+
+            // chord limit (s²): 
+            this.joinLimitMinSq = limitMin * this.lineWidth2;
         }
         this.prev = CLOSE;
 
