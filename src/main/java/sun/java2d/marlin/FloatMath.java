@@ -33,11 +33,6 @@ public final class FloatMath implements MarlinConst {
     // overflow / NaN handling enabled:
     static final boolean CHECK_OVERFLOW = true;
     static final boolean CHECK_NAN = true;
-    // Copied from sun.misc.FloatConsts:
-    public static final int FLOAT_SIGNIFICAND_WIDTH = 24;   // sun.misc.FloatConsts.SIGNIFICAND_WIDTH
-    public static final int FLOAT_EXP_BIAS = 127;           // sun.misc.FloatConsts.EXP_BIAS
-    public static final int FLOAT_EXP_BIT_MASK = 2139095040;// sun.misc.FloatConsts.EXP_BIT_MASK
-    public static final int FLOAT_SIGNIF_BIT_MASK = 8388607;// sun.misc.FloatConsts.SIGNIF_BIT_MASK
 
     private FloatMath() {
         // utility class

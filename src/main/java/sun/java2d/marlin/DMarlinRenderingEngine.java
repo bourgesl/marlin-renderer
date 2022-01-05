@@ -1239,7 +1239,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinProperties.getStrokerJoinError());
         logInfo("sun.java2d.renderer.stroker.joinStyle= "
                 + MarlinProperties.getStrokerJoinStyle());
-        
+
         logInfo("sun.java2d.renderer.clip             = "
                 + MarlinProperties.isDoClip());
         logInfo("sun.java2d.renderer.clip.runtime.enable = "
@@ -1262,7 +1262,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 + MarlinProperties.isSkipRenderer());
         logInfo("sun.java2d.renderer.skip_pipe        = "
                 + MarlinProperties.isSkipRenderTiles());
-        
+
         // logging parameters
         logInfo("sun.java2d.renderer.useLogger        = "
                 + MarlinConst.USE_LOGGER);

@@ -47,7 +47,7 @@ public final class AAShapePipe
     static final RenderingEngine RDR_ENGINE = RenderingEngine.getInstance();
 
     private static final boolean DO_RENDER = !sun.java2d.marlin.MarlinProperties.isSkipRenderTiles();
-    
+
     // Per-thread TileState (~1K very small so do not use any Weak Reference)
     private static final ReentrantContextProvider<TileState> TILE_STATE_PROVIDER =
             new ReentrantContextProviderTL<>(

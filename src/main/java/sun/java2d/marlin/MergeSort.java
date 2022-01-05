@@ -64,7 +64,8 @@ final class MergeSort {
                                 final int insertionSortIndex,
                                 final boolean skipISort,
                                 final DPQSSorterContext sorter,
-                                final boolean useDPQS) {
+                                final boolean useDPQS)
+    {
         // Gather array data:
         if (RendererStats.DUMP_ARRAY_DATA && !useDPQS && !skipISort) {
             // Copy presorted data from auxX to x:
@@ -134,7 +135,8 @@ final class MergeSort {
     private static void mergeSort(final int[] refX, final int[] refY,
                                   final int[] srcX, final int[] dstX,
                                   final int[] srcY, final int[] dstY,
-                                  final int low, final int high) {
+                                  final int low, final int high)
+    {
         final int length = high - low;
 
         /*
@@ -165,6 +167,7 @@ final class MergeSort {
         }
 
         // Recursively sort halves of dest into src
+
         // note: use signed shift (not >>>) for performance
         // as indices are small enough to exceed Integer.MAX_VALUE
         final int mid = (low + high) >> 1;

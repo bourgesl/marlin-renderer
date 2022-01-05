@@ -40,12 +40,12 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
     private static final int MOVE_TO = 0;
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
     private static final int CLOSE = 2;
-    
+
     // join threshold = 1 subpixel (1/8th pixel):
     private static final double JOIN_ERROR = MarlinProperties.getStrokerJoinError();
 
     private static final double ROUND_JOIN_ERROR = 8.0 * JOIN_ERROR; // (8 h)
-    
+
     private static final int JOIN_STYLE = MarlinProperties.getStrokerJoinStyle();
 
     // kappa = (4/3) * (SQRT(2) - 1)
@@ -53,7 +53,7 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
 
     // SQRT(2)
     private static final double SQRT_2 = Math.sqrt(2.0d);
-    
+
     // members:
     private DPathConsumer2D out;
 
@@ -188,7 +188,7 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
             final double limitMin = ((this.rdrCtx.clipInvScale == 0.0d) ? ROUND_JOIN_ERROR
                     : (ROUND_JOIN_ERROR * this.rdrCtx.clipInvScale));
 
-            // chord limit (s²): 
+            // chord limit (s²):
             this.joinLimitMinSq = limitMin * this.lineWidth2;
         }
         this.prev = CLOSE;
@@ -872,7 +872,7 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
 
        if (DEBUG_CUBIC_INFO) {
             if ((437.4173312717014 == pts[off])
-                    && (45.489651150173614 == pts[off + 1])) 
+                    && (45.489651150173614 == pts[off + 1]))
             {
                 System.out.println("Bad case ?");
             }
@@ -921,11 +921,11 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
 
             System.out.println("l1sq * l4sq: "+(l1sq * l4sq));
             System.out.println("th: "+(4.0d * Math.ulp(dotsq)));
-            
+
             final double th = Math.max(1e-15, 4.0d * Math.ulp(dotsq));
             System.out.println("th fixed: "+th);
         }
-        
+
 //        if (Helpers.within(dotsq, l1sq * l4sq, th)) {
         if (Helpers.within(dotsq, l1sq * l4sq, 4.0d * Math.ulp(dotsq))) {
             return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
@@ -1282,10 +1282,10 @@ if (false) {
         int kind = 0;
         for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
             if (DEBUG_CUBIC_INFO) {
-                MarlinUtils.logInfo("Stroker._curveTo(): p.curveTo(" 
+                MarlinUtils.logInfo("Stroker._curveTo(): p.curveTo("
                         + mid[off] + ", " + mid[off + 1] + ", "
-                        + mid[off + 2] + ", " + mid[off + 3]  + ", " 
-                        + mid[off + 4] + ", " + mid[off + 5]  + ", " 
+                        + mid[off + 2] + ", " + mid[off + 3]  + ", "
+                        + mid[off + 4] + ", " + mid[off + 5]  + ", "
                         + mid[off + 6] + ", " + mid[off + 7] + ");");
             }
             kind = computeOffsetCubic(mid, off, l, r);

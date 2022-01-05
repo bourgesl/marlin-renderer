@@ -39,7 +39,7 @@ public final class TestArrayCacheInt {
     public static int testWidenCleanArrayCacheInt(final ContextWidenArray ctx, final int n) {
         return ctx.testWidenCleanArrayCacheInt(n);
     }
-    
+
     public static int testWidenArrayAlloc(final ContextWidenArray ctx, final int n) {
         return ctx.testWidenArrayAlloc(n);
     }
@@ -64,12 +64,12 @@ public final class TestArrayCacheInt {
         // clean variants:
         private final ArrayCacheIntClean.Reference edgePtrs_ref_Cl;
         private int[] edgePtrs_Cl;
-        
-        
+
+
         public ContextWidenArray() {
             edgePtrs_ref = /* rdrCtx. */ newDirtyIntArrayRef(INITIAL_CAPACITY);
             edgePtrs = edgePtrs_ref.initial;
-            
+
             edgePtrs_ref_Cl = /* rdrCtx. */ newCleanIntArrayRef(INITIAL_CAPACITY);
             edgePtrs_Cl = edgePtrs_ref_Cl.initial;
         }
@@ -127,7 +127,7 @@ public final class TestArrayCacheInt {
             // real work:
             int sum = 0;
             int ptrEnd = 0;
-            
+
             for (int i = edgePtrsLen; i <= max; i *= 2) {
                 ptrEnd = i;
 
@@ -197,8 +197,8 @@ public final class TestArrayCacheInt {
 
             return sum;
         }
-        
-        /* from OpenJDK8u: 
+
+        /* from OpenJDK8u:
             https://github.com/openjdk/jdk8u/blob/master/jdk/src/share/classes/sun/java2d/pisces/Helpers.java
 */
         static int[] widenArray(int[] in, final int cursize, final int numToAdd) {
@@ -206,7 +206,7 @@ public final class TestArrayCacheInt {
                  return in;
              }
              return Arrays.copyOf(in, 2 * (cursize + numToAdd));
-         }    
+         }
     }
 
     public static void main(String[] unused) {
