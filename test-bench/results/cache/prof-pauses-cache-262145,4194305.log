@@ -1,0 +1,409 @@
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 262145)
+
+# Run progress: 0.00% complete, ETA 00:00:40
+# Fork: 1 of 1
+# Warmup Iteration   1: 160.168 ±(99.9%) 6.288 us/op
+# Warmup Iteration   2: 129.346 ±(99.9%) 1.973 us/op
+# Warmup Iteration   3: 131.076 ±(99.9%) 3.399 us/op
+# Warmup Iteration   4: 133.906 ±(99.9%) 2.362 us/op
+# Warmup Iteration   5: 133.797 ±(99.9%) 2.849 us/op
+Iteration   1: 135.130 ±(99.9%) 3.000 us/op
+                 widenArrayAlloc·p0.00:   111.744 us/op
+                 widenArrayAlloc·p0.50:   126.592 us/op
+                 widenArrayAlloc·p0.90:   142.080 us/op
+                 widenArrayAlloc·p0.95:   151.552 us/op
+                 widenArrayAlloc·p0.99:   198.620 us/op
+                 widenArrayAlloc·p0.999:  1161.597 us/op
+                 widenArrayAlloc·p0.9999: 1251.056 us/op
+                 widenArrayAlloc·p1.00:   31490.048 us/op
+                 ·pauses:                 24.470 ms
+                 ·pauses.avg:             4.078 ms
+                 ·pauses.count:           6.000 #
+                 ·pauses.p0.00:           3.092 ms
+                 ·pauses.p0.50:           3.809 ms
+                 ·pauses.p0.90:           5.956 ms
+                 ·pauses.p0.95:           5.956 ms
+                 ·pauses.p0.99:           5.956 ms
+                 ·pauses.p0.999:          5.956 ms
+                 ·pauses.p0.9999:         5.956 ms
+                 ·pauses.p1.00:           5.956 ms
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 36813
+  mean =    135.130 ±(99.9%) 3.000 us/op
+
+  Histogram, us/op:
+    [    0.000,  2500.000) = 36812 
+    [ 2500.000,  5000.000) = 0 
+    [ 5000.000,  7500.000) = 0 
+    [ 7500.000, 10000.000) = 0 
+    [10000.000, 12500.000) = 0 
+    [12500.000, 15000.000) = 0 
+    [15000.000, 17500.000) = 0 
+    [17500.000, 20000.000) = 0 
+    [20000.000, 22500.000) = 0 
+    [22500.000, 25000.000) = 0 
+    [25000.000, 27500.000) = 0 
+    [27500.000, 30000.000) = 0 
+    [30000.000, 32500.000) = 1 
+    [32500.000, 35000.000) = 0 
+    [35000.000, 37500.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    111.744 us/op
+     p(50.0000) =    126.592 us/op
+     p(90.0000) =    142.080 us/op
+     p(95.0000) =    151.552 us/op
+     p(99.0000) =    198.620 us/op
+     p(99.9000) =   1161.597 us/op
+     p(99.9900) =   1251.056 us/op
+     p(99.9990) =  31490.048 us/op
+     p(99.9999) =  31490.048 us/op
+    p(100.0000) =  31490.048 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·pauses":
+  24.470 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (3.092, 4.078, 5.956), stdev = 1.023
+  CI (99.9%): [24.470, 24.470] (assumes normal distribution)
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 25.00% complete, ETA 00:00:48
+# Fork: 1 of 1
+# Warmup Iteration   1: 2597.736 ±(99.9%) 281.985 us/op
+# Warmup Iteration   2: 2326.161 ±(99.9%) 72.041 us/op
+# Warmup Iteration   3: 2224.597 ±(99.9%) 75.619 us/op
+# Warmup Iteration   4: 2212.828 ±(99.9%) 78.094 us/op
+# Warmup Iteration   5: 2171.244 ±(99.9%) 62.538 us/op
+Iteration   1: 2203.608 ±(99.9%) 37.440 us/op
+                 widenArrayAlloc·p0.00:   2009.088 us/op
+                 widenArrayAlloc·p0.50:   2048.000 us/op
+                 widenArrayAlloc·p0.90:   2191.360 us/op
+                 widenArrayAlloc·p0.95:   3862.528 us/op
+                 widenArrayAlloc·p0.99:   4311.450 us/op
+                 widenArrayAlloc·p0.999:  6412.124 us/op
+                 widenArrayAlloc·p0.9999: 6545.408 us/op
+                 widenArrayAlloc·p1.00:   6545.408 us/op
+                 ·pauses:                 156.451 ms
+                 ·pauses.avg:             3.068 ms
+                 ·pauses.count:           51.000 #
+                 ·pauses.p0.00:           2.154 ms
+                 ·pauses.p0.50:           2.318 ms
+                 ·pauses.p0.90:           4.447 ms
+                 ·pauses.p0.95:           6.988 ms
+                 ·pauses.p0.99:           9.814 ms
+                 ·pauses.p0.999:          9.814 ms
+                 ·pauses.p0.9999:         9.814 ms
+                 ·pauses.p1.00:           9.814 ms
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 2269
+  mean =   2203.608 ±(99.9%) 37.440 us/op
+
+  Histogram, us/op:
+    [2000.000, 2500.000) = 2117 
+    [2500.000, 3000.000) = 2 
+    [3000.000, 3500.000) = 7 
+    [3500.000, 4000.000) = 66 
+    [4000.000, 4500.000) = 61 
+    [4500.000, 5000.000) = 2 
+    [5000.000, 5500.000) = 7 
+    [5500.000, 6000.000) = 2 
+    [6000.000, 6500.000) = 4 
+
+  Percentiles, us/op:
+      p(0.0000) =   2009.088 us/op
+     p(50.0000) =   2048.000 us/op
+     p(90.0000) =   2191.360 us/op
+     p(95.0000) =   3862.528 us/op
+     p(99.0000) =   4311.450 us/op
+     p(99.9000) =   6412.124 us/op
+     p(99.9900) =   6545.408 us/op
+     p(99.9990) =   6545.408 us/op
+     p(99.9999) =   6545.408 us/op
+    p(100.0000) =   6545.408 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·pauses":
+  156.451 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (2.154, 3.068, 9.814), stdev = 1.523
+  CI (99.9%): [156.451, 156.451] (assumes normal distribution)
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 262145)
+
+# Run progress: 50.00% complete, ETA 00:00:33
+# Fork: 1 of 1
+# Warmup Iteration   1: 26.608 ±(99.9%) 4.632 us/op
+# Warmup Iteration   2: 28.963 ±(99.9%) 11.544 us/op
+# Warmup Iteration   3: 23.716 ±(99.9%) 0.195 us/op
+# Warmup Iteration   4: 23.611 ±(99.9%) 0.084 us/op
+# Warmup Iteration   5: 23.633 ±(99.9%) 0.099 us/op
+Iteration   1: 23.552 ±(99.9%) 0.036 us/op
+                 widenArrayCacheInt·p0.00:   23.040 us/op
+                 widenArrayCacheInt·p0.50:   23.392 us/op
+                 widenArrayCacheInt·p0.90:   23.488 us/op
+                 widenArrayCacheInt·p0.95:   23.520 us/op
+                 widenArrayCacheInt·p0.99:   23.808 us/op
+                 widenArrayCacheInt·p0.999:  92.160 us/op
+                 widenArrayCacheInt·p0.9999: 136.553 us/op
+                 widenArrayCacheInt·p1.00:   324.608 us/op
+                 ·pauses:                    NaN ms
+                 ·pauses.avg:                NaN ms
+                 ·pauses.count:              ≈ 0 #
+                 ·pauses.p0.00:              NaN ms
+                 ·pauses.p0.50:              NaN ms
+                 ·pauses.p0.90:              NaN ms
+                 ·pauses.p0.95:              NaN ms
+                 ·pauses.p0.99:              NaN ms
+                 ·pauses.p0.999:             NaN ms
+                 ·pauses.p0.9999:            NaN ms
+                 ·pauses.p1.00:              NaN ms
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 105991
+  mean =     23.552 ±(99.9%) 0.036 us/op
+
+  Histogram, us/op:
+    [  0.000,  25.000) = 105124 
+    [ 25.000,  50.000) = 648 
+    [ 50.000,  75.000) = 34 
+    [ 75.000, 100.000) = 152 
+    [100.000, 125.000) = 12 
+    [125.000, 150.000) = 12 
+    [150.000, 175.000) = 4 
+    [175.000, 200.000) = 2 
+    [200.000, 225.000) = 1 
+    [225.000, 250.000) = 0 
+    [250.000, 275.000) = 0 
+    [275.000, 300.000) = 1 
+    [300.000, 325.000) = 1 
+    [325.000, 350.000) = 0 
+    [350.000, 375.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =     23.040 us/op
+     p(50.0000) =     23.392 us/op
+     p(90.0000) =     23.488 us/op
+     p(95.0000) =     23.520 us/op
+     p(99.0000) =     23.808 us/op
+     p(99.9000) =     92.160 us/op
+     p(99.9900) =    136.553 us/op
+     p(99.9990) =    321.970 us/op
+     p(99.9999) =    324.608 us/op
+    p(100.0000) =    324.608 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses":
+  NaN ms
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 75.00% complete, ETA 00:00:16
+# Fork: 1 of 1
+# Warmup Iteration   1: 558.722 ±(99.9%) 49.142 us/op
+# Warmup Iteration   2: 545.997 ±(99.9%) 44.206 us/op
+# Warmup Iteration   3: 524.891 ±(99.9%) 22.608 us/op
+# Warmup Iteration   4: 521.964 ±(99.9%) 3.115 us/op
+# Warmup Iteration   5: 526.425 ±(99.9%) 3.360 us/op
+Iteration   1: 515.953 ±(99.9%) 0.945 us/op
+                 widenArrayCacheInt·p0.00:   494.080 us/op
+                 widenArrayCacheInt·p0.50:   508.928 us/op
+                 widenArrayCacheInt·p0.90:   535.552 us/op
+                 widenArrayCacheInt·p0.95:   570.368 us/op
+                 widenArrayCacheInt·p0.99:   608.256 us/op
+                 widenArrayCacheInt·p0.999:  683.336 us/op
+                 widenArrayCacheInt·p0.9999: 2105.344 us/op
+                 widenArrayCacheInt·p1.00:   2105.344 us/op
+                 ·pauses:                    6.423 ms
+                 ·pauses.avg:                6.423 ms
+                 ·pauses.count:              1.000 #
+                 ·pauses.p0.00:              6.423 ms
+                 ·pauses.p0.50:              6.423 ms
+                 ·pauses.p0.90:              6.423 ms
+                 ·pauses.p0.95:              6.423 ms
+                 ·pauses.p0.99:              6.423 ms
+                 ·pauses.p0.999:             6.423 ms
+                 ·pauses.p0.9999:            6.423 ms
+                 ·pauses.p1.00:              6.423 ms
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 9679
+  mean =    515.953 ±(99.9%) 0.945 us/op
+
+  Histogram, us/op:
+    [   0.000,  250.000) = 0 
+    [ 250.000,  500.000) = 550 
+    [ 500.000,  750.000) = 9127 
+    [ 750.000, 1000.000) = 1 
+    [1000.000, 1250.000) = 0 
+    [1250.000, 1500.000) = 0 
+    [1500.000, 1750.000) = 0 
+    [1750.000, 2000.000) = 0 
+    [2000.000, 2250.000) = 1 
+    [2250.000, 2500.000) = 0 
+    [2500.000, 2750.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    494.080 us/op
+     p(50.0000) =    508.928 us/op
+     p(90.0000) =    535.552 us/op
+     p(95.0000) =    570.368 us/op
+     p(99.0000) =    608.256 us/op
+     p(99.9000) =    683.336 us/op
+     p(99.9900) =   2105.344 us/op
+     p(99.9990) =   2105.344 us/op
+     p(99.9999) =   2105.344 us/op
+    p(100.0000) =   2105.344 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses":
+  6.423 ms
+
+
+# Run complete. Total time: 00:01:06
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                             (arraySize)    Mode     Cnt      Score    Error  Units
+ArrayCacheIntBenchmark.widenArrayAlloc                                     262145  sample   36813    135.130 ±  3.000  us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00               262145  sample            111.744           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50               262145  sample            126.592           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90               262145  sample            142.080           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95               262145  sample            151.552           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99               262145  sample            198.620           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999              262145  sample           1161.597           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999             262145  sample           1251.056           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00               262145  sample          31490.048           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses                             262145  sample       6     24.470              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.avg                         262145  sample              4.078              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.count                       262145  sample              6.000               #
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.00                       262145  sample              3.092              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.50                       262145  sample              3.809              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.90                       262145  sample              5.956              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.95                       262145  sample              5.956              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.99                       262145  sample              5.956              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.999                      262145  sample              5.956              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.9999                     262145  sample              5.956              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p1.00                       262145  sample              5.956              ms
+ArrayCacheIntBenchmark.widenArrayAlloc                                    4194305  sample    2269   2203.608 ± 37.440  us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00              4194305  sample           2009.088           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50              4194305  sample           2048.000           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90              4194305  sample           2191.360           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95              4194305  sample           3862.528           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99              4194305  sample           4311.450           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999             4194305  sample           6412.124           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999            4194305  sample           6545.408           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00              4194305  sample           6545.408           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses                            4194305  sample      51    156.451              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.avg                        4194305  sample              3.068              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.count                      4194305  sample             51.000               #
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.00                      4194305  sample              2.154              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.50                      4194305  sample              2.318              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.90                      4194305  sample              4.447              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.95                      4194305  sample              6.988              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.99                      4194305  sample              9.814              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.999                     4194305  sample              9.814              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p0.9999                    4194305  sample              9.814              ms
+ArrayCacheIntBenchmark.widenArrayAlloc:·pauses.p1.00                      4194305  sample              9.814              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt                                  262145  sample  105991     23.552 ±  0.036  us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00         262145  sample             23.040           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50         262145  sample             23.392           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90         262145  sample             23.488           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95         262145  sample             23.520           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99         262145  sample             23.808           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999        262145  sample             92.160           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999       262145  sample            136.553           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00         262145  sample            324.608           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses                          262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.avg                      262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.count                    262145  sample                ≈ 0               #
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.00                    262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.50                    262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.90                    262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.95                    262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.99                    262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.999                   262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.9999                  262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p1.00                    262145  sample                NaN              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt                                 4194305  sample    9679    515.953 ±  0.945  us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00        4194305  sample            494.080           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50        4194305  sample            508.928           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90        4194305  sample            535.552           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95        4194305  sample            570.368           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99        4194305  sample            608.256           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999       4194305  sample            683.336           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999      4194305  sample           2105.344           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00        4194305  sample           2105.344           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses                         4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.avg                     4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.count                   4194305  sample              1.000               #
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.00                   4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.50                   4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.90                   4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.95                   4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.99                   4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.999                  4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p0.9999                 4194305  sample              6.423              ms
+ArrayCacheIntBenchmark.widenArrayCacheInt:·pauses.p1.00                   4194305  sample              6.423              ms

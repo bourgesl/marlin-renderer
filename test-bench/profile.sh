@@ -4,7 +4,33 @@ source env.sh
 
 # do force GC:
 GC=true
-FORK=5
+FORK=1 # 0: no-fork
+ITER=1
+
+PROF="stack:lines=20;top=15;detailLine=true;excludePackages=false"
+#PROF="gc"
+#PROF="perfnorm"
+#PROF="perfasm"
+#PROF="pauses"
+
+# Supported profilers:
+#           cl: Classloader profiling via standard MBeans 
+#         comp: JIT compiler profiling via standard MBeans 
+#           gc: GC profiling via standard MBeans 
+#          jfr: Java Flight Recorder profiler 
+#       pauses: Pauses profiler 
+#         perf: Linux perf Statistics 
+#      perfasm: Linux perf + PrintAssembly Profiler 
+#      perfc2c: Linux perf c2c profiler 
+#     perfnorm: Linux perf statistics, normalized by operation count 
+#   safepoints: Safepoints profiler 
+#        stack: Simple and naive Java stack profiler 
+
+# Unsupported profilers:
+#        async: <none> 
+# Unable to load async-profiler. Ensure asyncProfiler library is on LD_LIBRARY_PATH (Linux), DYLD_LIBRARY_PATH (Mac OS), or -Djava.library.path. Alternatively, point to
+# explicit library location with -prof async:libPath=<path>.
+
 
 OPTS="-p arraySize=$SIZES"
 
@@ -45,7 +71,13 @@ DIR=`pwd`
 MARLIN_OPTS=""
 #MARLIN_OPTS="-Dsun.java2d.renderer.log=true -Dsun.java2d.renderer.doStats=true"
 
-JAVA_OPTS="$JAVA_OPTS --add-modules java.desktop --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module java.desktop=$DIR/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar $MARLIN_OPTS"
+# stack profiler:
+#JAVA_OPTS="$JAVA_OPTS -XX:-TieredCompilation -Djmh.stack.excludePackages=false"
+
+# stack / perfasm options:
+JAVA_OPTS="$JAVA_OPTS -XX:TieredStopAtLevel=4 -XX:-Inline"
+
+JAVA_OPTS="$JAVA_OPTS -Djmh.stack.excludePackages=false --add-modules java.desktop --add-exports java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module java.desktop=$DIR/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar $MARLIN_OPTS"
 
 echo "JAVA_OPTS: $JAVA_OPTS"
 
@@ -60,12 +92,12 @@ echo "Running JMH ..."
 # single-threaded:
 # -wi $WITER -w $WTIME -i $ITER -r $TIME -f $FORK 
 
-#echo "CMD: java $JAVA_OPTS -jar $DIR/target/marlin-test-bench.jar -gc $GC -t 1 -f $FORK $OPTS"
-java $JAVA_OPTS -jar $DIR/target/marlin-test-bench.jar -gc $GC -t 1 -f $FORK $OPTS 1> "cache-$SIZES.log" 2> "cache-$SIZES.err" &
+#echo "CMD: java $JAVA_OPTS -jar $DIR/target/marlin-test-bench.jar -gc $GC -t 1 -f $FORK -i $ITER -prof $PROF $OPTS"
+java $JAVA_OPTS -jar $DIR/target/marlin-test-bench.jar -gc $GC -t 1 -f $FORK -i $ITER -prof $PROF $OPTS 1> "prof-$PROF-cache-$SIZES.log" 2> "prof-$PROF-cache-$SIZES.err" &
 
 PID=$!
 echo "JAVA PID: $PID"
 sudo cset shield --shield --threads --pid $PID
 
-tail -f "cache-$SIZES.log"
+tail -f "prof-$PROF-cache-$SIZES.log"
 

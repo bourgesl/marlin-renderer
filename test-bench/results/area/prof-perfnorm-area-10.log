@@ -1,0 +1,298 @@
+# JMH version: 1.34
+# VM version: JDK 17.0.1, OpenJDK 64-Bit Server VM, 17.0.1+12-LTS
+# VM invoker: /home/bourgesl/apps/zulu17.30.15-ca-fx-jdk17.0.1-linux_x64/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation -XX:TieredStopAtLevel=4 -XX:-Inline -Djmh.stack.excludePackages=false --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.AreaSubtractBenchmark.doClip
+# Parameters: (length = 10)
+
+# Run progress: 0.00% complete, ETA 00:00:20
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 38.570 ±(99.9%) 35.867 ms/op
+# Warmup Iteration   2: 4.031 ±(99.9%) 1.215 ms/op
+# Warmup Iteration   3: 2.157 ±(99.9%) 0.293 ms/op
+# Warmup Iteration   4: 1.833 ±(99.9%) 0.070 ms/op
+# Warmup Iteration   5: 1.802 ±(99.9%) 0.014 ms/op
+Iteration   1: 1.815 ±(99.9%) 0.010 ms/op
+                 doClip·p0.00:   1.765 ms/op
+                 doClip·p0.50:   1.786 ms/op
+                 doClip·p0.90:   1.880 ms/op
+                 doClip·p0.95:   2.007 ms/op
+                 doClip·p0.99:   2.105 ms/op
+                 doClip·p0.999:  4.731 ms/op
+                 doClip·p0.9999: 8.258 ms/op
+                 doClip·p1.00:   8.258 ms/op
+
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "org.marlin.bench.AreaSubtractBenchmark.doClip":
+  N = 2753
+  mean =      1.815 ±(99.9%) 0.010 ms/op
+
+  Histogram, ms/op:
+    [1.000, 1.500) = 0 
+    [1.500, 2.000) = 2592 
+    [2.000, 2.500) = 158 
+    [2.500, 3.000) = 0 
+    [3.000, 3.500) = 0 
+    [3.500, 4.000) = 0 
+    [4.000, 4.500) = 1 
+    [4.500, 5.000) = 0 
+    [5.000, 5.500) = 1 
+    [5.500, 6.000) = 0 
+    [6.000, 6.500) = 0 
+    [6.500, 7.000) = 0 
+    [7.000, 7.500) = 0 
+    [7.500, 8.000) = 0 
+    [8.000, 8.500) = 1 
+
+  Percentiles, ms/op:
+      p(0.0000) =      1.765 ms/op
+     p(50.0000) =      1.786 ms/op
+     p(90.0000) =      1.880 ms/op
+     p(95.0000) =      2.007 ms/op
+     p(99.0000) =      2.105 ms/op
+     p(99.9000) =      4.731 ms/op
+     p(99.9900) =      8.258 ms/op
+     p(99.9990) =      8.258 ms/op
+     p(99.9999) =      8.258 ms/op
+    p(100.0000) =      8.258 ms/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:CPI":
+  0.544 clks/insn
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:IPC":
+  1.838 insns/clk
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:L1-dcache-load-misses":
+  18017.724 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:L1-dcache-loads":
+  1706777.620 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:L1-dcache-stores":
+  1120192.937 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:L1-icache-load-misses":
+  43088.308 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:LLC-load-misses":
+  66.381 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:LLC-loads":
+  1725.441 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:LLC-store-misses":
+  1224.003 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:LLC-stores":
+  2483.606 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:branch-misses":
+  29391.376 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:branches":
+  1344021.496 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:cycles":
+  3674245.056 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:dTLB-load-misses":
+  310.607 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:dTLB-loads":
+  1708880.596 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:dTLB-store-misses":
+  47.952 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:dTLB-stores":
+  1122813.296 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:iTLB-load-misses":
+  19.912 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:iTLB-loads":
+  1729.641 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:instructions":
+  6751466.222 #/op
+
+
+# JMH version: 1.34
+# VM version: JDK 17.0.1, OpenJDK 64-Bit Server VM, 17.0.1+12-LTS
+# VM invoker: /home/bourgesl/apps/zulu17.30.15-ca-fx-jdk17.0.1-linux_x64/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation -XX:TieredStopAtLevel=4 -XX:-Inline -Djmh.stack.excludePackages=false --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.AreaSubtractBenchmark.doClipTwice
+# Parameters: (length = 10)
+
+# Run progress: 50.00% complete, ETA 00:00:15
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 4630.512 ms/op
+# Warmup Iteration   2: 3854.565 ms/op
+# Warmup Iteration   3: 3854.565 ms/op
+# Warmup Iteration   4: 3858.760 ms/op
+# Warmup Iteration   5: 3854.565 ms/op
+Iteration   1: 3911.188 ms/op
+                 doClipTwice·p0.00:   3862.954 ms/op
+                 doClipTwice·p0.50:   3911.188 ms/op
+                 doClipTwice·p0.90:   3959.423 ms/op
+                 doClipTwice·p0.95:   3959.423 ms/op
+                 doClipTwice·p0.99:   3959.423 ms/op
+                 doClipTwice·p0.999:  3959.423 ms/op
+                 doClipTwice·p0.9999: 3959.423 ms/op
+                 doClipTwice·p1.00:   3959.423 ms/op
+
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:CPI":
+  0.594 clks/insn
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:IPC":
+  1.682 insns/clk
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:L1-dcache-load-misses":
+  9703846.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:L1-dcache-loads":
+  2888996298.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:L1-dcache-stores":
+  1356190880.500 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:L1-icache-load-misses":
+  13182196.500 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:LLC-load-misses":
+  400956.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:LLC-loads":
+  1201208.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:LLC-store-misses":
+  1103363.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:LLC-stores":
+  1444256.500 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:branch-misses":
+  71921016.500 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:branches":
+  2187384506.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:cycles":
+  7918488792.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:dTLB-load-misses":
+  494067.500 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:dTLB-loads":
+  2893804397.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:dTLB-store-misses":
+  100717.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:dTLB-stores":
+  1364942763.500 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:iTLB-load-misses":
+  55057.500 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:iTLB-loads":
+  120383.000 #/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:instructions":
+  13320849339.500 #/op
+
+
+# Run complete. Total time: 00:00:49
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                (length)    Mode   Cnt            Score   Error      Units
+AreaSubtractBenchmark.doClip                                   10  sample  2753            1.815 ± 0.010      ms/op
+AreaSubtractBenchmark.doClip:CPI                               10  sample                  0.544          clks/insn
+AreaSubtractBenchmark.doClip:IPC                               10  sample                  1.838          insns/clk
+AreaSubtractBenchmark.doClip:L1-dcache-load-misses             10  sample              18017.724               #/op
+AreaSubtractBenchmark.doClip:L1-dcache-loads                   10  sample            1706777.620               #/op
+AreaSubtractBenchmark.doClip:L1-dcache-stores                  10  sample            1120192.937               #/op
+AreaSubtractBenchmark.doClip:L1-icache-load-misses             10  sample              43088.308               #/op
+AreaSubtractBenchmark.doClip:LLC-load-misses                   10  sample                 66.381               #/op
+AreaSubtractBenchmark.doClip:LLC-loads                         10  sample               1725.441               #/op
+AreaSubtractBenchmark.doClip:LLC-store-misses                  10  sample               1224.003               #/op
+AreaSubtractBenchmark.doClip:LLC-stores                        10  sample               2483.606               #/op
+AreaSubtractBenchmark.doClip:branch-misses                     10  sample              29391.376               #/op
+AreaSubtractBenchmark.doClip:branches                          10  sample            1344021.496               #/op
+AreaSubtractBenchmark.doClip:cycles                            10  sample            3674245.056               #/op
+AreaSubtractBenchmark.doClip:dTLB-load-misses                  10  sample                310.607               #/op
+AreaSubtractBenchmark.doClip:dTLB-loads                        10  sample            1708880.596               #/op
+AreaSubtractBenchmark.doClip:dTLB-store-misses                 10  sample                 47.952               #/op
+AreaSubtractBenchmark.doClip:dTLB-stores                       10  sample            1122813.296               #/op
+AreaSubtractBenchmark.doClip:doClip·p0.00                      10  sample                  1.765              ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.50                      10  sample                  1.786              ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.90                      10  sample                  1.880              ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.95                      10  sample                  2.007              ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.99                      10  sample                  2.105              ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.999                     10  sample                  4.731              ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.9999                    10  sample                  8.258              ms/op
+AreaSubtractBenchmark.doClip:doClip·p1.00                      10  sample                  8.258              ms/op
+AreaSubtractBenchmark.doClip:iTLB-load-misses                  10  sample                 19.912               #/op
+AreaSubtractBenchmark.doClip:iTLB-loads                        10  sample               1729.641               #/op
+AreaSubtractBenchmark.doClip:instructions                      10  sample            6751466.222               #/op
+AreaSubtractBenchmark.doClipTwice                              10  sample     2         3911.188              ms/op
+AreaSubtractBenchmark.doClipTwice:CPI                          10  sample                  0.594          clks/insn
+AreaSubtractBenchmark.doClipTwice:IPC                          10  sample                  1.682          insns/clk
+AreaSubtractBenchmark.doClipTwice:L1-dcache-load-misses        10  sample            9703846.000               #/op
+AreaSubtractBenchmark.doClipTwice:L1-dcache-loads              10  sample         2888996298.000               #/op
+AreaSubtractBenchmark.doClipTwice:L1-dcache-stores             10  sample         1356190880.500               #/op
+AreaSubtractBenchmark.doClipTwice:L1-icache-load-misses        10  sample           13182196.500               #/op
+AreaSubtractBenchmark.doClipTwice:LLC-load-misses              10  sample             400956.000               #/op
+AreaSubtractBenchmark.doClipTwice:LLC-loads                    10  sample            1201208.000               #/op
+AreaSubtractBenchmark.doClipTwice:LLC-store-misses             10  sample            1103363.000               #/op
+AreaSubtractBenchmark.doClipTwice:LLC-stores                   10  sample            1444256.500               #/op
+AreaSubtractBenchmark.doClipTwice:branch-misses                10  sample           71921016.500               #/op
+AreaSubtractBenchmark.doClipTwice:branches                     10  sample         2187384506.000               #/op
+AreaSubtractBenchmark.doClipTwice:cycles                       10  sample         7918488792.000               #/op
+AreaSubtractBenchmark.doClipTwice:dTLB-load-misses             10  sample             494067.500               #/op
+AreaSubtractBenchmark.doClipTwice:dTLB-loads                   10  sample         2893804397.000               #/op
+AreaSubtractBenchmark.doClipTwice:dTLB-store-misses            10  sample             100717.000               #/op
+AreaSubtractBenchmark.doClipTwice:dTLB-stores                  10  sample         1364942763.500               #/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.00            10  sample               3862.954              ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.50            10  sample               3911.188              ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.90            10  sample               3959.423              ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.95            10  sample               3959.423              ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.99            10  sample               3959.423              ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.999           10  sample               3959.423              ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.9999          10  sample               3959.423              ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p1.00            10  sample               3959.423              ms/op
+AreaSubtractBenchmark.doClipTwice:iTLB-load-misses             10  sample              55057.500               #/op
+AreaSubtractBenchmark.doClipTwice:iTLB-loads                   10  sample             120383.000               #/op
+AreaSubtractBenchmark.doClipTwice:instructions                 10  sample        13320849339.500               #/op

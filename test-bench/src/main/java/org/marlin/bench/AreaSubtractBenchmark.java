@@ -1,7 +1,14 @@
 package org.marlin.bench;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Ellipse;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -25,56 +32,135 @@ import org.openjdk.jmh.runner.options.CommandLineOptions;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.VerboseMode;
-import sun.java2d.marlin.TestArrayCacheInt;
-import sun.java2d.marlin.TestArrayCacheInt.ContextWidenArray;
 
 @BenchmarkMode(Mode.SampleTime)
-@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
 @Fork(5)
-public class ArrayCacheIntBenchmark {
+public class AreaSubtractBenchmark {
 
-    public final static String PARAM_SIZE = "arraySize";
+    private final static boolean TRACE = false;
+
+    public final static String PARAM_SIZE = "length";
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
 
-        @Param({
-            "10000",
-            "100000",
-            "1000000",
-            "16777217"
-        })
-        int arraySize;
+        @Param({"10"})
+        int length;
+
+        private final static boolean USE_SEED_FIXED = true; // random seed fixed for reproducibility
+        private final static long SEED_FIXED = 3447667858947863824L;
+
+        // start (from Math.random)
+        public static Random getRandom() {
+            final long seed;
+            if (USE_SEED_FIXED) {
+                seed = SEED_FIXED;
+            } else {
+                seed = seedUniquifier() ^ System.nanoTime();
+            }
+            if (TRACE) {
+                System.out.println("Random seed: " + seed);
+            }
+            return new Random(seed);
+        }
+
+        private static long seedUniquifier() {
+            // L'Ecuyer, "Tables of Linear Congruential Generators of
+            // Different Sizes and Good Lattice Structure", 1999
+            for (;;) {
+                long current = seedUniquifier.get();
+                long next = current * 1181783497276652981L;
+                if (seedUniquifier.compareAndSet(current, next)) {
+                    return next;
+                }
+            }
+        }
+
+        private static final AtomicLong seedUniquifier
+                                        = new AtomicLong(8682522807148012L);
+        // end (from Math.random)
     }
 
     @State(Scope.Thread)
     public static class ThreadState {
 
         BenchmarkState bs = null;
-        ContextWidenArray ctx = null;
+
+        Rectangle rect = null;
+        ArrayList<Ellipse> points = null;
 
         @Setup(Level.Iteration)
         public void setUpIteration(final BenchmarkState bs) {
             this.bs = bs;
-            this.ctx = new ContextWidenArray();
+            this.rect = new Rectangle(0, 0, 1.0, 1.0);
+            rect.setFill(Color.BLACK);
+
+            this.points = initPoints(bs.length);
         }
+
+        private static ArrayList<Ellipse> initPoints(int len) {
+            final Random random = BenchmarkState.getRandom(); // fixed seed for reproducibility
+
+            final ArrayList<Ellipse> points = new ArrayList<>(len);
+
+            for (int i = 0; i < len; i++) {
+                // p in [0, 1]
+                final double px = random.nextDouble();
+                final double py = random.nextDouble();
+
+                points.add(new Ellipse(px, py, 0.1, 0.05));
+            }
+            return points;
+        }
+
     }
 
     @Benchmark
-    public int widenDirtyArrayCacheInt(final ThreadState ts) {
-        return TestArrayCacheInt.testWidenDirtyArrayCacheInt(ts.ctx, ts.bs.arraySize);
+    public Object doClip(final ThreadState ts) {
+        final Shape clip = computeComplexClip(ts.rect, ts.points, false);
+        return clip;
     }
 
     @Benchmark
-    public int widenCleanArrayCacheInt(final ThreadState ts) {
-        return TestArrayCacheInt.testWidenCleanArrayCacheInt(ts.ctx, ts.bs.arraySize);
+    public Object doClipTwice(final ThreadState ts) {
+        final Shape clip = computeComplexClip(ts.rect, ts.points, true);
+        return clip;
     }
 
-    @Benchmark
-    public int widenArrayAlloc(final ThreadState ts) {
-        return TestArrayCacheInt.testWidenArrayAlloc(ts.ctx, ts.bs.arraySize);
+    private Shape computeComplexClip(final Rectangle rect, final ArrayList<Ellipse> points, boolean twice) {
+        Shape clip = rect;
+
+        final double w = rect.getWidth();
+        final double h = rect.getHeight();
+
+        for (int i = 0; i < points.size(); i++) {
+            final Ellipse ellipse = points.get(i);
+
+            final Ellipse clipEllipse = new Ellipse();
+            clipEllipse.setStrokeWidth(5.0);
+            clipEllipse.setCenterX(ellipse.getCenterX() * w);
+            clipEllipse.setCenterY(ellipse.getCenterY() * h);
+            clipEllipse.setRadiusX(ellipse.getRadiusX() * w);
+            clipEllipse.setRadiusY(ellipse.getRadiusY() * h);
+            clipEllipse.setFill(Color.BLACK);
+
+            if (TRACE) {
+                System.out.println("Shape.subtract(): from " + clip + " with " + clipEllipse + " before");
+            }
+
+            clip = Shape.subtract(clip, clipEllipse);
+            if (twice) {
+                clip = Shape.subtract(clip, clipEllipse);
+            }
+
+            if (TRACE) {
+                System.out.println("Shape.subtract(): to " + clip + " after");
+            }
+        }
+        return clip;
     }
 
     /**
@@ -117,12 +203,11 @@ public class ArrayCacheIntBenchmark {
             // GO ...
             builder = new OptionsBuilder()
                     .parent(cmdOptions)
-                    .include(ArrayCacheIntBenchmark.class.getSimpleName());
+                    .include(AreaSubtractBenchmark.class.getSimpleName());
 
             // Autotune start small
             builder.verbosity(VerboseMode.NORMAL)
                     .shouldFailOnError(true);
-            //.addProfiler(LinuxAffinityHelperProfiler.class);
 
         } catch (CommandLineOptionException e) {
             System.err.println(">> Error parsing command line:");

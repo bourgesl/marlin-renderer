@@ -1,0 +1,801 @@
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 262145)
+
+# Run progress: 0.00% complete, ETA 00:02:00
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 162.950 ±(99.9%) 6.403 us/op
+# Warmup Iteration   2: 128.692 ±(99.9%) 1.087 us/op
+# Warmup Iteration   3: 130.112 ±(99.9%) 2.006 us/op
+# Warmup Iteration   4: 131.461 ±(99.9%) 3.863 us/op
+# Warmup Iteration   5: 130.324 ±(99.9%) 2.666 us/op
+Iteration   1: 130.288 ±(99.9%) 3.025 us/op
+                 widenArrayAlloc·p0.00:   103.936 us/op
+                 widenArrayAlloc·p0.50:   124.160 us/op
+                 widenArrayAlloc·p0.90:   132.608 us/op
+                 widenArrayAlloc·p0.95:   140.544 us/op
+                 widenArrayAlloc·p0.99:   198.728 us/op
+                 widenArrayAlloc·p0.999:  1210.368 us/op
+                 widenArrayAlloc·p0.9999: 4748.640 us/op
+                 widenArrayAlloc·p1.00:   31981.568 us/op
+
+Iteration   2: 127.917 ±(99.9%) 0.439 us/op
+                 widenArrayAlloc·p0.00:   104.704 us/op
+                 widenArrayAlloc·p0.50:   124.672 us/op
+                 widenArrayAlloc·p0.90:   133.632 us/op
+                 widenArrayAlloc·p0.95:   141.312 us/op
+                 widenArrayAlloc·p0.99:   153.344 us/op
+                 widenArrayAlloc·p0.999:  520.692 us/op
+                 widenArrayAlloc·p0.9999: 714.927 us/op
+                 widenArrayAlloc·p1.00:   1189.888 us/op
+
+Iteration   3: 128.047 ±(99.9%) 0.488 us/op
+                 widenArrayAlloc·p0.00:   116.352 us/op
+                 widenArrayAlloc·p0.50:   123.904 us/op
+                 widenArrayAlloc·p0.90:   132.352 us/op
+                 widenArrayAlloc·p0.95:   139.776 us/op
+                 widenArrayAlloc·p0.99:   261.596 us/op
+                 widenArrayAlloc·p0.999:  544.768 us/op
+                 widenArrayAlloc·p0.9999: 691.604 us/op
+                 widenArrayAlloc·p1.00:   766.976 us/op
+
+Iteration   4: 127.893 ±(99.9%) 0.433 us/op
+                 widenArrayAlloc·p0.00:   112.640 us/op
+                 widenArrayAlloc·p0.50:   124.672 us/op
+                 widenArrayAlloc·p0.90:   133.632 us/op
+                 widenArrayAlloc·p0.95:   141.312 us/op
+                 widenArrayAlloc·p0.99:   153.600 us/op
+                 widenArrayAlloc·p0.999:  530.432 us/op
+                 widenArrayAlloc·p0.9999: 705.237 us/op
+                 widenArrayAlloc·p1.00:   864.256 us/op
+
+Iteration   5: 127.894 ±(99.9%) 0.443 us/op
+                 widenArrayAlloc·p0.00:   104.448 us/op
+                 widenArrayAlloc·p0.50:   124.672 us/op
+                 widenArrayAlloc·p0.90:   133.632 us/op
+                 widenArrayAlloc·p0.95:   141.056 us/op
+                 widenArrayAlloc·p0.99:   153.344 us/op
+                 widenArrayAlloc·p0.999:  525.312 us/op
+                 widenArrayAlloc·p0.9999: 729.322 us/op
+                 widenArrayAlloc·p1.00:   1187.840 us/op
+
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 194269
+  mean =    128.400 ±(99.9%) 0.621 us/op
+
+  Histogram, us/op:
+    [    0.000,  2500.000) = 194265 
+    [ 2500.000,  5000.000) = 1 
+    [ 5000.000,  7500.000) = 1 
+    [ 7500.000, 10000.000) = 1 
+    [10000.000, 12500.000) = 0 
+    [12500.000, 15000.000) = 0 
+    [15000.000, 17500.000) = 0 
+    [17500.000, 20000.000) = 0 
+    [20000.000, 22500.000) = 0 
+    [22500.000, 25000.000) = 0 
+    [25000.000, 27500.000) = 0 
+    [27500.000, 30000.000) = 0 
+    [30000.000, 32500.000) = 1 
+    [32500.000, 35000.000) = 0 
+    [35000.000, 37500.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    103.936 us/op
+     p(50.0000) =    124.416 us/op
+     p(90.0000) =    133.376 us/op
+     p(95.0000) =    140.800 us/op
+     p(99.0000) =    156.160 us/op
+     p(99.9000) =    556.032 us/op
+     p(99.9900) =   1252.502 us/op
+     p(99.9990) =   9331.187 us/op
+     p(99.9999) =  31981.568 us/op
+    p(100.0000) =  31981.568 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:CPI":
+  2.202 clks/insn
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:IPC":
+  0.454 insns/clk
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-load-misses":
+  27485.978 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-loads":
+  13959.029 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-stores":
+  44542.974 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:L1-icache-load-misses":
+  160.509 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:LLC-load-misses":
+  541.131 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:LLC-loads":
+  2215.618 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:LLC-store-misses":
+  13901.816 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:LLC-stores":
+  24118.397 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:branch-misses":
+  57.786 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:branches":
+  19636.097 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:cycles":
+  259473.358 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-load-misses":
+  14.714 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-loads":
+  13139.408 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-store-misses":
+  340.199 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-stores":
+  44899.931 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:iTLB-load-misses":
+  2.558 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:iTLB-loads":
+  1.945 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:instructions":
+  117854.954 #/op
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 25.00% complete, ETA 00:01:55
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 2803.436 ±(99.9%) 319.938 us/op
+# Warmup Iteration   2: 2381.054 ±(99.9%) 93.836 us/op
+# Warmup Iteration   3: 2243.428 ±(99.9%) 70.287 us/op
+# Warmup Iteration   4: 2210.241 ±(99.9%) 84.023 us/op
+# Warmup Iteration   5: 2201.451 ±(99.9%) 76.730 us/op
+Iteration   1: 2224.462 ±(99.9%) 36.328 us/op
+                 widenArrayAlloc·p0.00:   2009.088 us/op
+                 widenArrayAlloc·p0.50:   2066.432 us/op
+                 widenArrayAlloc·p0.90:   2286.387 us/op
+                 widenArrayAlloc·p0.95:   3808.461 us/op
+                 widenArrayAlloc·p0.99:   4419.748 us/op
+                 widenArrayAlloc·p0.999:  4831.445 us/op
+                 widenArrayAlloc·p0.9999: 8929.280 us/op
+                 widenArrayAlloc·p1.00:   8929.280 us/op
+
+Iteration   2: 2231.888 ±(99.9%) 44.385 us/op
+                 widenArrayAlloc·p0.00:   2009.088 us/op
+                 widenArrayAlloc·p0.50:   2068.480 us/op
+                 widenArrayAlloc·p0.90:   2229.043 us/op
+                 widenArrayAlloc·p0.95:   3370.189 us/op
+                 widenArrayAlloc·p0.99:   5208.637 us/op
+                 widenArrayAlloc·p0.999:  9090.040 us/op
+                 widenArrayAlloc·p0.9999: 9682.944 us/op
+                 widenArrayAlloc·p1.00:   9682.944 us/op
+
+Iteration   3: 2222.284 ±(99.9%) 44.375 us/op
+                 widenArrayAlloc·p0.00:   2013.184 us/op
+                 widenArrayAlloc·p0.50:   2062.336 us/op
+                 widenArrayAlloc·p0.90:   2211.840 us/op
+                 widenArrayAlloc·p0.95:   3855.770 us/op
+                 widenArrayAlloc·p0.99:   4644.864 us/op
+                 widenArrayAlloc·p0.999:  9596.715 us/op
+                 widenArrayAlloc·p0.9999: 9830.400 us/op
+                 widenArrayAlloc·p1.00:   9830.400 us/op
+
+Iteration   4: 2221.525 ±(99.9%) 47.376 us/op
+                 widenArrayAlloc·p0.00:   2002.944 us/op
+                 widenArrayAlloc·p0.50:   2064.384 us/op
+                 widenArrayAlloc·p0.90:   2236.416 us/op
+                 widenArrayAlloc·p0.95:   3098.624 us/op
+                 widenArrayAlloc·p0.99:   4386.816 us/op
+                 widenArrayAlloc·p0.999:  9687.040 us/op
+                 widenArrayAlloc·p0.9999: 9748.480 us/op
+                 widenArrayAlloc·p1.00:   9748.480 us/op
+
+Iteration   5: 2238.429 ±(99.9%) 49.698 us/op
+                 widenArrayAlloc·p0.00:   2009.088 us/op
+                 widenArrayAlloc·p0.50:   2064.384 us/op
+                 widenArrayAlloc·p0.90:   2236.416 us/op
+                 widenArrayAlloc·p0.95:   3556.762 us/op
+                 widenArrayAlloc·p0.99:   5369.119 us/op
+                 widenArrayAlloc·p0.999:  9287.025 us/op
+                 widenArrayAlloc·p0.9999: 9469.952 us/op
+                 widenArrayAlloc·p1.00:   9469.952 us/op
+
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 11215
+  mean =   2227.697 ±(99.9%) 19.944 us/op
+
+  Histogram, us/op:
+    [ 2000.000,  2500.000) = 10463 
+    [ 2500.000,  3000.000) = 42 
+    [ 3000.000,  3500.000) = 144 
+    [ 3500.000,  4000.000) = 158 
+    [ 4000.000,  4500.000) = 241 
+    [ 4500.000,  5000.000) = 86 
+    [ 5000.000,  5500.000) = 20 
+    [ 5500.000,  6000.000) = 12 
+    [ 6000.000,  6500.000) = 8 
+    [ 6500.000,  7000.000) = 4 
+    [ 7000.000,  7500.000) = 1 
+    [ 7500.000,  8000.000) = 2 
+    [ 8000.000,  8500.000) = 3 
+    [ 8500.000,  9000.000) = 7 
+    [ 9000.000,  9500.000) = 14 
+
+  Percentiles, us/op:
+      p(0.0000) =   2002.944 us/op
+     p(50.0000) =   2064.384 us/op
+     p(90.0000) =   2238.054 us/op
+     p(95.0000) =   3514.368 us/op
+     p(99.0000) =   4743.168 us/op
+     p(99.9000) =   9466.413 us/op
+     p(99.9900) =   9820.439 us/op
+     p(99.9990) =   9830.400 us/op
+     p(99.9999) =   9830.400 us/op
+    p(100.0000) =   9830.400 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:CPI":
+  2.065 clks/insn
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:IPC":
+  0.484 insns/clk
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-load-misses":
+  451907.997 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-loads":
+  281400.169 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-stores":
+  714859.846 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:L1-icache-load-misses":
+  3053.063 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:LLC-load-misses":
+  19586.371 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:LLC-loads":
+  49635.621 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:LLC-store-misses":
+  218055.034 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:LLC-stores":
+  393078.550 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:branch-misses":
+  786.859 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:branches":
+  415625.304 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:cycles":
+  4543694.722 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-load-misses":
+  1344.343 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-loads":
+  282202.524 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-store-misses":
+  5604.236 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-stores":
+  718639.319 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:iTLB-load-misses":
+  65.531 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:iTLB-loads":
+  19.319 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:instructions":
+  2199837.856 #/op
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 262145)
+
+# Run progress: 50.00% complete, ETA 00:01:17
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 26.938 ±(99.9%) 4.739 us/op
+# Warmup Iteration   2: 29.466 ±(99.9%) 11.724 us/op
+# Warmup Iteration   3: 24.154 ±(99.9%) 0.032 us/op
+# Warmup Iteration   4: 24.200 ±(99.9%) 0.036 us/op
+# Warmup Iteration   5: 24.142 ±(99.9%) 0.032 us/op
+Iteration   1: 24.005 ±(99.9%) 0.042 us/op
+                 widenArrayCacheInt·p0.00:   22.880 us/op
+                 widenArrayCacheInt·p0.50:   23.776 us/op
+                 widenArrayCacheInt·p0.90:   23.872 us/op
+                 widenArrayCacheInt·p0.95:   23.904 us/op
+                 widenArrayCacheInt·p0.99:   26.546 us/op
+                 widenArrayCacheInt·p0.999:  109.952 us/op
+                 widenArrayCacheInt·p0.9999: 161.324 us/op
+                 widenArrayCacheInt·p1.00:   342.016 us/op
+
+Iteration   2: 24.144 ±(99.9%) 0.009 us/op
+                 widenArrayCacheInt·p0.00:   23.712 us/op
+                 widenArrayCacheInt·p0.50:   24.064 us/op
+                 widenArrayCacheInt·p0.90:   24.192 us/op
+                 widenArrayCacheInt·p0.95:   24.224 us/op
+                 widenArrayCacheInt·p0.99:   26.624 us/op
+                 widenArrayCacheInt·p0.999:  35.136 us/op
+                 widenArrayCacheInt·p0.9999: 39.990 us/op
+                 widenArrayCacheInt·p1.00:   156.928 us/op
+
+Iteration   3: 24.014 ±(99.9%) 0.043 us/op
+                 widenArrayCacheInt·p0.00:   22.944 us/op
+                 widenArrayCacheInt·p0.50:   23.776 us/op
+                 widenArrayCacheInt·p0.90:   23.872 us/op
+                 widenArrayCacheInt·p0.95:   23.904 us/op
+                 widenArrayCacheInt·p0.99:   26.560 us/op
+                 widenArrayCacheInt·p0.999:  110.208 us/op
+                 widenArrayCacheInt·p0.9999: 161.948 us/op
+                 widenArrayCacheInt·p1.00:   347.136 us/op
+
+Iteration   4: 24.034 ±(99.9%) 0.044 us/op
+                 widenArrayCacheInt·p0.00:   23.104 us/op
+                 widenArrayCacheInt·p0.50:   23.776 us/op
+                 widenArrayCacheInt·p0.90:   23.872 us/op
+                 widenArrayCacheInt·p0.95:   23.904 us/op
+                 widenArrayCacheInt·p0.99:   26.656 us/op
+                 widenArrayCacheInt·p0.999:  110.592 us/op
+                 widenArrayCacheInt·p0.9999: 160.923 us/op
+                 widenArrayCacheInt·p1.00:   348.672 us/op
+
+Iteration   5: 23.999 ±(99.9%) 0.040 us/op
+                 widenArrayCacheInt·p0.00:   22.912 us/op
+                 widenArrayCacheInt·p0.50:   23.776 us/op
+                 widenArrayCacheInt·p0.90:   23.872 us/op
+                 widenArrayCacheInt·p0.95:   23.904 us/op
+                 widenArrayCacheInt·p0.99:   26.656 us/op
+                 widenArrayCacheInt·p0.999:  88.064 us/op
+                 widenArrayCacheInt·p0.9999: 165.326 us/op
+                 widenArrayCacheInt·p1.00:   444.928 us/op
+
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 519397
+  mean =     24.039 ±(99.9%) 0.017 us/op
+
+  Histogram, us/op:
+    [  0.000,  50.000) = 518560 
+    [ 50.000, 100.000) = 269 
+    [100.000, 150.000) = 483 
+    [150.000, 200.000) = 75 
+    [200.000, 250.000) = 4 
+    [250.000, 300.000) = 1 
+    [300.000, 350.000) = 4 
+    [350.000, 400.000) = 0 
+    [400.000, 450.000) = 1 
+
+  Percentiles, us/op:
+      p(0.0000) =     22.880 us/op
+     p(50.0000) =     23.808 us/op
+     p(90.0000) =     24.096 us/op
+     p(95.0000) =     24.128 us/op
+     p(99.0000) =     26.592 us/op
+     p(99.9000) =    105.600 us/op
+     p(99.9900) =    160.287 us/op
+     p(99.9990) =    312.390 us/op
+     p(99.9999) =    444.928 us/op
+    p(100.0000) =    444.928 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:CPI":
+  1.802 clks/insn
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:IPC":
+  0.555 insns/clk
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-load-misses":
+  10671.518 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-loads":
+  11567.602 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-stores":
+  11176.583 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:L1-icache-load-misses":
+  9.711 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-load-misses":
+  0.388 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-loads":
+  1306.883 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-store-misses":
+  0.590 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-stores":
+  3221.061 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:branch-misses":
+  8.111 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:branches":
+  1125.291 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:cycles":
+  48432.099 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-load-misses":
+  0.227 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-loads":
+  11490.325 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-store-misses":
+  0.053 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-stores":
+  11162.872 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:iTLB-load-misses":
+  0.121 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:iTLB-loads":
+  0.119 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:instructions":
+  26873.585 #/op
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 75.00% complete, ETA 00:00:38
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 556.735 ±(99.9%) 49.676 us/op
+# Warmup Iteration   2: 551.418 ±(99.9%) 45.065 us/op
+# Warmup Iteration   3: 540.312 ±(99.9%) 24.262 us/op
+# Warmup Iteration   4: 534.137 ±(99.9%) 3.454 us/op
+# Warmup Iteration   5: 527.483 ±(99.9%) 3.280 us/op
+Iteration   1: 528.177 ±(99.9%) 0.930 us/op
+                 widenArrayCacheInt·p0.00:   498.688 us/op
+                 widenArrayCacheInt·p0.50:   520.704 us/op
+                 widenArrayCacheInt·p0.90:   559.104 us/op
+                 widenArrayCacheInt·p0.95:   573.440 us/op
+                 widenArrayCacheInt·p0.99:   606.208 us/op
+                 widenArrayCacheInt·p0.999:  661.692 us/op
+                 widenArrayCacheInt·p0.9999: 2134.016 us/op
+                 widenArrayCacheInt·p1.00:   2134.016 us/op
+
+Iteration   2: 526.822 ±(99.9%) 0.883 us/op
+                 widenArrayCacheInt·p0.00:   498.176 us/op
+                 widenArrayCacheInt·p0.50:   520.192 us/op
+                 widenArrayCacheInt·p0.90:   553.984 us/op
+                 widenArrayCacheInt·p0.95:   567.296 us/op
+                 widenArrayCacheInt·p0.99:   595.968 us/op
+                 widenArrayCacheInt·p0.999:  640.567 us/op
+                 widenArrayCacheInt·p0.9999: 2166.784 us/op
+                 widenArrayCacheInt·p1.00:   2166.784 us/op
+
+Iteration   3: 522.485 ±(99.9%) 1.573 us/op
+                 widenArrayCacheInt·p0.00:   486.400 us/op
+                 widenArrayCacheInt·p0.50:   512.000 us/op
+                 widenArrayCacheInt·p0.90:   548.864 us/op
+                 widenArrayCacheInt·p0.95:   574.464 us/op
+                 widenArrayCacheInt·p0.99:   679.936 us/op
+                 widenArrayCacheInt·p0.999:  726.465 us/op
+                 widenArrayCacheInt·p0.9999: 3252.224 us/op
+                 widenArrayCacheInt·p1.00:   3252.224 us/op
+
+Iteration   4: 535.067 ±(99.9%) 1.194 us/op
+                 widenArrayCacheInt·p0.00:   495.616 us/op
+                 widenArrayCacheInt·p0.50:   523.264 us/op
+                 widenArrayCacheInt·p0.90:   577.536 us/op
+                 widenArrayCacheInt·p0.95:   593.920 us/op
+                 widenArrayCacheInt·p0.99:   628.736 us/op
+                 widenArrayCacheInt·p0.999:  748.878 us/op
+                 widenArrayCacheInt·p0.9999: 2256.896 us/op
+                 widenArrayCacheInt·p1.00:   2256.896 us/op
+
+Iteration   5: 530.480 ±(99.9%) 20.127 us/op
+                 widenArrayCacheInt·p0.00:   487.936 us/op
+                 widenArrayCacheInt·p0.50:   516.096 us/op
+                 widenArrayCacheInt·p0.90:   553.984 us/op
+                 widenArrayCacheInt·p0.95:   568.320 us/op
+                 widenArrayCacheInt·p0.99:   655.155 us/op
+                 widenArrayCacheInt·p0.999:  731.709 us/op
+                 widenArrayCacheInt·p0.9999: 57671.680 us/op
+                 widenArrayCacheInt·p1.00:   57671.680 us/op
+
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 47187
+  mean =    528.571 ±(99.9%) 4.019 us/op
+
+  Histogram, us/op:
+    [    0.000,  5000.000) = 47186 
+    [ 5000.000, 10000.000) = 0 
+    [10000.000, 15000.000) = 0 
+    [15000.000, 20000.000) = 0 
+    [20000.000, 25000.000) = 0 
+    [25000.000, 30000.000) = 0 
+    [30000.000, 35000.000) = 0 
+    [35000.000, 40000.000) = 0 
+    [40000.000, 45000.000) = 0 
+    [45000.000, 50000.000) = 0 
+    [50000.000, 55000.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    486.400 us/op
+     p(50.0000) =    518.144 us/op
+     p(90.0000) =    560.128 us/op
+     p(95.0000) =    577.536 us/op
+     p(99.0000) =    641.024 us/op
+     p(99.9000) =    717.631 us/op
+     p(99.9900) =   2175.998 us/op
+     p(99.9990) =  57671.680 us/op
+     p(99.9999) =  57671.680 us/op
+    p(100.0000) =  57671.680 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:CPI":
+  2.574 clks/insn
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:IPC":
+  0.389 insns/clk
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-load-misses":
+  175260.460 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-loads":
+  180458.642 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-stores":
+  177034.072 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:L1-icache-load-misses":
+  317.717 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-load-misses":
+  10992.336 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-loads":
+  39182.446 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-store-misses":
+  12969.693 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-stores":
+  68822.076 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:branch-misses":
+  98.002 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:branches":
+  14132.348 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:cycles":
+  1060659.392 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-load-misses":
+  1048.343 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-loads":
+  181694.061 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-store-misses":
+  1376.925 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-stores":
+  176927.352 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:iTLB-load-misses":
+  3.128 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:iTLB-loads":
+  3.869 #/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:instructions":
+  412086.648 #/op
+
+
+# Run complete. Total time: 00:02:33
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                             (arraySize)    Mode     Cnt        Score    Error      Units
+ArrayCacheIntBenchmark.widenArrayAlloc                                     262145  sample  194269      128.400 ±  0.621      us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:CPI                                 262145  sample                2.202           clks/insn
+ArrayCacheIntBenchmark.widenArrayAlloc:IPC                                 262145  sample                0.454           insns/clk
+ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-load-misses               262145  sample            27485.978                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-loads                     262145  sample            13959.029                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-stores                    262145  sample            44542.974                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:L1-icache-load-misses               262145  sample              160.509                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:LLC-load-misses                     262145  sample              541.131                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:LLC-loads                           262145  sample             2215.618                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:LLC-store-misses                    262145  sample            13901.816                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:LLC-stores                          262145  sample            24118.397                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:branch-misses                       262145  sample               57.786                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:branches                            262145  sample            19636.097                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:cycles                              262145  sample           259473.358                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-load-misses                    262145  sample               14.714                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-loads                          262145  sample            13139.408                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-store-misses                   262145  sample              340.199                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-stores                         262145  sample            44899.931                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:iTLB-load-misses                    262145  sample                2.558                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:iTLB-loads                          262145  sample                1.945                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:instructions                        262145  sample           117854.954                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00               262145  sample              103.936               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50               262145  sample              124.416               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90               262145  sample              133.376               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95               262145  sample              140.800               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99               262145  sample              156.160               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999              262145  sample              556.032               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999             262145  sample             1252.502               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00               262145  sample            31981.568               us/op
+
+ArrayCacheIntBenchmark.widenArrayCacheInt                                  262145  sample  519397       24.039 ±  0.017      us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:CPI                              262145  sample                1.802           clks/insn
+ArrayCacheIntBenchmark.widenArrayCacheInt:IPC                              262145  sample                0.555           insns/clk
+ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-load-misses            262145  sample            10671.518                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-loads                  262145  sample            11567.602                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-stores                 262145  sample            11176.583                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:L1-icache-load-misses            262145  sample                9.711                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-load-misses                  262145  sample                0.388                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-loads                        262145  sample             1306.883                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-store-misses                 262145  sample                0.590                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-stores                       262145  sample             3221.061                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:branch-misses                    262145  sample                8.111                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:branches                         262145  sample             1125.291                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:cycles                           262145  sample            48432.099                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-load-misses                 262145  sample                0.227                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-loads                       262145  sample            11490.325                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-store-misses                262145  sample                0.053                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-stores                      262145  sample            11162.872                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:iTLB-load-misses                 262145  sample                0.121                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:iTLB-loads                       262145  sample                0.119                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:instructions                     262145  sample            26873.585                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00         262145  sample               22.880               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50         262145  sample               23.808               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90         262145  sample               24.096               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95         262145  sample               24.128               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99         262145  sample               26.592               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999        262145  sample              105.600               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999       262145  sample              160.287               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00         262145  sample              444.928               us/op
+
+
+ArrayCacheIntBenchmark.widenArrayAlloc                                    4194305  sample   11215     2227.697 ± 19.944      us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:CPI                                4194305  sample                2.065           clks/insn
+ArrayCacheIntBenchmark.widenArrayAlloc:IPC                                4194305  sample                0.484           insns/clk
+ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-load-misses              4194305  sample           451907.997                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-loads                    4194305  sample           281400.169                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:L1-dcache-stores                   4194305  sample           714859.846                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:L1-icache-load-misses              4194305  sample             3053.063                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:LLC-load-misses                    4194305  sample            19586.371                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:LLC-loads                          4194305  sample            49635.621                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:LLC-store-misses                   4194305  sample           218055.034                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:LLC-stores                         4194305  sample           393078.550                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:branch-misses                      4194305  sample              786.859                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:branches                           4194305  sample           415625.304                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:cycles                             4194305  sample          4543694.722                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-load-misses                   4194305  sample             1344.343                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-loads                         4194305  sample           282202.524                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-store-misses                  4194305  sample             5604.236                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:dTLB-stores                        4194305  sample           718639.319                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:iTLB-load-misses                   4194305  sample               65.531                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:iTLB-loads                         4194305  sample               19.319                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:instructions                       4194305  sample          2199837.856                #/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00              4194305  sample             2002.944               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50              4194305  sample             2064.384               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90              4194305  sample             2238.054               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95              4194305  sample             3514.368               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99              4194305  sample             4743.168               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999             4194305  sample             9466.413               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999            4194305  sample             9820.439               us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00              4194305  sample             9830.400               us/op
+
+ArrayCacheIntBenchmark.widenArrayCacheInt                                 4194305  sample   47187      528.571 ±  4.019      us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:CPI                             4194305  sample                2.574           clks/insn
+ArrayCacheIntBenchmark.widenArrayCacheInt:IPC                             4194305  sample                0.389           insns/clk
+ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-load-misses           4194305  sample           175260.460                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-loads                 4194305  sample           180458.642                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:L1-dcache-stores                4194305  sample           177034.072                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:L1-icache-load-misses           4194305  sample              317.717                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-load-misses                 4194305  sample            10992.336                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-loads                       4194305  sample            39182.446                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-store-misses                4194305  sample            12969.693                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:LLC-stores                      4194305  sample            68822.076                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:branch-misses                   4194305  sample               98.002                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:branches                        4194305  sample            14132.348                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:cycles                          4194305  sample          1060659.392                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-load-misses                4194305  sample             1048.343                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-loads                      4194305  sample           181694.061                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-store-misses               4194305  sample             1376.925                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:dTLB-stores                     4194305  sample           176927.352                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:iTLB-load-misses                4194305  sample                3.128                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:iTLB-loads                      4194305  sample                3.869                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:instructions                    4194305  sample           412086.648                #/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00        4194305  sample              486.400               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50        4194305  sample              518.144               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90        4194305  sample              560.128               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95        4194305  sample              577.536               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99        4194305  sample              641.024               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999       4194305  sample              717.631               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999      4194305  sample             2175.998               us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00        4194305  sample            57671.680               us/op

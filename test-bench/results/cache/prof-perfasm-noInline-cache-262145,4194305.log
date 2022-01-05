@@ -1,0 +1,819 @@
+# JMH version: 1.34
+# VM version: JDK 17, OpenJDK 64-Bit Server VM, 17+35-2724
+# VM invoker: /home/bourgesl/apps/jdk-17/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation -XX:TieredStopAtLevel=4 -XX:-Inline --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 262145)
+
+# Run progress: 0.00% complete, ETA 00:00:40
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfAsmProfiler 
+# Profilers consume stdout and stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 172.701 ±(99.9%) 11.811 us/op
+# Warmup Iteration   2: 130.319 ±(99.9%) 1.807 us/op
+# Warmup Iteration   3: 131.288 ±(99.9%) 2.228 us/op
+# Warmup Iteration   4: 131.008 ±(99.9%) 2.608 us/op
+# Warmup Iteration   5: 131.079 ±(99.9%) 2.386 us/op
+Iteration   1: 131.409 ±(99.9%) 2.633 us/op
+                 widenArrayAlloc·p0.00:   112.256 us/op
+                 widenArrayAlloc·p0.50:   125.952 us/op
+                 widenArrayAlloc·p0.90:   131.328 us/op
+                 widenArrayAlloc·p0.95:   135.680 us/op
+                 widenArrayAlloc·p0.99:   148.992 us/op
+                 widenArrayAlloc·p0.999:  1241.088 us/op
+                 widenArrayAlloc·p0.9999: 1704.653 us/op
+                 widenArrayAlloc·p1.00:   27820.032 us/op
+
+# Processing profiler results: LinuxPerfAsmProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 37859
+  mean =    131.409 ±(99.9%) 2.633 us/op
+
+  Histogram, us/op:
+    [    0.000,  2500.000) = 37857 
+    [ 2500.000,  5000.000) = 1 
+    [ 5000.000,  7500.000) = 0 
+    [ 7500.000, 10000.000) = 0 
+    [10000.000, 12500.000) = 0 
+    [12500.000, 15000.000) = 0 
+    [15000.000, 17500.000) = 0 
+    [17500.000, 20000.000) = 0 
+    [20000.000, 22500.000) = 0 
+    [22500.000, 25000.000) = 0 
+    [25000.000, 27500.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    112.256 us/op
+     p(50.0000) =    125.952 us/op
+     p(90.0000) =    131.328 us/op
+     p(95.0000) =    135.680 us/op
+     p(99.0000) =    148.992 us/op
+     p(99.9000) =   1241.088 us/op
+     p(99.9900) =   1704.653 us/op
+     p(99.9990) =  27820.032 us/op
+     p(99.9999) =  27820.032 us/op
+    p(100.0000) =  27820.032 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·asm":
+PrintAssembly processed: 176357 total address lines.
+Perf output processed (skipped 13.354 seconds):
+ Column 1: cycles (5140 events)
+
+Hottest code regions (>10.00% "cycles" events):
+
+....[Hottest Region 1]..............................................................................
+c2, level 4, java.util.Arrays::copyOf, version 885 (17 bytes) 
+
+                0x00007fffe1276251:   cmp    $0x8,%rcx
+         ╭      0x00007fffe1276255:   jg     0x00007fffe1276267
+         │      0x00007fffe1276257:   dec    %rcx
+         │      0x00007fffe127625a:   js     0x00007fffe12762ab
+         │↗     0x00007fffe127625c:   mov    %rax,(%rdi,%rcx,8)
+         ││     0x00007fffe1276260:   dec    %rcx
+         │╰     0x00007fffe1276263:   jge    0x00007fffe127625c
+         │      0x00007fffe1276265:   jmp    0x00007fffe12762ab
+         ↘      0x00007fffe1276267:   vpxor  %ymm0,%ymm0,%ymm0
+           ╭    0x00007fffe127626b:   jmp    0x00007fffe127627d
+  4.55%    │↗   0x00007fffe1276270:   vmovdqu %ymm0,(%rdi)
+ 29.90%    ││   0x00007fffe1276274:   vmovdqu %ymm0,0x20(%rdi)
+ 19.49%    ││   0x00007fffe1276279:   add    $0x40,%rdi
+  9.14%    ↘│   0x00007fffe127627d:   sub    $0x8,%rcx
+  0.02%     ╰   0x00007fffe1276281:   jge    0x00007fffe1276270
+                0x00007fffe1276283:   add    $0x4,%rcx
+             ╭  0x00007fffe1276287:   jl     0x00007fffe1276295
+             │  0x00007fffe1276289:   vmovdqu %ymm0,(%rdi)
+             │  0x00007fffe127628d:   add    $0x20,%rdi
+             │  0x00007fffe1276291:   sub    $0x4,%rcx
+             ↘  0x00007fffe1276295:   add    $0x4,%rcx
+                0x00007fffe1276299:   jle    0x00007fffe12762ab
+                0x00007fffe127629b:   dec    %rcx
+                0x00007fffe127629e:   vmovq  %xmm0,(%rdi)
+                0x00007fffe12762a2:   add    $0x8,%rdi
+....................................................................................................
+ 63.11%  <total for region 1>
+
+....[Hottest Region 2]..............................................................................
+runtime stub, StubRoutines::jint_disjoint_arraycopy (24 bytes) 
+
+              0x00007fffd97a59ab:   test   $0x1,%ecx
+         ╭    0x00007fffd97a59b1:   je     Stub::jint_disjoint_arraycopy+57 0x00007fffd97a59b9
+         │    0x00007fffd97a59b3:   mov    0x8(%rdi),%eax
+         │    0x00007fffd97a59b6:   mov    %eax,0x8(%rsi)
+         ↘    0x00007fffd97a59b9:   vzeroupper 
+              0x00007fffd97a59bc:   xor    %rax,%rax
+              0x00007fffd97a59bf:   leave  
+              0x00007fffd97a59c0:   ret    
+              0x00007fffd97a59c1:   data16 data16 nopw 0x0(%rax,%rax,1)
+              0x00007fffd97a59cc:   data16 data16 xchg %ax,%ax
+  0.29%   ↗   0x00007fffd97a59d0:   vmovdqu -0x38(%rdi,%rdx,8),%ymm0
+  8.99%   │   0x00007fffd97a59d6:   vmovdqu %ymm0,-0x38(%rsi,%rdx,8)
+  3.62%   │   0x00007fffd97a59dc:   vmovdqu -0x18(%rdi,%rdx,8),%ymm1
+ 13.07%   │   0x00007fffd97a59e2:   vmovdqu %ymm1,-0x18(%rsi,%rdx,8)
+  3.77%   │   0x00007fffd97a59e8:   add    $0x8,%rdx
+          ╰   0x00007fffd97a59ec:   jle    Stub::jint_disjoint_arraycopy+80 0x00007fffd97a59d0
+              0x00007fffd97a59ee:   sub    $0x4,%rdx
+           ╭  0x00007fffd97a59f2:   jg     Stub::jint_disjoint_arraycopy+132 0x00007fffd97a5a04
+           │  0x00007fffd97a59f4:   vmovdqu -0x18(%rdi,%rdx,8),%ymm0
+           │  0x00007fffd97a59fa:   vmovdqu %ymm0,-0x18(%rsi,%rdx,8)
+           │  0x00007fffd97a5a00:   add    $0x4,%rdx
+           ↘  0x00007fffd97a5a04:   vpxor  %ymm0,%ymm0,%ymm0
+              0x00007fffd97a5a08:   vpxor  %ymm1,%ymm1,%ymm1
+              0x00007fffd97a5a0c:   sub    $0x4,%rdx
+              0x00007fffd97a5a10:   jl     Stub::jint_disjoint_arraycopy+28 0x00007fffd97a599c
+....................................................................................................
+ 29.75%  <total for region 2>
+
+....[Hottest Regions]...............................................................................
+ 63.11%         c2, level 4  java.util.Arrays::copyOf, version 885 (17 bytes) 
+ 29.75%        runtime stub  StubRoutines::jint_disjoint_arraycopy (24 bytes) 
+  0.82%           libjvm.so  SpinPause (9 bytes) 
+  0.29%              kernel  [unknown] (0 bytes) 
+  0.21%         c2, level 4  java.util.Arrays::copyOf, version 885 (0 bytes) 
+  0.16%           libjvm.so  ElfSymbolTable::lookup (48 bytes) 
+  0.14%              kernel  [unknown] (0 bytes) 
+  0.10%              kernel  [unknown] (0 bytes) 
+  0.08%         c1, level 3  org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest::widenArrayAlloc_sample_jmhStub, version 1005 (24 bytes) 
+  0.08%           libjvm.so  PSCardTable::scavenge_contents_parallel (12 bytes) 
+  0.08%        libc-2.31.so  clock_gettime@GLIBC_2.2.5 (0 bytes) 
+  0.06%              kernel  [unknown] (42 bytes) 
+  0.06%              kernel  [unknown] (0 bytes) 
+  0.06%              kernel  [unknown] (31 bytes) 
+  0.06%              kernel  [unknown] (12 bytes) 
+  0.06%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayAlloc, version 887 (0 bytes) 
+  0.06%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayAlloc, version 887 (29 bytes) 
+  0.06%           libjvm.so  CodeHeap::find_blob_unsafe (0 bytes) 
+  0.06%           libjvm.so  PSCardTable::scavenge_contents_parallel (6 bytes) 
+  0.04%              kernel  [unknown] (22 bytes) 
+  4.67%  <...other 221 warm regions...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Hottest Methods (after inlining)]..............................................................
+ 63.35%         c2, level 4  java.util.Arrays::copyOf, version 885 
+ 29.75%        runtime stub  StubRoutines::jint_disjoint_arraycopy 
+  2.92%              kernel  [unknown] 
+  0.82%           libjvm.so  SpinPause 
+  0.23%                      <unknown> 
+  0.19%           libjvm.so  PSCardTable::scavenge_contents_parallel 
+  0.16%           libjvm.so  ElfSymbolTable::lookup 
+  0.16%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayAlloc, version 887 
+  0.12%         c1, level 3  org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest::widenArrayAlloc_sample_jmhStub, version 1005 
+  0.08%        libc-2.31.so  clock_gettime@GLIBC_2.2.5 
+  0.08%           libjvm.so  CodeHeap::find_blob_unsafe 
+  0.08%        libc-2.31.so  __vfprintf_internal 
+  0.06%           libjvm.so  WeakProcessor::Task::work<PSIsAliveClosure, PSAdjustWeakRootsClosure> 
+  0.06%         c2, level 4  org.openjdk.jmh.util.SampleBuffer::add, version 984 
+  0.04%        libc-2.31.so  __memmove_sse2_unaligned_erms 
+  0.04%           libjvm.so  stringStream::write 
+  0.04%           libjvm.so  decode_env::print_hook_comments 
+  0.04%  libpthread-2.31.so  __pthread_disable_asynccancel 
+  0.04%           libjvm.so  outputStream::do_vsnprintf_and_write_with_automatic_buffer 
+  0.04%              [vdso]  [unknown] 
+  1.71%  <...other 88 warm methods...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Distribution by Source]........................................................................
+ 63.64%         c2, level 4
+ 29.75%        runtime stub
+  2.92%              kernel
+  2.68%           libjvm.so
+  0.41%        libc-2.31.so
+  0.23%                    
+  0.12%         c1, level 3
+  0.10%  libpthread-2.31.so
+  0.04%      hsdis-amd64.so
+  0.04%              [vdso]
+  0.04%         interpreter
+  0.02%      perf-76634.map
+....................................................................................................
+ 99.98%  <totals>
+
+
+
+# JMH version: 1.34
+# VM version: JDK 17, OpenJDK 64-Bit Server VM, 17+35-2724
+# VM invoker: /home/bourgesl/apps/jdk-17/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation -XX:TieredStopAtLevel=4 -XX:-Inline --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 25.00% complete, ETA 00:01:07
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfAsmProfiler 
+# Profilers consume stdout and stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 2818.991 ±(99.9%) 328.898 us/op
+# Warmup Iteration   2: 2399.854 ±(99.9%) 50.538 us/op
+# Warmup Iteration   3: 2348.879 ±(99.9%) 112.495 us/op
+# Warmup Iteration   4: 2241.646 ±(99.9%) 86.040 us/op
+# Warmup Iteration   5: 2207.645 ±(99.9%) 65.134 us/op
+Iteration   1: 2220.080 ±(99.9%) 34.875 us/op
+                 widenArrayAlloc·p0.00:   2023.424 us/op
+                 widenArrayAlloc·p0.50:   2088.960 us/op
+                 widenArrayAlloc·p0.90:   2203.238 us/op
+                 widenArrayAlloc·p0.95:   3716.506 us/op
+                 widenArrayAlloc·p0.99:   4231.086 us/op
+                 widenArrayAlloc·p0.999:  7336.264 us/op
+                 widenArrayAlloc·p0.9999: 9453.568 us/op
+                 widenArrayAlloc·p1.00:   9453.568 us/op
+
+# Processing profiler results: LinuxPerfAsmProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 2250
+  mean =   2220.080 ±(99.9%) 34.875 us/op
+
+  Histogram, us/op:
+    [ 2000.000,  2500.000) = 2101 
+    [ 2500.000,  3000.000) = 0 
+    [ 3000.000,  3500.000) = 15 
+    [ 3500.000,  4000.000) = 77 
+    [ 4000.000,  4500.000) = 54 
+    [ 4500.000,  5000.000) = 1 
+    [ 5000.000,  5500.000) = 0 
+    [ 5500.000,  6000.000) = 0 
+    [ 6000.000,  6500.000) = 0 
+    [ 6500.000,  7000.000) = 0 
+    [ 7000.000,  7500.000) = 0 
+    [ 7500.000,  8000.000) = 0 
+    [ 8000.000,  8500.000) = 1 
+    [ 8500.000,  9000.000) = 0 
+    [ 9000.000,  9500.000) = 1 
+
+  Percentiles, us/op:
+      p(0.0000) =   2023.424 us/op
+     p(50.0000) =   2088.960 us/op
+     p(90.0000) =   2203.238 us/op
+     p(95.0000) =   3716.506 us/op
+     p(99.0000) =   4231.086 us/op
+     p(99.9000) =   7336.264 us/op
+     p(99.9900) =   9453.568 us/op
+     p(99.9990) =   9453.568 us/op
+     p(99.9999) =   9453.568 us/op
+    p(100.0000) =   9453.568 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·asm":
+PrintAssembly processed: 172156 total address lines.
+Perf output processed (skipped 13.379 seconds):
+ Column 1: cycles (5208 events)
+
+Hottest code regions (>10.00% "cycles" events):
+
+....[Hottest Region 1]..............................................................................
+c2, level 4, java.util.Arrays::copyOf, version 966 (13 bytes) 
+
+                0x00007fffe127a551:   cmp    $0x8,%rcx
+         ╭      0x00007fffe127a555:   jg     0x00007fffe127a567
+         │      0x00007fffe127a557:   dec    %rcx
+         │      0x00007fffe127a55a:   js     0x00007fffe127a5ab
+         │↗     0x00007fffe127a55c:   mov    %rax,(%rdi,%rcx,8)
+         ││     0x00007fffe127a560:   dec    %rcx
+         │╰     0x00007fffe127a563:   jge    0x00007fffe127a55c
+         │      0x00007fffe127a565:   jmp    0x00007fffe127a5ab
+         ↘      0x00007fffe127a567:   vpxor  %ymm0,%ymm0,%ymm0
+           ╭    0x00007fffe127a56b:   jmp    0x00007fffe127a57d
+  0.88%    │↗   0x00007fffe127a570:   vmovdqu %ymm0,(%rdi)
+ 27.07%    ││   0x00007fffe127a574:   vmovdqu %ymm0,0x20(%rdi)
+ 22.00%    ││   0x00007fffe127a579:   add    $0x40,%rdi
+ 10.68%    ↘│   0x00007fffe127a57d:   sub    $0x8,%rcx
+            ╰   0x00007fffe127a581:   jge    0x00007fffe127a570
+                0x00007fffe127a583:   add    $0x4,%rcx
+             ╭  0x00007fffe127a587:   jl     0x00007fffe127a595
+             │  0x00007fffe127a589:   vmovdqu %ymm0,(%rdi)
+             │  0x00007fffe127a58d:   add    $0x20,%rdi
+             │  0x00007fffe127a591:   sub    $0x4,%rcx
+             ↘  0x00007fffe127a595:   add    $0x4,%rcx
+                0x00007fffe127a599:   jle    0x00007fffe127a5ab
+                0x00007fffe127a59b:   dec    %rcx
+                0x00007fffe127a59e:   vmovq  %xmm0,(%rdi)
+....................................................................................................
+ 60.64%  <total for region 1>
+
+....[Hottest Region 2]..............................................................................
+runtime stub, StubRoutines::jint_disjoint_arraycopy (24 bytes) 
+
+              0x00007fffd97a59ab:   test   $0x1,%ecx
+         ╭    0x00007fffd97a59b1:   je     Stub::jint_disjoint_arraycopy+57 0x00007fffd97a59b9
+         │    0x00007fffd97a59b3:   mov    0x8(%rdi),%eax
+         │    0x00007fffd97a59b6:   mov    %eax,0x8(%rsi)
+         ↘    0x00007fffd97a59b9:   vzeroupper 
+              0x00007fffd97a59bc:   xor    %rax,%rax
+              0x00007fffd97a59bf:   leave  
+              0x00007fffd97a59c0:   ret    
+              0x00007fffd97a59c1:   data16 data16 nopw 0x0(%rax,%rax,1)
+              0x00007fffd97a59cc:   data16 data16 xchg %ax,%ax
+  0.29%   ↗   0x00007fffd97a59d0:   vmovdqu -0x38(%rdi,%rdx,8),%ymm0
+  9.06%   │   0x00007fffd97a59d6:   vmovdqu %ymm0,-0x38(%rsi,%rdx,8)
+  3.38%   │   0x00007fffd97a59dc:   vmovdqu -0x18(%rdi,%rdx,8),%ymm1
+ 13.58%   │   0x00007fffd97a59e2:   vmovdqu %ymm1,-0x18(%rsi,%rdx,8)
+  4.34%   │   0x00007fffd97a59e8:   add    $0x8,%rdx
+          ╰   0x00007fffd97a59ec:   jle    Stub::jint_disjoint_arraycopy+80 0x00007fffd97a59d0
+              0x00007fffd97a59ee:   sub    $0x4,%rdx
+           ╭  0x00007fffd97a59f2:   jg     Stub::jint_disjoint_arraycopy+132 0x00007fffd97a5a04
+           │  0x00007fffd97a59f4:   vmovdqu -0x18(%rdi,%rdx,8),%ymm0
+           │  0x00007fffd97a59fa:   vmovdqu %ymm0,-0x18(%rsi,%rdx,8)
+           │  0x00007fffd97a5a00:   add    $0x4,%rdx
+           ↘  0x00007fffd97a5a04:   vpxor  %ymm0,%ymm0,%ymm0
+              0x00007fffd97a5a08:   vpxor  %ymm1,%ymm1,%ymm1
+              0x00007fffd97a5a0c:   sub    $0x4,%rdx
+              0x00007fffd97a5a10:   jl     Stub::jint_disjoint_arraycopy+28 0x00007fffd97a599c
+....................................................................................................
+ 30.65%  <total for region 2>
+
+....[Hottest Regions]...............................................................................
+ 60.64%         c2, level 4  java.util.Arrays::copyOf, version 966 (13 bytes) 
+ 30.65%        runtime stub  StubRoutines::jint_disjoint_arraycopy (24 bytes) 
+  1.63%           libjvm.so  SpinPause (9 bytes) 
+  1.63%        libc-2.31.so  __memmove_sse2_unaligned_erms (39 bytes) 
+  0.58%           libjvm.so  ObjectStartArray::object_starts_in_range (24 bytes) 
+  0.56%           libjvm.so  PSCardTable::scavenge_contents_parallel (40 bytes) 
+  0.36%           libjvm.so  PSCardTable::scavenge_contents_parallel (19 bytes) 
+  0.25%        libc-2.31.so  __memmove_sse2_unaligned_erms (35 bytes) 
+  0.19%              kernel  [unknown] (0 bytes) 
+  0.12%           libjvm.so  ElfSymbolTable::lookup (30 bytes) 
+  0.10%           libjvm.so  WeakProcessor::Task::work<PSIsAliveClosure, PSAdjustWeakRootsClosure> (36 bytes) 
+  0.10%           libjvm.so  TaskTerminator::offer_termination (0 bytes) 
+  0.06%              kernel  [unknown] (0 bytes) 
+  0.06%              kernel  [unknown] (23 bytes) 
+  0.06%         interpreter  invokestatic  184 invokestatic  (15 bytes) 
+  0.06%           libjvm.so  fileStream::write (13 bytes) 
+  0.04%              kernel  [unknown] (0 bytes) 
+  0.04%              kernel  [unknown] (0 bytes) 
+  0.04%              kernel  [unknown] (26 bytes) 
+  0.04%              kernel  [unknown] (12 bytes) 
+  2.80%  <...other 138 warm regions...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Hottest Methods (after inlining)]..............................................................
+ 60.66%         c2, level 4  java.util.Arrays::copyOf, version 966 
+ 30.65%        runtime stub  StubRoutines::jint_disjoint_arraycopy 
+  1.88%        libc-2.31.so  __memmove_sse2_unaligned_erms 
+  1.80%              kernel  [unknown] 
+  1.63%           libjvm.so  SpinPause 
+  0.96%           libjvm.so  PSCardTable::scavenge_contents_parallel 
+  0.58%           libjvm.so  ObjectStartArray::object_starts_in_range 
+  0.21%                      <unknown> 
+  0.12%           libjvm.so  ElfSymbolTable::lookup 
+  0.10%           libjvm.so  TaskTerminator::offer_termination 
+  0.10%           libjvm.so  WeakProcessor::Task::work<PSIsAliveClosure, PSAdjustWeakRootsClosure> 
+  0.06%         interpreter  invokestatic  184 invokestatic  
+  0.06%      perf-76699.map  [unknown] 
+  0.06%           libjvm.so  fileStream::write 
+  0.04%           libjvm.so  OptoRuntime::new_array_nozero_C 
+  0.04%        libc-2.31.so  syscall 
+  0.04%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayAlloc, version 979 
+  0.04%           libjvm.so  metadata_Relocation::fix_metadata_relocation 
+  0.02%        libc-2.31.so  __vsnprintf_internal 
+  0.02%      hsdis-amd64.so  putop 
+  0.94%  <...other 49 warm methods...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Distribution by Source]........................................................................
+ 60.71%         c2, level 4
+ 30.65%        runtime stub
+  4.26%           libjvm.so
+  2.11%        libc-2.31.so
+  1.80%              kernel
+  0.21%                    
+  0.10%         interpreter
+  0.06%      perf-76699.map
+  0.04%      hsdis-amd64.so
+  0.04%  libpthread-2.31.so
+....................................................................................................
+ 99.98%  <totals>
+
+
+
+# JMH version: 1.34
+# VM version: JDK 17, OpenJDK 64-Bit Server VM, 17+35-2724
+# VM invoker: /home/bourgesl/apps/jdk-17/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation -XX:TieredStopAtLevel=4 -XX:-Inline --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 262145)
+
+# Run progress: 50.00% complete, ETA 00:00:45
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfAsmProfiler 
+# Profilers consume stdout and stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 35.425 ±(99.9%) 8.382 us/op
+# Warmup Iteration   2: 25.769 ±(99.9%) 2.312 us/op
+# Warmup Iteration   3: 24.346 ±(99.9%) 0.080 us/op
+# Warmup Iteration   4: 24.422 ±(99.9%) 0.098 us/op
+# Warmup Iteration   5: 24.555 ±(99.9%) 0.023 us/op
+Iteration   1: 24.497 ±(99.9%) 0.006 us/op
+                 widenArrayCacheInt·p0.00:   24.000 us/op
+                 widenArrayCacheInt·p0.50:   24.416 us/op
+                 widenArrayCacheInt·p0.90:   24.544 us/op
+                 widenArrayCacheInt·p0.95:   24.608 us/op
+                 widenArrayCacheInt·p0.99:   26.336 us/op
+                 widenArrayCacheInt·p0.999:  28.736 us/op
+                 widenArrayCacheInt·p0.9999: 37.172 us/op
+                 widenArrayCacheInt·p1.00:   106.368 us/op
+
+# Processing profiler results: LinuxPerfAsmProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 101826
+  mean =     24.497 ±(99.9%) 0.006 us/op
+
+  Histogram, us/op:
+    [ 20.000,  25.000) = 98650 
+    [ 25.000,  30.000) = 3107 
+    [ 30.000,  35.000) = 39 
+    [ 35.000,  40.000) = 23 
+    [ 40.000,  45.000) = 3 
+    [ 45.000,  50.000) = 3 
+    [ 50.000,  55.000) = 0 
+    [ 55.000,  60.000) = 0 
+    [ 60.000,  65.000) = 0 
+    [ 65.000,  70.000) = 0 
+    [ 70.000,  75.000) = 0 
+    [ 75.000,  80.000) = 0 
+    [ 80.000,  85.000) = 0 
+    [ 85.000,  90.000) = 0 
+    [ 90.000,  95.000) = 0 
+    [ 95.000, 100.000) = 0 
+    [100.000, 105.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =     24.000 us/op
+     p(50.0000) =     24.416 us/op
+     p(90.0000) =     24.544 us/op
+     p(95.0000) =     24.608 us/op
+     p(99.0000) =     26.336 us/op
+     p(99.9000) =     28.736 us/op
+     p(99.9900) =     37.172 us/op
+     p(99.9990) =    105.334 us/op
+     p(99.9999) =    106.368 us/op
+    p(100.0000) =    106.368 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·asm":
+PrintAssembly processed: 178016 total address lines.
+Perf output processed (skipped 13.289 seconds):
+ Column 1: cycles (5106 events)
+
+Hottest code regions (>10.00% "cycles" events):
+
+....[Hottest Region 1]..............................................................................
+runtime stub, StubRoutines::jint_disjoint_arraycopy (61 bytes) 
+
+                0x00007fffd97a5984:   mov    %rdx,%rcx
+                0x00007fffd97a5987:   shr    %rdx
+                0x00007fffd97a598a:   lea    -0x8(%rdi,%rdx,8),%rdi
+                0x00007fffd97a598f:   lea    -0x8(%rsi,%rdx,8),%rsi
+                0x00007fffd97a5994:   neg    %rdx
+         ╭      0x00007fffd97a5997:   jmp    Stub::jint_disjoint_arraycopy+104 0x00007fffd97a59e8
+         │↗     0x00007fffd97a599c:   mov    0x8(%rdi,%rdx,8),%rax
+         ││     0x00007fffd97a59a1:   mov    %rax,0x8(%rsi,%rdx,8)
+         ││     0x00007fffd97a59a6:   inc    %rdx
+         │╰     0x00007fffd97a59a9:   jne    Stub::jint_disjoint_arraycopy+28 0x00007fffd97a599c
+  0.02%  │      0x00007fffd97a59ab:   test   $0x1,%ecx
+         │ ╭    0x00007fffd97a59b1:   je     Stub::jint_disjoint_arraycopy+57 0x00007fffd97a59b9
+         │ │    0x00007fffd97a59b3:   mov    0x8(%rdi),%eax
+         │ │    0x00007fffd97a59b6:   mov    %eax,0x8(%rsi)
+         │ ↘    0x00007fffd97a59b9:   vzeroupper 
+  0.02%  │      0x00007fffd97a59bc:   xor    %rax,%rax
+         │      0x00007fffd97a59bf:   leave  
+  0.02%  │      0x00007fffd97a59c0:   ret    
+         │      0x00007fffd97a59c1:   data16 data16 nopw 0x0(%rax,%rax,1)
+         │      0x00007fffd97a59cc:   data16 data16 xchg %ax,%ax
+  2.21%  │  ↗   0x00007fffd97a59d0:   vmovdqu -0x38(%rdi,%rdx,8),%ymm0
+ 44.93%  │  │   0x00007fffd97a59d6:   vmovdqu %ymm0,-0x38(%rsi,%rdx,8)
+ 11.95%  │  │   0x00007fffd97a59dc:   vmovdqu -0x18(%rdi,%rdx,8),%ymm1
+  6.27%  │  │   0x00007fffd97a59e2:   vmovdqu %ymm1,-0x18(%rsi,%rdx,8)
+ 29.65%  ↘  │   0x00007fffd97a59e8:   add    $0x8,%rdx
+            ╰   0x00007fffd97a59ec:   jle    Stub::jint_disjoint_arraycopy+80 0x00007fffd97a59d0
+                0x00007fffd97a59ee:   sub    $0x4,%rdx
+             ╭  0x00007fffd97a59f2:   jg     Stub::jint_disjoint_arraycopy+132 0x00007fffd97a5a04
+             │  0x00007fffd97a59f4:   vmovdqu -0x18(%rdi,%rdx,8),%ymm0
+             │  0x00007fffd97a59fa:   vmovdqu %ymm0,-0x18(%rsi,%rdx,8)
+             │  0x00007fffd97a5a00:   add    $0x4,%rdx
+             ↘  0x00007fffd97a5a04:   vpxor  %ymm0,%ymm0,%ymm0
+                0x00007fffd97a5a08:   vpxor  %ymm1,%ymm1,%ymm1
+                0x00007fffd97a5a0c:   sub    $0x4,%rdx
+                0x00007fffd97a5a10:   jl     Stub::jint_disjoint_arraycopy+28 0x00007fffd97a599c
+....................................................................................................
+ 95.06%  <total for region 1>
+
+....[Hottest Regions]...............................................................................
+ 95.06%        runtime stub  StubRoutines::jint_disjoint_arraycopy (61 bytes) 
+  0.37%         c2, level 4  sun.java2d.marlin.ArrayCacheInt::getBuckets, version 1006 (63 bytes) 
+  0.35%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayCacheInt, version 904 (48 bytes) 
+  0.31%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Reference::putArray, version 897 (3 bytes) 
+  0.27%              kernel  [unknown] (0 bytes) 
+  0.27%        libc-2.31.so  clock_gettime@GLIBC_2.2.5 (30 bytes) 
+  0.22%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Reference::widenArray, version 899 (61 bytes) 
+  0.22%              [vdso]  [unknown] (28 bytes) 
+  0.20%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Bucket::putArray, version 903 (41 bytes) 
+  0.12%         c2, level 4  org.marlin.bench.ArrayCacheIntBenchmark::widenArrayCacheInt, version 906 (35 bytes) 
+  0.10%         c2, level 4  sun.java2d.marlin.ArrayCacheConst::getBucket, version 895 (30 bytes) 
+  0.10%           libjvm.so  fileStream::write (30 bytes) 
+  0.08%              kernel  [unknown] (30 bytes) 
+  0.08%         c2, level 4  sun.java2d.marlin.ArrayCacheConst::getNewSize, version 900 (51 bytes) 
+  0.08%         c2, level 4  org.openjdk.jmh.util.SampleBuffer::add, version 912 (20 bytes) 
+  0.08%              [vdso]  [unknown] (22 bytes) 
+  0.06%              kernel  [unknown] (36 bytes) 
+  0.06%         c2, level 4  sun.java2d.marlin.ArrayCacheInt::getCacheBucket, version 894 (6 bytes) 
+  0.06%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Reference::putArray, version 897 (15 bytes) 
+  0.06%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Reference::widenArray, version 899 (4 bytes) 
+  1.84%  <...other 82 warm regions...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Hottest Methods (after inlining)]..............................................................
+ 95.08%        runtime stub  StubRoutines::jint_disjoint_arraycopy 
+  1.19%              kernel  [unknown] 
+  0.37%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Reference::putArray, version 897 
+  0.37%         c2, level 4  sun.java2d.marlin.ArrayCacheInt::getBuckets, version 1006 
+  0.35%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayCacheInt, version 904 
+  0.31%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Reference::widenArray, version 899 
+  0.31%              [vdso]  [unknown] 
+  0.27%        libc-2.31.so  clock_gettime@GLIBC_2.2.5 
+  0.20%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Bucket::putArray, version 903 
+  0.12%         c2, level 4  org.marlin.bench.ArrayCacheIntBenchmark::widenArrayCacheInt, version 906 
+  0.10%         c2, level 4  org.openjdk.jmh.util.SampleBuffer::add, version 912 
+  0.10%           libjvm.so  fileStream::write 
+  0.10%         c2, level 4  sun.java2d.marlin.ArrayCacheConst::getBucket, version 895 
+  0.08%         c2, level 4  org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest::widenArrayCacheInt_sample_jmhStub, version 1009 
+  0.08%         c2, level 4  sun.java2d.marlin.ArrayCacheConst::getNewSize, version 900 
+  0.06%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Reference::getArray, version 901 
+  0.06%         c2, level 4  sun.java2d.marlin.ArrayCacheInt::getCacheBucket, version 894 
+  0.04%           libjvm.so  ElfSymbolTable::lookup 
+  0.04%           libjvm.so  outputStream::update_position 
+  0.02%           libjvm.so  methodHandle::~methodHandle 
+  0.72%  <...other 37 warm methods...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Distribution by Source]........................................................................
+ 95.08%        runtime stub
+  2.27%         c2, level 4
+  1.19%              kernel
+  0.65%           libjvm.so
+  0.37%        libc-2.31.so
+  0.31%              [vdso]
+  0.02%                    
+  0.02%         c1, level 1
+  0.02%      hsdis-amd64.so
+  0.02%  libpthread-2.31.so
+  0.02%         interpreter
+....................................................................................................
+ 99.98%  <totals>
+
+
+
+# JMH version: 1.34
+# VM version: JDK 17, OpenJDK 64-Bit Server VM, 17+35-2724
+# VM invoker: /home/bourgesl/apps/jdk-17/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation -XX:TieredStopAtLevel=4 -XX:-Inline --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 75.00% complete, ETA 00:00:21
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfAsmProfiler 
+# Profilers consume stdout and stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 688.124 ±(99.9%) 88.112 us/op
+# Warmup Iteration   2: 536.624 ±(99.9%) 24.952 us/op
+# Warmup Iteration   3: 524.714 ±(99.9%) 3.530 us/op
+# Warmup Iteration   4: 524.673 ±(99.9%) 22.112 us/op
+# Warmup Iteration   5: 522.098 ±(99.9%) 3.024 us/op
+Iteration   1: 527.808 ±(99.9%) 0.844 us/op
+                 widenArrayCacheInt·p0.00:   502.272 us/op
+                 widenArrayCacheInt·p0.50:   522.240 us/op
+                 widenArrayCacheInt·p0.90:   550.912 us/op
+                 widenArrayCacheInt·p0.95:   569.344 us/op
+                 widenArrayCacheInt·p0.99:   600.064 us/op
+                 widenArrayCacheInt·p0.999:  648.747 us/op
+                 widenArrayCacheInt·p0.9999: 2097.152 us/op
+                 widenArrayCacheInt·p1.00:   2097.152 us/op
+
+# Processing profiler results: LinuxPerfAsmProfiler 
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 9457
+  mean =    527.808 ±(99.9%) 0.844 us/op
+
+  Histogram, us/op:
+    [   0.000,  250.000) = 0 
+    [ 250.000,  500.000) = 0 
+    [ 500.000,  750.000) = 9456 
+    [ 750.000, 1000.000) = 0 
+    [1000.000, 1250.000) = 0 
+    [1250.000, 1500.000) = 0 
+    [1500.000, 1750.000) = 0 
+    [1750.000, 2000.000) = 0 
+    [2000.000, 2250.000) = 1 
+    [2250.000, 2500.000) = 0 
+    [2500.000, 2750.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    502.272 us/op
+     p(50.0000) =    522.240 us/op
+     p(90.0000) =    550.912 us/op
+     p(95.0000) =    569.344 us/op
+     p(99.0000) =    600.064 us/op
+     p(99.9000) =    648.747 us/op
+     p(99.9900) =   2097.152 us/op
+     p(99.9990) =   2097.152 us/op
+     p(99.9999) =   2097.152 us/op
+    p(100.0000) =   2097.152 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·asm":
+PrintAssembly processed: 175346 total address lines.
+Perf output processed (skipped 13.316 seconds):
+ Column 1: cycles (5104 events)
+
+Hottest code regions (>10.00% "cycles" events):
+
+....[Hottest Region 1]..............................................................................
+runtime stub, StubRoutines::jint_disjoint_arraycopy (47 bytes) 
+
+                0x00007fffd97a5994:   neg    %rdx
+         ╭      0x00007fffd97a5997:   jmp    Stub::jint_disjoint_arraycopy+104 0x00007fffd97a59e8
+         │↗     0x00007fffd97a599c:   mov    0x8(%rdi,%rdx,8),%rax
+         ││     0x00007fffd97a59a1:   mov    %rax,0x8(%rsi,%rdx,8)
+         ││     0x00007fffd97a59a6:   inc    %rdx
+         │╰     0x00007fffd97a59a9:   jne    Stub::jint_disjoint_arraycopy+28 0x00007fffd97a599c
+         │      0x00007fffd97a59ab:   test   $0x1,%ecx
+         │ ╭    0x00007fffd97a59b1:   je     Stub::jint_disjoint_arraycopy+57 0x00007fffd97a59b9
+         │ │    0x00007fffd97a59b3:   mov    0x8(%rdi),%eax
+         │ │    0x00007fffd97a59b6:   mov    %eax,0x8(%rsi)
+  0.02%  │ ↘    0x00007fffd97a59b9:   vzeroupper 
+         │      0x00007fffd97a59bc:   xor    %rax,%rax
+         │      0x00007fffd97a59bf:   leave  
+         │      0x00007fffd97a59c0:   ret    
+         │      0x00007fffd97a59c1:   data16 data16 nopw 0x0(%rax,%rax,1)
+         │      0x00007fffd97a59cc:   data16 data16 xchg %ax,%ax
+  1.41%  │  ↗   0x00007fffd97a59d0:   vmovdqu -0x38(%rdi,%rdx,8),%ymm0
+  7.86%  │  │   0x00007fffd97a59d6:   vmovdqu %ymm0,-0x38(%rsi,%rdx,8)
+  6.49%  │  │   0x00007fffd97a59dc:   vmovdqu -0x18(%rdi,%rdx,8),%ymm1
+ 63.93%  │  │   0x00007fffd97a59e2:   vmovdqu %ymm1,-0x18(%rsi,%rdx,8)
+ 17.75%  ↘  │   0x00007fffd97a59e8:   add    $0x8,%rdx
+            ╰   0x00007fffd97a59ec:   jle    Stub::jint_disjoint_arraycopy+80 0x00007fffd97a59d0
+                0x00007fffd97a59ee:   sub    $0x4,%rdx
+             ╭  0x00007fffd97a59f2:   jg     Stub::jint_disjoint_arraycopy+132 0x00007fffd97a5a04
+             │  0x00007fffd97a59f4:   vmovdqu -0x18(%rdi,%rdx,8),%ymm0
+             │  0x00007fffd97a59fa:   vmovdqu %ymm0,-0x18(%rsi,%rdx,8)
+             │  0x00007fffd97a5a00:   add    $0x4,%rdx
+             ↘  0x00007fffd97a5a04:   vpxor  %ymm0,%ymm0,%ymm0
+                0x00007fffd97a5a08:   vpxor  %ymm1,%ymm1,%ymm1
+                0x00007fffd97a5a0c:   sub    $0x4,%rdx
+                0x00007fffd97a5a10:   jl     Stub::jint_disjoint_arraycopy+28 0x00007fffd97a599c
+....................................................................................................
+ 97.45%  <total for region 1>
+
+....[Hottest Regions]...............................................................................
+ 97.45%        runtime stub  StubRoutines::jint_disjoint_arraycopy (47 bytes) 
+  0.31%              kernel  [unknown] (0 bytes) 
+  0.12%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayCacheInt, version 904 (27 bytes) 
+  0.08%           libjvm.so  ElfSymbolTable::lookup (33 bytes) 
+  0.06%           libjvm.so  fileStream::write (53 bytes) 
+  0.04%              kernel  [unknown] (0 bytes) 
+  0.04%              kernel  [unknown] (0 bytes) 
+  0.04%              kernel  [unknown] (21 bytes) 
+  0.04%              kernel  [unknown] (0 bytes) 
+  0.04%    Unknown, level 0  java.lang.System::nanoTime, version 882 (10 bytes) 
+  0.04%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayCacheInt, version 904 (0 bytes) 
+  0.04%           libjvm.so  outputStream::do_vsnprintf_and_write_with_automatic_buffer (0 bytes) 
+  0.02%              kernel  [unknown] (0 bytes) 
+  0.02%              kernel  [unknown] (0 bytes) 
+  0.02%              kernel  [unknown] (0 bytes) 
+  0.02%              kernel  [unknown] (0 bytes) 
+  0.02%              kernel  [unknown] (0 bytes) 
+  0.02%              kernel  [unknown] (0 bytes) 
+  0.02%              kernel  [unknown] (0 bytes) 
+  0.02%              kernel  [unknown] (0 bytes) 
+  1.53%  <...other 78 warm regions...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Hottest Methods (after inlining)]..............................................................
+ 97.45%        runtime stub  StubRoutines::jint_disjoint_arraycopy 
+  1.18%              kernel  [unknown] 
+  0.16%         c2, level 4  sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray::testWidenArrayCacheInt, version 904 
+  0.10%                      <unknown> 
+  0.08%      hsdis-amd64.so  print_insn 
+  0.08%           libjvm.so  ElfSymbolTable::lookup 
+  0.06%           libjvm.so  fileStream::write 
+  0.06%    Unknown, level 0  java.lang.System::nanoTime, version 882 
+  0.04%         interpreter  return entry points  
+  0.04%      perf-76830.map  [unknown] 
+  0.04%           libjvm.so  outputStream::do_vsnprintf_and_write_with_automatic_buffer 
+  0.02%         c2, level 4  org.marlin.bench.ArrayCacheIntBenchmark::widenArrayCacheInt, version 1000 
+  0.02%        libc-2.31.so  _IO_str_init_static_internal 
+  0.02%         interpreter  ldiv  109 ldiv  
+  0.02%        libc-2.31.so  _IO_fwrite 
+  0.02%         c2, level 4  sun.java2d.marlin.ArrayCacheInt$Reference::putArray, version 897 
+  0.02%           libjvm.so  CompileBroker::invoke_compiler_on_method 
+  0.02%           libjvm.so  SignatureStream::SignatureStream 
+  0.02%        libc-2.31.so  __madvise 
+  0.02%        libc-2.31.so  __libc_enable_asynccancel 
+  0.53%  <...other 27 warm methods...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Distribution by Source]........................................................................
+ 97.45%        runtime stub
+  1.18%              kernel
+  0.43%           libjvm.so
+  0.29%         c2, level 4
+  0.18%        libc-2.31.so
+  0.12%         interpreter
+  0.10%                    
+  0.08%      hsdis-amd64.so
+  0.06%    Unknown, level 0
+  0.04%  libpthread-2.31.so
+  0.04%      perf-76830.map
+  0.02%         c1, level 3
+....................................................................................................
+ 99.98%  <totals>
+
+
+
+# Run complete. Total time: 00:01:26
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                             (arraySize)    Mode     Cnt      Score    Error  Units
+ArrayCacheIntBenchmark.widenArrayAlloc                                     262145  sample   37859    131.409 ±  2.633  us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00               262145  sample            112.256           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50               262145  sample            125.952           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90               262145  sample            131.328           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95               262145  sample            135.680           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99               262145  sample            148.992           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999              262145  sample           1241.088           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999             262145  sample           1704.653           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00               262145  sample          27820.032           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·asm                                262145  sample                NaN             ---
+ArrayCacheIntBenchmark.widenArrayAlloc                                    4194305  sample    2250   2220.080 ± 34.875  us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00              4194305  sample           2023.424           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50              4194305  sample           2088.960           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90              4194305  sample           2203.238           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95              4194305  sample           3716.506           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99              4194305  sample           4231.086           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999             4194305  sample           7336.264           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999            4194305  sample           9453.568           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00              4194305  sample           9453.568           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·asm                               4194305  sample                NaN             ---
+ArrayCacheIntBenchmark.widenArrayCacheInt                                  262145  sample  101826     24.497 ±  0.006  us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00         262145  sample             24.000           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50         262145  sample             24.416           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90         262145  sample             24.544           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95         262145  sample             24.608           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99         262145  sample             26.336           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999        262145  sample             28.736           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999       262145  sample             37.172           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00         262145  sample            106.368           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·asm                             262145  sample                NaN             ---
+ArrayCacheIntBenchmark.widenArrayCacheInt                                 4194305  sample    9457    527.808 ±  0.844  us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00        4194305  sample            502.272           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50        4194305  sample            522.240           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90        4194305  sample            550.912           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95        4194305  sample            569.344           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99        4194305  sample            600.064           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999       4194305  sample            648.747           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999      4194305  sample           2097.152           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00        4194305  sample           2097.152           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·asm                            4194305  sample                NaN             ---

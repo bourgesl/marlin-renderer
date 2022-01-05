@@ -1,0 +1,2084 @@
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 262145)
+
+# Run progress: 0.00% complete, ETA 00:15:00
+# Fork: 1 of 5
+# Warmup Iteration   1: 162.130 ±(99.9%) 6.614 us/op
+# Warmup Iteration   2: 127.120 ±(99.9%) 0.873 us/op
+# Warmup Iteration   3: 129.456 ±(99.9%) 1.891 us/op
+# Warmup Iteration   4: 129.274 ±(99.9%) 2.398 us/op
+# Warmup Iteration   5: 128.723 ±(99.9%) 2.391 us/op
+Iteration   1: 128.912 ±(99.9%) 2.836 us/op
+                 widenArrayAlloc·p0.00:   102.912 us/op
+                 widenArrayAlloc·p0.50:   124.160 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   133.376 us/op
+                 widenArrayAlloc·p0.99:   149.760 us/op
+                 widenArrayAlloc·p0.999:  1180.455 us/op
+                 widenArrayAlloc·p0.9999: 1379.000 us/op
+                 widenArrayAlloc·p1.00:   31850.496 us/op
+
+Iteration   2: 126.670 ±(99.9%) 0.684 us/op
+                 widenArrayAlloc·p0.00:   105.472 us/op
+                 widenArrayAlloc·p0.50:   124.032 us/op
+                 widenArrayAlloc·p0.90:   127.616 us/op
+                 widenArrayAlloc·p0.95:   132.954 us/op
+                 widenArrayAlloc·p0.99:   150.272 us/op
+                 widenArrayAlloc·p0.999:  494.381 us/op
+                 widenArrayAlloc·p0.9999: 625.887 us/op
+                 widenArrayAlloc·p1.00:   6823.936 us/op
+
+Iteration   3: 126.852 ±(99.9%) 0.470 us/op
+                 widenArrayAlloc·p0.00:   104.960 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   128.000 us/op
+                 widenArrayAlloc·p0.95:   133.120 us/op
+                 widenArrayAlloc·p0.99:   144.640 us/op
+                 widenArrayAlloc·p0.999:  492.078 us/op
+                 widenArrayAlloc·p0.9999: 1277.952 us/op
+                 widenArrayAlloc·p1.00:   1372.160 us/op
+
+Iteration   4: 126.263 ±(99.9%) 0.399 us/op
+                 widenArrayAlloc·p0.00:   104.704 us/op
+                 widenArrayAlloc·p0.50:   123.648 us/op
+                 widenArrayAlloc·p0.90:   127.104 us/op
+                 widenArrayAlloc·p0.95:   132.096 us/op
+                 widenArrayAlloc·p0.99:   197.632 us/op
+                 widenArrayAlloc·p0.999:  492.780 us/op
+                 widenArrayAlloc·p0.9999: 631.114 us/op
+                 widenArrayAlloc·p1.00:   801.792 us/op
+
+Iteration   5: 126.621 ±(99.9%) 0.394 us/op
+                 widenArrayAlloc·p0.00:   118.144 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   132.864 us/op
+                 widenArrayAlloc·p0.99:   143.872 us/op
+                 widenArrayAlloc·p0.999:  493.861 us/op
+                 widenArrayAlloc·p0.9999: 677.215 us/op
+                 widenArrayAlloc·p1.00:   1290.240 us/op
+
+
+# Run progress: 3.33% complete, ETA 00:18:08
+# Fork: 2 of 5
+# Warmup Iteration   1: 160.209 ±(99.9%) 6.305 us/op
+# Warmup Iteration   2: 127.300 ±(99.9%) 0.869 us/op
+# Warmup Iteration   3: 128.652 ±(99.9%) 1.970 us/op
+# Warmup Iteration   4: 129.134 ±(99.9%) 2.233 us/op
+# Warmup Iteration   5: 128.958 ±(99.9%) 2.204 us/op
+Iteration   1: 129.370 ±(99.9%) 2.900 us/op
+                 widenArrayAlloc·p0.00:   113.152 us/op
+                 widenArrayAlloc·p0.50:   124.288 us/op
+                 widenArrayAlloc·p0.90:   127.488 us/op
+                 widenArrayAlloc·p0.95:   132.096 us/op
+                 widenArrayAlloc·p0.99:   147.200 us/op
+                 widenArrayAlloc·p0.999:  1212.416 us/op
+                 widenArrayAlloc·p0.9999: 1739.384 us/op
+                 widenArrayAlloc·p1.00:   31752.192 us/op
+
+Iteration   2: 126.985 ±(99.9%) 0.545 us/op
+                 widenArrayAlloc·p0.00:   104.832 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.744 us/op
+                 widenArrayAlloc·p0.95:   132.608 us/op
+                 widenArrayAlloc·p0.99:   144.896 us/op
+                 widenArrayAlloc·p0.999:  555.008 us/op
+                 widenArrayAlloc·p0.9999: 1249.419 us/op
+                 widenArrayAlloc·p1.00:   1327.104 us/op
+
+Iteration   3: 126.497 ±(99.9%) 0.686 us/op
+                 widenArrayAlloc·p0.00:   103.552 us/op
+                 widenArrayAlloc·p0.50:   123.776 us/op
+                 widenArrayAlloc·p0.90:   126.976 us/op
+                 widenArrayAlloc·p0.95:   131.840 us/op
+                 widenArrayAlloc·p0.99:   196.096 us/op
+                 widenArrayAlloc·p0.999:  489.762 us/op
+                 widenArrayAlloc·p0.9999: 659.234 us/op
+                 widenArrayAlloc·p1.00:   6766.592 us/op
+
+Iteration   4: 126.489 ±(99.9%) 0.477 us/op
+                 widenArrayAlloc·p0.00:   109.696 us/op
+                 widenArrayAlloc·p0.50:   123.648 us/op
+                 widenArrayAlloc·p0.90:   126.848 us/op
+                 widenArrayAlloc·p0.95:   132.096 us/op
+                 widenArrayAlloc·p0.99:   195.750 us/op
+                 widenArrayAlloc·p0.999:  526.336 us/op
+                 widenArrayAlloc·p0.9999: 1198.175 us/op
+                 widenArrayAlloc·p1.00:   1208.320 us/op
+
+Iteration   5: 126.847 ±(99.9%) 0.479 us/op
+                 widenArrayAlloc·p0.00:   106.240 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   133.120 us/op
+                 widenArrayAlloc·p0.99:   144.128 us/op
+                 widenArrayAlloc·p0.999:  510.980 us/op
+                 widenArrayAlloc·p0.9999: 1284.879 us/op
+                 widenArrayAlloc·p1.00:   1386.496 us/op
+
+
+# Run progress: 6.67% complete, ETA 00:17:28
+# Fork: 3 of 5
+# Warmup Iteration   1: 160.098 ±(99.9%) 6.302 us/op
+# Warmup Iteration   2: 126.788 ±(99.9%) 0.765 us/op
+# Warmup Iteration   3: 129.045 ±(99.9%) 2.275 us/op
+# Warmup Iteration   4: 129.569 ±(99.9%) 3.036 us/op
+# Warmup Iteration   5: 129.553 ±(99.9%) 3.730 us/op
+Iteration   1: 127.824 ±(99.9%) 2.770 us/op
+                 widenArrayAlloc·p0.00:   102.912 us/op
+                 widenArrayAlloc·p0.50:   123.776 us/op
+                 widenArrayAlloc·p0.90:   127.104 us/op
+                 widenArrayAlloc·p0.95:   131.840 us/op
+                 widenArrayAlloc·p0.99:   180.731 us/op
+                 widenArrayAlloc·p0.999:  723.199 us/op
+                 widenArrayAlloc·p0.9999: 1710.915 us/op
+                 widenArrayAlloc·p1.00:   31916.032 us/op
+
+Iteration   2: 126.745 ±(99.9%) 0.453 us/op
+                 widenArrayAlloc·p0.00:   113.024 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   133.120 us/op
+                 widenArrayAlloc·p0.99:   144.128 us/op
+                 widenArrayAlloc·p0.999:  499.524 us/op
+                 widenArrayAlloc·p0.9999: 1235.300 us/op
+                 widenArrayAlloc·p1.00:   1325.056 us/op
+
+Iteration   3: 126.605 ±(99.9%) 0.376 us/op
+                 widenArrayAlloc·p0.00:   104.448 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   132.864 us/op
+                 widenArrayAlloc·p0.99:   144.484 us/op
+                 widenArrayAlloc·p0.999:  483.644 us/op
+                 widenArrayAlloc·p0.9999: 670.303 us/op
+                 widenArrayAlloc·p1.00:   701.440 us/op
+
+Iteration   4: 126.239 ±(99.9%) 0.397 us/op
+                 widenArrayAlloc·p0.00:   117.504 us/op
+                 widenArrayAlloc·p0.50:   123.648 us/op
+                 widenArrayAlloc·p0.90:   126.848 us/op
+                 widenArrayAlloc·p0.95:   131.840 us/op
+                 widenArrayAlloc·p0.99:   196.352 us/op
+                 widenArrayAlloc·p0.999:  510.693 us/op
+                 widenArrayAlloc·p0.9999: 609.126 us/op
+                 widenArrayAlloc·p1.00:   733.184 us/op
+
+Iteration   5: 126.203 ±(99.9%) 0.393 us/op
+                 widenArrayAlloc·p0.00:   104.320 us/op
+                 widenArrayAlloc·p0.50:   123.648 us/op
+                 widenArrayAlloc·p0.90:   126.976 us/op
+                 widenArrayAlloc·p0.95:   131.584 us/op
+                 widenArrayAlloc·p0.99:   197.376 us/op
+                 widenArrayAlloc·p0.999:  487.875 us/op
+                 widenArrayAlloc·p0.9999: 614.760 us/op
+                 widenArrayAlloc·p1.00:   695.296 us/op
+
+
+# Run progress: 10.00% complete, ETA 00:16:50
+# Fork: 4 of 5
+# Warmup Iteration   1: 159.798 ±(99.9%) 6.307 us/op
+# Warmup Iteration   2: 128.650 ±(99.9%) 1.858 us/op
+# Warmup Iteration   3: 128.967 ±(99.9%) 2.338 us/op
+# Warmup Iteration   4: 128.896 ±(99.9%) 2.334 us/op
+# Warmup Iteration   5: 128.352 ±(99.9%) 1.745 us/op
+Iteration   1: 127.746 ±(99.9%) 2.756 us/op
+                 widenArrayAlloc·p0.00:   105.984 us/op
+                 widenArrayAlloc·p0.50:   123.776 us/op
+                 widenArrayAlloc·p0.90:   126.976 us/op
+                 widenArrayAlloc·p0.95:   131.328 us/op
+                 widenArrayAlloc·p0.99:   195.983 us/op
+                 widenArrayAlloc·p0.999:  726.016 us/op
+                 widenArrayAlloc·p0.9999: 1265.415 us/op
+                 widenArrayAlloc·p1.00:   31883.264 us/op
+
+Iteration   2: 126.233 ±(99.9%) 0.396 us/op
+                 widenArrayAlloc·p0.00:   116.736 us/op
+                 widenArrayAlloc·p0.50:   123.648 us/op
+                 widenArrayAlloc·p0.90:   126.848 us/op
+                 widenArrayAlloc·p0.95:   131.584 us/op
+                 widenArrayAlloc·p0.99:   197.120 us/op
+                 widenArrayAlloc·p0.999:  484.070 us/op
+                 widenArrayAlloc·p0.9999: 602.388 us/op
+                 widenArrayAlloc·p1.00:   1138.688 us/op
+
+Iteration   3: 126.548 ±(99.9%) 0.680 us/op
+                 widenArrayAlloc·p0.00:   106.752 us/op
+                 widenArrayAlloc·p0.50:   124.032 us/op
+                 widenArrayAlloc·p0.90:   127.232 us/op
+                 widenArrayAlloc·p0.95:   132.352 us/op
+                 widenArrayAlloc·p0.99:   152.079 us/op
+                 widenArrayAlloc·p0.999:  492.032 us/op
+                 widenArrayAlloc·p0.9999: 645.275 us/op
+                 widenArrayAlloc·p1.00:   6856.704 us/op
+
+Iteration   4: 126.785 ±(99.9%) 0.444 us/op
+                 widenArrayAlloc·p0.00:   105.088 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   132.864 us/op
+                 widenArrayAlloc·p0.99:   145.408 us/op
+                 widenArrayAlloc·p0.999:  490.302 us/op
+                 widenArrayAlloc·p0.9999: 1196.541 us/op
+                 widenArrayAlloc·p1.00:   1275.904 us/op
+
+Iteration   5: 126.736 ±(99.9%) 0.388 us/op
+                 widenArrayAlloc·p0.00:   105.216 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   132.864 us/op
+                 widenArrayAlloc·p0.99:   145.408 us/op
+                 widenArrayAlloc·p0.999:  494.904 us/op
+                 widenArrayAlloc·p0.9999: 679.224 us/op
+                 widenArrayAlloc·p1.00:   840.704 us/op
+
+
+# Run progress: 13.33% complete, ETA 00:16:12
+# Fork: 5 of 5
+# Warmup Iteration   1: 159.873 ±(99.9%) 6.321 us/op
+# Warmup Iteration   2: 129.266 ±(99.9%) 2.606 us/op
+# Warmup Iteration   3: 129.326 ±(99.9%) 2.461 us/op
+# Warmup Iteration   4: 129.860 ±(99.9%) 2.957 us/op
+# Warmup Iteration   5: 128.187 ±(99.9%) 2.026 us/op
+Iteration   1: 127.762 ±(99.9%) 2.795 us/op
+                 widenArrayAlloc·p0.00:   105.088 us/op
+                 widenArrayAlloc·p0.50:   124.288 us/op
+                 widenArrayAlloc·p0.90:   127.616 us/op
+                 widenArrayAlloc·p0.95:   132.096 us/op
+                 widenArrayAlloc·p0.99:   145.664 us/op
+                 widenArrayAlloc·p0.999:  615.487 us/op
+                 widenArrayAlloc·p0.9999: 1167.704 us/op
+                 widenArrayAlloc·p1.00:   31981.568 us/op
+
+Iteration   2: 126.710 ±(99.9%) 0.401 us/op
+                 widenArrayAlloc·p0.00:   103.552 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   133.120 us/op
+                 widenArrayAlloc·p0.99:   144.896 us/op
+                 widenArrayAlloc·p0.999:  483.635 us/op
+                 widenArrayAlloc·p0.9999: 662.098 us/op
+                 widenArrayAlloc·p1.00:   1366.016 us/op
+
+Iteration   3: 126.910 ±(99.9%) 0.513 us/op
+                 widenArrayAlloc·p0.00:   102.016 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   133.120 us/op
+                 widenArrayAlloc·p0.99:   145.408 us/op
+                 widenArrayAlloc·p0.999:  497.828 us/op
+                 widenArrayAlloc·p0.9999: 1293.484 us/op
+                 widenArrayAlloc·p1.00:   1466.368 us/op
+
+Iteration   4: 127.048 ±(99.9%) 0.630 us/op
+                 widenArrayAlloc·p0.00:   105.856 us/op
+                 widenArrayAlloc·p0.50:   124.544 us/op
+                 widenArrayAlloc·p0.90:   127.872 us/op
+                 widenArrayAlloc·p0.95:   132.864 us/op
+                 widenArrayAlloc·p0.99:   144.392 us/op
+                 widenArrayAlloc·p0.999:  546.816 us/op
+                 widenArrayAlloc·p0.9999: 1267.392 us/op
+                 widenArrayAlloc·p1.00:   4210.688 us/op
+
+Iteration   5: 126.992 ±(99.9%) 0.662 us/op
+                 widenArrayAlloc·p0.00:   103.936 us/op
+                 widenArrayAlloc·p0.50:   124.672 us/op
+                 widenArrayAlloc·p0.90:   128.128 us/op
+                 widenArrayAlloc·p0.95:   132.864 us/op
+                 widenArrayAlloc·p0.99:   145.920 us/op
+                 widenArrayAlloc·p0.999:  486.752 us/op
+                 widenArrayAlloc·p0.9999: 555.571 us/op
+                 widenArrayAlloc·p1.00:   6750.208 us/op
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 982529
+  mean =    126.978 ±(99.9%) 0.264 us/op
+
+  Histogram, us/op:
+    [    0.000,  2500.000) = 982517 
+    [ 2500.000,  5000.000) = 2 
+    [ 5000.000,  7500.000) = 5 
+    [ 7500.000, 10000.000) = 0 
+    [10000.000, 12500.000) = 0 
+    [12500.000, 15000.000) = 0 
+    [15000.000, 17500.000) = 0 
+    [17500.000, 20000.000) = 0 
+    [20000.000, 22500.000) = 0 
+    [22500.000, 25000.000) = 0 
+    [25000.000, 27500.000) = 0 
+    [27500.000, 30000.000) = 0 
+    [30000.000, 32500.000) = 5 
+    [32500.000, 35000.000) = 0 
+    [35000.000, 37500.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    102.016 us/op
+     p(50.0000) =    124.160 us/op
+     p(90.0000) =    127.616 us/op
+     p(95.0000) =    132.608 us/op
+     p(99.0000) =    147.456 us/op
+     p(99.9000) =    522.481 us/op
+     p(99.9900) =   1242.618 us/op
+     p(99.9990) =   6753.070 us/op
+     p(99.9999) =  31981.568 us/op
+    p(100.0000) =  31981.568 us/op
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 16.67% complete, ETA 00:15:34
+# Fork: 1 of 5
+# Warmup Iteration   1: 2766.457 ±(99.9%) 328.073 us/op
+# Warmup Iteration   2: 2341.495 ±(99.9%) 73.348 us/op
+# Warmup Iteration   3: 2210.411 ±(99.9%) 70.194 us/op
+# Warmup Iteration   4: 2177.678 ±(99.9%) 77.378 us/op
+# Warmup Iteration   5: 2161.188 ±(99.9%) 60.587 us/op
+Iteration   1: 2126.065 ±(99.9%) 20.387 us/op
+                 widenArrayAlloc·p0.00:   2007.040 us/op
+                 widenArrayAlloc·p0.50:   2043.904 us/op
+                 widenArrayAlloc·p0.90:   2138.112 us/op
+                 widenArrayAlloc·p0.95:   2859.008 us/op
+                 widenArrayAlloc·p0.99:   3898.245 us/op
+                 widenArrayAlloc·p0.999:  4250.780 us/op
+                 widenArrayAlloc·p0.9999: 4276.224 us/op
+                 widenArrayAlloc·p1.00:   4276.224 us/op
+
+Iteration   2: 2194.779 ±(99.9%) 39.976 us/op
+                 widenArrayAlloc·p0.00:   2009.088 us/op
+                 widenArrayAlloc·p0.50:   2054.144 us/op
+                 widenArrayAlloc·p0.90:   2121.728 us/op
+                 widenArrayAlloc·p0.95:   3106.406 us/op
+                 widenArrayAlloc·p0.99:   5240.586 us/op
+                 widenArrayAlloc·p0.999:  6680.707 us/op
+                 widenArrayAlloc·p0.9999: 7938.048 us/op
+                 widenArrayAlloc·p1.00:   7938.048 us/op
+
+Iteration   3: 2167.687 ±(99.9%) 29.843 us/op
+                 widenArrayAlloc·p0.00:   2004.992 us/op
+                 widenArrayAlloc·p0.50:   2055.168 us/op
+                 widenArrayAlloc·p0.90:   2117.632 us/op
+                 widenArrayAlloc·p0.95:   3198.976 us/op
+                 widenArrayAlloc·p0.99:   4464.067 us/op
+                 widenArrayAlloc·p0.999:  4998.414 us/op
+                 widenArrayAlloc·p0.9999: 5038.080 us/op
+                 widenArrayAlloc·p1.00:   5038.080 us/op
+
+Iteration   4: 2172.673 ±(99.9%) 32.248 us/op
+                 widenArrayAlloc·p0.00:   2000.896 us/op
+                 widenArrayAlloc·p0.50:   2041.856 us/op
+                 widenArrayAlloc·p0.90:   2138.112 us/op
+                 widenArrayAlloc·p0.95:   3563.110 us/op
+                 widenArrayAlloc·p0.99:   4268.032 us/op
+                 widenArrayAlloc·p0.999:  4701.110 us/op
+                 widenArrayAlloc·p0.9999: 4800.512 us/op
+                 widenArrayAlloc·p1.00:   4800.512 us/op
+
+Iteration   5: 2177.646 ±(99.9%) 33.618 us/op
+                 widenArrayAlloc·p0.00:   2004.992 us/op
+                 widenArrayAlloc·p0.50:   2041.856 us/op
+                 widenArrayAlloc·p0.90:   2146.304 us/op
+                 widenArrayAlloc·p0.95:   3474.637 us/op
+                 widenArrayAlloc·p0.99:   4506.092 us/op
+                 widenArrayAlloc·p0.999:  5017.567 us/op
+                 widenArrayAlloc·p0.9999: 7659.520 us/op
+                 widenArrayAlloc·p1.00:   7659.520 us/op
+
+
+# Run progress: 20.00% complete, ETA 00:14:57
+# Fork: 2 of 5
+# Warmup Iteration   1: 2770.581 ±(99.9%) 328.597 us/op
+# Warmup Iteration   2: 2311.208 ±(99.9%) 76.243 us/op
+# Warmup Iteration   3: 2215.199 ±(99.9%) 75.991 us/op
+# Warmup Iteration   4: 2185.686 ±(99.9%) 77.904 us/op
+# Warmup Iteration   5: 2163.570 ±(99.9%) 65.816 us/op
+Iteration   1: 2144.577 ±(99.9%) 24.163 us/op
+                 widenArrayAlloc·p0.00:   2009.088 us/op
+                 widenArrayAlloc·p0.50:   2054.144 us/op
+                 widenArrayAlloc·p0.90:   2121.318 us/op
+                 widenArrayAlloc·p0.95:   3018.752 us/op
+                 widenArrayAlloc·p0.99:   3790.356 us/op
+                 widenArrayAlloc·p0.999:  5070.832 us/op
+                 widenArrayAlloc·p0.9999: 5488.640 us/op
+                 widenArrayAlloc·p1.00:   5488.640 us/op
+
+Iteration   2: 2177.292 ±(99.9%) 34.483 us/op
+                 widenArrayAlloc·p0.00:   2002.944 us/op
+                 widenArrayAlloc·p0.50:   2045.952 us/op
+                 widenArrayAlloc·p0.90:   2138.112 us/op
+                 widenArrayAlloc·p0.95:   3323.494 us/op
+                 widenArrayAlloc·p0.99:   4391.895 us/op
+                 widenArrayAlloc·p0.999:  7241.531 us/op
+                 widenArrayAlloc·p0.9999: 9388.032 us/op
+                 widenArrayAlloc·p1.00:   9388.032 us/op
+
+Iteration   3: 2192.049 ±(99.9%) 36.442 us/op
+                 widenArrayAlloc·p0.00:   2004.992 us/op
+                 widenArrayAlloc·p0.50:   2050.048 us/op
+                 widenArrayAlloc·p0.90:   2125.824 us/op
+                 widenArrayAlloc·p0.95:   3694.387 us/op
+                 widenArrayAlloc·p0.99:   4653.056 us/op
+                 widenArrayAlloc·p0.999:  5085.741 us/op
+                 widenArrayAlloc·p0.9999: 6389.760 us/op
+                 widenArrayAlloc·p1.00:   6389.760 us/op
+
+Iteration   4: 2140.933 ±(99.9%) 22.157 us/op
+                 widenArrayAlloc·p0.00:   2011.136 us/op
+                 widenArrayAlloc·p0.50:   2052.096 us/op
+                 widenArrayAlloc·p0.90:   2125.824 us/op
+                 widenArrayAlloc·p0.95:   3064.627 us/op
+                 widenArrayAlloc·p0.99:   3710.976 us/op
+                 widenArrayAlloc·p0.999:  4365.025 us/op
+                 widenArrayAlloc·p0.9999: 4644.864 us/op
+                 widenArrayAlloc·p1.00:   4644.864 us/op
+
+Iteration   5: 2169.755 ±(99.9%) 32.095 us/op
+                 widenArrayAlloc·p0.00:   2011.136 us/op
+                 widenArrayAlloc·p0.50:   2054.144 us/op
+                 widenArrayAlloc·p0.90:   2134.016 us/op
+                 widenArrayAlloc·p0.95:   3260.416 us/op
+                 widenArrayAlloc·p0.99:   4398.121 us/op
+                 widenArrayAlloc·p0.999:  8039.956 us/op
+                 widenArrayAlloc·p0.9999: 9437.184 us/op
+                 widenArrayAlloc·p1.00:   9437.184 us/op
+
+
+# Run progress: 23.33% complete, ETA 00:14:20
+# Fork: 3 of 5
+# Warmup Iteration   1: 2762.430 ±(99.9%) 326.360 us/op
+# Warmup Iteration   2: 2311.090 ±(99.9%) 80.445 us/op
+# Warmup Iteration   3: 2205.696 ±(99.9%) 72.218 us/op
+# Warmup Iteration   4: 2162.162 ±(99.9%) 68.007 us/op
+# Warmup Iteration   5: 2171.422 ±(99.9%) 64.944 us/op
+Iteration   1: 2148.749 ±(99.9%) 25.288 us/op
+                 widenArrayAlloc·p0.00:   2007.040 us/op
+                 widenArrayAlloc·p0.50:   2056.192 us/op
+                 widenArrayAlloc·p0.90:   2097.152 us/op
+                 widenArrayAlloc·p0.95:   2990.080 us/op
+                 widenArrayAlloc·p0.99:   3969.802 us/op
+                 widenArrayAlloc·p0.999:  5450.670 us/op
+                 widenArrayAlloc·p0.9999: 5496.832 us/op
+                 widenArrayAlloc·p1.00:   5496.832 us/op
+
+Iteration   2: 2179.615 ±(99.9%) 34.500 us/op
+                 widenArrayAlloc·p0.00:   2009.088 us/op
+                 widenArrayAlloc·p0.50:   2054.144 us/op
+                 widenArrayAlloc·p0.90:   2129.101 us/op
+                 widenArrayAlloc·p0.95:   3162.112 us/op
+                 widenArrayAlloc·p0.99:   4595.712 us/op
+                 widenArrayAlloc·p0.999:  5867.733 us/op
+                 widenArrayAlloc·p0.9999: 7954.432 us/op
+                 widenArrayAlloc·p1.00:   7954.432 us/op
+
+Iteration   3: 2181.074 ±(99.9%) 34.969 us/op
+                 widenArrayAlloc·p0.00:   2004.992 us/op
+                 widenArrayAlloc·p0.50:   2043.904 us/op
+                 widenArrayAlloc·p0.90:   2142.208 us/op
+                 widenArrayAlloc·p0.95:   3371.008 us/op
+                 widenArrayAlloc·p0.99:   4898.816 us/op
+                 widenArrayAlloc·p0.999:  5232.288 us/op
+                 widenArrayAlloc·p0.9999: 6742.016 us/op
+                 widenArrayAlloc·p1.00:   6742.016 us/op
+
+Iteration   4: 2154.583 ±(99.9%) 26.966 us/op
+                 widenArrayAlloc·p0.00:   2002.944 us/op
+                 widenArrayAlloc·p0.50:   2050.048 us/op
+                 widenArrayAlloc·p0.90:   2138.112 us/op
+                 widenArrayAlloc·p0.95:   2854.912 us/op
+                 widenArrayAlloc·p0.99:   4091.904 us/op
+                 widenArrayAlloc·p0.999:  4219.486 us/op
+                 widenArrayAlloc·p0.9999: 4268.032 us/op
+                 widenArrayAlloc·p1.00:   4268.032 us/op
+
+Iteration   5: 2169.451 ±(99.9%) 32.372 us/op
+                 widenArrayAlloc·p0.00:   2004.992 us/op
+                 widenArrayAlloc·p0.50:   2048.000 us/op
+                 widenArrayAlloc·p0.90:   2129.920 us/op
+                 widenArrayAlloc·p0.95:   3173.376 us/op
+                 widenArrayAlloc·p0.99:   4521.984 us/op
+                 widenArrayAlloc·p0.999:  5693.768 us/op
+                 widenArrayAlloc·p0.9999: 9355.264 us/op
+                 widenArrayAlloc·p1.00:   9355.264 us/op
+
+
+# Run progress: 26.67% complete, ETA 00:13:42
+# Fork: 4 of 5
+# Warmup Iteration   1: 2754.018 ±(99.9%) 326.613 us/op
+# Warmup Iteration   2: 2321.016 ±(99.9%) 76.811 us/op
+# Warmup Iteration   3: 2193.305 ±(99.9%) 63.306 us/op
+# Warmup Iteration   4: 2173.444 ±(99.9%) 73.185 us/op
+# Warmup Iteration   5: 2160.459 ±(99.9%) 63.523 us/op
+Iteration   1: 2184.845 ±(99.9%) 37.425 us/op
+                 widenArrayAlloc·p0.00:   2000.896 us/op
+                 widenArrayAlloc·p0.50:   2050.048 us/op
+                 widenArrayAlloc·p0.90:   2129.920 us/op
+                 widenArrayAlloc·p0.95:   3506.176 us/op
+                 widenArrayAlloc·p0.99:   4890.624 us/op
+                 widenArrayAlloc·p0.999:  6252.200 us/op
+                 widenArrayAlloc·p0.9999: 9125.888 us/op
+                 widenArrayAlloc·p1.00:   9125.888 us/op
+
+Iteration   2: 2157.542 ±(99.9%) 27.767 us/op
+                 widenArrayAlloc·p0.00:   2007.040 us/op
+                 widenArrayAlloc·p0.50:   2052.096 us/op
+                 widenArrayAlloc·p0.90:   2125.824 us/op
+                 widenArrayAlloc·p0.95:   3114.598 us/op
+                 widenArrayAlloc·p0.99:   3951.985 us/op
+                 widenArrayAlloc·p0.999:  4489.216 us/op
+                 widenArrayAlloc·p0.9999: 7905.280 us/op
+                 widenArrayAlloc·p1.00:   7905.280 us/op
+
+Iteration   3: 2139.781 ±(99.9%) 23.916 us/op
+                 widenArrayAlloc·p0.00:   2002.944 us/op
+                 widenArrayAlloc·p0.50:   2043.904 us/op
+                 widenArrayAlloc·p0.90:   2142.208 us/op
+                 widenArrayAlloc·p0.95:   2949.120 us/op
+                 widenArrayAlloc·p0.99:   3981.189 us/op
+                 widenArrayAlloc·p0.999:  4600.783 us/op
+                 widenArrayAlloc·p0.9999: 4702.208 us/op
+                 widenArrayAlloc·p1.00:   4702.208 us/op
+
+Iteration   4: 2184.899 ±(99.9%) 35.714 us/op
+                 widenArrayAlloc·p0.00:   2000.896 us/op
+                 widenArrayAlloc·p0.50:   2050.048 us/op
+                 widenArrayAlloc·p0.90:   2134.016 us/op
+                 widenArrayAlloc·p0.95:   3411.968 us/op
+                 widenArrayAlloc·p0.99:   5029.888 us/op
+                 widenArrayAlloc·p0.999:  5888.672 us/op
+                 widenArrayAlloc·p0.9999: 5988.352 us/op
+                 widenArrayAlloc·p1.00:   5988.352 us/op
+
+Iteration   5: 2140.405 ±(99.9%) 21.816 us/op
+                 widenArrayAlloc·p0.00:   2004.992 us/op
+                 widenArrayAlloc·p0.50:   2056.192 us/op
+                 widenArrayAlloc·p0.90:   2105.344 us/op
+                 widenArrayAlloc·p0.95:   3125.248 us/op
+                 widenArrayAlloc·p0.99:   3721.462 us/op
+                 widenArrayAlloc·p0.999:  4448.125 us/op
+                 widenArrayAlloc·p0.9999: 4505.600 us/op
+                 widenArrayAlloc·p1.00:   4505.600 us/op
+
+
+# Run progress: 30.00% complete, ETA 00:13:05
+# Fork: 5 of 5
+# Warmup Iteration   1: 2743.555 ±(99.9%) 319.404 us/op
+# Warmup Iteration   2: 2307.536 ±(99.9%) 78.225 us/op
+# Warmup Iteration   3: 2210.694 ±(99.9%) 76.327 us/op
+# Warmup Iteration   4: 2183.664 ±(99.9%) 75.221 us/op
+# Warmup Iteration   5: 2166.106 ±(99.9%) 66.457 us/op
+Iteration   1: 2148.829 ±(99.9%) 26.867 us/op
+                 widenArrayAlloc·p0.00:   2007.040 us/op
+                 widenArrayAlloc·p0.50:   2052.096 us/op
+                 widenArrayAlloc·p0.90:   2125.824 us/op
+                 widenArrayAlloc·p0.95:   2924.544 us/op
+                 widenArrayAlloc·p0.99:   4259.840 us/op
+                 widenArrayAlloc·p0.999:  5650.170 us/op
+                 widenArrayAlloc·p0.9999: 5939.200 us/op
+                 widenArrayAlloc·p1.00:   5939.200 us/op
+
+Iteration   2: 2176.269 ±(99.9%) 34.539 us/op
+                 widenArrayAlloc·p0.00:   2007.040 us/op
+                 widenArrayAlloc·p0.50:   2054.144 us/op
+                 widenArrayAlloc·p0.90:   2123.366 us/op
+                 widenArrayAlloc·p0.95:   3105.587 us/op
+                 widenArrayAlloc·p0.99:   4620.288 us/op
+                 widenArrayAlloc·p0.999:  7206.076 us/op
+                 widenArrayAlloc·p0.9999: 9601.024 us/op
+                 widenArrayAlloc·p1.00:   9601.024 us/op
+
+Iteration   3: 2183.187 ±(99.9%) 34.565 us/op
+                 widenArrayAlloc·p0.00:   2007.040 us/op
+                 widenArrayAlloc·p0.50:   2052.096 us/op
+                 widenArrayAlloc·p0.90:   2142.208 us/op
+                 widenArrayAlloc·p0.95:   3316.941 us/op
+                 widenArrayAlloc·p0.99:   4513.792 us/op
+                 widenArrayAlloc·p0.999:  4726.784 us/op
+                 widenArrayAlloc·p0.9999: 9699.328 us/op
+                 widenArrayAlloc·p1.00:   9699.328 us/op
+
+Iteration   4: 2149.368 ±(99.9%) 26.698 us/op
+                 widenArrayAlloc·p0.00:   2002.944 us/op
+                 widenArrayAlloc·p0.50:   2054.144 us/op
+                 widenArrayAlloc·p0.90:   2129.920 us/op
+                 widenArrayAlloc·p0.95:   3080.192 us/op
+                 widenArrayAlloc·p0.99:   3817.595 us/op
+                 widenArrayAlloc·p0.999:  7530.897 us/op
+                 widenArrayAlloc·p0.9999: 8994.816 us/op
+                 widenArrayAlloc·p1.00:   8994.816 us/op
+
+Iteration   5: 2136.741 ±(99.9%) 20.412 us/op
+                 widenArrayAlloc·p0.00:   2002.944 us/op
+                 widenArrayAlloc·p0.50:   2056.192 us/op
+                 widenArrayAlloc·p0.90:   2125.824 us/op
+                 widenArrayAlloc·p0.95:   3133.440 us/op
+                 widenArrayAlloc·p0.99:   3481.600 us/op
+                 widenArrayAlloc·p0.999:  3865.231 us/op
+                 widenArrayAlloc·p0.9999: 3923.968 us/op
+                 widenArrayAlloc·p1.00:   3923.968 us/op
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 57739
+  mean =   2163.780 ±(99.9%) 6.078 us/op
+
+  Histogram, us/op:
+    [ 2000.000,  2500.000) = 53889 
+    [ 2500.000,  3000.000) = 470 
+    [ 3000.000,  3500.000) = 1437 
+    [ 3500.000,  4000.000) = 904 
+    [ 4000.000,  4500.000) = 623 
+    [ 4500.000,  5000.000) = 271 
+    [ 5000.000,  5500.000) = 80 
+    [ 5500.000,  6000.000) = 41 
+    [ 6000.000,  6500.000) = 5 
+    [ 6500.000,  7000.000) = 4 
+    [ 7000.000,  7500.000) = 0 
+    [ 7500.000,  8000.000) = 6 
+    [ 8000.000,  8500.000) = 0 
+    [ 8500.000,  9000.000) = 2 
+    [ 9000.000,  9500.000) = 5 
+
+  Percentiles, us/op:
+      p(0.0000) =   2000.896 us/op
+     p(50.0000) =   2050.048 us/op
+     p(90.0000) =   2129.920 us/op
+     p(95.0000) =   3129.344 us/op
+     p(99.0000) =   4371.251 us/op
+     p(99.9000) =   5574.820 us/op
+     p(99.9900) =   9177.727 us/op
+     p(99.9990) =   9699.328 us/op
+     p(99.9999) =   9699.328 us/op
+    p(100.0000) =   9699.328 us/op
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenCleanArrayCacheInt
+# Parameters: (arraySize = 262145)
+
+# Run progress: 33.33% complete, ETA 00:12:27
+# Fork: 1 of 5
+# Warmup Iteration   1: 94.927 ±(99.9%) 10.613 us/op
+# Warmup Iteration   2: 90.571 ±(99.9%) 8.852 us/op
+# Warmup Iteration   3: 87.920 ±(99.9%) 0.050 us/op
+# Warmup Iteration   4: 87.427 ±(99.9%) 0.128 us/op
+# Warmup Iteration   5: 91.444 ±(99.9%) 13.236 us/op
+Iteration   1: 87.350 ±(99.9%) 0.065 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.632 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.168 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.728 us/op
+                 widenCleanArrayCacheInt·p0.999:  135.168 us/op
+                 widenCleanArrayCacheInt·p0.9999: 169.303 us/op
+                 widenCleanArrayCacheInt·p1.00:   476.160 us/op
+
+Iteration   2: 87.754 ±(99.9%) 0.010 us/op
+                 widenCleanArrayCacheInt·p0.00:   87.168 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.680 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.936 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.936 us/op
+                 widenCleanArrayCacheInt·p0.99:   90.112 us/op
+                 widenCleanArrayCacheInt·p0.999:  91.008 us/op
+                 widenCleanArrayCacheInt·p0.9999: 99.973 us/op
+                 widenCleanArrayCacheInt·p1.00:   233.728 us/op
+
+Iteration   3: 87.827 ±(99.9%) 0.009 us/op
+                 widenCleanArrayCacheInt·p0.00:   87.168 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.808 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.936 us/op
+                 widenCleanArrayCacheInt·p0.95:   88.064 us/op
+                 widenCleanArrayCacheInt·p0.99:   90.240 us/op
+                 widenCleanArrayCacheInt·p0.999:  91.264 us/op
+                 widenCleanArrayCacheInt·p0.9999: 97.484 us/op
+                 widenCleanArrayCacheInt·p1.00:   192.512 us/op
+
+Iteration   4: 87.445 ±(99.9%) 0.060 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.632 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.984 us/op
+                 widenCleanArrayCacheInt·p0.999:  134.127 us/op
+                 widenCleanArrayCacheInt·p0.9999: 190.476 us/op
+                 widenCleanArrayCacheInt·p1.00:   344.064 us/op
+
+Iteration   5: 87.356 ±(99.9%) 0.061 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.504 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.168 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.856 us/op
+                 widenCleanArrayCacheInt·p0.999:  133.888 us/op
+                 widenCleanArrayCacheInt·p0.9999: 204.017 us/op
+                 widenCleanArrayCacheInt·p1.00:   382.976 us/op
+
+
+# Run progress: 36.67% complete, ETA 00:11:49
+# Fork: 2 of 5
+# Warmup Iteration   1: 95.543 ±(99.9%) 10.639 us/op
+# Warmup Iteration   2: 91.196 ±(99.9%) 8.971 us/op
+# Warmup Iteration   3: 87.761 ±(99.9%) 0.136 us/op
+# Warmup Iteration   4: 87.599 ±(99.9%) 0.125 us/op
+# Warmup Iteration   5: 91.666 ±(99.9%) 13.236 us/op
+Iteration   1: 87.998 ±(99.9%) 0.009 us/op
+                 widenCleanArrayCacheInt·p0.00:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.936 us/op
+                 widenCleanArrayCacheInt·p0.90:   88.064 us/op
+                 widenCleanArrayCacheInt·p0.95:   88.192 us/op
+                 widenCleanArrayCacheInt·p0.99:   90.368 us/op
+                 widenCleanArrayCacheInt·p0.999:  91.173 us/op
+                 widenCleanArrayCacheInt·p0.9999: 99.326 us/op
+                 widenCleanArrayCacheInt·p1.00:   205.312 us/op
+
+Iteration   2: 87.584 ±(99.9%) 0.059 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.888 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.168 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.424 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.424 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.984 us/op
+                 widenCleanArrayCacheInt·p0.999:  134.912 us/op
+                 widenCleanArrayCacheInt·p0.9999: 199.545 us/op
+                 widenCleanArrayCacheInt·p1.00:   348.672 us/op
+
+Iteration   3: 88.086 ±(99.9%) 0.011 us/op
+                 widenCleanArrayCacheInt·p0.00:   87.424 us/op
+                 widenCleanArrayCacheInt·p0.50:   88.064 us/op
+                 widenCleanArrayCacheInt·p0.90:   88.192 us/op
+                 widenCleanArrayCacheInt·p0.95:   88.320 us/op
+                 widenCleanArrayCacheInt·p0.99:   90.496 us/op
+                 widenCleanArrayCacheInt·p0.999:  91.392 us/op
+                 widenCleanArrayCacheInt·p0.9999: 104.667 us/op
+                 widenCleanArrayCacheInt·p1.00:   233.984 us/op
+
+Iteration   4: 88.007 ±(99.9%) 0.009 us/op
+                 widenCleanArrayCacheInt·p0.00:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.936 us/op
+                 widenCleanArrayCacheInt·p0.90:   88.192 us/op
+                 widenCleanArrayCacheInt·p0.95:   88.192 us/op
+                 widenCleanArrayCacheInt·p0.99:   90.368 us/op
+                 widenCleanArrayCacheInt·p0.999:  91.136 us/op
+                 widenCleanArrayCacheInt·p0.9999: 101.222 us/op
+                 widenCleanArrayCacheInt·p1.00:   193.280 us/op
+
+Iteration   5: 88.009 ±(99.9%) 0.014 us/op
+                 widenCleanArrayCacheInt·p0.00:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.936 us/op
+                 widenCleanArrayCacheInt·p0.90:   88.192 us/op
+                 widenCleanArrayCacheInt·p0.95:   88.192 us/op
+                 widenCleanArrayCacheInt·p0.99:   90.368 us/op
+                 widenCleanArrayCacheInt·p0.999:  91.392 us/op
+                 widenCleanArrayCacheInt·p0.9999: 107.086 us/op
+                 widenCleanArrayCacheInt·p1.00:   277.504 us/op
+
+
+# Run progress: 40.00% complete, ETA 00:11:12
+# Fork: 3 of 5
+# Warmup Iteration   1: 95.339 ±(99.9%) 10.630 us/op
+# Warmup Iteration   2: 90.353 ±(99.9%) 8.859 us/op
+# Warmup Iteration   3: 87.587 ±(99.9%) 0.080 us/op
+# Warmup Iteration   4: 87.695 ±(99.9%) 0.044 us/op
+# Warmup Iteration   5: 91.654 ±(99.9%) 13.218 us/op
+Iteration   1: 87.166 ±(99.9%) 0.058 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.120 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.784 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.472 us/op
+                 widenCleanArrayCacheInt·p0.999:  133.376 us/op
+                 widenCleanArrayCacheInt·p0.9999: 165.433 us/op
+                 widenCleanArrayCacheInt·p1.00:   519.680 us/op
+
+Iteration   2: 87.195 ±(99.9%) 0.059 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.504 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.784 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.600 us/op
+                 widenCleanArrayCacheInt·p0.999:  135.035 us/op
+                 widenCleanArrayCacheInt·p0.9999: 203.012 us/op
+                 widenCleanArrayCacheInt·p1.00:   342.016 us/op
+
+Iteration   3: 87.215 ±(99.9%) 0.079 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.504 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.784 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.600 us/op
+                 widenCleanArrayCacheInt·p0.999:  136.027 us/op
+                 widenCleanArrayCacheInt·p0.9999: 230.240 us/op
+                 widenCleanArrayCacheInt·p1.00:   1000.448 us/op
+
+Iteration   4: 87.203 ±(99.9%) 0.061 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.376 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.784 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.600 us/op
+                 widenCleanArrayCacheInt·p0.999:  135.168 us/op
+                 widenCleanArrayCacheInt·p0.9999: 204.032 us/op
+                 widenCleanArrayCacheInt·p1.00:   359.424 us/op
+
+Iteration   5: 87.203 ±(99.9%) 0.066 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.632 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.784 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.600 us/op
+                 widenCleanArrayCacheInt·p0.999:  135.680 us/op
+                 widenCleanArrayCacheInt·p0.9999: 231.052 us/op
+                 widenCleanArrayCacheInt·p1.00:   479.744 us/op
+
+
+# Run progress: 43.33% complete, ETA 00:10:34
+# Fork: 4 of 5
+# Warmup Iteration   1: 95.592 ±(99.9%) 10.628 us/op
+# Warmup Iteration   2: 90.011 ±(99.9%) 8.839 us/op
+# Warmup Iteration   3: 87.087 ±(99.9%) 0.123 us/op
+# Warmup Iteration   4: 86.923 ±(99.9%) 0.151 us/op
+# Warmup Iteration   5: 91.385 ±(99.9%) 13.191 us/op
+Iteration   1: 86.954 ±(99.9%) 0.058 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.504 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.656 us/op
+                 widenCleanArrayCacheInt·p0.90:   86.784 us/op
+                 widenCleanArrayCacheInt·p0.95:   86.912 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.472 us/op
+                 widenCleanArrayCacheInt·p0.999:  133.632 us/op
+                 widenCleanArrayCacheInt·p0.9999: 196.966 us/op
+                 widenCleanArrayCacheInt·p1.00:   336.384 us/op
+
+Iteration   2: 87.293 ±(99.9%) 0.008 us/op
+                 widenCleanArrayCacheInt·p0.00:   86.528 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.424 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.552 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.728 us/op
+                 widenCleanArrayCacheInt·p0.999:  90.624 us/op
+                 widenCleanArrayCacheInt·p0.9999: 101.666 us/op
+                 widenCleanArrayCacheInt·p1.00:   184.832 us/op
+
+Iteration   3: 87.379 ±(99.9%) 0.011 us/op
+                 widenCleanArrayCacheInt·p0.00:   86.656 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.552 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.552 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.856 us/op
+                 widenCleanArrayCacheInt·p0.999:  90.752 us/op
+                 widenCleanArrayCacheInt·p0.9999: 101.366 us/op
+                 widenCleanArrayCacheInt·p1.00:   235.776 us/op
+
+Iteration   4: 86.965 ±(99.9%) 0.063 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.248 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.656 us/op
+                 widenCleanArrayCacheInt·p0.90:   86.784 us/op
+                 widenCleanArrayCacheInt·p0.95:   86.912 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.472 us/op
+                 widenCleanArrayCacheInt·p0.999:  134.912 us/op
+                 widenCleanArrayCacheInt·p0.9999: 193.328 us/op
+                 widenCleanArrayCacheInt·p1.00:   461.824 us/op
+
+Iteration   5: 87.292 ±(99.9%) 0.010 us/op
+                 widenCleanArrayCacheInt·p0.00:   86.528 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.296 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.424 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.552 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.728 us/op
+                 widenCleanArrayCacheInt·p0.999:  90.624 us/op
+                 widenCleanArrayCacheInt·p0.9999: 100.369 us/op
+                 widenCleanArrayCacheInt·p1.00:   226.560 us/op
+
+
+# Run progress: 46.67% complete, ETA 00:09:57
+# Fork: 5 of 5
+# Warmup Iteration   1: 95.338 ±(99.9%) 10.559 us/op
+# Warmup Iteration   2: 90.380 ±(99.9%) 8.841 us/op
+# Warmup Iteration   3: 87.834 ±(99.9%) 0.051 us/op
+# Warmup Iteration   4: 87.747 ±(99.9%) 0.043 us/op
+# Warmup Iteration   5: 91.352 ±(99.9%) 13.177 us/op
+Iteration   1: 87.226 ±(99.9%) 0.059 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.376 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.912 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.168 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.600 us/op
+                 widenCleanArrayCacheInt·p0.999:  134.292 us/op
+                 widenCleanArrayCacheInt·p0.9999: 204.460 us/op
+                 widenCleanArrayCacheInt·p1.00:   338.944 us/op
+
+Iteration   2: 87.663 ±(99.9%) 0.009 us/op
+                 widenCleanArrayCacheInt·p0.00:   86.912 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.552 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.808 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.808 us/op
+                 widenCleanArrayCacheInt·p0.99:   90.112 us/op
+                 widenCleanArrayCacheInt·p0.999:  90.880 us/op
+                 widenCleanArrayCacheInt·p0.9999: 99.201 us/op
+                 widenCleanArrayCacheInt·p1.00:   202.496 us/op
+
+Iteration   3: 87.251 ±(99.9%) 0.063 us/op
+                 widenCleanArrayCacheInt·p0.00:   85.632 us/op
+                 widenCleanArrayCacheInt·p0.50:   86.912 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.168 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.728 us/op
+                 widenCleanArrayCacheInt·p0.999:  134.863 us/op
+                 widenCleanArrayCacheInt·p0.9999: 175.038 us/op
+                 widenCleanArrayCacheInt·p1.00:   472.576 us/op
+
+Iteration   4: 87.663 ±(99.9%) 0.011 us/op
+                 widenCleanArrayCacheInt·p0.00:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.552 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.808 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.808 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.984 us/op
+                 widenCleanArrayCacheInt·p0.999:  90.752 us/op
+                 widenCleanArrayCacheInt·p0.9999: 102.509 us/op
+                 widenCleanArrayCacheInt·p1.00:   248.576 us/op
+
+Iteration   5: 87.662 ±(99.9%) 0.012 us/op
+                 widenCleanArrayCacheInt·p0.00:   87.040 us/op
+                 widenCleanArrayCacheInt·p0.50:   87.552 us/op
+                 widenCleanArrayCacheInt·p0.90:   87.808 us/op
+                 widenCleanArrayCacheInt·p0.95:   87.808 us/op
+                 widenCleanArrayCacheInt·p0.99:   89.984 us/op
+                 widenCleanArrayCacheInt·p0.999:  90.880 us/op
+                 widenCleanArrayCacheInt·p0.9999: 103.857 us/op
+                 widenCleanArrayCacheInt·p1.00:   258.304 us/op
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenCleanArrayCacheInt":
+  N = 1426285
+  mean =     87.469 ±(99.9%) 0.009 us/op
+
+  Histogram, us/op:
+    [   0.000,  100.000) = 1421531 
+    [ 100.000,  200.000) = 4680 
+    [ 200.000,  300.000) = 32 
+    [ 300.000,  400.000) = 31 
+    [ 400.000,  500.000) = 9 
+    [ 500.000,  600.000) = 1 
+    [ 600.000,  700.000) = 0 
+    [ 700.000,  800.000) = 0 
+    [ 800.000,  900.000) = 0 
+    [ 900.000, 1000.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =     85.120 us/op
+     p(50.0000) =     87.168 us/op
+     p(90.0000) =     87.936 us/op
+     p(95.0000) =     88.064 us/op
+     p(99.0000) =     90.112 us/op
+     p(99.9000) =    132.864 us/op
+     p(99.9900) =    163.072 us/op
+     p(99.9990) =    347.461 us/op
+     p(99.9999) =    795.503 us/op
+    p(100.0000) =   1000.448 us/op
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenCleanArrayCacheInt
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 50.00% complete, ETA 00:09:19
+# Fork: 1 of 5
+# Warmup Iteration   1: 2209.724 ±(99.9%) 167.079 us/op
+# Warmup Iteration   2: 2249.445 ±(99.9%) 316.888 us/op
+# Warmup Iteration   3: 2116.959 ±(99.9%) 14.264 us/op
+# Warmup Iteration   4: 2171.343 ±(99.9%) 136.517 us/op
+# Warmup Iteration   5: 2114.766 ±(99.9%) 13.852 us/op
+Iteration   1: 2120.911 ±(99.9%) 3.400 us/op
+                 widenCleanArrayCacheInt·p0.00:   2082.816 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2138.112 us/op
+                 widenCleanArrayCacheInt·p0.95:   2150.400 us/op
+                 widenCleanArrayCacheInt·p0.99:   2326.528 us/op
+                 widenCleanArrayCacheInt·p0.999:  2488.353 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3805.184 us/op
+                 widenCleanArrayCacheInt·p1.00:   3805.184 us/op
+
+Iteration   2: 2133.855 ±(99.9%) 32.088 us/op
+                 widenCleanArrayCacheInt·p0.00:   2084.864 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2142.208 us/op
+                 widenCleanArrayCacheInt·p0.95:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.99:   2334.720 us/op
+                 widenCleanArrayCacheInt·p0.999:  3393.507 us/op
+                 widenCleanArrayCacheInt·p0.9999: 24772.608 us/op
+                 widenCleanArrayCacheInt·p1.00:   24772.608 us/op
+
+Iteration   3: 2111.023 ±(99.9%) 4.011 us/op
+                 widenCleanArrayCacheInt·p0.00:   2066.432 us/op
+                 widenCleanArrayCacheInt·p0.50:   2093.056 us/op
+                 widenCleanArrayCacheInt·p0.90:   2166.784 us/op
+                 widenCleanArrayCacheInt·p0.95:   2195.456 us/op
+                 widenCleanArrayCacheInt·p0.99:   2314.240 us/op
+                 widenCleanArrayCacheInt·p0.999:  2486.120 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3821.568 us/op
+                 widenCleanArrayCacheInt·p1.00:   3821.568 us/op
+
+Iteration   4: 2122.044 ±(99.9%) 3.443 us/op
+                 widenCleanArrayCacheInt·p0.00:   2084.864 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2138.112 us/op
+                 widenCleanArrayCacheInt·p0.95:   2154.496 us/op
+                 widenCleanArrayCacheInt·p0.99:   2323.988 us/op
+                 widenCleanArrayCacheInt·p0.999:  2434.220 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3850.240 us/op
+                 widenCleanArrayCacheInt·p1.00:   3850.240 us/op
+
+Iteration   5: 2122.111 ±(99.9%) 3.506 us/op
+                 widenCleanArrayCacheInt·p0.00:   2082.816 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2138.112 us/op
+                 widenCleanArrayCacheInt·p0.95:   2154.496 us/op
+                 widenCleanArrayCacheInt·p0.99:   2326.528 us/op
+                 widenCleanArrayCacheInt·p0.999:  2470.277 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3833.856 us/op
+                 widenCleanArrayCacheInt·p1.00:   3833.856 us/op
+
+
+# Run progress: 53.33% complete, ETA 00:08:42
+# Fork: 2 of 5
+# Warmup Iteration   1: 2197.382 ±(99.9%) 166.721 us/op
+# Warmup Iteration   2: 2248.520 ±(99.9%) 315.913 us/op
+# Warmup Iteration   3: 2128.068 ±(99.9%) 13.845 us/op
+# Warmup Iteration   4: 2167.255 ±(99.9%) 136.775 us/op
+# Warmup Iteration   5: 2131.365 ±(99.9%) 14.516 us/op
+Iteration   1: 2106.852 ±(99.9%) 3.881 us/op
+                 widenCleanArrayCacheInt·p0.00:   2066.432 us/op
+                 widenCleanArrayCacheInt·p0.50:   2093.056 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2174.976 us/op
+                 widenCleanArrayCacheInt·p0.99:   2315.387 us/op
+                 widenCleanArrayCacheInt·p0.999:  2534.572 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3899.392 us/op
+                 widenCleanArrayCacheInt·p1.00:   3899.392 us/op
+
+Iteration   2: 2117.869 ±(99.9%) 31.772 us/op
+                 widenCleanArrayCacheInt·p0.00:   2064.384 us/op
+                 widenCleanArrayCacheInt·p0.50:   2091.008 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2183.168 us/op
+                 widenCleanArrayCacheInt·p0.99:   2355.200 us/op
+                 widenCleanArrayCacheInt·p0.999:  3363.250 us/op
+                 widenCleanArrayCacheInt·p0.9999: 24641.536 us/op
+                 widenCleanArrayCacheInt·p1.00:   24641.536 us/op
+
+Iteration   3: 2108.856 ±(99.9%) 4.036 us/op
+                 widenCleanArrayCacheInt·p0.00:   2064.384 us/op
+                 widenCleanArrayCacheInt·p0.50:   2093.056 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2179.072 us/op
+                 widenCleanArrayCacheInt·p0.99:   2352.333 us/op
+                 widenCleanArrayCacheInt·p0.999:  2489.016 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3813.376 us/op
+                 widenCleanArrayCacheInt·p1.00:   3813.376 us/op
+
+Iteration   4: 2120.651 ±(99.9%) 3.697 us/op
+                 widenCleanArrayCacheInt·p0.00:   2082.816 us/op
+                 widenCleanArrayCacheInt·p0.50:   2109.440 us/op
+                 widenCleanArrayCacheInt·p0.90:   2138.112 us/op
+                 widenCleanArrayCacheInt·p0.95:   2170.880 us/op
+                 widenCleanArrayCacheInt·p0.99:   2344.714 us/op
+                 widenCleanArrayCacheInt·p0.999:  2494.530 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3821.568 us/op
+                 widenCleanArrayCacheInt·p1.00:   3821.568 us/op
+
+Iteration   5: 2120.219 ±(99.9%) 3.605 us/op
+                 widenCleanArrayCacheInt·p0.00:   2080.768 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2138.112 us/op
+                 widenCleanArrayCacheInt·p0.95:   2150.400 us/op
+                 widenCleanArrayCacheInt·p0.99:   2342.912 us/op
+                 widenCleanArrayCacheInt·p0.999:  2482.176 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3870.720 us/op
+                 widenCleanArrayCacheInt·p1.00:   3870.720 us/op
+
+
+# Run progress: 56.67% complete, ETA 00:08:04
+# Fork: 3 of 5
+# Warmup Iteration   1: 2220.046 ±(99.9%) 167.890 us/op
+# Warmup Iteration   2: 2242.569 ±(99.9%) 313.737 us/op
+# Warmup Iteration   3: 2127.833 ±(99.9%) 13.452 us/op
+# Warmup Iteration   4: 2172.305 ±(99.9%) 136.443 us/op
+# Warmup Iteration   5: 2108.044 ±(99.9%) 14.595 us/op
+Iteration   1: 2105.453 ±(99.9%) 3.834 us/op
+                 widenCleanArrayCacheInt·p0.00:   2064.384 us/op
+                 widenCleanArrayCacheInt·p0.50:   2091.008 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2174.976 us/op
+                 widenCleanArrayCacheInt·p0.99:   2328.658 us/op
+                 widenCleanArrayCacheInt·p0.999:  2485.772 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3825.664 us/op
+                 widenCleanArrayCacheInt·p1.00:   3825.664 us/op
+
+Iteration   2: 2116.300 ±(99.9%) 31.701 us/op
+                 widenCleanArrayCacheInt·p0.00:   2062.336 us/op
+                 widenCleanArrayCacheInt·p0.50:   2091.008 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2187.264 us/op
+                 widenCleanArrayCacheInt·p0.99:   2344.550 us/op
+                 widenCleanArrayCacheInt·p0.999:  3383.132 us/op
+                 widenCleanArrayCacheInt·p0.9999: 24608.768 us/op
+                 widenCleanArrayCacheInt·p1.00:   24608.768 us/op
+
+Iteration   3: 2106.398 ±(99.9%) 4.172 us/op
+                 widenCleanArrayCacheInt·p0.00:   2062.336 us/op
+                 widenCleanArrayCacheInt·p0.50:   2088.960 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2184.397 us/op
+                 widenCleanArrayCacheInt·p0.99:   2347.008 us/op
+                 widenCleanArrayCacheInt·p0.999:  2518.606 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3829.760 us/op
+                 widenCleanArrayCacheInt·p1.00:   3829.760 us/op
+
+Iteration   4: 2107.110 ±(99.9%) 4.094 us/op
+                 widenCleanArrayCacheInt·p0.00:   2062.336 us/op
+                 widenCleanArrayCacheInt·p0.50:   2091.008 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2183.168 us/op
+                 widenCleanArrayCacheInt·p0.99:   2347.008 us/op
+                 widenCleanArrayCacheInt·p0.999:  2489.893 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3780.608 us/op
+                 widenCleanArrayCacheInt·p1.00:   3780.608 us/op
+
+Iteration   5: 2106.634 ±(99.9%) 4.284 us/op
+                 widenCleanArrayCacheInt·p0.00:   2062.336 us/op
+                 widenCleanArrayCacheInt·p0.50:   2088.960 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2187.264 us/op
+                 widenCleanArrayCacheInt·p0.99:   2355.200 us/op
+                 widenCleanArrayCacheInt·p0.999:  2491.138 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3915.776 us/op
+                 widenCleanArrayCacheInt·p1.00:   3915.776 us/op
+
+
+# Run progress: 60.00% complete, ETA 00:07:27
+# Fork: 4 of 5
+# Warmup Iteration   1: 2215.518 ±(99.9%) 168.261 us/op
+# Warmup Iteration   2: 2244.392 ±(99.9%) 315.505 us/op
+# Warmup Iteration   3: 2114.913 ±(99.9%) 13.918 us/op
+# Warmup Iteration   4: 2155.366 ±(99.9%) 135.300 us/op
+# Warmup Iteration   5: 2119.537 ±(99.9%) 15.247 us/op
+Iteration   1: 2121.267 ±(99.9%) 3.434 us/op
+                 widenCleanArrayCacheInt·p0.00:   2084.864 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2138.112 us/op
+                 widenCleanArrayCacheInt·p0.95:   2150.400 us/op
+                 widenCleanArrayCacheInt·p0.99:   2322.432 us/op
+                 widenCleanArrayCacheInt·p0.999:  2508.595 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3854.336 us/op
+                 widenCleanArrayCacheInt·p1.00:   3854.336 us/op
+
+Iteration   2: 2125.795 ±(99.9%) 31.906 us/op
+                 widenCleanArrayCacheInt·p0.00:   2066.432 us/op
+                 widenCleanArrayCacheInt·p0.50:   2101.248 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2187.264 us/op
+                 widenCleanArrayCacheInt·p0.99:   2361.385 us/op
+                 widenCleanArrayCacheInt·p0.999:  3312.419 us/op
+                 widenCleanArrayCacheInt·p0.9999: 24674.304 us/op
+                 widenCleanArrayCacheInt·p1.00:   24674.304 us/op
+
+Iteration   3: 2122.753 ±(99.9%) 3.585 us/op
+                 widenCleanArrayCacheInt·p0.00:   2080.768 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2138.112 us/op
+                 widenCleanArrayCacheInt·p0.95:   2154.496 us/op
+                 widenCleanArrayCacheInt·p0.99:   2342.912 us/op
+                 widenCleanArrayCacheInt·p0.999:  2491.564 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3846.144 us/op
+                 widenCleanArrayCacheInt·p1.00:   3846.144 us/op
+
+Iteration   4: 2123.544 ±(99.9%) 3.594 us/op
+                 widenCleanArrayCacheInt·p0.00:   2086.912 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2138.112 us/op
+                 widenCleanArrayCacheInt·p0.95:   2155.930 us/op
+                 widenCleanArrayCacheInt·p0.99:   2344.837 us/op
+                 widenCleanArrayCacheInt·p0.999:  2479.043 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3821.568 us/op
+                 widenCleanArrayCacheInt·p1.00:   3821.568 us/op
+
+Iteration   5: 2124.415 ±(99.9%) 3.610 us/op
+                 widenCleanArrayCacheInt·p0.00:   2080.768 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2142.208 us/op
+                 widenCleanArrayCacheInt·p0.95:   2174.976 us/op
+                 widenCleanArrayCacheInt·p0.99:   2338.816 us/op
+                 widenCleanArrayCacheInt·p0.999:  2439.545 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3858.432 us/op
+                 widenCleanArrayCacheInt·p1.00:   3858.432 us/op
+
+
+# Run progress: 63.33% complete, ETA 00:06:50
+# Fork: 5 of 5
+# Warmup Iteration   1: 2196.532 ±(99.9%) 165.458 us/op
+# Warmup Iteration   2: 2258.713 ±(99.9%) 317.591 us/op
+# Warmup Iteration   3: 2129.140 ±(99.9%) 13.099 us/op
+# Warmup Iteration   4: 2172.599 ±(99.9%) 136.555 us/op
+# Warmup Iteration   5: 2126.482 ±(99.9%) 13.225 us/op
+Iteration   1: 2107.491 ±(99.9%) 3.721 us/op
+                 widenCleanArrayCacheInt·p0.00:   2068.480 us/op
+                 widenCleanArrayCacheInt·p0.50:   2093.056 us/op
+                 widenCleanArrayCacheInt·p0.90:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.95:   2174.976 us/op
+                 widenCleanArrayCacheInt·p0.99:   2311.332 us/op
+                 widenCleanArrayCacheInt·p0.999:  2530.533 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3801.088 us/op
+                 widenCleanArrayCacheInt·p1.00:   3801.088 us/op
+
+Iteration   2: 2122.621 ±(99.9%) 31.811 us/op
+                 widenCleanArrayCacheInt·p0.00:   2066.432 us/op
+                 widenCleanArrayCacheInt·p0.50:   2097.152 us/op
+                 widenCleanArrayCacheInt·p0.90:   2170.880 us/op
+                 widenCleanArrayCacheInt·p0.95:   2196.890 us/op
+                 widenCleanArrayCacheInt·p0.99:   2336.399 us/op
+                 widenCleanArrayCacheInt·p0.999:  3542.225 us/op
+                 widenCleanArrayCacheInt·p0.9999: 24608.768 us/op
+                 widenCleanArrayCacheInt·p1.00:   24608.768 us/op
+
+Iteration   3: 2110.365 ±(99.9%) 4.123 us/op
+                 widenCleanArrayCacheInt·p0.00:   2066.432 us/op
+                 widenCleanArrayCacheInt·p0.50:   2093.056 us/op
+                 widenCleanArrayCacheInt·p0.90:   2166.784 us/op
+                 widenCleanArrayCacheInt·p0.95:   2183.168 us/op
+                 widenCleanArrayCacheInt·p0.99:   2352.415 us/op
+                 widenCleanArrayCacheInt·p0.999:  2500.723 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3813.376 us/op
+                 widenCleanArrayCacheInt·p1.00:   3813.376 us/op
+
+Iteration   4: 2124.976 ±(99.9%) 3.622 us/op
+                 widenCleanArrayCacheInt·p0.00:   2088.960 us/op
+                 widenCleanArrayCacheInt·p0.50:   2117.632 us/op
+                 widenCleanArrayCacheInt·p0.90:   2142.208 us/op
+                 widenCleanArrayCacheInt·p0.95:   2162.688 us/op
+                 widenCleanArrayCacheInt·p0.99:   2347.008 us/op
+                 widenCleanArrayCacheInt·p0.999:  2511.200 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3854.336 us/op
+                 widenCleanArrayCacheInt·p1.00:   3854.336 us/op
+
+Iteration   5: 2124.653 ±(99.9%) 3.761 us/op
+                 widenCleanArrayCacheInt·p0.00:   2086.912 us/op
+                 widenCleanArrayCacheInt·p0.50:   2113.536 us/op
+                 widenCleanArrayCacheInt·p0.90:   2142.208 us/op
+                 widenCleanArrayCacheInt·p0.95:   2166.784 us/op
+                 widenCleanArrayCacheInt·p0.99:   2351.104 us/op
+                 widenCleanArrayCacheInt·p0.999:  2491.351 us/op
+                 widenCleanArrayCacheInt·p0.9999: 3837.952 us/op
+                 widenCleanArrayCacheInt·p1.00:   3837.952 us/op
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenCleanArrayCacheInt":
+  N = 58971
+  mean =   2117.336 ±(99.9%) 2.917 us/op
+
+  Histogram, us/op:
+    [    0.000,  2500.000) = 58924 
+    [ 2500.000,  5000.000) = 42 
+    [ 5000.000,  7500.000) = 0 
+    [ 7500.000, 10000.000) = 0 
+    [10000.000, 12500.000) = 0 
+    [12500.000, 15000.000) = 0 
+    [15000.000, 17500.000) = 0 
+    [17500.000, 20000.000) = 0 
+    [20000.000, 22500.000) = 0 
+    [22500.000, 25000.000) = 5 
+    [25000.000, 27500.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =   2062.336 us/op
+     p(50.0000) =   2105.344 us/op
+     p(90.0000) =   2154.496 us/op
+     p(95.0000) =   2174.976 us/op
+     p(99.0000) =   2338.816 us/op
+     p(99.9000) =   2486.272 us/op
+     p(99.9900) =   6204.713 us/op
+     p(99.9990) =  24772.608 us/op
+     p(99.9999) =  24772.608 us/op
+    p(100.0000) =  24772.608 us/op
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenDirtyArrayCacheInt
+# Parameters: (arraySize = 262145)
+
+# Run progress: 66.67% complete, ETA 00:06:12
+# Fork: 1 of 5
+# Warmup Iteration   1: 26.102 ±(99.9%) 4.578 us/op
+# Warmup Iteration   2: 29.136 ±(99.9%) 11.600 us/op
+# Warmup Iteration   3: 23.697 ±(99.9%) 0.025 us/op
+# Warmup Iteration   4: 23.724 ±(99.9%) 0.023 us/op
+# Warmup Iteration   5: 23.667 ±(99.9%) 0.022 us/op
+Iteration   1: 23.665 ±(99.9%) 0.004 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.296 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.744 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.872 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.272 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.974 us/op
+                 widenDirtyArrayCacheInt·p1.00:   134.400 us/op
+
+Iteration   2: 23.654 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.264 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.744 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.840 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.261 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.448 us/op
+                 widenDirtyArrayCacheInt·p1.00:   153.088 us/op
+
+Iteration   3: 23.503 ±(99.9%) 0.029 us/op
+                 widenDirtyArrayCacheInt·p0.00:   22.944 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.392 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.488 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.520 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.616 us/op
+                 widenDirtyArrayCacheInt·p0.999:  69.233 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 97.842 us/op
+                 widenDirtyArrayCacheInt·p1.00:   419.840 us/op
+
+Iteration   4: 23.655 ±(99.9%) 0.004 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.264 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.744 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.840 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.304 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.220 us/op
+                 widenDirtyArrayCacheInt·p1.00:   136.704 us/op
+
+Iteration   5: 23.655 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.232 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.744 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.840 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.304 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.633 us/op
+                 widenDirtyArrayCacheInt·p1.00:   163.072 us/op
+
+
+# Run progress: 70.00% complete, ETA 00:05:35
+# Fork: 2 of 5
+# Warmup Iteration   1: 26.524 ±(99.9%) 4.649 us/op
+# Warmup Iteration   2: 29.171 ±(99.9%) 11.669 us/op
+# Warmup Iteration   3: 23.552 ±(99.9%) 0.059 us/op
+# Warmup Iteration   4: 23.737 ±(99.9%) 0.024 us/op
+# Warmup Iteration   5: 23.690 ±(99.9%) 0.024 us/op
+Iteration   1: 23.681 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.296 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.680 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.808 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.872 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.368 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.505 us/op
+                 widenDirtyArrayCacheInt·p1.00:   164.096 us/op
+
+Iteration   2: 23.698 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.328 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.680 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.808 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.904 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.400 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.671 us/op
+                 widenDirtyArrayCacheInt·p1.00:   169.472 us/op
+
+Iteration   3: 23.716 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.328 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.712 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.808 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.840 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.904 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.432 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.957 us/op
+                 widenDirtyArrayCacheInt·p1.00:   159.488 us/op
+
+Iteration   4: 23.698 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.296 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.680 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.808 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.904 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.400 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 31.032 us/op
+                 widenDirtyArrayCacheInt·p1.00:   144.640 us/op
+
+Iteration   5: 23.697 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.328 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.680 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.808 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.904 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.368 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.956 us/op
+                 widenDirtyArrayCacheInt·p1.00:   164.096 us/op
+
+
+# Run progress: 73.33% complete, ETA 00:04:58
+# Fork: 3 of 5
+# Warmup Iteration   1: 26.383 ±(99.9%) 4.630 us/op
+# Warmup Iteration   2: 29.145 ±(99.9%) 11.586 us/op
+# Warmup Iteration   3: 23.917 ±(99.9%) 0.196 us/op
+# Warmup Iteration   4: 23.727 ±(99.9%) 0.062 us/op
+# Warmup Iteration   5: 23.660 ±(99.9%) 0.057 us/op
+Iteration   1: 23.641 ±(99.9%) 0.026 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.008 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.520 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.680 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.808 us/op
+                 widenDirtyArrayCacheInt·p0.999:  69.120 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 97.069 us/op
+                 widenDirtyArrayCacheInt·p1.00:   412.672 us/op
+
+Iteration   2: 23.823 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.456 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.808 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.936 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.968 us/op
+                 widenDirtyArrayCacheInt·p0.99:   24.064 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.400 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.518 us/op
+                 widenDirtyArrayCacheInt·p1.00:   156.672 us/op
+
+Iteration   3: 23.621 ±(99.9%) 0.025 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.040 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.520 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.680 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.999:  69.120 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 97.137 us/op
+                 widenDirtyArrayCacheInt·p1.00:   283.136 us/op
+
+Iteration   4: 23.803 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.424 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.904 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.936 us/op
+                 widenDirtyArrayCacheInt·p0.99:   24.032 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.400 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 29.761 us/op
+                 widenDirtyArrayCacheInt·p1.00:   147.456 us/op
+
+Iteration   5: 23.629 ±(99.9%) 0.027 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.008 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.520 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.680 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.999:  68.918 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 97.536 us/op
+                 widenDirtyArrayCacheInt·p1.00:   363.008 us/op
+
+
+# Run progress: 76.67% complete, ETA 00:04:20
+# Fork: 4 of 5
+# Warmup Iteration   1: 26.980 ±(99.9%) 4.747 us/op
+# Warmup Iteration   2: 29.255 ±(99.9%) 11.645 us/op
+# Warmup Iteration   3: 23.782 ±(99.9%) 0.058 us/op
+# Warmup Iteration   4: 23.999 ±(99.9%) 0.024 us/op
+# Warmup Iteration   5: 23.956 ±(99.9%) 0.024 us/op
+Iteration   1: 23.926 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.488 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.904 us/op
+                 widenDirtyArrayCacheInt·p0.90:   24.032 us/op
+                 widenDirtyArrayCacheInt·p0.95:   24.064 us/op
+                 widenDirtyArrayCacheInt·p0.99:   24.128 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.560 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 31.018 us/op
+                 widenDirtyArrayCacheInt·p1.00:   161.024 us/op
+
+Iteration   2: 23.751 ±(99.9%) 0.028 us/op
+                 widenDirtyArrayCacheInt·p0.00:   22.976 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.744 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.872 us/op
+                 widenDirtyArrayCacheInt·p0.999:  69.248 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 96.895 us/op
+                 widenDirtyArrayCacheInt·p1.00:   419.328 us/op
+
+Iteration   3: 23.747 ±(99.9%) 0.024 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.008 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.648 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.744 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.776 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.872 us/op
+                 widenDirtyArrayCacheInt·p0.999:  68.992 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 97.150 us/op
+                 widenDirtyArrayCacheInt·p1.00:   255.744 us/op
+
+Iteration   4: 23.927 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.456 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.904 us/op
+                 widenDirtyArrayCacheInt·p0.90:   24.032 us/op
+                 widenDirtyArrayCacheInt·p0.95:   24.064 us/op
+                 widenDirtyArrayCacheInt·p0.99:   24.128 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.592 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 31.566 us/op
+                 widenDirtyArrayCacheInt·p1.00:   152.576 us/op
+
+Iteration   5: 23.926 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.552 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.904 us/op
+                 widenDirtyArrayCacheInt·p0.90:   24.032 us/op
+                 widenDirtyArrayCacheInt·p0.95:   24.064 us/op
+                 widenDirtyArrayCacheInt·p0.99:   24.128 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.528 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 31.440 us/op
+                 widenDirtyArrayCacheInt·p1.00:   168.704 us/op
+
+
+# Run progress: 80.00% complete, ETA 00:03:43
+# Fork: 5 of 5
+# Warmup Iteration   1: 26.586 ±(99.9%) 4.660 us/op
+# Warmup Iteration   2: 28.606 ±(99.9%) 11.367 us/op
+# Warmup Iteration   3: 23.399 ±(99.9%) 0.025 us/op
+# Warmup Iteration   4: 23.283 ±(99.9%) 0.083 us/op
+# Warmup Iteration   5: 23.223 ±(99.9%) 0.059 us/op
+Iteration   1: 23.222 ±(99.9%) 0.028 us/op
+                 widenDirtyArrayCacheInt·p0.00:   22.720 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.104 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.232 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.264 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.360 us/op
+                 widenDirtyArrayCacheInt·p0.999:  68.992 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 97.185 us/op
+                 widenDirtyArrayCacheInt·p1.00:   441.856 us/op
+
+Iteration   2: 23.361 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   22.976 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.328 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.456 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.488 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.584 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.080 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.688 us/op
+                 widenDirtyArrayCacheInt·p1.00:   159.488 us/op
+
+Iteration   3: 23.218 ±(99.9%) 0.025 us/op
+                 widenDirtyArrayCacheInt·p0.00:   22.720 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.104 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.232 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.264 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.360 us/op
+                 widenDirtyArrayCacheInt·p0.999:  68.992 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 97.062 us/op
+                 widenDirtyArrayCacheInt·p1.00:   259.072 us/op
+
+Iteration   4: 23.197 ±(99.9%) 0.024 us/op
+                 widenDirtyArrayCacheInt·p0.00:   22.720 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.072 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.200 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.232 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.360 us/op
+                 widenDirtyArrayCacheInt·p0.999:  68.736 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 99.137 us/op
+                 widenDirtyArrayCacheInt·p1.00:   263.680 us/op
+
+Iteration   5: 23.381 ±(99.9%) 0.005 us/op
+                 widenDirtyArrayCacheInt·p0.00:   23.008 us/op
+                 widenDirtyArrayCacheInt·p0.50:   23.360 us/op
+                 widenDirtyArrayCacheInt·p0.90:   23.488 us/op
+                 widenDirtyArrayCacheInt·p0.95:   23.520 us/op
+                 widenDirtyArrayCacheInt·p0.99:   23.616 us/op
+                 widenDirtyArrayCacheInt·p0.999:  26.030 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 30.464 us/op
+                 widenDirtyArrayCacheInt·p1.00:   177.408 us/op
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenDirtyArrayCacheInt":
+  N = 2637330
+  mean =     23.630 ±(99.9%) 0.003 us/op
+
+  Histogram, us/op:
+    [  0.000,  50.000) = 2635496 
+    [ 50.000, 100.000) = 1757 
+    [100.000, 150.000) = 29 
+    [150.000, 200.000) = 19 
+    [200.000, 250.000) = 11 
+    [250.000, 300.000) = 11 
+    [300.000, 350.000) = 1 
+    [350.000, 400.000) = 2 
+    [400.000, 450.000) = 4 
+
+  Percentiles, us/op:
+      p(0.0000) =     22.720 us/op
+     p(50.0000) =     23.616 us/op
+     p(90.0000) =     23.872 us/op
+     p(95.0000) =     23.936 us/op
+     p(99.0000) =     24.064 us/op
+     p(99.9000) =     27.104 us/op
+     p(99.9900) =     75.588 us/op
+     p(99.9990) =    224.963 us/op
+     p(99.9999) =    419.514 us/op
+    p(100.0000) =    441.856 us/op
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/bourgesl/libs/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenDirtyArrayCacheInt
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 83.33% complete, ETA 00:03:06
+# Fork: 1 of 5
+# Warmup Iteration   1: 552.973 ±(99.9%) 49.675 us/op
+# Warmup Iteration   2: 534.361 ±(99.9%) 43.711 us/op
+# Warmup Iteration   3: 516.701 ±(99.9%) 22.726 us/op
+# Warmup Iteration   4: 509.179 ±(99.9%) 3.103 us/op
+# Warmup Iteration   5: 515.046 ±(99.9%) 3.048 us/op
+Iteration   1: 513.521 ±(99.9%) 0.682 us/op
+                 widenDirtyArrayCacheInt·p0.00:   496.128 us/op
+                 widenDirtyArrayCacheInt·p0.50:   510.976 us/op
+                 widenDirtyArrayCacheInt·p0.90:   522.752 us/op
+                 widenDirtyArrayCacheInt·p0.95:   527.360 us/op
+                 widenDirtyArrayCacheInt·p0.99:   570.368 us/op
+                 widenDirtyArrayCacheInt·p0.999:  617.296 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2170.880 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2170.880 us/op
+
+Iteration   2: 509.773 ±(99.9%) 0.936 us/op
+                 widenDirtyArrayCacheInt·p0.00:   488.448 us/op
+                 widenDirtyArrayCacheInt·p0.50:   503.808 us/op
+                 widenDirtyArrayCacheInt·p0.90:   518.144 us/op
+                 widenDirtyArrayCacheInt·p0.95:   567.296 us/op
+                 widenDirtyArrayCacheInt·p0.99:   604.140 us/op
+                 widenDirtyArrayCacheInt·p0.999:  670.507 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2248.704 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2248.704 us/op
+
+Iteration   3: 507.521 ±(99.9%) 1.269 us/op
+                 widenDirtyArrayCacheInt·p0.00:   486.400 us/op
+                 widenDirtyArrayCacheInt·p0.50:   501.760 us/op
+                 widenDirtyArrayCacheInt·p0.90:   515.072 us/op
+                 widenDirtyArrayCacheInt·p0.95:   560.128 us/op
+                 widenDirtyArrayCacheInt·p0.99:   593.920 us/op
+                 widenDirtyArrayCacheInt·p0.999:  675.518 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 3211.264 us/op
+                 widenDirtyArrayCacheInt·p1.00:   3211.264 us/op
+
+Iteration   4: 506.026 ±(99.9%) 0.833 us/op
+                 widenDirtyArrayCacheInt·p0.00:   485.888 us/op
+                 widenDirtyArrayCacheInt·p0.50:   501.248 us/op
+                 widenDirtyArrayCacheInt·p0.90:   513.536 us/op
+                 widenDirtyArrayCacheInt·p0.95:   555.008 us/op
+                 widenDirtyArrayCacheInt·p0.99:   581.632 us/op
+                 widenDirtyArrayCacheInt·p0.999:  649.478 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2117.632 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2117.632 us/op
+
+Iteration   5: 512.571 ±(99.9%) 19.264 us/op
+                 widenDirtyArrayCacheInt·p0.00:   485.888 us/op
+                 widenDirtyArrayCacheInt·p0.50:   501.760 us/op
+                 widenDirtyArrayCacheInt·p0.90:   515.584 us/op
+                 widenDirtyArrayCacheInt·p0.95:   556.032 us/op
+                 widenDirtyArrayCacheInt·p0.99:   581.632 us/op
+                 widenDirtyArrayCacheInt·p0.999:  674.042 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 57147.392 us/op
+                 widenDirtyArrayCacheInt·p1.00:   57147.392 us/op
+
+
+# Run progress: 86.67% complete, ETA 00:02:29
+# Fork: 2 of 5
+# Warmup Iteration   1: 556.303 ±(99.9%) 49.982 us/op
+# Warmup Iteration   2: 536.875 ±(99.9%) 44.319 us/op
+# Warmup Iteration   3: 519.652 ±(99.9%) 23.020 us/op
+# Warmup Iteration   4: 515.255 ±(99.9%) 3.072 us/op
+# Warmup Iteration   5: 512.233 ±(99.9%) 2.967 us/op
+Iteration   1: 510.410 ±(99.9%) 0.663 us/op
+                 widenDirtyArrayCacheInt·p0.00:   492.544 us/op
+                 widenDirtyArrayCacheInt·p0.50:   507.904 us/op
+                 widenDirtyArrayCacheInt·p0.90:   519.680 us/op
+                 widenDirtyArrayCacheInt·p0.95:   524.288 us/op
+                 widenDirtyArrayCacheInt·p0.99:   555.008 us/op
+                 widenDirtyArrayCacheInt·p0.999:  602.427 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2191.360 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2191.360 us/op
+
+Iteration   2: 505.634 ±(99.9%) 0.831 us/op
+                 widenDirtyArrayCacheInt·p0.00:   485.376 us/op
+                 widenDirtyArrayCacheInt·p0.50:   500.736 us/op
+                 widenDirtyArrayCacheInt·p0.90:   514.048 us/op
+                 widenDirtyArrayCacheInt·p0.95:   553.984 us/op
+                 widenDirtyArrayCacheInt·p0.99:   580.608 us/op
+                 widenDirtyArrayCacheInt·p0.999:  631.726 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2134.016 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2134.016 us/op
+
+Iteration   3: 510.451 ±(99.9%) 1.127 us/op
+                 widenDirtyArrayCacheInt·p0.00:   492.544 us/op
+                 widenDirtyArrayCacheInt·p0.50:   507.392 us/op
+                 widenDirtyArrayCacheInt·p0.90:   519.680 us/op
+                 widenDirtyArrayCacheInt·p0.95:   525.312 us/op
+                 widenDirtyArrayCacheInt·p0.99:   564.224 us/op
+                 widenDirtyArrayCacheInt·p0.999:  605.403 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 3162.112 us/op
+                 widenDirtyArrayCacheInt·p1.00:   3162.112 us/op
+
+Iteration   4: 504.381 ±(99.9%) 0.878 us/op
+                 widenDirtyArrayCacheInt·p0.00:   483.840 us/op
+                 widenDirtyArrayCacheInt·p0.50:   499.200 us/op
+                 widenDirtyArrayCacheInt·p0.90:   513.024 us/op
+                 widenDirtyArrayCacheInt·p0.95:   552.960 us/op
+                 widenDirtyArrayCacheInt·p0.99:   580.608 us/op
+                 widenDirtyArrayCacheInt·p0.999:  660.480 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2301.952 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2301.952 us/op
+
+Iteration   5: 509.717 ±(99.9%) 19.178 us/op
+                 widenDirtyArrayCacheInt·p0.00:   482.816 us/op
+                 widenDirtyArrayCacheInt·p0.50:   498.688 us/op
+                 widenDirtyArrayCacheInt·p0.90:   513.024 us/op
+                 widenDirtyArrayCacheInt·p0.95:   547.840 us/op
+                 widenDirtyArrayCacheInt·p0.99:   583.680 us/op
+                 widenDirtyArrayCacheInt·p0.999:  669.245 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 57212.928 us/op
+                 widenDirtyArrayCacheInt·p1.00:   57212.928 us/op
+
+
+# Run progress: 90.00% complete, ETA 00:01:51
+# Fork: 3 of 5
+# Warmup Iteration   1: 560.132 ±(99.9%) 50.325 us/op
+# Warmup Iteration   2: 539.853 ±(99.9%) 44.619 us/op
+# Warmup Iteration   3: 517.981 ±(99.9%) 22.848 us/op
+# Warmup Iteration   4: 513.884 ±(99.9%) 2.918 us/op
+# Warmup Iteration   5: 514.431 ±(99.9%) 2.976 us/op
+Iteration   1: 513.110 ±(99.9%) 0.658 us/op
+                 widenDirtyArrayCacheInt·p0.00:   495.616 us/op
+                 widenDirtyArrayCacheInt·p0.50:   510.976 us/op
+                 widenDirtyArrayCacheInt·p0.90:   521.216 us/op
+                 widenDirtyArrayCacheInt·p0.95:   525.312 us/op
+                 widenDirtyArrayCacheInt·p0.99:   558.776 us/op
+                 widenDirtyArrayCacheInt·p0.999:  614.199 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2174.976 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2174.976 us/op
+
+Iteration   2: 508.161 ±(99.9%) 0.850 us/op
+                 widenDirtyArrayCacheInt·p0.00:   489.472 us/op
+                 widenDirtyArrayCacheInt·p0.50:   502.784 us/op
+                 widenDirtyArrayCacheInt·p0.90:   515.072 us/op
+                 widenDirtyArrayCacheInt·p0.95:   557.056 us/op
+                 widenDirtyArrayCacheInt·p0.99:   584.448 us/op
+                 widenDirtyArrayCacheInt·p0.999:  650.778 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2170.880 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2170.880 us/op
+
+Iteration   3: 506.311 ±(99.9%) 1.234 us/op
+                 widenDirtyArrayCacheInt·p0.00:   486.912 us/op
+                 widenDirtyArrayCacheInt·p0.50:   501.248 us/op
+                 widenDirtyArrayCacheInt·p0.90:   512.512 us/op
+                 widenDirtyArrayCacheInt·p0.95:   552.960 us/op
+                 widenDirtyArrayCacheInt·p0.99:   580.956 us/op
+                 widenDirtyArrayCacheInt·p0.999:  647.442 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 3231.744 us/op
+                 widenDirtyArrayCacheInt·p1.00:   3231.744 us/op
+
+Iteration   4: 506.049 ±(99.9%) 0.837 us/op
+                 widenDirtyArrayCacheInt·p0.00:   485.376 us/op
+                 widenDirtyArrayCacheInt·p0.50:   501.248 us/op
+                 widenDirtyArrayCacheInt·p0.90:   513.024 us/op
+                 widenDirtyArrayCacheInt·p0.95:   552.960 us/op
+                 widenDirtyArrayCacheInt·p0.99:   580.608 us/op
+                 widenDirtyArrayCacheInt·p0.999:  638.370 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2129.920 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2129.920 us/op
+
+Iteration   5: 511.601 ±(99.9%) 19.118 us/op
+                 widenDirtyArrayCacheInt·p0.00:   485.888 us/op
+                 widenDirtyArrayCacheInt·p0.50:   500.736 us/op
+                 widenDirtyArrayCacheInt·p0.90:   512.512 us/op
+                 widenDirtyArrayCacheInt·p0.95:   548.864 us/op
+                 widenDirtyArrayCacheInt·p0.99:   587.776 us/op
+                 widenDirtyArrayCacheInt·p0.999:  678.292 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 56819.712 us/op
+                 widenDirtyArrayCacheInt·p1.00:   56819.712 us/op
+
+
+# Run progress: 93.33% complete, ETA 00:01:14
+# Fork: 4 of 5
+# Warmup Iteration   1: 560.369 ±(99.9%) 50.270 us/op
+# Warmup Iteration   2: 533.368 ±(99.9%) 43.873 us/op
+# Warmup Iteration   3: 516.739 ±(99.9%) 22.788 us/op
+# Warmup Iteration   4: 514.705 ±(99.9%) 2.936 us/op
+# Warmup Iteration   5: 509.690 ±(99.9%) 3.134 us/op
+Iteration   1: 508.284 ±(99.9%) 0.818 us/op
+                 widenDirtyArrayCacheInt·p0.00:   488.448 us/op
+                 widenDirtyArrayCacheInt·p0.50:   503.808 us/op
+                 widenDirtyArrayCacheInt·p0.90:   514.560 us/op
+                 widenDirtyArrayCacheInt·p0.95:   546.816 us/op
+                 widenDirtyArrayCacheInt·p0.99:   581.632 us/op
+                 widenDirtyArrayCacheInt·p0.999:  629.760 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2162.688 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2162.688 us/op
+
+Iteration   2: 513.715 ±(99.9%) 0.684 us/op
+                 widenDirtyArrayCacheInt·p0.00:   497.664 us/op
+                 widenDirtyArrayCacheInt·p0.50:   511.488 us/op
+                 widenDirtyArrayCacheInt·p0.90:   522.240 us/op
+                 widenDirtyArrayCacheInt·p0.95:   527.360 us/op
+                 widenDirtyArrayCacheInt·p0.99:   572.416 us/op
+                 widenDirtyArrayCacheInt·p0.999:  615.266 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2199.552 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2199.552 us/op
+
+Iteration   3: 507.077 ±(99.9%) 1.224 us/op
+                 widenDirtyArrayCacheInt·p0.00:   483.840 us/op
+                 widenDirtyArrayCacheInt·p0.50:   501.760 us/op
+                 widenDirtyArrayCacheInt·p0.90:   514.048 us/op
+                 widenDirtyArrayCacheInt·p0.95:   555.469 us/op
+                 widenDirtyArrayCacheInt·p0.99:   581.632 us/op
+                 widenDirtyArrayCacheInt·p0.999:  634.314 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 3153.920 us/op
+                 widenDirtyArrayCacheInt·p1.00:   3153.920 us/op
+
+Iteration   4: 512.527 ±(99.9%) 0.664 us/op
+                 widenDirtyArrayCacheInt·p0.00:   494.080 us/op
+                 widenDirtyArrayCacheInt·p0.50:   509.952 us/op
+                 widenDirtyArrayCacheInt·p0.90:   520.704 us/op
+                 widenDirtyArrayCacheInt·p0.95:   525.312 us/op
+                 widenDirtyArrayCacheInt·p0.99:   569.344 us/op
+                 widenDirtyArrayCacheInt·p0.999:  604.678 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2138.112 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2138.112 us/op
+
+Iteration   5: 513.250 ±(99.9%) 19.245 us/op
+                 widenDirtyArrayCacheInt·p0.00:   486.400 us/op
+                 widenDirtyArrayCacheInt·p0.50:   503.296 us/op
+                 widenDirtyArrayCacheInt·p0.90:   516.608 us/op
+                 widenDirtyArrayCacheInt·p0.95:   547.072 us/op
+                 widenDirtyArrayCacheInt·p0.99:   581.632 us/op
+                 widenDirtyArrayCacheInt·p0.999:  629.069 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 57016.320 us/op
+                 widenDirtyArrayCacheInt·p1.00:   57016.320 us/op
+
+
+# Run progress: 96.67% complete, ETA 00:00:37
+# Fork: 5 of 5
+# Warmup Iteration   1: 546.335 ±(99.9%) 49.247 us/op
+# Warmup Iteration   2: 540.987 ±(99.9%) 44.662 us/op
+# Warmup Iteration   3: 526.541 ±(99.9%) 23.123 us/op
+# Warmup Iteration   4: 516.495 ±(99.9%) 2.997 us/op
+# Warmup Iteration   5: 509.202 ±(99.9%) 3.098 us/op
+Iteration   1: 507.913 ±(99.9%) 0.848 us/op
+                 widenDirtyArrayCacheInt·p0.00:   488.960 us/op
+                 widenDirtyArrayCacheInt·p0.50:   503.808 us/op
+                 widenDirtyArrayCacheInt·p0.90:   515.584 us/op
+                 widenDirtyArrayCacheInt·p0.95:   533.504 us/op
+                 widenDirtyArrayCacheInt·p0.99:   581.632 us/op
+                 widenDirtyArrayCacheInt·p0.999:  627.240 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2306.048 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2306.048 us/op
+
+Iteration   2: 509.198 ±(99.9%) 0.848 us/op
+                 widenDirtyArrayCacheInt·p0.00:   487.936 us/op
+                 widenDirtyArrayCacheInt·p0.50:   503.808 us/op
+                 widenDirtyArrayCacheInt·p0.90:   520.192 us/op
+                 widenDirtyArrayCacheInt·p0.95:   555.008 us/op
+                 widenDirtyArrayCacheInt·p0.99:   586.752 us/op
+                 widenDirtyArrayCacheInt·p0.999:  652.288 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2095.104 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2095.104 us/op
+
+Iteration   3: 508.192 ±(99.9%) 1.234 us/op
+                 widenDirtyArrayCacheInt·p0.00:   485.376 us/op
+                 widenDirtyArrayCacheInt·p0.50:   502.784 us/op
+                 widenDirtyArrayCacheInt·p0.90:   517.120 us/op
+                 widenDirtyArrayCacheInt·p0.95:   557.056 us/op
+                 widenDirtyArrayCacheInt·p0.99:   585.728 us/op
+                 widenDirtyArrayCacheInt·p0.999:  657.797 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 3166.208 us/op
+                 widenDirtyArrayCacheInt·p1.00:   3166.208 us/op
+
+Iteration   4: 507.010 ±(99.9%) 0.844 us/op
+                 widenDirtyArrayCacheInt·p0.00:   487.424 us/op
+                 widenDirtyArrayCacheInt·p0.50:   502.272 us/op
+                 widenDirtyArrayCacheInt·p0.90:   516.096 us/op
+                 widenDirtyArrayCacheInt·p0.95:   552.960 us/op
+                 widenDirtyArrayCacheInt·p0.99:   582.656 us/op
+                 widenDirtyArrayCacheInt·p0.999:  630.784 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 2191.360 us/op
+                 widenDirtyArrayCacheInt·p1.00:   2191.360 us/op
+
+Iteration   5: 512.692 ±(99.9%) 19.277 us/op
+                 widenDirtyArrayCacheInt·p0.00:   486.400 us/op
+                 widenDirtyArrayCacheInt·p0.50:   501.760 us/op
+                 widenDirtyArrayCacheInt·p0.90:   515.942 us/op
+                 widenDirtyArrayCacheInt·p0.95:   552.960 us/op
+                 widenDirtyArrayCacheInt·p0.99:   581.632 us/op
+                 widenDirtyArrayCacheInt·p0.999:  674.340 us/op
+                 widenDirtyArrayCacheInt·p0.9999: 57212.928 us/op
+                 widenDirtyArrayCacheInt·p1.00:   57212.928 us/op
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenDirtyArrayCacheInt":
+  N = 244818
+  mean =    509.385 ±(99.9%) 1.710 us/op
+
+  Histogram, us/op:
+    [    0.000,  5000.000) = 244813 
+    [ 5000.000, 10000.000) = 0 
+    [10000.000, 15000.000) = 0 
+    [15000.000, 20000.000) = 0 
+    [20000.000, 25000.000) = 0 
+    [25000.000, 30000.000) = 0 
+    [30000.000, 35000.000) = 0 
+    [35000.000, 40000.000) = 0 
+    [40000.000, 45000.000) = 0 
+    [45000.000, 50000.000) = 0 
+    [50000.000, 55000.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    482.816 us/op
+     p(50.0000) =    504.320 us/op
+     p(90.0000) =    518.144 us/op
+     p(95.0000) =    540.672 us/op
+     p(99.0000) =    580.608 us/op
+     p(99.9000) =    640.000 us/op
+     p(99.9900) =   2162.688 us/op
+     p(99.9990) =  57183.555 us/op
+     p(99.9999) =  57212.928 us/op
+    p(100.0000) =  57212.928 us/op
+
+
+# Run complete. Total time: 00:18:37
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                                       (arraySize)    Mode      Cnt      Score   Error  Units
+ArrayCacheIntBenchmark.widenArrayAlloc                                               262145  sample   982529    126.978 ± 0.264  us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00                         262145  sample             102.016          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50                         262145  sample             124.160          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90                         262145  sample             127.616          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95                         262145  sample             132.608          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99                         262145  sample             147.456          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999                        262145  sample             522.481          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999                       262145  sample            1242.618          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00                         262145  sample           31981.568          us/op
+
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt                                       262145  sample  1426285     87.469 ± 0.009  us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.00         262145  sample              85.120          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.50         262145  sample              87.168          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.90         262145  sample              87.936          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.95         262145  sample              88.064          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.99         262145  sample              90.112          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.999        262145  sample             132.864          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.9999       262145  sample             163.072          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p1.00         262145  sample            1000.448          us/op
+
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt                                       262145  sample  2637330     23.630 ± 0.003  us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.00         262145  sample              22.720          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.50         262145  sample              23.616          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.90         262145  sample              23.872          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.95         262145  sample              23.936          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.99         262145  sample              24.064          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.999        262145  sample              27.104          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.9999       262145  sample              75.588          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p1.00         262145  sample             441.856          us/op
+
+
+ArrayCacheIntBenchmark.widenArrayAlloc                                              4194305  sample    57739   2163.780 ± 6.078  us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00                        4194305  sample            2000.896          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50                        4194305  sample            2050.048          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90                        4194305  sample            2129.920          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95                        4194305  sample            3129.344          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99                        4194305  sample            4371.251          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999                       4194305  sample            5574.820          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999                      4194305  sample            9177.727          us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00                        4194305  sample            9699.328          us/op
+
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt                                      4194305  sample    58971   2117.336 ± 2.917  us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.00        4194305  sample            2062.336          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.50        4194305  sample            2105.344          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.90        4194305  sample            2154.496          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.95        4194305  sample            2174.976          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.99        4194305  sample            2338.816          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.999       4194305  sample            2486.272          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p0.9999      4194305  sample            6204.713          us/op
+ArrayCacheIntBenchmark.widenCleanArrayCacheInt:widenCleanArrayCacheInt·p1.00        4194305  sample           24772.608          us/op
+
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt                                      4194305  sample   244818    509.385 ± 1.710  us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.00        4194305  sample             482.816          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.50        4194305  sample             504.320          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.90        4194305  sample             518.144          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.95        4194305  sample             540.672          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.99        4194305  sample             580.608          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.999       4194305  sample             640.000          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p0.9999      4194305  sample            2162.688          us/op
+ArrayCacheIntBenchmark.widenDirtyArrayCacheInt:widenDirtyArrayCacheInt·p1.00        4194305  sample           57212.928          us/op

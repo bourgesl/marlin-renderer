@@ -12,7 +12,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jmh.version>1.33</jmh.version>
+        <jmh.version>1.34</jmh.version>
         <javac.target>11</javac.target>
         <uberjar.name>marlin-test-bench</uberjar.name>
     </properties>
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.marlin</groupId>
             <artifactId>marlin</artifactId>
-            <version>0.9.4.5-Unsafe-OpenJDK11-no-rdr</version>
+            <version>0.9.4.5-Unsafe-OpenJDK11</version>
         </dependency>
     </dependencies>
 

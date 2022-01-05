@@ -1,12 +1,18 @@
 #!/bin/bash
 
-source env.sh
+export JAVA_HOME=~/apps/zulu17.30.15-ca-fx-jdk17.0.1-linux_x64/
+echo "JAVA_HOME: $JAVA_HOME"
+
+PATH=$JAVA_HOME/bin/:$PATH
+export PATH
+
 
 # do force GC:
 GC=true
-FORK=5
+FORK=1
 
-OPTS="-p arraySize=$SIZES"
+LEN=10
+OPTS="-p length=$LEN"
 
 # Available formats: text, csv, scsv, json, latex
 FORMAT=text
@@ -61,11 +67,11 @@ echo "Running JMH ..."
 # -wi $WITER -w $WTIME -i $ITER -r $TIME -f $FORK 
 
 #echo "CMD: java $JAVA_OPTS -jar $DIR/target/marlin-test-bench.jar -gc $GC -t 1 -f $FORK $OPTS"
-java $JAVA_OPTS -jar $DIR/target/marlin-test-bench.jar -gc $GC -t 1 -f $FORK $OPTS 1> "cache-$SIZES.log" 2> "cache-$SIZES.err" &
+java $JAVA_OPTS -jar $DIR/target/marlin-test-bench.jar -gc $GC -t 1 -f $FORK $OPTS 1> "area-$LEN.log" 2> "area-$LEN.err" &
 
 PID=$!
 echo "JAVA PID: $PID"
 sudo cset shield --shield --threads --pid $PID
 
-tail -f "cache-$SIZES.log"
+tail -f "area-$LEN.log"
 

@@ -1,0 +1,719 @@
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 262145)
+
+# Run progress: 0.00% complete, ETA 00:00:40
+# Fork: 1 of 1
+# Warmup Iteration   1: 165.317 ±(99.9%) 6.712 us/op
+# Warmup Iteration   2: 138.527 ±(99.9%) 2.443 us/op
+# Warmup Iteration   3: 133.439 ±(99.9%) 2.242 us/op
+# Warmup Iteration   4: 137.514 ±(99.9%) 2.594 us/op
+# Warmup Iteration   5: 135.850 ±(99.9%) 2.951 us/op
+Iteration   1: 134.493 ±(99.9%) 3.222 us/op
+                 widenArrayAlloc·p0.00:   111.616 us/op
+                 widenArrayAlloc·p0.50:   126.080 us/op
+                 widenArrayAlloc·p0.90:   136.192 us/op
+                 widenArrayAlloc·p0.95:   143.360 us/op
+                 widenArrayAlloc·p0.99:   312.320 us/op
+                 widenArrayAlloc·p0.999:  1234.983 us/op
+                 widenArrayAlloc·p0.9999: 3824.718 us/op
+                 widenArrayAlloc·p1.00:   32407.552 us/op
+                 ·stack:                  <delayed till summary>
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 36980
+  mean =    134.493 ±(99.9%) 3.222 us/op
+
+  Histogram, us/op:
+    [    0.000,  2500.000) = 36977 
+    [ 2500.000,  5000.000) = 0 
+    [ 5000.000,  7500.000) = 1 
+    [ 7500.000, 10000.000) = 1 
+    [10000.000, 12500.000) = 0 
+    [12500.000, 15000.000) = 0 
+    [15000.000, 17500.000) = 0 
+    [17500.000, 20000.000) = 0 
+    [20000.000, 22500.000) = 0 
+    [22500.000, 25000.000) = 0 
+    [25000.000, 27500.000) = 0 
+    [27500.000, 30000.000) = 0 
+    [30000.000, 32500.000) = 1 
+    [32500.000, 35000.000) = 0 
+    [35000.000, 37500.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    111.616 us/op
+     p(50.0000) =    126.080 us/op
+     p(90.0000) =    136.192 us/op
+     p(95.0000) =    143.360 us/op
+     p(99.0000) =    312.320 us/op
+     p(99.9000) =   1234.983 us/op
+     p(99.9900) =   3824.718 us/op
+     p(99.9990) =  32407.552 us/op
+     p(99.9999) =  32407.552 us/op
+    p(100.0000) =  32407.552 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+ 66.7%         RUNNABLE
+ 33.3%         TIMED_WAITING
+
+....[Thread state: RUNNABLE]........................................................................
+ 33.3%  50.0% <stack is empty, everything is filtered?>
+ 32.8%  49.1% sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.testWidenArrayAlloc:114
+              sun.java2d.marlin.TestArrayCacheInt.testWidenArrayAlloc:40
+              org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:73
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_sample_jmhStub:287
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.2%   0.3% org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_sample_jmhStub:285
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.1%   0.2% org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_sample_jmhStub:280
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.1%   0.1% org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_sample_jmhStub:290
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.1%   0.1% java.util.TreeMap.getEntry:357
+              java.util.TreeMap.get:279
+              org.openjdk.jmh.util.DelegatingMultiset.add:49
+              org.openjdk.jmh.util.MultisetStatistics.addValue:39
+              org.openjdk.jmh.util.SampleBuffer.getStatistics:76
+              org.openjdk.jmh.results.SampleTimeResult.of:62
+              org.openjdk.jmh.results.SampleTimeResult.<init>:53
+              org.openjdk.jmh.results.SampleTimeResult.<init>:45
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:265
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+
+  0.1%   0.1% org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_sample_jmhStub:298
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+
+....[Thread state: TIMED_WAITING]...................................................................
+ 33.3% 100.0% java.lang.Object.wait:-2
+              java.lang.ref.ReferenceQueue.remove:155
+              jdk.internal.ref.CleanerImpl.run:140
+              java.lang.Thread.run:833
+              jdk.internal.misc.InnocuousThread.run:162
+
+
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 25.00% complete, ETA 00:00:45
+# Fork: 1 of 1
+# Warmup Iteration   1: 2887.757 ±(99.9%) 345.919 us/op
+# Warmup Iteration   2: 2406.011 ±(99.9%) 96.163 us/op
+# Warmup Iteration   3: 2308.120 ±(99.9%) 73.524 us/op
+# Warmup Iteration   4: 2276.978 ±(99.9%) 83.208 us/op
+# Warmup Iteration   5: 2257.871 ±(99.9%) 79.505 us/op
+Iteration   1: 2275.558 ±(99.9%) 44.913 us/op
+                 widenArrayAlloc·p0.00:   2004.992 us/op
+                 widenArrayAlloc·p0.50:   2072.576 us/op
+                 widenArrayAlloc·p0.90:   2334.720 us/op
+                 widenArrayAlloc·p0.95:   3948.544 us/op
+                 widenArrayAlloc·p0.99:   5201.920 us/op
+                 widenArrayAlloc·p0.999:  6050.611 us/op
+                 widenArrayAlloc·p0.9999: 6299.648 us/op
+                 widenArrayAlloc·p1.00:   6299.648 us/op
+                 ·stack:                  <delayed till summary>
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 2199
+  mean =   2275.558 ±(99.9%) 44.913 us/op
+
+  Histogram, us/op:
+    [2000.000, 2500.000) = 2024 
+    [2500.000, 3000.000) = 24 
+    [3000.000, 3500.000) = 17 
+    [3500.000, 4000.000) = 27 
+    [4000.000, 4500.000) = 27 
+    [4500.000, 5000.000) = 36 
+    [5000.000, 5500.000) = 38 
+    [5500.000, 6000.000) = 4 
+    [6000.000, 6500.000) = 2 
+
+  Percentiles, us/op:
+      p(0.0000) =   2004.992 us/op
+     p(50.0000) =   2072.576 us/op
+     p(90.0000) =   2334.720 us/op
+     p(95.0000) =   3948.544 us/op
+     p(99.0000) =   5201.920 us/op
+     p(99.9000) =   6050.611 us/op
+     p(99.9900) =   6299.648 us/op
+     p(99.9990) =   6299.648 us/op
+     p(99.9999) =   6299.648 us/op
+    p(100.0000) =   6299.648 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+ 66.7%         RUNNABLE
+ 33.3%         TIMED_WAITING
+
+....[Thread state: RUNNABLE]........................................................................
+ 33.3%  50.0% <stack is empty, everything is filtered?>
+ 33.0%  49.5% sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.testWidenArrayAlloc:114
+              sun.java2d.marlin.TestArrayCacheInt.testWidenArrayAlloc:40
+              org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:73
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_sample_jmhStub:287
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.2%   0.2% java.lang.System.nanoTime:-2
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_sample_jmhStub:290
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.1%   0.1% java.util.Arrays.copyOf:3585
+              sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.widenArray:147
+              sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.testWidenArrayAlloc:125
+              sun.java2d.marlin.TestArrayCacheInt.testWidenArrayAlloc:40
+              org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:73
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_sample_jmhStub:287
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+
+  0.1%   0.1% sun.java2d.marlin.ArrayCacheInt.createArray:236
+              sun.java2d.marlin.ArrayCacheInt$Reference.<init>:103
+              sun.java2d.marlin.ArrayCacheInt.createRef:92
+              sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.newDirtyIntArrayRef:104
+              sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.<init>:58
+              org.marlin.bench.ArrayCacheIntBenchmark$ThreadState.setUpIteration:62
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayAlloc_jmhTest.widenArrayAlloc_SampleTime:226
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+
+
+....[Thread state: TIMED_WAITING]...................................................................
+ 33.3% 100.0% java.lang.Object.wait:-2
+              java.lang.ref.ReferenceQueue.remove:155
+              jdk.internal.ref.CleanerImpl.run:140
+              java.lang.Thread.run:833
+              jdk.internal.misc.InnocuousThread.run:162
+
+
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 262145)
+
+# Run progress: 50.00% complete, ETA 00:00:30
+# Fork: 1 of 1
+# Warmup Iteration   1: 27.376 ±(99.9%) 4.801 us/op
+# Warmup Iteration   2: 30.021 ±(99.9%) 11.872 us/op
+# Warmup Iteration   3: 24.568 ±(99.9%) 0.251 us/op
+# Warmup Iteration   4: 24.495 ±(99.9%) 0.193 us/op
+# Warmup Iteration   5: 24.568 ±(99.9%) 0.180 us/op
+Iteration   1: 24.357 ±(99.9%) 0.078 us/op
+                 widenArrayCacheInt·p0.00:   22.880 us/op
+                 widenArrayCacheInt·p0.50:   23.808 us/op
+                 widenArrayCacheInt·p0.90:   24.096 us/op
+                 widenArrayCacheInt·p0.95:   24.160 us/op
+                 widenArrayCacheInt·p0.99:   26.144 us/op
+                 widenArrayCacheInt·p0.999:  158.888 us/op
+                 widenArrayCacheInt·p0.9999: 195.531 us/op
+                 widenArrayCacheInt·p1.00:   303.104 us/op
+                 ·stack:                     <delayed till summary>
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 102670
+  mean =     24.357 ±(99.9%) 0.078 us/op
+
+  Histogram, us/op:
+    [  0.000,  25.000) = 101576 
+    [ 25.000,  50.000) = 631 
+    [ 50.000,  75.000) = 24 
+    [ 75.000, 100.000) = 136 
+    [100.000, 125.000) = 30 
+    [125.000, 150.000) = 87 
+    [150.000, 175.000) = 145 
+    [175.000, 200.000) = 33 
+    [200.000, 225.000) = 4 
+    [225.000, 250.000) = 1 
+    [250.000, 275.000) = 1 
+    [275.000, 300.000) = 1 
+    [300.000, 325.000) = 1 
+    [325.000, 350.000) = 0 
+    [350.000, 375.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =     22.880 us/op
+     p(50.0000) =     23.808 us/op
+     p(90.0000) =     24.096 us/op
+     p(95.0000) =     24.160 us/op
+     p(99.0000) =     26.144 us/op
+     p(99.9000) =    158.888 us/op
+     p(99.9900) =    195.531 us/op
+     p(99.9990) =    302.789 us/op
+     p(99.9999) =    303.104 us/op
+    p(100.0000) =    303.104 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+ 66.7%         RUNNABLE
+ 33.3%         TIMED_WAITING
+
+....[Thread state: RUNNABLE]........................................................................
+ 33.3%  50.0% <stack is empty, everything is filtered?>
+ 33.2%  49.8% sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.testWidenArrayCacheInt:80
+              sun.java2d.marlin.TestArrayCacheInt.testWidenArrayCacheInt:36
+              org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:68
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_sample_jmhStub:287
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.1%   0.1% sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.testWidenArrayCacheInt:69
+              sun.java2d.marlin.TestArrayCacheInt.testWidenArrayCacheInt:36
+              org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:68
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_sample_jmhStub:287
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.1%   0.1% java.util.TreeMap.getEntry:357
+              java.util.TreeMap.get:279
+              org.openjdk.jmh.util.DelegatingMultiset.add:49
+              org.openjdk.jmh.util.MultisetStatistics.addValue:39
+              org.openjdk.jmh.util.SampleBuffer.getStatistics:76
+              org.openjdk.jmh.results.SampleTimeResult.of:62
+              org.openjdk.jmh.results.SampleTimeResult.<init>:53
+              org.openjdk.jmh.results.SampleTimeResult.<init>:45
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_SampleTime:265
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+
+
+....[Thread state: TIMED_WAITING]...................................................................
+ 33.3% 100.0% java.lang.Object.wait:-2
+              java.lang.ref.ReferenceQueue.remove:155
+              jdk.internal.ref.CleanerImpl.run:140
+              java.lang.Thread.run:833
+              jdk.internal.misc.InnocuousThread.run:162
+
+
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 75.00% complete, ETA 00:00:15
+# Fork: 1 of 1
+# Warmup Iteration   1: 556.366 ±(99.9%) 54.138 us/op
+# Warmup Iteration   2: 562.010 ±(99.9%) 46.379 us/op
+# Warmup Iteration   3: 539.908 ±(99.9%) 24.507 us/op
+# Warmup Iteration   4: 538.115 ±(99.9%) 4.065 us/op
+# Warmup Iteration   5: 537.185 ±(99.9%) 4.510 us/op
+Iteration   1: 529.330 ±(99.9%) 1.764 us/op
+                 widenArrayCacheInt·p0.00:   489.472 us/op
+                 widenArrayCacheInt·p0.50:   510.976 us/op
+                 widenArrayCacheInt·p0.90:   587.776 us/op
+                 widenArrayCacheInt·p0.95:   653.312 us/op
+                 widenArrayCacheInt·p0.99:   717.507 us/op
+                 widenArrayCacheInt·p0.999:  812.173 us/op
+                 widenArrayCacheInt·p0.9999: 2392.064 us/op
+                 widenArrayCacheInt·p1.00:   2392.064 us/op
+                 ·stack:                     <delayed till summary>
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 9430
+  mean =    529.330 ±(99.9%) 1.764 us/op
+
+  Histogram, us/op:
+    [   0.000,  250.000) = 0 
+    [ 250.000,  500.000) = 1518 
+    [ 500.000,  750.000) = 7862 
+    [ 750.000, 1000.000) = 49 
+    [1000.000, 1250.000) = 0 
+    [1250.000, 1500.000) = 0 
+    [1500.000, 1750.000) = 0 
+    [1750.000, 2000.000) = 0 
+    [2000.000, 2250.000) = 0 
+    [2250.000, 2500.000) = 1 
+    [2500.000, 2750.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    489.472 us/op
+     p(50.0000) =    510.976 us/op
+     p(90.0000) =    587.776 us/op
+     p(95.0000) =    653.312 us/op
+     p(99.0000) =    717.507 us/op
+     p(99.9000) =    812.173 us/op
+     p(99.9900) =   2392.064 us/op
+     p(99.9990) =   2392.064 us/op
+     p(99.9999) =   2392.064 us/op
+    p(100.0000) =   2392.064 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·stack":
+Stack profiler:
+
+....[Thread state distributions]....................................................................
+ 66.7%         RUNNABLE
+ 33.3%         TIMED_WAITING
+
+....[Thread state: RUNNABLE]........................................................................
+ 33.3%  50.0% <stack is empty, everything is filtered?>
+ 33.1%  49.7% sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.testWidenArrayCacheInt:80
+              sun.java2d.marlin.TestArrayCacheInt.testWidenArrayCacheInt:36
+              org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:68
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_sample_jmhStub:287
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.1%   0.1% sun.java2d.marlin.ArrayCacheInt.createArray:236
+              sun.java2d.marlin.ArrayCacheInt$Bucket.getArray:208
+              sun.java2d.marlin.ArrayCacheInt$Reference.getArray:111
+              sun.java2d.marlin.ArrayCacheInt$Reference.widenArray:136
+              sun.java2d.marlin.TestArrayCacheInt$ContextWidenArray.testWidenArrayCacheInt:80
+              sun.java2d.marlin.TestArrayCacheInt.testWidenArrayCacheInt:36
+              org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:68
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_sample_jmhStub:287
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+
+  0.1%   0.1% java.lang.System.nanoTime:-2
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_sample_jmhStub:290
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_SampleTime:240
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.ThreadPoolExecutor.runWorker:1136
+              java.util.concurrent.ThreadPoolExecutor$Worker.run:635
+              java.lang.Thread.run:833
+
+  0.1%   0.1% java.util.TreeMap.put:826
+              java.util.TreeMap.put:534
+              org.openjdk.jmh.util.DelegatingMultiset.add:56
+              org.openjdk.jmh.util.MultisetStatistics.addValue:39
+              org.openjdk.jmh.util.SampleBuffer.getStatistics:76
+              org.openjdk.jmh.results.SampleTimeResult.of:62
+              org.openjdk.jmh.results.SampleTimeResult.<init>:53
+              org.openjdk.jmh.results.SampleTimeResult.<init>:45
+              org.marlin.bench.jmh_generated.ArrayCacheIntBenchmark_widenArrayCacheInt_jmhTest.widenArrayCacheInt_SampleTime:265
+              java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100140c00.invoke:-1
+              java.lang.invoke.LambdaForm$MH/0x0000000100141000.invokeExact_MT:-1
+              jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl:156
+              jdk.internal.reflect.DirectMethodHandleAccessor.invoke:104
+              java.lang.reflect.Method.invoke:577
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:475
+              org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call:458
+              java.util.concurrent.FutureTask.run:264
+              java.util.concurrent.Executors$RunnableAdapter.call:539
+              java.util.concurrent.FutureTask.run:264
+
+
+....[Thread state: TIMED_WAITING]...................................................................
+ 33.3% 100.0% java.lang.Object.wait:-2
+              java.lang.ref.ReferenceQueue.remove:155
+              jdk.internal.ref.CleanerImpl.run:140
+              java.lang.Thread.run:833
+              jdk.internal.misc.InnocuousThread.run:162
+
+
+
+
+# Run complete. Total time: 00:00:59
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                             (arraySize)    Mode     Cnt      Score    Error  Units
+ArrayCacheIntBenchmark.widenArrayAlloc                                     262145  sample   36980    134.493 ±  3.222  us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00               262145  sample            111.616           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50               262145  sample            126.080           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90               262145  sample            136.192           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95               262145  sample            143.360           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99               262145  sample            312.320           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999              262145  sample           1234.983           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999             262145  sample           3824.718           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00               262145  sample          32407.552           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·stack                              262145  sample                NaN             ---
+ArrayCacheIntBenchmark.widenArrayAlloc                                    4194305  sample    2199   2275.558 ± 44.913  us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00              4194305  sample           2004.992           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50              4194305  sample           2072.576           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90              4194305  sample           2334.720           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95              4194305  sample           3948.544           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99              4194305  sample           5201.920           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999             4194305  sample           6050.611           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999            4194305  sample           6299.648           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00              4194305  sample           6299.648           us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·stack                             4194305  sample                NaN             ---
+ArrayCacheIntBenchmark.widenArrayCacheInt                                  262145  sample  102670     24.357 ±  0.078  us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00         262145  sample             22.880           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50         262145  sample             23.808           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90         262145  sample             24.096           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95         262145  sample             24.160           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99         262145  sample             26.144           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999        262145  sample            158.888           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999       262145  sample            195.531           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00         262145  sample            303.104           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·stack                           262145  sample                NaN             ---
+ArrayCacheIntBenchmark.widenArrayCacheInt                                 4194305  sample    9430    529.330 ±  1.764  us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00        4194305  sample            489.472           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50        4194305  sample            510.976           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90        4194305  sample            587.776           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95        4194305  sample            653.312           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99        4194305  sample            717.507           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999       4194305  sample            812.173           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999      4194305  sample           2392.064           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00        4194305  sample           2392.064           us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·stack                          4194305  sample                NaN             ---

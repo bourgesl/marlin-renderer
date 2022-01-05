@@ -1,0 +1,709 @@
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 262145)
+
+# Run progress: 0.00% complete, ETA 00:02:00
+# Fork: 1 of 1
+# Warmup Iteration   1: 163.120 ±(99.9%) 6.573 us/op
+# Warmup Iteration   2: 128.795 ±(99.9%) 1.356 us/op
+# Warmup Iteration   3: 129.703 ±(99.9%) 1.823 us/op
+# Warmup Iteration   4: 129.510 ±(99.9%) 1.738 us/op
+# Warmup Iteration   5: 130.167 ±(99.9%) 2.454 us/op
+Iteration   1: 130.056 ±(99.9%) 2.776 us/op
+                 widenArrayAlloc·p0.00:            107.136 us/op
+                 widenArrayAlloc·p0.50:            125.440 us/op
+                 widenArrayAlloc·p0.90:            130.816 us/op
+                 widenArrayAlloc·p0.95:            137.984 us/op
+                 widenArrayAlloc·p0.99:            157.696 us/op
+                 widenArrayAlloc·p0.999:           775.446 us/op
+                 widenArrayAlloc·p0.9999:          1232.896 us/op
+                 widenArrayAlloc·p1.00:            31522.816 us/op
+                 ·gc.alloc.rate:                   9231.926 MB/sec
+                 ·gc.alloc.rate.norm:              1392802.705 B/op
+                 ·gc.churn.PS_Eden_Space:          9288.294 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     1401306.782 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.415 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 62.554 B/op
+                 ·gc.count:                        151.000 counts
+                 ·gc.time:                         42.000 ms
+
+Iteration   2: 128.896 ±(99.9%) 0.575 us/op
+                 widenArrayAlloc·p0.00:            107.264 us/op
+                 widenArrayAlloc·p0.50:            125.312 us/op
+                 widenArrayAlloc·p0.90:            129.920 us/op
+                 widenArrayAlloc·p0.95:            137.216 us/op
+                 widenArrayAlloc·p0.99:            157.440 us/op
+                 widenArrayAlloc·p0.999:           694.551 us/op
+                 widenArrayAlloc·p0.9999:          832.175 us/op
+                 widenArrayAlloc·p1.00:            1409.024 us/op
+                 ·gc.alloc.rate:                   9349.911 MB/sec
+                 ·gc.alloc.rate.norm:              1392800.199 B/op
+                 ·gc.churn.PS_Eden_Space:          9412.237 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     1402084.434 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.142 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 21.154 B/op
+                 ·gc.count:                        153.000 counts
+                 ·gc.time:                         39.000 ms
+
+Iteration   3: 128.899 ±(99.9%) 0.584 us/op
+                 widenArrayAlloc·p0.00:            101.376 us/op
+                 widenArrayAlloc·p0.50:            125.184 us/op
+                 widenArrayAlloc·p0.90:            130.048 us/op
+                 widenArrayAlloc·p0.95:            136.960 us/op
+                 widenArrayAlloc·p0.99:            167.578 us/op
+                 widenArrayAlloc·p0.999:           656.384 us/op
+                 widenArrayAlloc·p0.9999:          733.949 us/op
+                 widenArrayAlloc·p1.00:            2490.368 us/op
+                 ·gc.alloc.rate:                   9349.044 MB/sec
+                 ·gc.alloc.rate.norm:              1392799.760 B/op
+                 ·gc.churn.PS_Eden_Space:          9411.710 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     1402135.540 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.051 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 7.616 B/op
+                 ·gc.count:                        153.000 counts
+                 ·gc.time:                         35.000 ms
+
+Iteration   4: 128.936 ±(99.9%) 0.574 us/op
+                 widenArrayAlloc·p0.00:            102.656 us/op
+                 widenArrayAlloc·p0.50:            125.056 us/op
+                 widenArrayAlloc·p0.90:            129.920 us/op
+                 widenArrayAlloc·p0.95:            136.960 us/op
+                 widenArrayAlloc·p0.99:            246.528 us/op
+                 widenArrayAlloc·p0.999:           662.092 us/op
+                 widenArrayAlloc·p0.9999:          765.090 us/op
+                 widenArrayAlloc·p1.00:            1118.208 us/op
+                 ·gc.alloc.rate:                   9345.789 MB/sec
+                 ·gc.alloc.rate.norm:              1392799.869 B/op
+                 ·gc.churn.PS_Eden_Space:          9411.977 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     1402663.826 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.236 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 35.130 B/op
+                 ·gc.count:                        153.000 counts
+                 ·gc.time:                         37.000 ms
+
+Iteration   5: 128.755 ±(99.9%) 0.528 us/op
+                 widenArrayAlloc·p0.00:            104.448 us/op
+                 widenArrayAlloc·p0.50:            125.312 us/op
+                 widenArrayAlloc·p0.90:            130.048 us/op
+                 widenArrayAlloc·p0.95:            137.216 us/op
+                 widenArrayAlloc·p0.99:            157.005 us/op
+                 widenArrayAlloc·p0.999:           658.668 us/op
+                 widenArrayAlloc·p0.9999:          748.150 us/op
+                 widenArrayAlloc·p1.00:            788.480 us/op
+                 ·gc.alloc.rate:                   9360.179 MB/sec
+                 ·gc.alloc.rate.norm:              1392798.894 B/op
+                 ·gc.churn.PS_Eden_Space:          9412.617 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     1400601.720 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.185 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 27.471 B/op
+                 ·gc.count:                        153.000 counts
+                 ·gc.time:                         38.000 ms
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 193176
+  mean =    129.106 ±(99.9%) 0.594 us/op
+
+  Histogram, us/op:
+    [    0.000,  2500.000) = 193175 
+    [ 2500.000,  5000.000) = 0 
+    [ 5000.000,  7500.000) = 0 
+    [ 7500.000, 10000.000) = 0 
+    [10000.000, 12500.000) = 0 
+    [12500.000, 15000.000) = 0 
+    [15000.000, 17500.000) = 0 
+    [17500.000, 20000.000) = 0 
+    [20000.000, 22500.000) = 0 
+    [22500.000, 25000.000) = 0 
+    [25000.000, 27500.000) = 0 
+    [27500.000, 30000.000) = 0 
+    [30000.000, 32500.000) = 1 
+    [32500.000, 35000.000) = 0 
+    [35000.000, 37500.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    101.376 us/op
+     p(50.0000) =    125.312 us/op
+     p(90.0000) =    130.176 us/op
+     p(95.0000) =    137.216 us/op
+     p(99.0000) =    160.256 us/op
+     p(99.9000) =    684.032 us/op
+     p(99.9900) =    850.619 us/op
+     p(99.9990) =   4471.252 us/op
+     p(99.9999) =  31522.816 us/op
+    p(100.0000) =  31522.816 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.alloc.rate":
+  9327.370 ±(99.9%) 206.495 MB/sec [Average]
+  (min, avg, max) = (9231.926, 9327.370, 9360.179), stdev = 53.626
+  CI (99.9%): [9120.874, 9533.865] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.alloc.rate.norm":
+  1392800.285 ±(99.9%) 5.529 B/op [Average]
+  (min, avg, max) = (1392798.894, 1392800.285, 1392802.705), stdev = 1.436
+  CI (99.9%): [1392794.757, 1392805.814] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Eden_Space":
+  9387.367 ±(99.9%) 213.266 MB/sec [Average]
+  (min, avg, max) = (9288.294, 9387.367, 9412.617), stdev = 55.385
+  CI (99.9%): [9174.101, 9600.633] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Eden_Space.norm":
+  1401758.460 ±(99.9%) 3110.571 B/op [Average]
+  (min, avg, max) = (1400601.720, 1401758.460, 1402663.826), stdev = 807.805
+  CI (99.9%): [1398647.890, 1404869.031] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Survivor_Space":
+  0.206 ±(99.9%) 0.520 MB/sec [Average]
+  (min, avg, max) = (0.051, 0.206, 0.415), stdev = 0.135
+  CI (99.9%): [≈ 0, 0.726] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Survivor_Space.norm":
+  30.785 ±(99.9%) 78.649 B/op [Average]
+  (min, avg, max) = (7.616, 30.785, 62.554), stdev = 20.425
+  CI (99.9%): [≈ 0, 109.434] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.count":
+  763.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (151.000, 152.600, 153.000), stdev = 0.894
+  CI (99.9%): [763.000, 763.000] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.time":
+  191.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (35.000, 38.200, 42.000), stdev = 2.588
+  CI (99.9%): [191.000, 191.000] (assumes normal distribution)
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 25.00% complete, ETA 00:02:07
+# Fork: 1 of 1
+# Warmup Iteration   1: 2798.578 ±(99.9%) 319.262 us/op
+# Warmup Iteration   2: 2359.455 ±(99.9%) 100.704 us/op
+# Warmup Iteration   3: 2250.060 ±(99.9%) 98.893 us/op
+# Warmup Iteration   4: 2197.563 ±(99.9%) 71.479 us/op
+# Warmup Iteration   5: 2192.128 ±(99.9%) 62.284 us/op
+Iteration   1: 2216.376 ±(99.9%) 41.864 us/op
+                 widenArrayAlloc·p0.00:            2000.896 us/op
+                 widenArrayAlloc·p0.50:            2064.384 us/op
+                 widenArrayAlloc·p0.90:            2241.741 us/op
+                 widenArrayAlloc·p0.95:            3109.478 us/op
+                 widenArrayAlloc·p0.99:            5696.963 us/op
+                 widenArrayAlloc·p0.999:           8502.518 us/op
+                 widenArrayAlloc·p0.9999:          9568.256 us/op
+                 widenArrayAlloc·p1.00:            9568.256 us/op
+                 ·gc.alloc.rate:                   8737.590 MB/sec
+                 ·gc.alloc.rate.norm:              22365888.135 B/op
+                 ·gc.churn.PS_Eden_Space:          8760.995 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     22425798.113 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.028 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 72.624 B/op
+                 ·gc.count:                        150.000 counts
+                 ·gc.time:                         261.000 ms
+
+Iteration   2: 2196.051 ±(99.9%) 30.370 us/op
+                 widenArrayAlloc·p0.00:            1990.656 us/op
+                 widenArrayAlloc·p0.50:            2066.432 us/op
+                 widenArrayAlloc·p0.90:            2236.416 us/op
+                 widenArrayAlloc·p0.95:            3273.728 us/op
+                 widenArrayAlloc·p0.99:            4251.648 us/op
+                 widenArrayAlloc·p0.999:           5228.544 us/op
+                 widenArrayAlloc·p0.9999:          7897.088 us/op
+                 widenArrayAlloc·p1.00:            7897.088 us/op
+                 ·gc.alloc.rate:                   8815.010 MB/sec
+                 ·gc.alloc.rate.norm:              22365843.761 B/op
+                 ·gc.churn.PS_Eden_Space:          8826.105 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     22393995.602 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.011 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 28.820 B/op
+                 ·gc.count:                        151.000 counts
+                 ·gc.time:                         212.000 ms
+
+Iteration   3: 2184.530 ±(99.9%) 27.017 us/op
+                 widenArrayAlloc·p0.00:            2002.944 us/op
+                 widenArrayAlloc·p0.50:            2064.384 us/op
+                 widenArrayAlloc·p0.90:            2244.608 us/op
+                 widenArrayAlloc·p0.95:            3465.216 us/op
+                 widenArrayAlloc·p0.99:            3916.268 us/op
+                 widenArrayAlloc·p0.999:           4763.746 us/op
+                 widenArrayAlloc·p0.9999:          4833.280 us/op
+                 widenArrayAlloc·p1.00:            4833.280 us/op
+                 ·gc.alloc.rate:                   8865.909 MB/sec
+                 ·gc.alloc.rate.norm:              22365836.044 B/op
+                 ·gc.churn.PS_Eden_Space:          8885.148 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     22414368.080 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.006 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 14.328 B/op
+                 ·gc.count:                        152.000 counts
+                 ·gc.time:                         211.000 ms
+
+Iteration   4: 2186.748 ±(99.9%) 27.066 us/op
+                 widenArrayAlloc·p0.00:            2009.088 us/op
+                 widenArrayAlloc·p0.50:            2068.480 us/op
+                 widenArrayAlloc·p0.90:            2244.608 us/op
+                 widenArrayAlloc·p0.95:            3297.280 us/op
+                 widenArrayAlloc·p0.99:            3945.021 us/op
+                 widenArrayAlloc·p0.999:           5107.106 us/op
+                 widenArrayAlloc·p0.9999:          5922.816 us/op
+                 widenArrayAlloc·p1.00:            5922.816 us/op
+                 ·gc.alloc.rate:                   8856.595 MB/sec
+                 ·gc.alloc.rate.norm:              22365838.361 B/op
+                 ·gc.churn.PS_Eden_Space:          8883.597 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     22434025.498 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.023 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 57.362 B/op
+                 ·gc.count:                        152.000 counts
+                 ·gc.time:                         205.000 ms
+
+Iteration   5: 2179.063 ±(99.9%) 27.699 us/op
+                 widenArrayAlloc·p0.00:            2004.992 us/op
+                 widenArrayAlloc·p0.50:            2066.432 us/op
+                 widenArrayAlloc·p0.90:            2232.320 us/op
+                 widenArrayAlloc·p0.95:            3059.712 us/op
+                 widenArrayAlloc·p0.99:            4137.697 us/op
+                 widenArrayAlloc·p0.999:           5904.040 us/op
+                 widenArrayAlloc·p0.9999:          6692.864 us/op
+                 widenArrayAlloc·p1.00:            6692.864 us/op
+                 ·gc.alloc.rate:                   8888.216 MB/sec
+                 ·gc.alloc.rate.norm:              22365831.941 B/op
+                 ·gc.churn.PS_Eden_Space:          8884.208 MB/sec
+                 ·gc.churn.PS_Eden_Space.norm:     22355746.819 B/op
+                 ·gc.churn.PS_Survivor_Space:      0.006 MB/sec
+                 ·gc.churn.PS_Survivor_Space.norm: 14.290 B/op
+                 ·gc.count:                        152.000 counts
+                 ·gc.time:                         198.000 ms
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc":
+  N = 11395
+  mean =   2192.479 ±(99.9%) 13.966 us/op
+
+  Histogram, us/op:
+    [ 1000.000,  1500.000) = 0 
+    [ 1500.000,  2000.000) = 1 
+    [ 2000.000,  2500.000) = 10635 
+    [ 2500.000,  3000.000) = 14 
+    [ 3000.000,  3500.000) = 373 
+    [ 3500.000,  4000.000) = 220 
+    [ 4000.000,  4500.000) = 75 
+    [ 4500.000,  5000.000) = 26 
+    [ 5000.000,  5500.000) = 13 
+    [ 5500.000,  6000.000) = 28 
+    [ 6000.000,  6500.000) = 6 
+    [ 6500.000,  7000.000) = 1 
+    [ 7000.000,  7500.000) = 0 
+    [ 7500.000,  8000.000) = 1 
+    [ 8000.000,  8500.000) = 0 
+    [ 8500.000,  9000.000) = 0 
+    [ 9000.000,  9500.000) = 1 
+
+  Percentiles, us/op:
+      p(0.0000) =   1990.656 us/op
+     p(50.0000) =   2066.432 us/op
+     p(90.0000) =   2240.512 us/op
+     p(95.0000) =   3231.744 us/op
+     p(99.0000) =   4157.604 us/op
+     p(99.9000) =   5957.288 us/op
+     p(99.9900) =   9517.937 us/op
+     p(99.9990) =   9568.256 us/op
+     p(99.9999) =   9568.256 us/op
+    p(100.0000) =   9568.256 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.alloc.rate":
+  8832.664 ±(99.9%) 228.739 MB/sec [Average]
+  (min, avg, max) = (8737.590, 8832.664, 8888.216), stdev = 59.403
+  CI (99.9%): [8603.926, 9061.403] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.alloc.rate.norm":
+  22365847.648 ±(99.9%) 88.688 B/op [Average]
+  (min, avg, max) = (22365831.941, 22365847.648, 22365888.135), stdev = 23.032
+  CI (99.9%): [22365758.960, 22365936.337] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Eden_Space":
+  8848.011 ±(99.9%) 210.973 MB/sec [Average]
+  (min, avg, max) = (8760.995, 8848.011, 8885.148), stdev = 54.789
+  CI (99.9%): [8637.037, 9058.984] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Eden_Space.norm":
+  22404786.823 ±(99.9%) 120383.400 B/op [Average]
+  (min, avg, max) = (22355746.819, 22404786.823, 22434025.498), stdev = 31263.187
+  CI (99.9%): [22284403.422, 22525170.223] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Survivor_Space":
+  0.015 ±(99.9%) 0.040 MB/sec [Average]
+  (min, avg, max) = (0.006, 0.015, 0.028), stdev = 0.010
+  CI (99.9%): [≈ 0, 0.054] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Survivor_Space.norm":
+  37.485 ±(99.9%) 101.499 B/op [Average]
+  (min, avg, max) = (14.290, 37.485, 72.624), stdev = 26.359
+  CI (99.9%): [≈ 0, 138.984] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.count":
+  757.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (150.000, 151.400, 152.000), stdev = 0.894
+  CI (99.9%): [757.000, 757.000] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayAlloc:·gc.time":
+  1087.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (198.000, 217.400, 261.000), stdev = 25.006
+  CI (99.9%): [1087.000, 1087.000] (assumes normal distribution)
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 262145)
+
+# Run progress: 50.00% complete, ETA 00:01:25
+# Fork: 1 of 1
+# Warmup Iteration   1: 26.936 ±(99.9%) 4.751 us/op
+# Warmup Iteration   2: 29.503 ±(99.9%) 11.827 us/op
+# Warmup Iteration   3: 24.111 ±(99.9%) 0.026 us/op
+# Warmup Iteration   4: 24.058 ±(99.9%) 0.101 us/op
+# Warmup Iteration   5: 24.032 ±(99.9%) 0.111 us/op
+Iteration   1: 23.878 ±(99.9%) 0.029 us/op
+                 widenArrayCacheInt·p0.00:   23.104 us/op
+                 widenArrayCacheInt·p0.50:   23.744 us/op
+                 widenArrayCacheInt·p0.90:   23.840 us/op
+                 widenArrayCacheInt·p0.95:   23.872 us/op
+                 widenArrayCacheInt·p0.99:   24.032 us/op
+                 widenArrayCacheInt·p0.999:  76.800 us/op
+                 widenArrayCacheInt·p0.9999: 106.180 us/op
+                 widenArrayCacheInt·p1.00:   274.944 us/op
+                 ·gc.alloc.rate:             0.269 MB/sec
+                 ·gc.alloc.rate.norm:        7.416 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+Iteration   2: 24.111 ±(99.9%) 0.006 us/op
+                 widenArrayCacheInt·p0.00:   23.296 us/op
+                 widenArrayCacheInt·p0.50:   24.096 us/op
+                 widenArrayCacheInt·p0.90:   24.192 us/op
+                 widenArrayCacheInt·p0.95:   24.224 us/op
+                 widenArrayCacheInt·p0.99:   24.320 us/op
+                 widenArrayCacheInt·p0.999:  27.232 us/op
+                 widenArrayCacheInt·p0.9999: 45.182 us/op
+                 widenArrayCacheInt·p1.00:   147.456 us/op
+                 ·gc.alloc.rate:             0.259 MB/sec
+                 ·gc.alloc.rate.norm:        7.210 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+Iteration   3: 23.961 ±(99.9%) 0.037 us/op
+                 widenArrayCacheInt·p0.00:   23.136 us/op
+                 widenArrayCacheInt·p0.50:   23.808 us/op
+                 widenArrayCacheInt·p0.90:   23.904 us/op
+                 widenArrayCacheInt·p0.95:   23.936 us/op
+                 widenArrayCacheInt·p0.99:   24.064 us/op
+                 widenArrayCacheInt·p0.999:  100.352 us/op
+                 widenArrayCacheInt·p0.9999: 142.592 us/op
+                 widenArrayCacheInt·p1.00:   403.456 us/op
+                 ·gc.alloc.rate:             0.268 MB/sec
+                 ·gc.alloc.rate.norm:        7.453 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+Iteration   4: 24.102 ±(99.9%) 0.004 us/op
+                 widenArrayCacheInt·p0.00:   23.712 us/op
+                 widenArrayCacheInt·p0.50:   24.096 us/op
+                 widenArrayCacheInt·p0.90:   24.192 us/op
+                 widenArrayCacheInt·p0.95:   24.224 us/op
+                 widenArrayCacheInt·p0.99:   24.288 us/op
+                 widenArrayCacheInt·p0.999:  26.848 us/op
+                 widenArrayCacheInt·p0.9999: 32.764 us/op
+                 widenArrayCacheInt·p1.00:   124.544 us/op
+                 ·gc.alloc.rate:             0.258 MB/sec
+                 ·gc.alloc.rate.norm:        7.199 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+Iteration   5: 23.990 ±(99.9%) 0.039 us/op
+                 widenArrayCacheInt·p0.00:   23.200 us/op
+                 widenArrayCacheInt·p0.50:   23.808 us/op
+                 widenArrayCacheInt·p0.90:   23.936 us/op
+                 widenArrayCacheInt·p0.95:   23.968 us/op
+                 widenArrayCacheInt·p0.99:   24.064 us/op
+                 widenArrayCacheInt·p0.999:  100.480 us/op
+                 widenArrayCacheInt·p0.9999: 142.336 us/op
+                 widenArrayCacheInt·p1.00:   384.512 us/op
+                 ·gc.alloc.rate:             0.269 MB/sec
+                 ·gc.alloc.rate.norm:        7.457 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 519737
+  mean =     24.008 ±(99.9%) 0.012 us/op
+
+  Histogram, us/op:
+    [  0.000,  50.000) = 519105 
+    [ 50.000, 100.000) = 327 
+    [100.000, 150.000) = 290 
+    [150.000, 200.000) = 10 
+    [200.000, 250.000) = 0 
+    [250.000, 300.000) = 2 
+    [300.000, 350.000) = 0 
+    [350.000, 400.000) = 2 
+    [400.000, 450.000) = 1 
+
+  Percentiles, us/op:
+      p(0.0000) =     23.104 us/op
+     p(50.0000) =     23.872 us/op
+     p(90.0000) =     24.160 us/op
+     p(95.0000) =     24.192 us/op
+     p(99.0000) =     24.288 us/op
+     p(99.9000) =     75.554 us/op
+     p(99.9900) =    110.248 us/op
+     p(99.9990) =    251.570 us/op
+     p(99.9999) =    403.456 us/op
+    p(100.0000) =    403.456 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.alloc.rate":
+  0.264 ±(99.9%) 0.022 MB/sec [Average]
+  (min, avg, max) = (0.258, 0.264, 0.269), stdev = 0.006
+  CI (99.9%): [0.243, 0.286] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.alloc.rate.norm":
+  7.347 ±(99.9%) 0.505 B/op [Average]
+  (min, avg, max) = (7.199, 7.347, 7.457), stdev = 0.131
+  CI (99.9%): [6.842, 7.852] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.count":
+  ≈ 0 counts
+
+
+# JMH version: 1.34
+# VM version: JDK 18-testing, OpenJDK 64-Bit Server VM, 18-testing+0-builds.shipilev.net-openjdk-jdk-arraycopy-b2-20211125
+# VM invoker: /home/bourgesl/apps/openjdk-jdk-linux-x86_64-server-release/jdk-arraycopy/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt
+# Parameters: (arraySize = 4194305)
+
+# Run progress: 75.00% complete, ETA 00:00:42
+# Fork: 1 of 1
+# Warmup Iteration   1: 559.161 ±(99.9%) 50.420 us/op
+# Warmup Iteration   2: 541.159 ±(99.9%) 44.530 us/op
+# Warmup Iteration   3: 526.613 ±(99.9%) 23.288 us/op
+# Warmup Iteration   4: 516.120 ±(99.9%) 3.719 us/op
+# Warmup Iteration   5: 518.231 ±(99.9%) 3.053 us/op
+Iteration   1: 523.677 ±(99.9%) 1.137 us/op
+                 widenArrayCacheInt·p0.00:   499.200 us/op
+                 widenArrayCacheInt·p0.50:   515.072 us/op
+                 widenArrayCacheInt·p0.90:   542.720 us/op
+                 widenArrayCacheInt·p0.95:   565.606 us/op
+                 widenArrayCacheInt·p0.99:   665.600 us/op
+                 widenArrayCacheInt·p0.999:  714.752 us/op
+                 widenArrayCacheInt·p0.9999: 2183.168 us/op
+                 widenArrayCacheInt·p1.00:   2183.168 us/op
+                 ·gc.alloc.rate:             3.894 MB/sec
+                 ·gc.alloc.rate.norm:        2356.843 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+Iteration   2: 512.993 ±(99.9%) 1.153 us/op
+                 widenArrayCacheInt·p0.00:   486.912 us/op
+                 widenArrayCacheInt·p0.50:   502.784 us/op
+                 widenArrayCacheInt·p0.90:   537.600 us/op
+                 widenArrayCacheInt·p0.95:   565.248 us/op
+                 widenArrayCacheInt·p0.99:   657.408 us/op
+                 widenArrayCacheInt·p0.999:  709.161 us/op
+                 widenArrayCacheInt·p0.9999: 2093.056 us/op
+                 widenArrayCacheInt·p1.00:   2093.056 us/op
+                 ·gc.alloc.rate:             3.895 MB/sec
+                 ·gc.alloc.rate.norm:        2309.230 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+Iteration   3: 515.305 ±(99.9%) 1.247 us/op
+                 widenArrayCacheInt·p0.00:   492.544 us/op
+                 widenArrayCacheInt·p0.50:   508.928 us/op
+                 widenArrayCacheInt·p0.90:   541.696 us/op
+                 widenArrayCacheInt·p0.95:   553.984 us/op
+                 widenArrayCacheInt·p0.99:   576.512 us/op
+                 widenArrayCacheInt·p0.999:  622.349 us/op
+                 widenArrayCacheInt·p0.9999: 3313.664 us/op
+                 widenArrayCacheInt·p1.00:   3313.664 us/op
+                 ·gc.alloc.rate:             3.894 MB/sec
+                 ·gc.alloc.rate.norm:        2317.718 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+Iteration   4: 513.735 ±(99.9%) 0.810 us/op
+                 widenArrayCacheInt·p0.00:   490.496 us/op
+                 widenArrayCacheInt·p0.50:   507.392 us/op
+                 widenArrayCacheInt·p0.90:   539.648 us/op
+                 widenArrayCacheInt·p0.95:   550.912 us/op
+                 widenArrayCacheInt·p0.99:   574.464 us/op
+                 widenArrayCacheInt·p0.999:  612.741 us/op
+                 widenArrayCacheInt·p0.9999: 2174.976 us/op
+                 widenArrayCacheInt·p1.00:   2174.976 us/op
+                 ·gc.alloc.rate:             3.883 MB/sec
+                 ·gc.alloc.rate.norm:        2310.299 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+Iteration   5: 515.950 ±(99.9%) 19.251 us/op
+                 widenArrayCacheInt·p0.00:   484.864 us/op
+                 widenArrayCacheInt·p0.50:   500.224 us/op
+                 widenArrayCacheInt·p0.90:   536.166 us/op
+                 widenArrayCacheInt·p0.95:   560.947 us/op
+                 widenArrayCacheInt·p0.99:   655.114 us/op
+                 widenArrayCacheInt·p0.999:  710.533 us/op
+                 widenArrayCacheInt·p0.9999: 56688.640 us/op
+                 widenArrayCacheInt·p1.00:   56688.640 us/op
+                 ·gc.alloc.rate:             3.899 MB/sec
+                 ·gc.alloc.rate.norm:        2337.692 B/op
+                 ·gc.count:                  ≈ 0 counts
+
+
+
+Result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt":
+  N = 48299
+  mean =    516.304 ±(99.9%) 3.860 us/op
+
+  Histogram, us/op:
+    [    0.000,  5000.000) = 48298 
+    [ 5000.000, 10000.000) = 0 
+    [10000.000, 15000.000) = 0 
+    [15000.000, 20000.000) = 0 
+    [20000.000, 25000.000) = 0 
+    [25000.000, 30000.000) = 0 
+    [30000.000, 35000.000) = 0 
+    [35000.000, 40000.000) = 0 
+    [40000.000, 45000.000) = 0 
+    [45000.000, 50000.000) = 0 
+    [50000.000, 55000.000) = 0 
+
+  Percentiles, us/op:
+      p(0.0000) =    484.864 us/op
+     p(50.0000) =    507.904 us/op
+     p(90.0000) =    539.648 us/op
+     p(95.0000) =    556.032 us/op
+     p(99.0000) =    650.240 us/op
+     p(99.9000) =    702.157 us/op
+     p(99.9900) =   2134.180 us/op
+     p(99.9990) =  56688.640 us/op
+     p(99.9999) =  56688.640 us/op
+    p(100.0000) =  56688.640 us/op
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.alloc.rate":
+  3.893 ±(99.9%) 0.023 MB/sec [Average]
+  (min, avg, max) = (3.883, 3.893, 3.899), stdev = 0.006
+  CI (99.9%): [3.870, 3.916] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.alloc.rate.norm":
+  2326.356 ±(99.9%) 79.001 B/op [Average]
+  (min, avg, max) = (2309.230, 2326.356, 2356.843), stdev = 20.516
+  CI (99.9%): [2247.355, 2405.357] (assumes normal distribution)
+
+Secondary result "org.marlin.bench.ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.count":
+  ≈ 0 counts
+
+
+# Run complete. Total time: 00:02:50
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                                (arraySize)    Mode     Cnt         Score        Error   Units
+ArrayCacheIntBenchmark.widenArrayAlloc                                        262145  sample  193176       129.106 ±      0.594   us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00                  262145  sample               101.376                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50                  262145  sample               125.312                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90                  262145  sample               130.176                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95                  262145  sample               137.216                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99                  262145  sample               160.256                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999                 262145  sample               684.032                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999                262145  sample               850.619                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00                  262145  sample             31522.816                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.alloc.rate                         262145  sample       5      9327.370 ±    206.495  MB/sec
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.alloc.rate.norm                    262145  sample       5   1392800.285 ±      5.529    B/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Eden_Space                262145  sample       5      9387.367 ±    213.266  MB/sec
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Eden_Space.norm           262145  sample       5   1401758.460 ±   3110.571    B/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Survivor_Space            262145  sample       5         0.206 ±      0.520  MB/sec
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Survivor_Space.norm       262145  sample       5        30.785 ±     78.649    B/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.count                              262145  sample       5       763.000               counts
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.time                               262145  sample       5       191.000                   ms
+
+ArrayCacheIntBenchmark.widenArrayCacheInt                                     262145  sample  519737        24.008 ±      0.012   us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00            262145  sample                23.104                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50            262145  sample                23.872                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90            262145  sample                24.160                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95            262145  sample                24.192                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99            262145  sample                24.288                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999           262145  sample                75.554                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999          262145  sample               110.248                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00            262145  sample               403.456                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.alloc.rate                      262145  sample       5         0.264 ±      0.022  MB/sec
+ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.alloc.rate.norm                 262145  sample       5         7.347 ±      0.505    B/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.count                           262145  sample       5           ≈ 0               counts
+
+
+ArrayCacheIntBenchmark.widenArrayAlloc                                       4194305  sample   11395      2192.479 ±     13.966   us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.00                 4194305  sample              1990.656                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.50                 4194305  sample              2066.432                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.90                 4194305  sample              2240.512                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.95                 4194305  sample              3231.744                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.99                 4194305  sample              4157.604                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.999                4194305  sample              5957.288                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p0.9999               4194305  sample              9517.937                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:widenArrayAlloc·p1.00                 4194305  sample              9568.256                us/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.alloc.rate                        4194305  sample       5      8832.664 ±    228.739  MB/sec
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.alloc.rate.norm                   4194305  sample       5  22365847.648 ±     88.688    B/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Eden_Space               4194305  sample       5      8848.011 ±    210.973  MB/sec
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Eden_Space.norm          4194305  sample       5  22404786.823 ± 120383.400    B/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Survivor_Space           4194305  sample       5         0.015 ±      0.040  MB/sec
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.churn.PS_Survivor_Space.norm      4194305  sample       5        37.485 ±    101.499    B/op
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.count                             4194305  sample       5       757.000               counts
+ArrayCacheIntBenchmark.widenArrayAlloc:·gc.time                              4194305  sample       5      1087.000                   ms
+
+ArrayCacheIntBenchmark.widenArrayCacheInt                                    4194305  sample   48299       516.304 ±      3.860   us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.00           4194305  sample               484.864                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.50           4194305  sample               507.904                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.90           4194305  sample               539.648                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.95           4194305  sample               556.032                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.99           4194305  sample               650.240                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.999          4194305  sample               702.157                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p0.9999         4194305  sample              2134.180                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:widenArrayCacheInt·p1.00           4194305  sample             56688.640                us/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.alloc.rate                     4194305  sample       5         3.893 ±      0.023  MB/sec
+ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.alloc.rate.norm                4194305  sample       5      2326.356 ±     79.001    B/op
+ArrayCacheIntBenchmark.widenArrayCacheInt:·gc.count                          4194305  sample       5           ≈ 0               counts

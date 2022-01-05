@@ -13,6 +13,7 @@ public class TestBenchMain {
         // Set the default locale to en-US locale (for Numerical Fields "." ",")
         Locale.setDefault(Locale.US);
 
-        ArrayCacheIntBenchmark.main(argv);
+        // ArrayCacheIntBenchmark.main(argv);
+        AreaSubtractBenchmark.main(argv);
     }
 }

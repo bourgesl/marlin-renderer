@@ -1,0 +1,408 @@
+# JMH version: 1.34
+# VM version: JDK 17.0.1, OpenJDK 64-Bit Server VM, 17.0.1+12-LTS
+# VM invoker: /home/bourgesl/apps/zulu17.30.15-ca-fx-jdk17.0.1-linux_x64/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation -XX:TieredStopAtLevel=4 -XX:-Inline -Djmh.stack.excludePackages=false --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.AreaSubtractBenchmark.doClip
+# Parameters: (length = 10)
+
+# Run progress: 0.00% complete, ETA 00:00:20
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfAsmProfiler 
+# Profilers consume stdout and stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 622.330 ms/op
+# Warmup Iteration   2: 198.902 ±(99.9%) 442.343 ms/op
+# Warmup Iteration   3: 158.447 ±(99.9%) 145.402 ms/op
+# Warmup Iteration   4: 11.150 ±(99.9%) 7.289 ms/op
+# Warmup Iteration   5: 6.557 ±(99.9%) 3.688 ms/op
+Iteration   1: 2.014 ±(99.9%) 0.210 ms/op
+                 doClip·p0.00:   1.774 ms/op
+                 doClip·p0.50:   1.788 ms/op
+                 doClip·p0.90:   2.038 ms/op
+                 doClip·p0.95:   2.058 ms/op
+                 doClip·p0.99:   2.453 ms/op
+                 doClip·p0.999:  69.688 ms/op
+                 doClip·p0.9999: 103.547 ms/op
+                 doClip·p1.00:   103.547 ms/op
+
+# Processing profiler results: LinuxPerfAsmProfiler 
+
+
+Result "org.marlin.bench.AreaSubtractBenchmark.doClip":
+  N = 2483
+  mean =      2.014 ±(99.9%) 0.210 ms/op
+
+  Histogram, ms/op:
+    [  0.000,  12.500) = 2469 
+    [ 12.500,  25.000) = 8 
+    [ 25.000,  37.500) = 3 
+    [ 37.500,  50.000) = 1 
+    [ 50.000,  62.500) = 0 
+    [ 62.500,  75.000) = 0 
+    [ 75.000,  87.500) = 0 
+    [ 87.500, 100.000) = 1 
+    [100.000, 112.500) = 1 
+    [112.500, 125.000) = 0 
+    [125.000, 137.500) = 0 
+    [137.500, 150.000) = 0 
+    [150.000, 162.500) = 0 
+    [162.500, 175.000) = 0 
+    [175.000, 187.500) = 0 
+
+  Percentiles, ms/op:
+      p(0.0000) =      1.774 ms/op
+     p(50.0000) =      1.788 ms/op
+     p(90.0000) =      2.038 ms/op
+     p(95.0000) =      2.058 ms/op
+     p(99.0000) =      2.453 ms/op
+     p(99.9000) =     69.688 ms/op
+     p(99.9900) =    103.547 ms/op
+     p(99.9990) =    103.547 ms/op
+     p(99.9999) =    103.547 ms/op
+    p(100.0000) =    103.547 ms/op
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClip:·asm":
+PrintAssembly processed: 357811 total address lines.
+Perf output processed (skipped 15.446 seconds):
+ Column 1: cycles (5292 events)
+
+Hottest code regions (>10.00% "cycles" events):
+
+....[Hottest Region 1]..............................................................................
+libjava.so, __j__ieee754_sqrt (210 bytes) 
+
+ <no assembly is recorded, native region>
+....................................................................................................
+ 13.72%  <total for region 1>
+
+....[Hottest Regions]...............................................................................
+ 13.72%          libjava.so  __j__ieee754_sqrt (210 bytes) 
+  4.02%        runtime stub  StubRoutines::libmCos (371 bytes) 
+  3.97%         c2, level 4  com.sun.javafx.geom.Order3::TforY, version 1302 (722 bytes) 
+  3.48%         c2, level 4  java.util.Vector::add, version 1240 (48 bytes) 
+  3.12%         c2, level 4  java.util.Vector::add, version 1240 (34 bytes) 
+  1.28%          libjava.so  __j__ieee754_acos (205 bytes) 
+  1.11%         c2, level 4  com.sun.javafx.geom.AreaOp::pruneEdges, version 1540 (319 bytes) 
+  1.10%         c2, level 4  com.sun.javafx.geom.Curve::compareTo, version 1398 (296 bytes) 
+  1.08%         c2, level 4  com.sun.javafx.geom.AreaOp::pruneEdges, version 1540 (327 bytes) 
+  0.96%         c2, level 4  java.util.Vector::add, version 1241 (132 bytes) 
+  0.94%         c2, level 4  com.sun.javafx.geom.AreaOp::lambda$static$0, version 1364 (170 bytes) 
+  0.93%         c2, level 4  com.sun.javafx.geom.Order3::refine, version 1281 (148 bytes) 
+  0.91%              kernel  [unknown] (0 bytes) 
+  0.91%         c2, level 4  com.sun.javafx.geom.Order3::YforT, version 1116 (70 bytes) 
+  0.87%         c2, level 4  com.sun.javafx.geom.Edge::compareTo, version 1351 (254 bytes) 
+  0.81%         c2, level 4  com.sun.javafx.geom.AreaOp::resolveLinks, version 1558 (223 bytes) 
+  0.76%         c2, level 4  com.sun.javafx.geom.Order3::XforY, version 1280 (83 bytes) 
+  0.68%         c2, level 4  com.sun.javafx.geom.Order3::XforT, version 1115 (58 bytes) 
+  0.68%         c2, level 4  java.util.Vector::removeAllElements, version 1418 (38 bytes) 
+  0.64%         c2, level 4  com.sun.javafx.util.WeakReferenceQueue$1::&lt;init&gt;, version 1385 (90 bytes) 
+ 58.01%  <...other 1129 warm regions...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Hottest Methods (after inlining)]..............................................................
+ 13.83%          libjava.so  __j__ieee754_sqrt 
+  8.54%              kernel  [unknown] 
+  7.09%         c2, level 4  java.util.Vector::add, version 1240 
+  4.18%         c2, level 4  com.sun.javafx.geom.AreaOp::resolveLinks, version 1558 
+  4.12%         c2, level 4  com.sun.javafx.geom.Order3::TforY, version 1302 
+  4.04%        runtime stub  StubRoutines::libmCos 
+  3.72%         c2, level 4  com.sun.javafx.geom.AreaOp::pruneEdges, version 1540 
+  2.51%          libjava.so  __j__ieee754_acos 
+  1.83%         c2, level 4  com.sun.javafx.geom.Curve::compareTo, version 1398 
+  1.72%         c2, level 4  java.util.Vector::toArray, version 1447 
+  1.40%                      <unknown> 
+  1.36%         c2, level 4  java.util.Vector::removeAllElements, version 1418 
+  1.27%         c2, level 4  java.util.TimSort::binarySort, version 1829 
+  1.25%         c2, level 4  com.sun.javafx.geom.Order3::refine, version 1281 
+  1.08%         c2, level 4  com.sun.javafx.geom.AreaOp::lambda$static$0, version 1364 
+  0.96%         c2, level 4  java.util.Vector::add, version 1241 
+  0.91%         c2, level 4  com.sun.javafx.geom.Order3::YforT, version 1116 
+  0.87%         c2, level 4  com.sun.javafx.geom.Edge::compareTo, version 1351 
+  0.83%    Unknown, level 0  java.lang.StrictMath::acos, version 1086 
+  0.81%         c2, level 4  java.util.Vector$1::nextElement, version 1529 
+ 37.66%  <...other 552 warm methods...>
+....................................................................................................
+ 99.98%  <totals>
+
+....[Distribution by Source]........................................................................
+ 60.90%         c2, level 4
+ 16.44%          libjava.so
+  8.54%              kernel
+  5.03%        runtime stub
+  4.44%           libjvm.so
+  1.40%                    
+  0.98%        libc-2.31.so
+  0.89%    Unknown, level 0
+  0.26%      hsdis-amd64.so
+  0.21%         c1, level 1
+  0.21%  libpthread-2.31.so
+  0.21%          ld-2.31.so
+  0.19%         c1, level 3
+  0.17%      perf-98520.map
+  0.11%         interpreter
+....................................................................................................
+ 99.98%  <totals>
+
+
+
+# JMH version: 1.34
+# VM version: JDK 17.0.1, OpenJDK 64-Bit Server VM, 17.0.1+12-LTS
+# VM invoker: /home/bourgesl/apps/zulu17.30.15-ca-fx-jdk17.0.1-linux_x64/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseParallelGC -XX:-BackgroundCompilation -XX:TieredStopAtLevel=4 -XX:-Inline -Djmh.stack.excludePackages=false --add-modules=java.desktop --add-exports=java.desktop/sun.java2d.marlin=ALL-UNNAMED --patch-module=java.desktop=/home/marlin/branches/marlin-jdk/test-bench/../target/marlin-0.9.4.5-Unsafe-OpenJDK11.jar
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 1 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Sampling time
+# Benchmark: org.marlin.bench.AreaSubtractBenchmark.doClipTwice
+# Parameters: (length = 10)
+
+# Run progress: 50.00% complete, ETA 00:00:26
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfAsmProfiler 
+# Profilers consume stdout and stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 7088.374 ms/op
+# Warmup Iteration   2: 3984.589 ms/op
+# Warmup Iteration   3: 3963.617 ms/op
+# Warmup Iteration   4: 4051.698 ms/op
+# Warmup Iteration   5: 3988.783 ms/op
+Iteration   1: 4179.624 ms/op
+                 doClipTwice·p0.00:   4005.560 ms/op
+                 doClipTwice·p0.50:   4179.624 ms/op
+                 doClipTwice·p0.90:   4353.688 ms/op
+                 doClipTwice·p0.95:   4353.688 ms/op
+                 doClipTwice·p0.99:   4353.688 ms/op
+                 doClipTwice·p0.999:  4353.688 ms/op
+                 doClipTwice·p0.9999: 4353.688 ms/op
+                 doClipTwice·p1.00:   4353.688 ms/op
+
+# Processing profiler results: LinuxPerfAsmProfiler 
+
+
+Secondary result "org.marlin.bench.AreaSubtractBenchmark.doClipTwice:·asm":
+PrintAssembly processed: 331750 total address lines.
+Perf output processed (skipped 32.669 seconds):
+ Column 1: cycles (8612 events)
+
+Hottest code regions (>10.00% "cycles" events):
+
+....[Hottest Region 1]..............................................................................
+libjava.so, __j__ieee754_sqrt (311 bytes) 
+
+ <no assembly is recorded, native region>
+....................................................................................................
+ 25.93%  <total for region 1>
+
+....[Hottest Region 2]..............................................................................
+runtime stub, StubRoutines::libmCos (372 bytes) 
+
+           --------------------------------------------------------------------------------
+           - - - [END] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           - - - [BEGIN] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           StubRoutines::libmCos [0x00007fffd83ee5fa, 0x00007fffd83eec72] (1656 bytes)
+           --------------------------------------------------------------------------------
+  0.22%      0x00007fffd83ee5fa:   push   %rbp
+             0x00007fffd83ee5fb:   mov    %rsp,%rbp
+  0.23%      0x00007fffd83ee5fe:   push   %rbx
+  0.09%      0x00007fffd83ee5ff:   sub    $0x10,%rsp
+  0.06%      0x00007fffd83ee603:   vmovsd %xmm0,0x8(%rsp)
+  0.14%      0x00007fffd83ee609:   mov    0xc(%rsp),%eax
+  0.06%      0x00007fffd83ee60d:   vmovq  0x1f6e62cb(%rip),%xmm1        # 0x00007ffff7ad48e0
+             0x00007fffd83ee615:   and    $0x7fff0000,%eax
+  0.07%      0x00007fffd83ee61b:   sub    $0x30300000,%eax
+  0.15%      0x00007fffd83ee621:   cmp    $0x10c50000,%eax
+         ╭   0x00007fffd83ee627:   ja     0x00007fffd83ee773
+  0.07%  │   0x00007fffd83ee62d:   vmulsd %xmm0,%xmm1,%xmm1
+         │   0x00007fffd83ee631:   vmovdqu 0x1f6e6bc7(%rip),%xmm5        # 0x00007ffff7ad5200
+  0.09%  │   0x00007fffd83ee639:   vmovq  0x1f6e628f(%rip),%xmm4        # 0x00007ffff7ad48d0
+  0.13%  │   0x00007fffd83ee641:   vpand  %xmm0,%xmm4,%xmm4
+  0.08%  │   0x00007fffd83ee645:   vpor   %xmm4,%xmm5,%xmm5
+         │   0x00007fffd83ee649:   vaddpd %xmm5,%xmm1,%xmm1
+  0.14%  │   0x00007fffd83ee64d:   vcvttsd2si %xmm1,%edx
+  0.19%  │   0x00007fffd83ee651:   vcvtsi2sd %edx,%xmm1,%xmm1
+  0.26%  │   0x00007fffd83ee655:   vmovdqu 0x1f6e6b93(%rip),%xmm2        # 0x00007ffff7ad51f0
+  0.09%  │   0x00007fffd83ee65d:   vmovq  0x1f6e6243(%rip),%xmm3        # 0x00007ffff7ad48a8
+  0.01%  │   0x00007fffd83ee665:   vmulsd %xmm1,%xmm3,%xmm3
+  0.50%  │   0x00007fffd83ee669:   vunpcklpd %xmm1,%xmm1,%xmm1
+  0.08%  │   0x00007fffd83ee66d:   add    $0x1c7610,%rdx
+  0.01%  │   0x00007fffd83ee674:   vmovdqu %xmm0,%xmm4
+  0.06%  │   0x00007fffd83ee678:   and    $0x3f,%rdx
+  0.08%  │   0x00007fffd83ee67c:   vmovdqu 0x1f6e6b5c(%rip),%xmm5        # 0x00007ffff7ad51e0
+  0.07%  │   0x00007fffd83ee684:   movabs $0x7ffff7ad49e0,%rax
+  0.02%  │   0x00007fffd83ee68e:   shl    $0x5,%rdx
+  0.06%  │   0x00007fffd83ee692:   add    %rdx,%rax
+  0.14%  │   0x00007fffd83ee695:   vmulpd %xmm1,%xmm2,%xmm2
+  0.14%  │   0x00007fffd83ee699:   vsubsd %xmm3,%xmm0,%xmm0
+  0.24%  │   0x00007fffd83ee69d:   vmulsd 0x1f6e6223(%rip),%xmm1,%xmm1        # 0x00007ffff7ad48c8
+  0.09%  │   0x00007fffd83ee6a5:   vsubsd %xmm3,%xmm4,%xmm4
+  0.09%  │   0x00007fffd83ee6a9:   vmovq  0x8(%rax),%xmm7
+  0.14%  │   0x00007fffd83ee6ae:   vunpcklpd %xmm0,%xmm0,%xmm0
+  0.07%  │   0x00007fffd83ee6b2:   vmovdqu %xmm4,%xmm3
+  0.02%  │   0x00007fffd83ee6b6:   vsubsd %xmm2,%xmm4,%xmm4
+  0.39%  │   0x00007fffd83ee6ba:   vmulpd %xmm0,%xmm5,%xmm5
+  0.07%  │   0x00007fffd83ee6be:   vsubpd %xmm2,%xmm0,%xmm0
+  0.10%  │   0x00007fffd83ee6c2:   vmovdqu 0x1f6e6306(%rip),%xmm6        # 0x00007ffff7ad49d0
+  0.02%  │   0x00007fffd83ee6ca:   vmulsd %xmm4,%xmm7,%xmm7
+  0.58%  │   0x00007fffd83ee6ce:   vsubsd %xmm4,%xmm3,%xmm3
+  0.13%  │   0x00007fffd83ee6d2:   vmulpd %xmm0,%xmm5,%xmm5
+  0.01%  │   0x00007fffd83ee6d6:   vmulpd %xmm0,%xmm0,%xmm0
+  0.07%  │   0x00007fffd83ee6da:   vsubsd %xmm2,%xmm3,%xmm3
+  0.38%  │   0x00007fffd83ee6de:   vmovdqu (%rax),%xmm2
+  0.12%  │   0x00007fffd83ee6e2:   vsubsd %xmm3,%xmm1,%xmm1
+  0.71%  │   0x00007fffd83ee6e6:   vmovq  0x18(%rax),%xmm3
+  0.07%  │   0x00007fffd83ee6eb:   vaddsd %xmm3,%xmm2,%xmm2
+         │   0x00007fffd83ee6ef:   vsubsd %xmm2,%xmm7,%xmm7
+  0.05%  │   0x00007fffd83ee6f3:   vmulsd %xmm4,%xmm2,%xmm2
+  0.22%  │   0x00007fffd83ee6f7:   vmulpd %xmm0,%xmm6,%xmm6
+  0.03%  │   0x00007fffd83ee6fb:   vmulsd %xmm4,%xmm3,%xmm3
+         │   0x00007fffd83ee6ff:   vmulpd %xmm0,%xmm2,%xmm2
+  0.05%  │   0x00007fffd83ee703:   vmulpd %xmm0,%xmm0,%xmm0
+  0.23%  │   0x00007fffd83ee707:   vaddpd 0x1f6e62b1(%rip),%xmm5,%xmm5        # 0x00007ffff7ad49c0
+  0.01%  │   0x00007fffd83ee70f:   vmulsd (%rax),%xmm4,%xmm4
+         │   0x00007fffd83ee713:   vaddpd 0x1f6e6295(%rip),%xmm6,%xmm6        # 0x00007ffff7ad49b0
+  0.03%  │   0x00007fffd83ee71b:   vmulpd %xmm0,%xmm5,%xmm5
+  0.37%  │   0x00007fffd83ee71f:   vmovdqu %xmm3,%xmm0
+  0.05%  │   0x00007fffd83ee723:   vaddsd 0x8(%rax),%xmm3,%xmm3
+         │   0x00007fffd83ee728:   vmulpd %xmm7,%xmm1,%xmm1
+  0.15%  │   0x00007fffd83ee72c:   vmovdqu %xmm4,%xmm7
+  0.07%  │   0x00007fffd83ee730:   vaddsd %xmm3,%xmm4,%xmm4
+  0.14%  │   0x00007fffd83ee734:   vaddpd %xmm5,%xmm6,%xmm6
+  0.45%  │   0x00007fffd83ee738:   vmovq  0x8(%rax),%xmm5
+  0.07%  │   0x00007fffd83ee73d:   vsubsd %xmm3,%xmm5,%xmm5
+  0.02%  │   0x00007fffd83ee741:   vsubsd %xmm4,%xmm3,%xmm3
+  0.28%  │   0x00007fffd83ee745:   vaddsd 0x10(%rax),%xmm1,%xmm1
+  0.17%  │   0x00007fffd83ee74a:   vmulpd %xmm2,%xmm6,%xmm6
+  0.65%  │   0x00007fffd83ee74e:   vaddsd %xmm5,%xmm0,%xmm0
+  0.09%  │   0x00007fffd83ee752:   vaddsd %xmm7,%xmm3,%xmm3
+  0.38%  │   0x00007fffd83ee756:   vaddsd %xmm1,%xmm0,%xmm0
+  0.15%  │   0x00007fffd83ee75a:   vaddsd %xmm3,%xmm0,%xmm0
+  1.28%  │   0x00007fffd83ee75e:   vaddsd %xmm6,%xmm0,%xmm0
+  1.07%  │   0x00007fffd83ee762:   vunpckhpd %xmm6,%xmm6,%xmm6
+         │   0x00007fffd83ee766:   vaddsd %xmm6,%xmm0,%xmm0
+  1.03%  │   0x00007fffd83ee76a:   vaddsd %xmm4,%xmm0,%xmm0
+  1.17%  │   0x00007fffd83ee76e:   jmp    0x00007fffd83eec6b
+         ↘╭  0x00007fffd83ee773:   jg     0x00007fffd83ee79e
+          │  0x00007fffd83ee779:   vpextrw $0x3,%xmm0,%eax
+          │  0x00007fffd83ee77e:   and    $0x7fff,%eax
+          │  0x00007fffd83ee784:   vpinsrw $0x3,%eax,%xmm0,%xmm0
+          │  0x00007fffd83ee789:   vmovq  0x1f6e1a4f(%rip),%xmm1        # 0x00007ffff7ad01e0
+          │  0x00007fffd83ee791:   vsubsd %xmm0,%xmm1,%xmm1
+          │  0x00007fffd83ee795:   vmovdqu %xmm1,%xmm0
+          │  0x00007fffd83ee799:   jmp    0x00007fffd83eec6b
+          ↘  0x00007fffd83ee79e:   vpextrw $0x3,%xmm0,%eax
+             0x00007fffd83ee7a3:   and    $0x7ff0,%eax
+....................................................................................................
+ 14.79%  <total for region 2>
+
+....[Hottest Regions]...............................................................................
+ 25.93%          libjava.so  __j__ieee754_sqrt (311 bytes) 
+ 14.79%        runtime stub  StubRoutines::libmCos (372 bytes) 
+  9.71%         c2, level 4  com.sun.javafx.geom.Order3::TforY, version 1258 (870 bytes) 
+  5.13%          libjava.so  __j__ieee754_acos (181 bytes) 
+  4.31%         c2, level 4  com.sun.javafx.geom.Order3::YforT, version 1080 (70 bytes) 
+  3.38%          libjava.so  __j__ieee754_acos (192 bytes) 
+  2.93%         c2, level 4  com.sun.javafx.geom.Order3::refine, version 1095 (200 bytes) 
+  1.85%    Unknown, level 0  java.lang.StrictMath::acos, version 1057 (36 bytes) 
+  1.30%         c2, level 4  com.sun.javafx.geom.CurveLink::absorb, version 1150 (51 bytes) 
+  1.21%         c2, level 4  java.util.Vector::add, version 1110 (48 bytes) 
+  1.16%         c2, level 4  com.sun.javafx.geom.Order3::XforT, version 1083 (58 bytes) 
+  1.05%         c2, level 4  com.sun.javafx.geom.Order3::refine, version 1095 (139 bytes) 
+  0.98%         c2, level 4  java.util.Vector::add, version 1110 (34 bytes) 
+  0.69%         c2, level 4  com.sun.javafx.geom.Order3::XforY, version 1105 (70 bytes) 
+  0.67%           libjvm.so  ElfSymbolTable::lookup (54 bytes) 
+  0.66%         c2, level 4  com.sun.javafx.geom.AreaOp::pruneEdges, version 1229 (332 bytes) 
+  0.63%    Unknown, level 0  java.lang.StrictMath::acos, version 1057 (58 bytes) 
+  0.46%         c2, level 4  com.sun.javafx.geom.AreaOp::pruneEdges, version 1229 (300 bytes) 
+  0.41%         c2, level 4  com.sun.javafx.geom.Curve::fairlyClose, version 1127 (109 bytes) 
+  0.41%         c2, level 4  com.sun.javafx.geom.Order3::dYforT, version 1143 (87 bytes) 
+ 22.35%  <...other 665 warm regions...>
+....................................................................................................
+ 99.99%  <totals>
+
+....[Hottest Methods (after inlining)]..............................................................
+ 26.00%          libjava.so  __j__ieee754_sqrt 
+ 15.05%        runtime stub  StubRoutines::libmCos 
+  9.71%         c2, level 4  com.sun.javafx.geom.Order3::TforY, version 1258 
+  8.73%          libjava.so  __j__ieee754_acos 
+  6.04%              kernel  [unknown] 
+  4.51%         c2, level 4  com.sun.javafx.geom.Order3::refine, version 1095 
+  4.31%         c2, level 4  com.sun.javafx.geom.Order3::YforT, version 1080 
+  3.02%    Unknown, level 0  java.lang.StrictMath::acos, version 1057 
+  2.35%         c2, level 4  java.util.Vector::add, version 1110 
+  1.73%         c2, level 4  com.sun.javafx.geom.AreaOp::resolveLinks, version 1263 
+  1.57%         c2, level 4  com.sun.javafx.geom.AreaOp::pruneEdges, version 1229 
+  1.50%         c2, level 4  com.sun.javafx.geom.Curve::compareTo, version 1259 
+  1.30%         c2, level 4  com.sun.javafx.geom.CurveLink::absorb, version 1150 
+  1.20%         c2, level 4  com.sun.javafx.geom.Curve::findIntersect, version 1382 
+  1.16%         c2, level 4  com.sun.javafx.geom.Order3::XforT, version 1083 
+  0.69%         c2, level 4  com.sun.javafx.geom.Order3::XforY, version 1105 
+  0.67%           libjvm.so  ElfSymbolTable::lookup 
+  0.64%                      <unknown> 
+  0.57%         c2, level 4  java.util.Vector::toArray, version 1261 
+  0.51%         c2, level 4  java.util.Vector::removeAllElements, version 1125 
+  8.76%  <...other 230 warm methods...>
+....................................................................................................
+ 99.99%  <totals>
+
+....[Distribution by Source]........................................................................
+ 35.46%         c2, level 4
+ 35.03%          libjava.so
+ 15.16%        runtime stub
+  6.04%              kernel
+  3.03%    Unknown, level 0
+  2.95%           libjvm.so
+  1.05%        libc-2.31.so
+  0.64%                    
+  0.22%  libpthread-2.31.so
+  0.19%      hsdis-amd64.so
+  0.08%          ld-2.31.so
+  0.07%         c1, level 3
+  0.03%      perf-98599.map
+  0.03%         interpreter
+....................................................................................................
+ 99.99%  <totals>
+
+
+
+# Run complete. Total time: 00:01:12
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                              (length)    Mode   Cnt     Score   Error  Units
+AreaSubtractBenchmark.doClip                                 10  sample  2483     2.014 ± 0.210  ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.00                    10  sample           1.774          ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.50                    10  sample           1.788          ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.90                    10  sample           2.038          ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.95                    10  sample           2.058          ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.99                    10  sample           2.453          ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.999                   10  sample          69.688          ms/op
+AreaSubtractBenchmark.doClip:doClip·p0.9999                  10  sample         103.547          ms/op
+AreaSubtractBenchmark.doClip:doClip·p1.00                    10  sample         103.547          ms/op
+AreaSubtractBenchmark.doClip:·asm                            10  sample             NaN            ---
+AreaSubtractBenchmark.doClipTwice                            10  sample     2  4179.624          ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.00          10  sample        4005.560          ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.50          10  sample        4179.624          ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.90          10  sample        4353.688          ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.95          10  sample        4353.688          ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.99          10  sample        4353.688          ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.999         10  sample        4353.688          ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p0.9999        10  sample        4353.688          ms/op
+AreaSubtractBenchmark.doClipTwice:doClipTwice·p1.00          10  sample        4353.688          ms/op
+AreaSubtractBenchmark.doClipTwice:·asm                       10  sample             NaN            ---
