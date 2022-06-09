@@ -93,7 +93,7 @@ public class SpiralTests {
         try {
             final File file = new File("SpiralTests-" + renderer + "-dash-" + useDashes + ".png");
 
-            System.out.println("Writing file: " + file.getAbsolutePath());;
+            System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
         }
         catch (IOException ex) {

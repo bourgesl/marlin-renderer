@@ -41,7 +41,7 @@ import sun.java2d.marlin.MarlinProperties;
 public class LineTests {
 
     public static void main(String[] args) {
-        
+
         final int N = 100;
 
         final float lineStroke = 4f;
@@ -112,7 +112,7 @@ public class LineTests {
         g2d.fill(new Ellipse2D.Double(half - radius, half - radius, 2f * radius, 2f * radius));
 
         final Path2D.Double path = new Path2D.Double(WIND_NON_ZERO, 10);
-        
+
         boolean on = false;
 
         for (double angle = 1.0 / 3; angle <= 90.0; angle += 1.0) {
@@ -124,10 +124,10 @@ public class LineTests {
             if (on) {
                 g2d.setPaint(Color.WHITE);
             } else {
-               g2d.setPaint(Color.BLACK); 
+               g2d.setPaint(Color.BLACK);
             }
             on = !on;
-            
+
             path.reset();
 
             path.moveTo(5.0 * cos, 5.0 * sin);

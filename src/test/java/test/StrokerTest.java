@@ -118,7 +118,7 @@ public class StrokerTest {
             final File file = new File("StrokerTest-" + renderer + "_norm-subpix_cap_" + cap
             + "_join_" + join + "_simplifier_" + simplifier + ".png");
 
-            System.out.println("Writing file: " + file.getAbsolutePath());;
+            System.out.println("Writing file: " + file.getAbsolutePath());
             ImageIO.write(image, "PNG", file);
         }
         catch (IOException ex) {
