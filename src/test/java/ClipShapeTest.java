@@ -90,7 +90,7 @@ public final class ClipShapeTest {
     static final boolean TEST_STROKER = true;
     static final boolean TEST_FILLER = true;
 
-    static final boolean SUBDIVIDE_CURVE = true;
+    static final boolean SUBDIVIDE_CURVE = false; // useless with better curves
     static final double SUBDIVIDE_LEN_TH = 50.0;
     static final boolean TRACE_SUBDIVIDE_CURVE = false;
 
