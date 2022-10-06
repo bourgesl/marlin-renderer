@@ -28,6 +28,7 @@ package org.marlin.pisces;
 import java.util.Arrays;
 import org.marlin.pisces.DTransformingPathConsumer2D.CurveBasicMonotonizer;
 import org.marlin.pisces.DTransformingPathConsumer2D.CurveClipSplitter;
+import org.marlin.pisces.DTransformingPathConsumer2D.StartFlagPathConsumer2D;
 
 /**
  * The <code>DDasher</code> class takes a series of linear commands
@@ -40,7 +41,7 @@ import org.marlin.pisces.DTransformingPathConsumer2D.CurveClipSplitter;
  * semantics are unclear.
  *
  */
-final class DDasher implements DPathConsumer2D, MarlinConst {
+final class DDasher implements StartFlagPathConsumer2D, MarlinConst {
 
     /* huge circle with radius ~ 2E9 only needs 12 subdivision levels */
     static final int REC_LIMIT = 16;
@@ -348,6 +349,26 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
         firstSegidx = segIdx + len;
     }
 
+    /* Callback from CurveClipSplitter */
+    @Override
+    public void setStartFlag(boolean first) {
+        if (first) {
+            // reset flag:
+            rdrCtx.firstFlags &= 0b011;
+        } else {
+            rdrCtx.firstFlags |= 0b100;
+        }
+    }
+
+    public void setMonotonizerStartFlag(boolean first) {
+        if (first) {
+            // reset flag:
+            rdrCtx.firstFlags &= 0b101;
+        } else {
+            rdrCtx.firstFlags |= 0b010;
+        }
+    }
+    
     @Override
     public void lineTo(final double x1, final double y1) {
         final int outcode0 = this.cOutCode;
@@ -802,8 +823,8 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                 // we use cubicRootsInAB here, because we want only roots in 0, 1,
                 // and our quadratic root finder doesn't filter, so it's just a
                 // matter of convenience.
-                final int n = DHelpers.cubicRootsInAB(a, b, c, d, nextRoots, 0, 0.0d, 1.0d);
-                if (n == 1 && !Double.isNaN(nextRoots[0])) {
+                final int n = DHelpers.cubicRootsInAB(a, b, c, d, nextRoots, 0);
+                if (n == 1) {
                     t = nextRoots[0];
                 }
             }
@@ -950,7 +971,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                     return;
                 }
             }
-
             this.cOutCode = outcode3;
 
             if (this.outside) {
@@ -979,11 +999,15 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
 
-            // set flag (cleared automatically):
-            rdrCtx.isFirstSegment = (i == 0); // TODO: handle conflict with clipper
-
             somethingTo(8);
+
+            if (i == 0) {
+                // disable start flag:
+                setMonotonizerStartFlag(false);
+            }
         }
+        // reset start flag:
+        setMonotonizerStartFlag(true);
     }
 
     private void skipCurveTo(final double x1, final double y1,
@@ -1039,7 +1063,6 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
                     return;
                 }
             }
-
             this.cOutCode = outcode2;
 
             if (this.outside) {
@@ -1067,11 +1090,15 @@ final class DDasher implements DPathConsumer2D, MarlinConst {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
 
-            // set flag (cleared automatically):
-            rdrCtx.isFirstSegment = (i == 0); // TODO: handle conflict with clipper
-
             somethingTo(6);
+
+            if (i == 0) {
+                // disable start flag:
+                setMonotonizerStartFlag(false);
+            }
         }
+        // reset start flag:
+        setMonotonizerStartFlag(true);
     }
 
     private void skipQuadTo(final double x1, final double y1,

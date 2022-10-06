@@ -112,6 +112,10 @@ public final class RendererStats implements MarlinConst {
         = new StatLong("renderer.crossings.msorts");
     final StatLong stat_rdr_crossings_dpqs
         = new StatLong("renderer.crossings.dpqs");
+    final StatLong stat_str_draw_joins
+        = new StatLong("stroker.draw.joins");
+    final StatLong stat_str_draw_caps
+        = new StatLong("stroker.draw.caps");
     final StatLong stat_str_polystack_curves
         = new StatLong("stroker.polystack.curves");
     final StatLong stat_str_polystack_types
@@ -208,6 +212,8 @@ public final class RendererStats implements MarlinConst {
         stat_rdr_crossings_bsearch,
         stat_rdr_crossings_msorts,
         stat_rdr_crossings_dpqs,
+        stat_str_draw_joins,
+        stat_str_draw_caps,
         stat_str_polystack_types,
         stat_str_polystack_curves,
         stat_cpd_polystack_curves,

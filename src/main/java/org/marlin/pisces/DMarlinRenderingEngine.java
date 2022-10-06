@@ -53,6 +53,8 @@ public final class DMarlinRenderingEngine extends RenderingEngine
 
     static final boolean DO_TRACE_PATH = false;
 
+    static final boolean DO_SHOW_CLIP_MARGIN = false;
+    
     static final boolean DO_CLIP = MarlinProperties.isDoClip();
     static final boolean DO_CLIP_FILL = true;
     static final boolean DO_CLIP_RUNTIME_ENABLE = MarlinProperties.isDoClipRuntimeFlag();
@@ -423,6 +425,9 @@ public final class DMarlinRenderingEngine extends RenderingEngine
             // to remove collinear segments (notably due to cap square)
             pc2d = rdrCtx.simplifier.init(pc2d);
         }
+        
+        // TODO: inject here one PathClipFilter stage
+        // to clip extra stroked segments (outside smallest clip rect, no margin anymore)
 
         // deltaTransformConsumer may adjust the clip rectangle:
         pc2d = transformerPC2D.deltaTransformConsumer(pc2d, strokerat);
@@ -840,7 +845,7 @@ public final class DMarlinRenderingEngine extends RenderingEngine
                 final double rdrOffY = DRenderer.RDR_OFFSET_Y;
 
                 // add a small rounding error:
-                final double margin = 1e-3d;
+                final double margin = (DO_SHOW_CLIP_MARGIN) ? -150d : 1e-3d;
 
                 clipRect[0] = clip.getLoY()
                                 - margin + rdrOffY;

@@ -29,12 +29,24 @@ import java.util.Arrays;
 import org.marlin.pisces.DHelpers.PolyStack;
 import org.marlin.pisces.DTransformingPathConsumer2D.CurveBasicMonotonizer;
 import org.marlin.pisces.DTransformingPathConsumer2D.CurveClipSplitter;
+import org.marlin.pisces.DTransformingPathConsumer2D.StartFlagPathConsumer2D;
 
 // TODO: some of the arithmetic here is too verbose and prone to hard to
 // debug typos. We should consider making a small Point/Vector class that
 // has methods like plus(Point), minus(Point), dot(Point), cross(Point)and such
-final class DStroker implements DPathConsumer2D, MarlinConst {
+final class DStroker implements StartFlagPathConsumer2D, MarlinConst {
 
+    private final static boolean DEBUG_CUBIC_OFFSET = false && MarlinProperties.isDebugThreadLocal();
+    
+    private final static boolean DEBUG_CUBIC_MID_POINTS = false && MarlinProperties.isDebugThreadLocal();
+
+    private final static boolean FIX_EAR_LOOP = false;
+    private final static boolean DEBUG_FIX_EAR_LOOP = false;
+
+    private final static boolean DEBUG_OFFSET_CURVES = false;
+    
+    static final boolean SKIP_SUBDIVIDE_2ND_STROKER_CLIPPING = false;
+    
     static final boolean DO_CHECK_CURVE_WIDTH = MarlinProperties.isDoSubdivideCurves();
     static final boolean DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE = true && MarlinProperties.isDoSubdivideCurvesRuntimeFlag();
 
@@ -101,6 +113,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
     // Bounds of the drawing region, at pixel precision.
     private double[] clipRect;
+    
+    // flag indicating path subdivision; false means outcode only
+    private boolean clipSubdivide = true;
 
     // the outcode of the current point
     private int cOutCode = 0;
@@ -210,6 +225,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             } else {
                 subdivide = false;
             }
+            clipSubdivide = subdivide;
         } else {
             this.clipRect = null;
             this.cOutCode = 0;
@@ -219,7 +235,11 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     }
 
     void disableClipping() {
-        this.clipRect = null;
+        if (SKIP_SUBDIVIDE_2ND_STROKER_CLIPPING) {
+            this.clipSubdivide = false;
+        } else {
+            this.clipRect = null;
+        }
         this.cOutCode = 0;
         this.sOutCode = 0;
     }
@@ -229,10 +249,11 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
      * clean up before reusing this instance
      */
     void dispose() {
-        reverse.dispose();
+        this.reverse.dispose();
 
-        opened   = false;
-        capStart = false;
+        this.clipSubdivide = true;
+        this.opened   = false;
+        this.capStart = false;
 
         if (DO_CLEAN_DIRTY) {
             // Force zero-fill dirty arrays:
@@ -533,6 +554,17 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         }
     }
 
+    /* Callback from CurveClipSplitter */
+    @Override
+    public void setStartFlag(boolean first) {
+        if (first) {
+            // reset flag:
+            rdrCtx.firstFlags &= 0b110;
+        } else {
+            rdrCtx.firstFlags |= 0b001;
+        }
+    }
+
     @Override
     public void lineTo(final double x1, final double y1) {
         final int outcode0 = this.cOutCode;
@@ -540,35 +572,36 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         if (clipRect != null) {
             final int outcode1 = DHelpers.outcode(x1, y1, clipRect);
 
-            // Should clip
-            final int orCode = (outcode0 | outcode1);
-            if (orCode != 0) {
-                final int sideCode = outcode0 & outcode1;
+            if (clipSubdivide) {
+                // Should clip
+                final int orCode = (outcode0 | outcode1);
+                if (orCode != 0) {
+                    final int sideCode = outcode0 & outcode1;
 
-                // basic rejection criteria:
-                if (sideCode == 0) {
-                    // overlap clip:
-                    if (subdivide) {
-                        // avoid reentrance
-                        subdivide = false;
-                        // subdivide curve => callback with subdivided parts:
-                        boolean ret = curveSplitter.splitLine(cx0, cy0, x1, y1,
-                                                              orCode, this);
-                        // reentrance is done:
-                        subdivide = true;
-                        if (ret) {
-                            return;
+                    // basic rejection criteria:
+                    if (sideCode == 0) {
+                        // overlap clip:
+                        if (subdivide) {
+                            // avoid reentrance
+                            subdivide = false;
+                            // subdivide curve => callback with subdivided parts:
+                            boolean ret = curveSplitter.splitLine(cx0, cy0, x1, y1,
+                                                                  orCode, this);
+                            // reentrance is done:
+                            subdivide = true;
+                            if (ret) {
+                                return;
+                            }
                         }
+                        // already subdivided so render it
+                    } else {
+                        this.cOutCode = outcode1;
+                        _moveTo(x1, y1, outcode0);
+                        opened = true;
+                        return;
                     }
-                    // already subdivided so render it
-                } else {
-                    this.cOutCode = outcode1;
-                    _moveTo(x1, y1, outcode0);
-                    opened = true;
-                    return;
                 }
             }
-
             this.cOutCode = outcode1;
         }
 
@@ -686,6 +719,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             emitReverse();
         } else {
             if (outcode == 0) {
+                if (DO_STATS) {
+                    rdrCtx.stats.stat_str_draw_caps.add(1);
+                }
                 // current point = end's cap:
                 if (capStyle == CAP_ROUND) {
                     drawRoundCap(cx0, cy0, cmx, cmy);
@@ -700,6 +736,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                 capStart = true;
 
                 if (sOutCode == 0) {
+                    if (DO_STATS) {
+                        rdrCtx.stats.stat_str_draw_caps.add(1);
+                    }
                     // starting point = initial cap:
                     if (capStyle == CAP_ROUND) {
                         drawRoundCap(sx0, sy0, -smx, -smy);
@@ -785,6 +824,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                           final int outcode)
     {
         if (prev != DRAWING_OP_TO) {
+            prev = DRAWING_OP_TO;
             emitMoveTo(x0 + mx, y0 + my);
             if (!opened) {
                 this.sdx = dx;
@@ -792,10 +832,13 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                 this.smx = mx;
                 this.smy = my;
             }
-        } else if (rdrCtx.isFirstSegment) {
+        } else if (rdrCtx.firstFlags == 0) {
             // Precision on isCW is causing instabilities with Dasher !
             final boolean cw = isCW(pdx, pdy, dx, dy);
             if (outcode == 0) {
+                if (DO_STATS) {
+                    rdrCtx.stats.stat_str_draw_joins.add(1);
+                }
                 if (joinStyle == JOIN_MITER) {
                     drawMiter(pdx, pdy, x0, y0, dx, dy, omx, omy, mx, my, cw);
                 } else if (joinStyle == JOIN_ROUND) {
@@ -804,10 +847,6 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             }
             emitLineTo(x0, y0, !cw);
         }
-        // reset trigger to process further joins (normal operations)
-        rdrCtx.isFirstSegment = true;
-
-        prev = DRAWING_OP_TO;
     }
 
     private int getLineOffsets(final double x1, final double y1,
@@ -836,11 +875,6 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     {
         return computeOffsetCubic(pts, off, leftOff, rightOff, true, true, true);
     }
-
-    private final static boolean DEBUG_CUBIC_MID_POINTS = false;
-
-    private final static boolean FIX_EAR_LOOP = true;
-    private final static boolean DEBUG_FIX_EAR_LOOP = false;
     
     private int computeOffsetCubic(final double[] pts, final int off,
                                    final double[] leftOff,
@@ -862,6 +896,14 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
         double dx1 = x2 - x1; double dy1 = y2 - y1;
         double dx4 = x4 - x3; double dy4 = y4 - y3;
+        
+        if (DEBUG_CUBIC_OFFSET && MarlinDebugThreadLocal.isEnabled()) {
+           MarlinUtils.logInfo("Stroker.computeOffsetCubic("
+                   + pts[off] + ", " + pts[off + 1] + ", "
+                   + pts[off + 2] + ", " + pts[off + 3] + ", "
+                   + pts[off + 4] + ", " + pts[off + 5] + ", "
+                   + pts[off + 6] + ", " + pts[off + 7] + ");");
+        }
 
         if (checkCtrlPoints) {
             // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
@@ -870,6 +912,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             final boolean p3eqp4 = DHelpers.withinD(dx4, dy4, 6.0d * Math.ulp(y4));
 
             if (p1eqp2 && p3eqp4) {
+                if (DEBUG_CUBIC_OFFSET && MarlinDebugThreadLocal.isEnabled()) {
+                    System.out.println("(p1eqp2 && p3eqp4)");
+                }
                 return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
             } else if (p1eqp2) {
                 dx1 = x3 - x1;
@@ -886,6 +931,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             final double l4sq = dx4 * dx4 + dy4 * dy4;
 
             if (DHelpers.within(dotsq, l1sq * l4sq, 4.0d * Math.ulp(dotsq))) {
+                if (DEBUG_CUBIC_OFFSET && MarlinDebugThreadLocal.isEnabled()) {
+                    System.out.println("(dotsq)");
+                }
                 return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
             }
         }
@@ -977,10 +1025,30 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
             c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
 
-            if (FIX_EAR_LOOP && (c1 * c2 > 0.0)) {
-                if (DEBUG_FIX_EAR_LOOP) {
-                    System.out.println("Buggy solver (left): c1 = " + c1 + " c2 = " + c2);
+            if (DEBUG_FIX_EAR_LOOP && (c1 * c2 > 0.0)) {
+                System.out.println("Buggy solver (left): c1 = " + c1 + " c2 = " + c2);
+
+                MarlinUtils.logInfo("Stroker.computeOffsetCubic("
+                        + pts[off] + ", " + pts[off + 1] + ", "
+                        + pts[off + 2] + ", " + pts[off + 3] + ", "
+                        + pts[off + 4] + ", " + pts[off + 5] + ", "
+                        + pts[off + 6] + ", " + pts[off + 7] + ");");
+
+                if (DEBUG_OFFSET_CURVES) {
+                    x2p = x1p + c1 * dx1; y2p = y1p + c1 * dy1;
+                    x3p = x4p + c2 * dx4; y3p = y4p + c2 * dy4;
+
+                    leftOff[0] = x1p; leftOff[1] = y1p;
+                    leftOff[2] = x2p; leftOff[3] = y2p;
+                    leftOff[4] = x3p; leftOff[5] = y3p;
+                    leftOff[6] = x4p; leftOff[7] = y4p;
+
+                    // log cubic and offset curve:
+                    MarlinDebugThreadLocal.get().addCubicOffsetCurves(pts, off, leftOff);
                 }
+            }
+            
+            if (FIX_EAR_LOOP && (c1 * c2 > 0.0)) {
                 // use lower quality approximation but good enough
                 // to ensure cuve being in its convex hull
                 x2p = x2 + offset1[0]; // 2nd
@@ -1023,10 +1091,30 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
             c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
 
-            if (FIX_EAR_LOOP && (c1 * c2 > 0.0)) {
-                if (DEBUG_FIX_EAR_LOOP) {
-                    System.out.println("Buggy solver (left): c1 = " + c1 + " c2 = " + c2);
+            if (DEBUG_FIX_EAR_LOOP && (c1 * c2 > 0.0)) {
+                System.out.println("Buggy solver (right): c1 = " + c1 + " c2 = " + c2);
+
+                MarlinUtils.logInfo("Stroker.computeOffsetCubic("
+                        + pts[off] + ", " + pts[off + 1] + ", "
+                        + pts[off + 2] + ", " + pts[off + 3] + ", "
+                        + pts[off + 4] + ", " + pts[off + 5] + ", "
+                        + pts[off + 6] + ", " + pts[off + 7] + ");");
+
+                if (DEBUG_OFFSET_CURVES) {
+                    x2p = x1p + c1 * dx1; y2p = y1p + c1 * dy1;
+                    x3p = x4p + c2 * dx4; y3p = y4p + c2 * dy4;
+
+                    rightOff[0] = x1p; rightOff[1] = y1p;
+                    rightOff[2] = x2p; rightOff[3] = y2p;
+                    rightOff[4] = x3p; rightOff[5] = y3p;
+                    rightOff[6] = x4p; rightOff[7] = y4p;
+
+                    // log cubic and offset curve:
+                    MarlinDebugThreadLocal.get().addCubicOffsetCurves(pts, off, rightOff);
                 }
+            }
+            
+            if (FIX_EAR_LOOP && (c1 * c2 > 0.0)) {
                 // use lower quality approximation but good enough
                 // to ensure cuve being in its convex hull
                 x2p = x2 - offset1[0]; // 2nd
@@ -1141,40 +1229,42 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         final int outcode0 = this.cOutCode;
 
         if (clipRect != null) {
-            final int outcode1 = DHelpers.outcode(x1, y1, clipRect);
-            final int outcode2 = DHelpers.outcode(x2, y2, clipRect);
             final int outcode3 = DHelpers.outcode(x3, y3, clipRect);
 
-            // Should clip
-            final int orCode = (outcode0 | outcode1 | outcode2 | outcode3);
-            if (orCode != 0) {
-                final int sideCode = outcode0 & outcode1 & outcode2 & outcode3;
+            if (clipSubdivide) {
+                final int outcode1 = DHelpers.outcode(x1, y1, clipRect);
+                final int outcode2 = DHelpers.outcode(x2, y2, clipRect);
 
-                // basic rejection criteria:
-                if (sideCode == 0) {
-                    // overlap clip:
-                    if (subdivide) {
-                        // avoid reentrance
-                        subdivide = false;
-                        // subdivide curve => callback with subdivided parts:
-                        boolean ret = curveSplitter.splitCurve(cx0, cy0, x1, y1,
-                                                               x2, y2, x3, y3,
-                                                               orCode, this);
-                        // reentrance is done:
-                        subdivide = true;
-                        if (ret) {
-                            return;
+                // Should clip
+                final int orCode = (outcode0 | outcode1 | outcode2 | outcode3);
+                if (orCode != 0) {
+                    final int sideCode = outcode0 & outcode1 & outcode2 & outcode3;
+
+                    // basic rejection criteria:
+                    if (sideCode == 0) {
+                        // overlap clip:
+                        if (subdivide) {
+                            // avoid reentrance
+                            subdivide = false;
+                            // subdivide curve => callback with subdivided parts:
+                            boolean ret = curveSplitter.splitCurve(cx0, cy0, x1, y1,
+                                                                   x2, y2, x3, y3,
+                                                                   orCode, this);
+                            // reentrance is done:
+                            subdivide = true;
+                            if (ret) {
+                                return;
+                            }
                         }
+                        // already subdivided so render it
+                    } else {
+                        this.cOutCode = outcode3;
+                        _moveTo(x3, y3, outcode0);
+                        opened = true;
+                        return;
                     }
-                    // already subdivided so render it
-                } else {
-                    this.cOutCode = outcode3;
-                    _moveTo(x3, y3, outcode0);
-                    opened = true;
-                    return;
                 }
             }
-
             this.cOutCode = outcode3;
         }
         _curveTo(x1, y1, x2, y2, x3, y3, outcode0);
@@ -1274,7 +1364,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             boolean lok = true;
             boolean rok = true;
 
-            if ((kind == 8) && (lineWidth2Sq >= W2_THRESHOLD) 
+            if ((kind == 8) && (true || lineWidth2Sq >= W2_THRESHOLD) 
                     && (DO_CHECK_CURVE_WIDTH || (DO_CHECK_CURVE_WIDTH_RUNTIME_ENABLE 
                             && MarlinProperties.isDoSubdivideCurvesAtRuntime())))
             {
@@ -1325,9 +1415,9 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     private final DCurve curveOff = new DCurve();
 
     private static int nDist = 32;
-    
+
     private final static double[] tDist = new double[nDist];
-    
+
     static {
         double step = 1.0 / (nDist + 1);
         for (int i = 0; i < nDist; i++) {
@@ -1340,21 +1430,22 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
     private final double[] ts = new double[4];
 
     static final int REC_LIMIT = 8;
-    
+
     private final double[][] curveParts = new double[REC_LIMIT][8 * 2];
-    
+
     private final static boolean TRACE_CHECK_CURVE = false;
 
-    private final static boolean DEBUG_CHECK_CURVE_PT_REF = false;
-    private final static boolean DEBUG_CHECK_CURVE_PT_OFF = false;
-    private final static boolean DEBUG_CHECK_CURVE_PT_INVALID = true;
+    private final static boolean DEBUG_CHECK_CURVE_PT_REF = false && MarlinProperties.isDebugThreadLocal();
+    private final static boolean DEBUG_CHECK_CURVE_PT_OFF = false && MarlinProperties.isDebugThreadLocal();
+    private final static boolean DEBUG_CHECK_CURVE_PT_INVALID = true && MarlinProperties.isDebugThreadLocal();
+
+    private final static boolean DEBUG_CHECK_CURVE_NORMAL = false && MarlinProperties.isDebugThreadLocal();
     
     private boolean checkCurveDistance(final double[] ptsRef, final int off,
                                        final double[] ptsOff, final int type, final boolean left,
-                                       final int recLevel)
-    {
+                                       final int recLevel) {
         final double epsThreshold = ERR_OFFSET_DIST;
-        
+
         // Initial guess of large curvature:
         // cubic => t=0.5 is good, but 0.25 or 0.75 is ?
         // quad => t=0.5 is bad
@@ -1364,12 +1455,11 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         final double x2 = pts[off + 2]; final double y2 = pts[off + 3];
         final double x3 = pts[off + 4]; final double y3 = pts[off + 5];
         final double x4 = pts[off + 6]; final double y4 = pts[off + 7];
-        */
-        
+         */
         // Initialize curves:
         curveRef.set(ptsRef, off, type);
         curveOff.set(ptsOff, type);
-        
+
         boolean invalid = false;
 
         for (int i = 0; i < tDist.length; i++) {
@@ -1400,7 +1490,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                 nyr = dxr;
             }
 
-            if (false) {
+            if (DEBUG_CHECK_CURVE_NORMAL) {
                 if (false) {
                     double len = nxr * nxr + nyr * nyr;
                     if (len != 0.0d) {
@@ -1419,7 +1509,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
 
             if (false && (n != 1)) {
                 System.out.println("roots(Coff): n = " + n + " for t = " + t);
-                
+
                 // cusps => no intersection with the curve !
                 if (false && (n == 0)) {
                     // System.out.println("Cr: (" + xr + ", " + yr + ")");
@@ -1430,7 +1520,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             }
 
             double epsT = 0.0;
-            
+
             if (n != 0) {
                 // smallest dist among intersections:
                 double minEps = Double.MAX_VALUE;
@@ -1459,7 +1549,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                         MarlinDebugThreadLocal.get().addPoint(xo, yo);
                     }
                 }
-                
+
                 epsT = minEps;
 
                 boolean ok = true;
@@ -1468,7 +1558,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                     /*
                     System.out.println("Step["+split+"] distance error (offset - progenitor) = " + (minEps) + " unit"
                             + " for t = " + ts[io]);
-                    */
+                     */
                     ok = false;
                     invalid = true;
                 }
@@ -1486,17 +1576,17 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         }
         if (invalid) {
             if (TRACE_CHECK_CURVE) {
-                System.out.println("Step["+recLevel+"] Invalid offset curve: ");
+                System.out.println("Step[" + recLevel + "] Invalid offset curve: ");
             }
-            
+
             // quintic so max 5 maxima ?
             int imax = -1;
-            
+
             for (int i = 0; i < tDist.length - 1; i++) {
                 // 1 or multiple maximums (3) ?
                 final double delta = errorDist[i + 1] - errorDist[i];
                 if (delta < 0.0) {
-                    if (errorDist[i]  > epsThreshold) {
+                    if (errorDist[i] > epsThreshold) {
                         // decreasing:
                         if (imax == -1) {
                             // first maxima found:
@@ -1518,7 +1608,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             if (TRACE_CHECK_CURVE) {
                 System.out.println("subdivide at t_max = " + tDist[imax] + " error = " + errorDist[imax] + " unit");
             }
-            
+
             if (recLevel < REC_LIMIT) {
                 final double[] subPts = curveParts[recLevel];
                 // subdivide at t
@@ -1545,21 +1635,22 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             }
         } else {
             if (TRACE_CHECK_CURVE) {
-                System.out.println("Step["+recLevel+"] valid offset curve ");
+                System.out.println("Step[" + recLevel + "] valid offset curve ");
             }
         }
+        
+        
         return !invalid;
     }
-    
+
     private void computeOffsetCurveRecursive(final double[] mid, final int off,
                                              final double[] l, final double[] r,
-                                             final int type, 
+                                             final int type,
                                              final boolean left,
-                                             final int recLevel)
-     {
+                                             final int recLevel) {
         boolean lok = left;
         boolean rok = !left;
-        
+
         final int kind;
         switch (type) {
             case 8:
@@ -1586,7 +1677,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
         }
 
         if (lok) {
-            switch(kind) {
+            System.out.println("left  ok : "+kind);
+            switch (kind) {
                 case 8:
                     emitCurveTo(l[2], l[3], l[4], l[5], l[6], l[7]);
                     break;
@@ -1600,7 +1692,8 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             }
         }
         if (rok) {
-            switch(kind) {
+            System.out.println("right ok : "+kind);
+            switch (kind) {
                 case 8:
                     emitCurveToRev(r[0], r[1], r[2], r[3], r[4], r[5]);
                     break;
@@ -1613,7 +1706,7 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
                 default:
             }
         }
-     }
+    }
 
     @Override
     public void quadTo(final double x1, final double y1,
@@ -1625,35 +1718,36 @@ final class DStroker implements DPathConsumer2D, MarlinConst {
             final int outcode1 = DHelpers.outcode(x1, y1, clipRect);
             final int outcode2 = DHelpers.outcode(x2, y2, clipRect);
 
-            // Should clip
-            final int orCode = (outcode0 | outcode1 | outcode2);
-            if (orCode != 0) {
-                final int sideCode = outcode0 & outcode1 & outcode2;
+            if (clipSubdivide) {
+                // Should clip
+                final int orCode = (outcode0 | outcode1 | outcode2);
+                if (orCode != 0) {
+                    final int sideCode = outcode0 & outcode1 & outcode2;
 
-                // basic rejection criteria:
-                if (sideCode == 0) {
-                    // overlap clip:
-                    if (subdivide) {
-                        // avoid reentrance
-                        subdivide = false;
-                        // subdivide curve => call lineTo() with subdivided curves:
-                        boolean ret = curveSplitter.splitQuad(cx0, cy0, x1, y1,
-                                                              x2, y2, orCode, this);
-                        // reentrance is done:
-                        subdivide = true;
-                        if (ret) {
-                            return;
+                    // basic rejection criteria:
+                    if (sideCode == 0) {
+                        // overlap clip:
+                        if (subdivide) {
+                            // avoid reentrance
+                            subdivide = false;
+                            // subdivide curve => call lineTo() with subdivided curves:
+                            boolean ret = curveSplitter.splitQuad(cx0, cy0, x1, y1,
+                                                                  x2, y2, orCode, this);
+                            // reentrance is done:
+                            subdivide = true;
+                            if (ret) {
+                                return;
+                            }
                         }
+                        // already subdivided so render it
+                    } else {
+                        this.cOutCode = outcode2;
+                        _moveTo(x2, y2, outcode0);
+                        opened = true;
+                        return;
                     }
-                    // already subdivided so render it
-                } else {
-                    this.cOutCode = outcode2;
-                    _moveTo(x2, y2, outcode0);
-                    opened = true;
-                    return;
                 }
             }
-
             this.cOutCode = outcode2;
         }
         _quadTo(x1, y1, x2, y2, outcode0);

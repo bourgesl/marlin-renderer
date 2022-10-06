@@ -54,7 +54,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
 
     // Smallest object used as Cleaner's parent reference
     private final Object cleanerObj;
-    // dirty flag indicating an exception occured during pipeline in pathTo()
+    // dirty flag indicating an exception occurred during pipeline in pathTo()
     boolean dirty = false;
     // shared data
     final double[] double6 = new double[6];
@@ -91,8 +91,11 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
     double clipInvScale = 0.0d;
     // CurveBasicMonotonizer instance
     final CurveBasicMonotonizer monotonizer;
-    // flag indicating to force the stroker to process joins
-    boolean isFirstSegment = true;
+    // bit flags indicating to skip the stroker to process joins
+    // bits: 2 : Dasher CurveClipSplitter
+    // bits: 1 : Dasher CurveBasicMonotonizer
+    // bits: 0 : Stroker CurveClipSplitter
+    int firstFlags = 0;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
     // DPQS Sorter context
@@ -172,7 +175,7 @@ final class DRendererContext extends ReentrantContext implements IRendererContex
         doClip     = false;
         closedPath = false;
         clipInvScale = 0.0d;
-        isFirstSegment = true;
+        firstFlags = 0;
 
         // if context is maked as DIRTY:
         if (dirty) {

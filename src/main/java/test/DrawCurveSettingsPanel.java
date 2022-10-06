@@ -79,10 +79,10 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
              */
 
             // Marlin parameters:
-            jToggleButtonMarlinBetterCurves.setSelected(a.betterCurves.get());
+            jToggleButtonMarlinAnimate.setSelected(a.betterCurves.get());
             jToggleButtonMarlinBetterCurvesActionPerformed(null);
-            jLabelMarlinBetterCurves.setEnabled(a.isMarlin);
-            jToggleButtonMarlinBetterCurves.setEnabled(a.isMarlin);
+            jLabelMarlinAnimate.setEnabled(a.isMarlin);
+            jToggleButtonMarlinAnimate.setEnabled(a.isMarlin);
 
         } finally {
             // restore app:
@@ -121,9 +121,11 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         jPanelPaint = new javax.swing.JPanel();
         jLabelShowExtra = new javax.swing.JLabel();
         jToggleButtonShowExtra = new javax.swing.JToggleButton();
+        jLabelMarlinAnimate = new javax.swing.JLabel();
+        jToggleButtonMarlinAnimate = new javax.swing.JToggleButton();
+        jSeparator1 = new javax.swing.JSeparator();
         jLabelMarlinBetterCurves = new javax.swing.JLabel();
         jToggleButtonMarlinBetterCurves = new javax.swing.JToggleButton();
-        jSeparator1 = new javax.swing.JSeparator();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder("Parameters"));
         setName("Form"); // NOI18N
@@ -139,6 +141,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanelStroke.add(jLabelStrokeWidth, gridBagConstraints);
 
         jSliderStrokeWidthSlider.setMajorTickSpacing(10000);
@@ -154,6 +157,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanelStroke.add(jSliderStrokeWidthSlider, gridBagConstraints);
 
         jLabelStrokeCap.setText("Cap:");
@@ -162,6 +166,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanelStroke.add(jLabelStrokeCap, gridBagConstraints);
 
         jComboBoxCap.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "BUTTON", "ROUND", "SQUARE" }));
@@ -174,7 +179,8 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 1);
         jPanelStroke.add(jComboBoxCap, gridBagConstraints);
 
         jLabelStrokeJoin.setText("Join:");
@@ -183,6 +189,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanelStroke.add(jLabelStrokeJoin, gridBagConstraints);
 
         jComboBoxJoin.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MITER", "ROUND", "BEVEL" }));
@@ -195,7 +202,8 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 1);
         jPanelStroke.add(jComboBoxJoin, gridBagConstraints);
 
         jLabelStrokeUseDashes.setText("Dashes:");
@@ -204,6 +212,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanelStroke.add(jLabelStrokeUseDashes, gridBagConstraints);
 
         jToggleButtonUseDashes.setText("Enabled");
@@ -216,6 +225,8 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 1);
         jPanelStroke.add(jToggleButtonUseDashes, gridBagConstraints);
 
         jLabelAlpha.setText("Alpha:");
@@ -224,6 +235,8 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.weightx = 0.5;
         jPanelStroke.add(jLabelAlpha, gridBagConstraints);
 
         jSliderAlphaSlider.setMaximum(255);
@@ -235,14 +248,17 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
                 jSliderAlphaSliderStateChanged(evt);
             }
         });
-        jPanelStroke.add(jSliderAlphaSlider, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        jPanelStroke.add(jSliderAlphaSlider, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 0.3;
         add(jPanelStroke, gridBagConstraints);
 
         jPanelShape.setBorder(javax.swing.BorderFactory.createTitledBorder("Shapes"));
@@ -255,6 +271,8 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.weightx = 0.5;
         jPanelShape.add(jLabelShowQuad, gridBagConstraints);
 
         jToggleButtonShowQuad.setText("ENABLED");
@@ -267,6 +285,9 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 1);
         jPanelShape.add(jToggleButtonShowQuad, gridBagConstraints);
 
         jLabelShowCubic.setText("Cubic curve:");
@@ -275,6 +296,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanelShape.add(jLabelShowCubic, gridBagConstraints);
 
         jToggleButtonShowCubic.setText("ENABLED");
@@ -287,6 +309,8 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 1);
         jPanelShape.add(jToggleButtonShowCubic, gridBagConstraints);
 
         jLabelShowEllipse.setText("Ellipse:");
@@ -295,6 +319,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanelShape.add(jLabelShowEllipse, gridBagConstraints);
 
         jToggleButtonShowEllipse.setText("ENABLED");
@@ -307,12 +332,16 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 1);
         jPanelShape.add(jToggleButtonShowEllipse, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.3;
         add(jPanelShape, gridBagConstraints);
 
         jPanelPaint.setBorder(javax.swing.BorderFactory.createTitledBorder("Paint settings"));
@@ -325,6 +354,8 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.weightx = 0.5;
         jPanelPaint.add(jLabelShowExtra, gridBagConstraints);
 
         jToggleButtonShowExtra.setText("ENABLED");
@@ -337,7 +368,40 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
         jPanelPaint.add(jToggleButtonShowExtra, gridBagConstraints);
+
+        jLabelMarlinAnimate.setText("Marlin - Animate:");
+        jLabelMarlinAnimate.setName("jLabelMarlinAnimate"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        jPanelPaint.add(jLabelMarlinAnimate, gridBagConstraints);
+
+        jToggleButtonMarlinAnimate.setText("ENABLED");
+        jToggleButtonMarlinAnimate.setName("jToggleButtonMarlinAnimate"); // NOI18N
+        jToggleButtonMarlinAnimate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButtonMarlinAnimateActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanelPaint.add(jToggleButtonMarlinAnimate, gridBagConstraints);
+
+        jSeparator1.setName("jSeparator1"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        jPanelPaint.add(jSeparator1, gridBagConstraints);
 
         jLabelMarlinBetterCurves.setText("Marlin - Better Curves:");
         jLabelMarlinBetterCurves.setName("jLabelMarlinBetterCurves"); // NOI18N
@@ -345,6 +409,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanelPaint.add(jLabelMarlinBetterCurves, gridBagConstraints);
 
         jToggleButtonMarlinBetterCurves.setText("ENABLED");
@@ -357,21 +422,15 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        jPanelPaint.add(jToggleButtonMarlinBetterCurves, gridBagConstraints);
-
-        jSeparator1.setName("jSeparator1"); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
-        jPanelPaint.add(jSeparator1, gridBagConstraints);
+        jPanelPaint.add(jToggleButtonMarlinBetterCurves, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.3;
         add(jPanelPaint, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -445,14 +504,13 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jToggleButtonShowEllipseActionPerformed
 
-    private void jToggleButtonMarlinBetterCurvesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonMarlinBetterCurvesActionPerformed
-        System.out.println("DrawCurveSettingsPanel: Marlin - better curves: " + jToggleButtonMarlinBetterCurves.isSelected());
-        jToggleButtonMarlinBetterCurves.setText((jToggleButtonMarlinBetterCurves.isSelected()) ? "ENABLED" : "DISABLED");
+    private void jToggleButtonMarlinAnimateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonMarlinAnimateActionPerformed
+        System.out.println("DrawCurveSettingsPanel: Marlin - animate: " + jToggleButtonMarlinAnimate.isSelected());
+        jToggleButtonMarlinAnimate.setText((jToggleButtonMarlinAnimate.isSelected()) ? "ENABLED" : "DISABLED");
         if (app != null) {
-            app.betterCurves.set(jToggleButtonMarlinBetterCurves.isSelected());
-            app.refresh();
+            app.enableTimerRefreshTimer(jToggleButtonMarlinAnimate.isSelected());
         }
-    }//GEN-LAST:event_jToggleButtonMarlinBetterCurvesActionPerformed
+    }//GEN-LAST:event_jToggleButtonMarlinAnimateActionPerformed
 
     private void jSliderAlphaSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSliderAlphaSliderStateChanged
         int alpha = jSliderAlphaSlider.getValue();
@@ -463,11 +521,21 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jSliderAlphaSliderStateChanged
 
+    private void jToggleButtonMarlinBetterCurvesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonMarlinBetterCurvesActionPerformed
+        System.out.println("DrawCurveSettingsPanel: Marlin - better curves: " + jToggleButtonMarlinBetterCurves.isSelected());
+        jToggleButtonMarlinBetterCurves.setText((jToggleButtonMarlinBetterCurves.isSelected()) ? "ENABLED" : "DISABLED");
+        if (app != null) {
+            app.betterCurves.set(jToggleButtonMarlinBetterCurves.isSelected());
+            app.refresh();
+        }
+    }//GEN-LAST:event_jToggleButtonMarlinBetterCurvesActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jComboBoxCap;
     private javax.swing.JComboBox jComboBoxJoin;
     private javax.swing.JLabel jLabelAlpha;
+    private javax.swing.JLabel jLabelMarlinAnimate;
     private javax.swing.JLabel jLabelMarlinBetterCurves;
     private javax.swing.JLabel jLabelShowCubic;
     private javax.swing.JLabel jLabelShowEllipse;
@@ -483,6 +551,7 @@ final class DrawCurveSettingsPanel extends javax.swing.JPanel {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSlider jSliderAlphaSlider;
     private javax.swing.JSlider jSliderStrokeWidthSlider;
+    private javax.swing.JToggleButton jToggleButtonMarlinAnimate;
     private javax.swing.JToggleButton jToggleButtonMarlinBetterCurves;
     private javax.swing.JToggleButton jToggleButtonShowCubic;
     private javax.swing.JToggleButton jToggleButtonShowEllipse;

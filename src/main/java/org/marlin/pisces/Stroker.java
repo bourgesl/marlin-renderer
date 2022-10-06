@@ -944,7 +944,7 @@ if (false) {
 
         float x2p, y2p, x3p, y3p;
 
-        if (c1 * c2 > 0.0) {
+        if (false && (c1 * c2 > 0.0)) {
 //            System.out.println("Buggy solver (left): c1 = " + c1 + " c2 = " + c2);
 
             // use lower quality approximation but good enough
@@ -989,7 +989,7 @@ if (false) {
         c1 = invdet43 * (dy4 * two_pi_m_p1_m_p4x - dx4 * two_pi_m_p1_m_p4y);
         c2 = invdet43 * (dx1 * two_pi_m_p1_m_p4y - dy1 * two_pi_m_p1_m_p4x);
 
-        if (c1 * c2 > 0.0) {
+        if (false && (c1 * c2 > 0.0)) {
 //            System.out.println("Buggy solver (right): c1 = " + c1 + " c2 = " + c2);
 
             // use lower quality approximation but good enough

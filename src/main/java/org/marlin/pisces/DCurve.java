@@ -25,8 +25,13 @@
 
 package org.marlin.pisces;
 
-final class DCurve {
+import java.util.Arrays;
 
+final class DCurve {
+    private static final boolean DEBUG_SOLVER = false;
+
+    private static final boolean USE_POLYNOM = true;
+    
     double ax, ay, bx, by, cx, cy, dx, dy;
     double dax, day, dbx, dby;
 
@@ -145,15 +150,80 @@ final class DCurve {
         return DHelpers.evalQuad(day, dby, cy, t);
     }
 
-    int dxRoots(final double[] roots, final int off) {
-        return DHelpers.quadraticRoots(dax, dbx, cx, roots, off);
+    private final Polynom poly2 = new Polynom(2);
+    private final Polynom poly3 = new Polynom(3);
+    
+    int dxRoots(final double[] roots, final byte[] types, final int off) {
+        if (USE_POLYNOM) {
+            poly2.set(dax, dbx, cx);
+            return poly2.roots(roots, types, off);
+        }
+        final int ret = DHelpers.quadraticRoots(dax, dbx, cx, roots, off);
+        if (false) {
+            switch (ret) {
+                case 1:
+                    types[off] = DHelpers.T_TYPE_DX0;
+                    return ret;
+                case 2:
+                    types[off    ] = DHelpers.T_TYPE_DX0;
+                    types[off + 1] = DHelpers.T_TYPE_DX0;
+                    return ret;
+                default:
+                    return ret;
+            }
+        }
+        return ret;
     }
 
-    int dyRoots(final double[] roots, final int off) {
-        return DHelpers.quadraticRoots(day, dby, cy, roots, off);
+    int ddxRoots(final double[] roots, final int off) {
+        return DHelpers.linearRoots(2.0 * dax, dbx, roots, off);
     }
 
-    int infPoints(final double[] pts, final int off) {
+    int dyRoots(final double[] roots, final byte[] types, final int off) {
+        if (USE_POLYNOM) {
+            poly2.set(day, dby, cy);
+            return poly2.roots(roots, types, off);
+        }
+        final int ret = DHelpers.quadraticRoots(day, dby, cy, roots, off);
+        if (false) {
+            switch (ret) {
+                case 1:
+                    types[off] = DHelpers.T_TYPE_DY0;
+                    return ret;
+                case 2:
+                    types[off    ] = DHelpers.T_TYPE_DY0;
+                    types[off + 1] = DHelpers.T_TYPE_DY0;
+                    return ret;
+                default:
+                    return ret;
+            }
+        }
+        return ret;
+    }
+
+    int ddyRoots(final double[] roots, final int off) {
+        return DHelpers.linearRoots(2.0 * day, dby, roots, off);
+    }
+
+    int dPRoots(final double[] roots, final int off) {
+        // P = x'^2 + y'^2
+        // dP = 2 x'*x'' + 2 y'*y''
+        
+        // x'  = dax t2 +   dbx t +  cx
+        // x'' =          2*dax t + dbx
+        // x' * x'' = 2 dax^2 t3 + dax*dbx t2 
+        //          + 2 dax*dbx t2 + dbx^2 t
+        //          + 2 dax*cx t + cx * dbx
+        //
+        // x' * x'' = 2 dax^2 t3 + 3 dax*dbx t2 
+        //            + (2 dax*cx + dbx^2) t
+        //            + cx * dbx
+        //
+        return DHelpers.cubicRootsInAB(2.0 * dax * dax, 3.0 * dax*dbx, 2.0 * dax * cx + dbx * dbx, cx * dbx, roots, off);
+    }
+
+    int infPoints(final double[] pts, final byte[] types, final int off)
+    {
         // inflection point at t if -f'(t)x*f''(t)y + f'(t)y*f''(t)x == 0
         // Fortunately, this turns out to be quadratic, so there are at
         // most 2 inflection points.
@@ -161,17 +231,21 @@ final class DCurve {
         final double b = 2.0d * (cy * dax - day * cx);
         final double c = cy * dbx - cx * dby;
 
+        if (USE_POLYNOM) {
+            poly2.set(a, b, c);
+            return poly2.roots(pts, types, off);
+        }
         return DHelpers.quadraticRoots(a, b, c, pts, off);
     }
 
     int xPoints(final double[] ts, final int off, final double x)
     {
-        return DHelpers.cubicRootsInAB(ax, bx, cx, dx - x, ts, off, 0.0d, 1.0d);
+        return DHelpers.cubicRootsInAB(ax, bx, cx, dx - x, ts, off);
     }
 
     int yPoints(final double[] ts, final int off, final double y)
     {
-        return DHelpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off, 0.0d, 1.0d);
+        return DHelpers.cubicRootsInAB(ay, by, cy, dy - y, ts, off);
     }
 
     /**
@@ -191,7 +265,7 @@ final class DCurve {
         final double d = ldy * (dx - px) - ldx * (dy - py);
 
         // solve cubic:
-        return DHelpers.cubicRootsInAB(a, b, c, d, ts, 0, 0.0d, 1.0d);
+        return DHelpers.cubicRootsInAB(a, b, c, d, ts, 0);
     }
 
     // finds points where the first and second derivative are
@@ -208,7 +282,11 @@ final class DCurve {
         final double c = 2.0d * (dax * cx + day * cy) + dbx * dbx + dby * dby;
         final double d = dbx * cx + dby * cy;
 
-        return DHelpers.cubicRootsInAB(a, b, c, d, pts, off, 0.0d, 1.0d);
+        if (USE_POLYNOM) {
+            poly3.set(a, b, c, d);
+            return poly3.roots(pts, null, off, false);
+        }
+        return DHelpers.cubicRootsInAB(a, b, c, d, pts, off);
     }
 
     // Tries to find the roots of the function ROC(t)-w in [0, 1). It uses
@@ -229,13 +307,25 @@ final class DCurve {
         assert off <= 6 && roots.length >= 10;
 
         int ret = off;
-        final int end = off + perpendiculardfddf(roots, off);
+        int end = off + perpendiculardfddf(roots, off);
+        // sort roots within [0,1]:
+        end = DHelpers.isort(roots, off, end);
+        
         roots[end] = 1.0d; // always check interval end points
+
+        if (DEBUG_SOLVER) {
+            System.out.println("rootsOfROCMinusW: t: " + Arrays.toString(Arrays.copyOfRange(roots, off, end)));
+        }
 
         double t0 = 0.0d, ft0 = ROCsq(t0) - w2;
 
         for (int i = off; i <= end; i++) {
             double t1 = roots[i], ft1 = ROCsq(t1) - w2;
+            
+            if (DEBUG_SOLVER) {
+                System.out.println("t0: " + t0 + "\tft0: " + ft0);
+                System.out.println("t1: " + t1 + "\tft1: " + ft1);
+            }
             if (ft0 == 0.0d) {
                 roots[ret++] = t0;
             } else if (ft1 * ft0 < 0.0d) { // have opposite signs
@@ -246,6 +336,22 @@ final class DCurve {
             t0 = t1;
             ft0 = ft1;
         }
+
+        if (false && DEBUG_SOLVER) {
+            final double step = 1.0 / 1000;
+            final double dstep = step / 100;
+
+            for (double t = 0.0; t <= 1.0; t += step) {
+                final double roc = Math.sqrt(ROCsq(t));
+
+                final double droc = (Math.sqrt(ROCsq(t + dstep)) - roc) / dstep;
+
+                final double roco = Math.sqrt(ROCsqOLD(t));
+                final double delta = (roc - roco);
+                System.out.println("t: " + t + " roc = " + roc + " droc = " + droc + " roc_old = " + roc + " delta: " + delta);
+            }
+        }
+
         return ret - off;
     }
 
@@ -268,12 +374,14 @@ final class DCurve {
         int side = 0;
         double t = t1, ft = eliminateInf(ROCsq(t) - w2);
         double s = t0, fs = eliminateInf(ROCsq(s) - w2);
-        double r = s, fr;
+        double r, fr;
 
         for (int i = 0; i < iterLimit && Math.abs(t - s) > err * Math.abs(t + s); i++) {
             r = (fs * t - ft * s) / (fs - ft);
-            fr = ROCsq(r) - w2;
+            fr = eliminateInf(ROCsq(r) - w2); // try eliminateInf
 
+            // System.out.println("falsePositionROCsqMinusX: r = " + r + " fr = " + fr);
+            
             if (sameSign(fr, ft)) {
                 ft = fr; t = r;
                 if (side < 0) {
@@ -291,10 +399,24 @@ final class DCurve {
                     side = 1;
                 }
             } else {
-                break;
+                // 0.0
+                if (DEBUG_SOLVER) {
+                    System.out.println("falsePositionROCsqMinusX: r = " + r);
+                }
+                return r;
             }
         }
-        return r;
+        if (Math.abs(ft) < Math.abs(fs)) {
+            if (DEBUG_SOLVER) {
+                System.out.println("falsePositionROCsqMinusX: t = " + t);
+            }
+            return t;
+        } else {
+            if (DEBUG_SOLVER) {
+                System.out.println("falsePositionROCsqMinusX: s = " + s);
+            }
+            return s;
+        }
     }
 
     private static boolean sameSign(final double x, final double y) {
@@ -310,8 +432,163 @@ final class DCurve {
         final double ddx = 2.0d * dax * t + dbx;
         final double ddy = 2.0d * day * t + dby;
         final double dx2dy2 = dx * dx + dy * dy;
-        final double ddx2ddy2 = ddx * ddx + ddy * ddy;
-        final double ddxdxddydy = ddx * dx + ddy * dy;
-        return dx2dy2 * ((dx2dy2 * dx2dy2) / (dx2dy2 * ddx2ddy2 - ddxdxddydy * ddxdxddydy));
+
+        // better numerical value:
+        final double dxddyddxdy = dx * ddy - dy * ddx;
+        
+        if (dx2dy2 == 0.0) {
+//            System.out.println("ROCsq("+t+"): dx2dy2 = 0");
+            return 0.0;
+        }
+        if (dxddyddxdy == 0.0) {
+//            System.out.println("ROCsq("+t+"): dxddyddxdy = 0");
+            return Double.POSITIVE_INFINITY;
+        }
+        return (dx2dy2 * dx2dy2 * dx2dy2) / (dxddyddxdy * dxddyddxdy); // may return +Infinity if dxddyddxdy = 0
     }
+    
+    private double ROCsqOLD(final double t) {
+        final double dx = t * (t * dax + dbx) + cx;
+        final double dy = t * (t * day + dby) + cy;
+        final double ddx = 2.0d * dax * t + dbx;
+        final double ddy = 2.0d * day * t + dby;
+
+        final double dx2dy2 = dx * dx + dy * dy; // |d|^2
+
+        final double ddx2ddy2 = ddx * ddx + ddy * ddy; // |dd|^2
+        final double ddxdxddydy = ddx * dx + ddy * dy; // |d.dd|
+        return dx2dy2 * ((dx2dy2 * dx2dy2) / (dx2dy2 * ddx2ddy2 - ddxdxddydy * ddxdxddydy)); // ( |d|^2 * |dd|^2 - |d.dd|^2)
+        // Bad equn ?
+        // numerator = d.x * dd.y - dd.x * d.y
+    }
+    
+
+    int rootsOfROCDeriv(final double[] roots, final byte[] ttypes, final int off, final double err) {
+        // no OOB exception, because by now off<=6, and roots.length >= 10
+        assert off <= 6 && roots.length >= 10;
+
+        int ret = off, off2 = off;
+        
+        // use more intervals:
+        off2 += dxRoots(roots, ttypes, off2);
+        off2 += dyRoots(roots, ttypes, off2);
+        // max 4 roots
+        off2 += ddxRoots(roots, off2);
+        off2 += ddyRoots(roots, off2);
+        // max 2 roots
+        off2 += infPoints(roots, ttypes, off2);
+        // max 2 roots
+        off2 += dPRoots(roots, off2);
+        // max 3 roots
+        off2 += perpendiculardfddf(roots, off2);                 
+        // max 3 roots
+        int end = off2;
+        // sort roots within [0,1]:
+        end = DHelpers.isort(roots, off, end);
+        
+        roots[end] = 1.0d; // always check interval end points
+
+        if (DEBUG_SOLVER) {
+            System.out.println("rootsOfROCDeriv: ti: " + Arrays.toString(Arrays.copyOfRange(roots, off, end)));
+        }
+        
+        double t0 = 0.0d, ft0 = dROCApprox(t0);
+
+        for (int i = off; i <= end; i++) {
+            double t1 = roots[i], ft1 = dROCApprox(t1);
+
+            if (DEBUG_SOLVER) {
+                System.out.println("t0: " + t0 + "\tft0: " + ft0 + " roc = " + Math.sqrt(ROCsq(t0)));
+            }
+
+            double tm = (t0 + t1) / 2.0;
+            if (DEBUG_SOLVER) {
+                System.out.println("tm: " + tm + "\tftm: " + dROCApprox(tm) + " roc = " + Math.sqrt(ROCsq(tm)));
+                System.out.println("t1: " + t1 + "\tft1: " + ft1 + " roc = " + Math.sqrt(ROCsq(t1)));
+            }
+
+            if (ft0 == 0.0d) {
+                if (DEBUG_SOLVER) {
+                    System.out.println("rootsOfROCDeriv: t: " + t0 + " roc = " + Math.sqrt(ROCsq(t0)));
+                }
+                roots[ret++] = t0;
+            } else if (ft1 * ft0 < 0.0d) { // have opposite signs
+                final double t = falsePositionROCDeriv(t0, t1, err);
+
+                if (DEBUG_SOLVER) {
+                    System.out.println("rootsOfROCDeriv: t: " + t + " roc = " + Math.sqrt(ROCsq(t)));
+                }
+                roots[ret++] = t;
+            }
+            t0 = t1;
+            ft0 = ft1;
+        }
+        return ret - off;
+    }
+    
+    private double falsePositionROCDeriv(final double t0, final double t1,
+                                         final double err)
+    {
+        final int iterLimit = 100;
+        int side = 0;
+        double t = t1, ft = dROCApprox(t);
+        double s = t0, fs = dROCApprox(s);
+        double r, fr;
+
+        for (int i = 0; i < iterLimit && Math.abs(t - s) > err * Math.abs(t + s); i++) {
+            r = (fs * t - ft * s) / (fs - ft);
+            fr = dROCApprox(r);
+
+           // System.out.println("dROCApprox: r = " + r + " fr = " + fr + " roc = "+Math.sqrt(ROCsq(r)));
+            
+            if (sameSign(fr, ft)) {
+                ft = fr; t = r;
+                if (side < 0) {
+                    fs /= (1 << (-side));
+                    side--;
+                } else {
+                    side = -1;
+                }
+            } else if (fr * fs > 0.0d) {
+                fs = fr; s = r;
+                if (side > 0) {
+                    ft /= (1 << side);
+                    side++;
+                } else {
+                    side = 1;
+                }
+            } else {
+                // 0.0
+                // System.out.println("falsePositionROCsqMinusX: r = " + r);
+                return r;
+            }
+        }
+        if (Math.abs(ft) < Math.abs(fs)) {
+            // System.out.println("falsePositionROCDeriv: t = " + t + " roc = "+Math.sqrt(ROCsq(t)));
+            return t;
+        } else {
+            // System.out.println("falsePositionROCDeriv: s = " + s + " roc = "+Math.sqrt(ROCsq(s)));
+            return s;
+        }
+    }
+    private double dROCApprox(final double t) {
+        final double dx = t * (t * dax + dbx) + cx;
+        final double dy = t * (t * day + dby) + cy;
+        final double dddx = 2.0d * dax;
+        final double dddy = 2.0d * day;
+        final double ddx = dddx * t + dbx;
+        final double ddy = dddy * t + dby;
+        
+        final double P = dx * dx + dy * dy; // P
+        final double dP = 2.0 * (dx * ddx + dy * ddy);
+
+        final double Q = dx * ddy - dy * ddx;
+        final double dQ = dx * dddy - dy * dddx;
+        
+        // d(Roc(t))/dt = 3 Q.P' - 2 P.Q' / Q^2
+        
+        // only use the denominator being 0:
+        return 3.0 * Q * dP - 2.0 * P * dQ;
+    }
+    
 }

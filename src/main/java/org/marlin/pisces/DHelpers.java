@@ -32,7 +32,19 @@ import org.marlin.pisces.stats.StatLong;
 
 final class DHelpers implements MarlinConst {
 
-    static final boolean DO_SUBDIVIDE_CURVE_ANGLE = false && MarlinProperties.isDoSubdivideCurves();
+    private static final boolean DEBUG_SOLVER = false;
+    private static final boolean ANIMATE_ROOTS = false;
+
+    private static final boolean SUBDIVIDE_AT_ROC_W = true;
+    
+    private static final boolean SUBDIVIDE_AT_MAX_ROC = false;
+    
+    private static final int ITER_STEPS = 100;
+    
+    private static final int DEBUG_STEPS = 20;
+    private final static double STEP_ERR = 0.0; // T_ERR;
+
+    static final boolean DO_SUBDIVIDE_CURVE_ANGLE = true && MarlinProperties.isDoSubdivideCurves();
     static final boolean DO_SUBDIVIDE_CURVE_RUNTIME_ENABLE = DO_SUBDIVIDE_CURVE_ANGLE 
             && MarlinProperties.isDoSubdivideCurvesRuntimeFlag();
 
@@ -46,10 +58,14 @@ final class DHelpers implements MarlinConst {
         }
     }
     
-    private static final double EPS = 1e-9d;
+    static final double EPS = Math.ulp(0.5); // was 1e-9d;
 
-    private static final double T_MIN = 1e-6d;
-    private static final double T_MAX = 1.0d - T_MIN;
+    static final double T_MIN = EPS;
+    static final double T_MAX = 1.0 - EPS;
+    
+    static final byte T_TYPE_UNDEF = 0;    
+    static final byte T_TYPE_DX0 = 1;    
+    static final byte T_TYPE_DY0 = 2;    
 
     // half-width of 4pixels to start subdividing curves:
     private static final double W2_THRESHOLD = Math.pow(4.0d / 2.0d, 2.0d);
@@ -92,11 +108,21 @@ final class DHelpers implements MarlinConst {
         return true;
     }
 
+    static boolean isValid(final double t) {
+        return (t >= T_MIN) && (t <= T_MAX);
+    }
+    
     static double evalCubic(final double a, final double b,
                             final double c, final double d,
                             final double t)
     {
         return t * (t * (t * a + b) + c) + d;
+    }
+    
+    static double evalDerivedCubic(final double a, final double b, 
+                                   final double c, final double t)
+    {
+        return evalQuad(3.0 * a, 2.0 * b, c, t);
     }
 
     static double evalQuad(final double a, final double b,
@@ -105,51 +131,140 @@ final class DHelpers implements MarlinConst {
         return t * (t * a + b) + c;
     }
 
+    static double evalDerivedQuad(final double a, final double b, 
+                                  final double t)
+    {
+        return evalLine(2.0 * a, b, t);
+    }
+
+    static double evalLine(final double a, final double b,
+                           final double t)
+    {
+        return (t * a + b);
+    }
+
+    static int linearRoots(final double a, final double b,
+                           final double[] roots, final int off)
+    {
+        if (a != 0.0) {
+            roots[off] = -b / a;
+            if (isValid(roots[off])) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
     static int quadraticRoots(final double a, final double b, final double c,
-                              final double[] zeroes, final int off)
+                              final double[] roots, final int off)
     {
         int ret = off;
-        if (a != 0.0d) {
-            double d = b * b - 4.0d * a * c;
-            if (d > 0.0d) {
+        if (a != 0.0) {
+            double d = b * b - 4.0 * a * c;
+            if (d > 0.0) {
                 d = Math.sqrt(d);
                 // For accuracy, calculate one root using:
                 //     (-b +/- d) / 2a
                 // and the other using:
                 //     2c / (-b +/- d)
                 // Choose the sign of the +/- so that b+d gets larger in magnitude
-                if (b < 0.0d) {
+                if (b < 0.0) {
                     d = -d;
                 }
-                final double q = (b + d) / -2.0d;
+                final double q = (b + d) / -2.0;
                 // We already tested a for being 0 above
-                zeroes[ret++] = q / a;
-                if (q != 0.0d) {
-                    zeroes[ret++] = c / q;
+                roots[ret] = q / a;
+                if (isValid(roots[ret])) {
+                    ret++;
                 }
-            } else if (d == 0.0d) {
-                zeroes[ret++] = -b / (2.0d * a);
+                if (q != 0.0) {
+                    roots[ret] = c / q;
+                    if (isValid(roots[ret])) {
+                        if (false) {
+                            // order roots:
+                            if (roots[ret - 1] > roots[ret]) {
+                                roots[ret + 1] = roots[ret - 1];
+                                roots[ret - 1] = roots[ret];
+                                roots[ret] = roots[ret + 1];
+                            }
+                        }
+                        ret++;
+                    }
+                }
+            } else if (d == 0.0) {
+                roots[ret] = -b / (2.0 * a);
+                if (isValid(roots[ret])) {
+                    ret++;
+                }
             }
-        } else if (b != 0.0d) {
-            zeroes[ret++] = -c / b;
+        } else if (b != 0.0) {
+            roots[ret] = -c / b;
+            if (isValid(roots[ret])) {
+                ret++;
+            }
+        }
+        if (DEBUG_SOLVER) {
+            System.out.println("quadraticRoots: a: " + a + " b: " + b + " c: " + c);
+            System.out.println("quadraticRoots: n: " + (ret - off));
+            System.out.println("quadraticRoots: roots: " + Arrays.toString(Arrays.copyOfRange(roots, off, ret)));
+        
+            checkQuadRoots(a, b, c, roots, off, ret);
         }
         return ret - off;
     }
 
+    static void checkQuadRoots(final double a, final double b, final double c, 
+                           final double[] roots, final int off, final int end) {
+        // Check precision:
+        for (int i = off; i < end; i++) {
+            final double t = roots[i];
+            
+            if (t <= 0.0 || t >= 1.0) {
+                System.out.println("roots must be within [0;1] !");
+                continue;
+            }
+            
+            final double xt = evalQuad(a, b, c, t);
+            System.out.println("t[" + i + "]: " + t + " x(t) = " + xt);
+
+            final double eps = xt - 0.0;
+            System.out.println("eps(x): " + eps);
+
+            if (true || (eps != +0.0) && (eps != -0.0)) {
+                final double dxt = evalDerivedQuad(a, b, t);
+                System.out.println("t[" + i + "]: " + t + " x(t) = " + xt + " dx(t) = " + dxt);
+
+                final double step = (STEP_ERR > 0.0) ? STEP_ERR : Math.ulp(t);
+                
+                for (int j = -DEBUG_STEPS; j <= DEBUG_STEPS; j++) {
+                    final double te = t + j * step;
+                    if (te >= 0.0 && te <= 1.0) {
+                        final double xte = evalQuad(a, b, c, te);
+                        final double dxte = evalDerivedQuad(a, b, t);
+                        System.out.println("t[" + j + " ulp]:\t" + te + "\tx(t) =\t" + xte  + "\tdx(t) =\t" + dxte + "\t(xt > 0.0):\t" + (xte > 0.0));
+                    }
+                }
+            }
+        }
+    }
+
     // find the roots of g(t) = d*t^3 + a*t^2 + b*t + c in [A,B)
     static int cubicRootsInAB(final double d, double a, double b, double c,
-                              final double[] pts, final int off,
-                              final double A, final double B)
+                              final double[] roots, final int off)
     {
         if (d == 0.0d) {
-            final int num = quadraticRoots(a, b, c, pts, off);
-            return filterOutNotInAB(pts, off, num, A, B) - off;
+            return quadraticRoots(a, b, c, roots, off) - off;
         }
         // From Graphics Gems:
         // https://github.com/erich666/GraphicsGems/blob/master/gems/Roots3And4.c
         // (also from awt.geom.CubicCurve2D. But here we don't need as
         // much accuracy and we don't want to create arrays so we use
         // our own customized version).
+
+        final double od = d;
+        final double oa = a;
+        final double ob = b;
+        final double oc = c;
 
         // normal form: x^3 + ax^2 + bx + c = 0
         a /= d;
@@ -165,55 +280,115 @@ final class DHelpers implements MarlinConst {
         // q = Q/2
         // instead and use those values for simplicity of the code.
         final double sq_A = a * a;
-        final double p = (1.0d / 3.0d) * ((-1.0d / 3.0d) * sq_A + b);
-        final double sub = (1.0d / 3.0d) * a;
-        final double q = (1.0d / 2.0d) * ((2.0d / 27.0d) * a * sq_A - sub * b + c);
+        final double p = (1.0 / 3.0) * ((-1.0 / 3.0) * sq_A + b);
+        final double sub = (1.0 / 3.0) * a;
+        final double q = (1.0 / 2.0) * ((2.0 / 27.0) * a * sq_A - sub * b + c);
 
         // use Cardano's formula
         final double cb_p = p * p * p;
         final double D = q * q + cb_p;
 
-        int num;
+        int ret = off;
 
-        if (within(D, 0.0d)) {
-            if (within(q, 0.0d)) {
+        if (within(D, 0.0)) {
+            if (within(q, 0.0)) {
                 /* one triple solution */
-                pts[off    ] = (- sub);
-                num = 1;
+                roots[ret] = (- sub);
+                if (isValid(roots[ret])) {
+                    ret++;
+                }
             } else {
                 /* one single and one double solution */
                 final double u = FastMath.cbrt(-q);
-                pts[off    ] = (2.0d * u - sub);
-                pts[off + 1] = (- u - sub);
-                num = 2;
+                roots[ret] = (2.0 * u - sub);
+                if (isValid(roots[ret])) {
+                    ret++;
+                }
+                roots[ret] = (- u - sub);
+                if (isValid(roots[ret])) {
+                    ret++;
+                }
             }
-        } else if (D < 0.0d) {
+        } else if (D < 0.0) {
             // see: http://en.wikipedia.org/wiki/Cubic_function#Trigonometric_.28and_hyperbolic.29_method
-            final double phi = (1.0d / 3.0d) * FastMath.acos(-q / Math.sqrt(-cb_p));
-            final double t = 2.0d * Math.sqrt(-p);
+            final double phi = (1.0 / 3.0) * FastMath.acos(-q / Math.sqrt(-cb_p));
+            final double t = 2.0 * Math.sqrt(-p);
 
-            pts[off    ] = ( t * FastMath.cos(phi) - sub);
-            pts[off + 1] = (-t * FastMath.cos(phi + (Math.PI / 3.0d)) - sub);
-            pts[off + 2] = (-t * FastMath.cos(phi - (Math.PI / 3.0d)) - sub);
-            num = 3;
+            roots[ret] = ( t * FastMath.cos(phi) - sub);
+            if (isValid(roots[ret])) {
+                ret++;
+            }
+            roots[ret] = (-t * FastMath.cos(phi + (Math.PI / 3.0)) - sub);
+            if (isValid(roots[ret])) {
+                ret++;
+            }
+            roots[ret] = (-t * FastMath.cos(phi - (Math.PI / 3.0)) - sub);
+            if (isValid(roots[ret])) {
+                ret++;
+            }
         } else {
             final double sqrt_D = Math.sqrt(D);
             final double u =   FastMath.cbrt(sqrt_D - q);
             final double v = - FastMath.cbrt(sqrt_D + q);
 
-            pts[off    ] = (u + v - sub);
-            num = 1;
+            roots[ret] = (u + v - sub);
+            if (isValid(roots[ret])) {
+                ret++;
+            }
         }
-        return filterOutNotInAB(pts, off, num, A, B) - off;
+        if (DEBUG_SOLVER) {
+            System.out.println("cubicRootsInAB: a: " + od + " b: " + oa + " c: " + ob + " d: " + oc);
+            System.out.println("cubicRootsInAB: n: " + (ret - off));
+            System.out.println("cubicRootsInAB: roots: " + Arrays.toString(Arrays.copyOfRange(roots, off, ret)));
+        
+            checkCubicRoots(od, oa, ob, oc, roots, off, ret);
+        }
+        return ret - off;
+    }
+
+    static void checkCubicRoots(final double a, final double b, final double c, final double d, 
+                                final double[] roots, final int off, final int end) {
+        // Check precision:
+        for (int i = off; i < end; i++) {
+            final double t = roots[i];
+            
+            if (t <= 0.0 || t >= 1.0) {
+                System.out.println("roots must be within [0;1] !");
+                continue;
+            }
+            
+            final double xt = evalCubic(a, b, c, d, t);
+            System.out.println("t[" + i + "]: " + t + " x(t) = " + xt);
+
+            final double eps = xt - 0.0;
+            System.out.println("eps(x): " + eps);
+
+            if (true || (eps != +0.0) && (eps != -0.0)) {
+                final double dxt = evalDerivedCubic(a, b, c, t);
+                System.out.println("t[" + i + "]: " + t + " x(t) = " + xt + " dx(t) = " + dxt);
+
+                final double step = (STEP_ERR > 0.0) ? STEP_ERR : Math.ulp(t);
+                
+                for (int j = -DEBUG_STEPS; j <= DEBUG_STEPS; j++) {
+                    final double te = t + j * step;
+                    if (te >= 0.0 && te <= 1.0) {
+                        final double xte = evalCubic(a, b, c, d, te);
+                        final double dxte = evalDerivedCubic(a, b, c, te);
+                        System.out.println("t[" + j + " ulp]:\t" + te + "\tx(t) =\t" + xte + "\tdx(t) =\t" + dxte + "\t(xt > 0.0): " + (xte > 0.0));
+                    }
+                }
+            }
+        }
     }
 
     // returns the index 1 past the last valid element remaining after filtering
+    // TODO: KILL ?
     static int filterOutNotInAB(final double[] nums, final int off, final int len,
                                 final double a, final double b)
     {
         int ret = off;
         for (int i = off, end = off + len; i < end; i++) {
-            if (nums[i] >= a && nums[i] < b) {
+            if ((nums[i] >= a) && (nums[i] < b)) {
                 nums[ret++] = nums[i];
             }
         }
@@ -223,8 +398,11 @@ final class DHelpers implements MarlinConst {
     // returns the index 1 past the last valid element remaining after filtering
     static int filterDuplicates(final double[] nums, final int len, final double err)
     {
+        if (len <= 1) {
+            return len;
+        }
         int ret = 0;
-        double prev = -1.0d;
+        double prev = -1.0;
 
         for (int i = 0; i < len; i++) {
             // remove duplicated values:
@@ -309,34 +487,101 @@ final class DHelpers implements MarlinConst {
     // to get good offset curves a distance of w away from the middle curve.
     // Stores the points in ts, and returns how many of them there were.
     static int findSubdivPoints(final DCurve c, final DCurve rotc, final double[] pts,
-                                final double[] ts, final int type,
+                                final double[] ts, final byte[] ttypes, final int type,
                                 final double w2)
     {
         // Initialize curve:
         c.set(pts, type);
+            
+        Arrays.fill(ttypes, DHelpers.T_TYPE_UNDEF);
 
         int ret = 0;
         // we subdivide at values of t such that the initial
         // curves are monotonic in x and y.
-        ret += c.dxRoots(ts, ret);
-        ret += c.dyRoots(ts, ret);
+        ret += c.dxRoots(ts, ttypes, ret);
+        ret += c.dyRoots(ts, ttypes, ret);
         // max 4 roots
+        if (DEBUG_SOLVER) {
+            System.out.println("dxRoots: " + Arrays.toString(Arrays.copyOf(ts, ret)));
+        }
 
         // subdivide at inflection points.
         if (type == 8) {
             // quadratic curves can't have inflection points
-            ret += c.infPoints(ts, ret);
+            ret += c.infPoints(ts, ttypes, ret);
             // max 2 infPoints
+            if (DEBUG_SOLVER) {
+                System.out.println("infPoints: " + Arrays.toString(Arrays.copyOf(ts, ret)));
+            }
         }
 
-        // now we must subdivide at points where one of the offset curves will have
-        // a cusp. This happens at ts where the radius of curvature is equal to w.
-        ret += c.rootsOfROCMinusW(ts, ret, w2, EPS);
-        // max 4 roots
+        if (SUBDIVIDE_AT_ROC_W) {
+            // now we must subdivide at points where one of the offset curves will have
+            // a cusp. This happens at ts where the radius of curvature is equal to w.
+            ret += c.rootsOfROCMinusW(ts, ret, w2, EPS);
+            // max 4 roots
 
-        ret = filterOutNotInAB(ts, 0, ret, T_MIN, T_MAX);
-        isort(ts, ret);
+            if (DEBUG_SOLVER) {
+                System.out.println("rootsOfROCMinusW: " + Arrays.toString(Arrays.copyOf(ts, ret)));
+            }
+        }
+        
+        if (SUBDIVIDE_AT_MAX_ROC) {
+            // TEST
+            ret += c.rootsOfROCDeriv(ts, ttypes, ret, EPS);
+
+            if (DEBUG_SOLVER) {
+                System.out.println("ts dRoc: " + Arrays.toString(Arrays.copyOf(ts, ret)));
+            }
+        }
+        
+        // sort t values:
+        ret = isort(ts, ttypes, ret);
         // max 10 initial roots
+
+        if (false || DEBUG_SOLVER) {
+            System.out.println("roots after sort: " + Arrays.toString(Arrays.copyOf(ts, ret)));
+            System.out.println("types after sort: " + Arrays.toString(Arrays.copyOf(ttypes, ret)));
+        }
+
+        /*
+        Animation: sequentially add perturbation on roots:
+        */
+        if (ANIMATE_ROOTS && (ret != 0) && MarlinDebugThreadLocal.isEnabled()) {
+            System.out.println("animate roots: " + Arrays.toString(Arrays.copyOf(ts, ret)));
+            
+            int iter = MarlinDebugThreadLocal.iteration();
+            final int MAX_ITER = ret * (2 * ITER_STEPS);
+            if ((iter < 0) || (iter >= MAX_ITER)) {
+                iter = MarlinDebugThreadLocal.resetIteration(MAX_ITER);
+            }
+            // System.out.println("iter: " + iter + " / " + MAX_ITER);
+            final int idx = iter / (2 * ITER_STEPS);
+            final int idx_iter = iter % (2 * ITER_STEPS);
+            System.out.println("idx: " + idx + ", idx_iter: " + idx_iter);
+            
+            
+            final double min = (idx > 0) ? ts[idx - 1] : 0.0;
+            final double max = (idx < (ret - 1)) ? ts[idx + 1] : 1.0;
+
+            System.out.println("t[idx] = "+ts[idx] + " in range: [" + min + ", " + max + "]");
+            
+            final double maxStep = Math.min(max - ts[idx], ts[idx] - min) / (50 * (2 * ITER_STEPS));
+            
+            double step = 1e-6; // 10000 * Math.ulp(ts[idx]);
+            if (step <= maxStep) {
+                step = maxStep;
+            }
+            // System.out.println("step: " + step + ", maxStep= " + maxStep);
+            
+            // Add perturbation on root:
+            final double dt = (idx_iter - ITER_STEPS) * step;
+            ts[idx] += dt;
+            // System.out.println("idx_iter: " + idx_iter + " / " + (2 * ITER_STEPS) + " dt: " + dt);
+
+            final double t = ts[idx];
+            System.out.println("t: " + ts[idx] + " P: (" + c.xat(t) + ", " + c.yat(t) + ") dP: (" + c.dxat(t) + ", " + c.dyat(t) + ")");
+        }
 
         // Extra pass to check large curvature:
         if ((w2 >= W2_THRESHOLD) && (DO_SUBDIVIDE_CURVE_ANGLE
@@ -360,16 +605,13 @@ final class DHelpers implements MarlinConst {
                 // skip end:
                 --ret;
             } else {
-                // filter and sort again:
-                ret = filterOutNotInAB(ts, 0, ret, T_MIN, T_MAX);
-                isort(ts, ret);
+                // sort new t values:
+                ret = isort(ts, ret);
             }
         }
 
         // Anyway filter out duplicated t values:
-        ret = filterDuplicates(ts, ret, EPS);
-
-        return ret;
+        return filterDuplicates(ts, ret, 0.0); // EPS);
     }
 
     private static int maySplitCubic(final DCurve c, final DCurve rotc, final double[] pts,
@@ -502,8 +744,8 @@ final class DHelpers implements MarlinConst {
             // we subdivide at values of t such that the remaining rotated
             // curves are monotonic in x and y.
             // Idea: cheapest way to find interesting horizontal / vertical points along the curve after rotation:
-            ret += c.dxRoots(ts, ret);
-            ret += c.dyRoots(ts, ret);
+            ret += c.dxRoots(ts, null, ret); // broken !!
+            ret += c.dyRoots(ts, null, ret); // broken !!
 //        }
 
         // TODO: try cubic solver to find line - intersection
@@ -513,8 +755,6 @@ final class DHelpers implements MarlinConst {
                     + " in ]" + t1 + " - " + t2 + "[");
         }
 */
-        // Discard any intermediate t value not in ]t1; t2[ range (max 4 potential solutions):
-        ret = filterOutNotInAB(ts, off, ret - off, t1, t2);
 /*
         if (ret - off > 0) {
             System.out.println("findExtremaOfRotatedCurve(2): " + Arrays.toString(Arrays.copyOfRange(ts, off, ret))
@@ -569,7 +809,39 @@ final class DHelpers implements MarlinConst {
         }
     }
 
-    static void isort(final double[] a, final int len) {
+    static int isort(final double[] a, final byte[] b, final int len) {
+        for (int i = 1, j; i < len; i++) {
+            final double ai = a[i];
+            final byte bi = b[i];
+            j = i - 1;
+            for (; j >= 0 && a[j] > ai; j--) {
+                a[j + 1] = a[j];
+                b[j + 1] = b[j];
+            }
+            a[j + 1] = ai;
+            b[j + 1] = bi;
+        }
+        // remove duplicates:
+        if (len <= 1) {
+            return len;
+        }
+        final int end = len - 1;
+        int ret = 0;
+
+        for (int i = 0; i < end; i++) {
+            if (a[i] != a[i + 1]) {
+                a[ret] = a[i];
+                b[ret] = b[i];
+                ret++;
+            }
+        }
+        a[ret] = a[end];
+        b[ret] = b[end];
+        ret++;
+        return ret;
+    }
+
+    static int isort(final double[] a, final int len) {
         for (int i = 1, j; i < len; i++) {
             final double ai = a[i];
             j = i - 1;
@@ -578,6 +850,47 @@ final class DHelpers implements MarlinConst {
             }
             a[j + 1] = ai;
         }
+
+        if (len <= 1) {
+            return len;
+        }
+
+        // remove duplicates:
+        final int end = len - 1;
+        int ret = 0;
+
+        for (int i = 0; i < end; i++) {
+            if (a[i] != a[i + 1]) {
+                a[ret++] = a[i];
+            }
+        }
+        a[ret++] = a[end];
+        return ret;
+    }
+
+    static int isort(final double[] a, final int off, final int len) {
+        int ret = off;
+        if (off < len) {
+            for (int i = off + 1, j; i < len; i++) {
+                final double ai = a[i];
+                j = i - 1;
+                for (; j >= off && a[j] > ai; j--) {
+                    a[j + 1] = a[j];
+                }
+                a[j + 1] = ai;
+            }
+
+            // remove duplicates:
+            final int end = len - 1;
+
+            for (int i = off; i < end; i++) {
+                if (a[i] != a[i + 1]) {
+                    a[ret++] = a[i];
+                }
+            }
+            a[ret++] = a[end];
+        }
+        return ret;
     }
 
     // Most of these are copied from classes in java.awt.geom because we need
@@ -654,10 +967,13 @@ final class DHelpers implements MarlinConst {
         right[5] = y2;
     }
 
-    static void subdivideCubicAt(final double t,
+    static void subdivideCubicAt(final double t, final byte type, 
                                  final double[] src, final int offS,
-                                 final double[] pts, final int offL, final int offR)
+                                 final double[] pts, 
+                                 final int offL, final int offR)
     {
+        // System.out.println("subdivideCubicAt(" + t + ") type = " + type);
+        
         double  x1 = src[offS    ];
         double  y1 = src[offS + 1];
         double cx1 = src[offS + 2];
@@ -701,6 +1017,14 @@ final class DHelpers implements MarlinConst {
         pts[offR + 3] = cy2;
         pts[offR + 4] = x2;
         pts[offR + 5] = y2;
+/*        
+        System.out.println("Pt: (" + cx + ", " + cy + ")");
+
+        double norm = Math.sqrt((cx - cx1) * (cx - cx1) + (cy - cy1) * (cy - cy1));
+        System.out.println("dP(-): (" + (cx - cx1) / norm + ", " + (cy - cy1) / norm + ")");
+        norm = Math.sqrt((cx2 - cx) * (cx2 - cx) + (cy2 - cy) * (cy2 - cy));
+        System.out.println("dP(+): (" + (cx2 - cx) / norm + ", " + (cy2 - cy) / norm + ")");
+*/        
     }
 
     static void subdivideQuad(final double[] src,
@@ -738,9 +1062,10 @@ final class DHelpers implements MarlinConst {
         right[3] = y2;
     }
 
-    static void subdivideQuadAt(final double t,
+    static void subdivideQuadAt(final double t, final byte pttype,
                                 final double[] src, final int offS,
-                                final double[] pts, final int offL, final int offR)
+                                final double[] pts, 
+                                final int offL, final int offR)
     {
         double x1 = src[offS    ];
         double y1 = src[offS + 1];
@@ -800,15 +1125,16 @@ final class DHelpers implements MarlinConst {
 
     static void subdivideAt(final double t,
                             final double[] src, final int offS,
-                            final double[] pts, final int offL, final int type)
+                            final double[] pts, final int offL, 
+                            final int type)
     {
         // if instead of switch (perf + most probable cases first)
         if (type == 8) {
-            subdivideCubicAt(t, src, offS, pts, offL, offL + type);
+            subdivideCubicAt(t, T_TYPE_UNDEF, src, offS, pts, offL, offL + type);
         } else if (type == 4) {
             subdivideLineAt(t, src, offS, pts, offL, offL + type);
         } else {
-            subdivideQuadAt(t, src, offS, pts, offL, offL + type);
+            subdivideQuadAt(t, T_TYPE_UNDEF, src, offS, pts, offL, offL + type);
         }
     }
 

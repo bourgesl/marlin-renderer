@@ -24,10 +24,12 @@
  */
 package org.marlin.pisces;
 
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.marlin.ReentrantContext;
 
 /**
@@ -41,6 +43,10 @@ public final class MarlinDebugThreadLocal extends ReentrantContext {
 
     // Thread-local storage:
     private static final ThreadLocal<MarlinDebugThreadLocal> ctxTL = new ThreadLocal<MarlinDebugThreadLocal>();
+
+    public static boolean isEnabled() {
+        return USE_CTX && get().isRecording();
+    }
 
     public static MarlinDebugThreadLocal get() {
         MarlinDebugThreadLocal ctx = ctxTL.get();
@@ -57,6 +63,31 @@ public final class MarlinDebugThreadLocal extends ReentrantContext {
         if (USE_CTX) {
             get().setRecording(true);
         }
+    }
+
+    public static int iteration() {
+        if (USE_CTX) {
+            return get().getIteration();
+        }
+        return 0;
+    }
+
+    public static int resetIteration(final int max) {
+        if (USE_CTX) {
+            final MarlinDebugThreadLocal dbgCtx = get();
+            boolean dir = dbgCtx.getDirection();
+            if (dbgCtx.getIteration() >= max) {
+                dbgCtx.setIteration(max - 1);
+                dir = false;
+            }
+            if (dbgCtx.getIteration() < 0) {
+                dbgCtx.setIteration(0);
+                dir = true;
+            }
+            dbgCtx.setDirection(dir);
+            return dbgCtx.getIteration();
+        }
+        return 0;
     }
 
     public static void stopRecord() {
@@ -89,16 +120,44 @@ public final class MarlinDebugThreadLocal extends ReentrantContext {
 
     /* members */
     private boolean recording = false;
-    private final ArrayList<Point2D> points = new ArrayList<Point2D>(STORAGE_CAPACITY);
-    private final ArrayList<Line2D> segments = new ArrayList<Line2D>(STORAGE_CAPACITY);
+    private final AtomicInteger iteration = new AtomicInteger();
+    private boolean direction = true;
+    private final ArrayList<Point2D> points = new ArrayList<>(STORAGE_CAPACITY);
+    private final ArrayList<Line2D> segments = new ArrayList<>(STORAGE_CAPACITY);
+    private final ArrayList<CubicOffsetCurve> cubicOffsetCurves = new ArrayList<>(STORAGE_CAPACITY);
 
     private MarlinDebugThreadLocal() {
         super();
     }
 
+    public boolean getDirection() {
+        return direction;
+    }
+
+    public void setDirection(final boolean dir) {
+        direction = dir;
+    }
+
+    public int getIteration() {
+        return iteration.get();
+    }
+
+    public void nextIteration() {
+        if (direction) {
+            iteration.incrementAndGet();
+        } else {
+            iteration.decrementAndGet();
+        }
+    }
+
+    public void setIteration(final int value) {
+        iteration.set(value);
+    }
+
     public void reset() {
         points.clear();
         segments.clear();
+        cubicOffsetCurves.clear();
     }
 
     public boolean isRecording() {
@@ -107,6 +166,9 @@ public final class MarlinDebugThreadLocal extends ReentrantContext {
 
     public void setRecording(boolean recording) {
         this.recording = USE_CTX && recording;
+        if (this.recording) {
+            nextIteration();
+        }
     }
 
     void addPoint(final double x, final double y) {
@@ -129,4 +191,46 @@ public final class MarlinDebugThreadLocal extends ReentrantContext {
         return segments;
     }
 
+    public List<CubicOffsetCurve> getCubicOffsetCurves() {
+        return cubicOffsetCurves;
+    }
+
+    void addCubicOffsetCurves(final double[] pts, final int off,
+                              final double[] offset) {
+
+        if (isRecording()) {
+            cubicOffsetCurves.add(new CubicOffsetCurve(pts, off, offset));
+        }
+    }
+
+    public final static class CubicOffsetCurve {
+
+        public final CubicCurve2D curve = new CubicCurve2D.Double();
+        public final CubicCurve2D offset = new CubicCurve2D.Double();
+
+        CubicOffsetCurve(final double[] pts, final int off,
+                         final double[] offset) {
+
+            this.curve.setCurve(pts, off);
+            this.offset.setCurve(offset, 0);
+        }
+
+        public CubicCurve2D getCurve() {
+            return curve;
+        }
+
+        public CubicCurve2D getOffset() {
+            return offset;
+        }
+
+        @Override
+        public String toString() {
+            return "CubicOffsetCurve{" + "curve=" + toString(curve)
+                    + ", offset=" + toString(offset) + '}';
+        }
+
+        public static String toString(final CubicCurve2D c) {
+            return "[" + c.getP1() + ", " + c.getCtrlP1() + ", " + c.getCtrlP2() + ", " + c.getP1() + "]";
+        }
+    }
 }

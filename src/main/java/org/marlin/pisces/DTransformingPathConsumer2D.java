@@ -510,7 +510,7 @@ final class DTransformingPathConsumer2D {
         }
     }
 
-    static final class PathClipFilter implements DPathConsumer2D {
+    static final class PathClipFilter implements StartFlagPathConsumer2D {
 
         private static final boolean TRACE = false;
 
@@ -707,6 +707,12 @@ final class DTransformingPathConsumer2D {
             this.cy0 = y0;
             this.sx0 = x0;
             this.sy0 = y0;
+        }
+
+        /* Callback from CurveClipSplitter */
+        @Override
+        public void setStartFlag(boolean first) {
+            // no-op
         }
 
         @Override
@@ -1015,6 +1021,11 @@ final class DTransformingPathConsumer2D {
         }
     }
 
+    interface StartFlagPathConsumer2D extends DPathConsumer2D {
+
+        void setStartFlag(boolean first);
+    }
+
     static final class CurveClipSplitter {
 
         static final double LEN_TH = MarlinProperties.getSubdividerMinLength();
@@ -1083,10 +1094,11 @@ final class DTransformingPathConsumer2D {
             }
         }
 
+        // Use a specific interface to make recursion more obvious
         boolean splitLine(final double x0, final double y0,
                           final double x1, final double y1,
                           final int outCodeOR,
-                          final DPathConsumer2D out)
+                          final StartFlagPathConsumer2D out)
         {
             if (TRACE) {
                 MarlinUtils.logInfo("divLine P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ")");
@@ -1107,7 +1119,7 @@ final class DTransformingPathConsumer2D {
                           final double x1, final double y1,
                           final double x2, final double y2,
                           final int outCodeOR,
-                          final DPathConsumer2D out)
+                          final StartFlagPathConsumer2D out)
         {
             if (TRACE) {
                 MarlinUtils.logInfo("divQuad P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ")");
@@ -1130,7 +1142,7 @@ final class DTransformingPathConsumer2D {
                            final double x2, final double y2,
                            final double x3, final double y3,
                            final int outCodeOR,
-                           final DPathConsumer2D out)
+                           final StartFlagPathConsumer2D out)
         {
             if (TRACE) {
                 MarlinUtils.logInfo("divCurve P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ") P3(" + x3 + ", " + y3 + ")");
@@ -1150,7 +1162,7 @@ final class DTransformingPathConsumer2D {
         }
 
         private boolean subdivideAtIntersections(final int type, final int outCodeOR,
-                                                 final DPathConsumer2D out)
+                                                 final StartFlagPathConsumer2D out)
         {
             final double[] mid = middle;
             final double[] subTs = subdivTs;
@@ -1186,12 +1198,19 @@ final class DTransformingPathConsumer2D {
                     MarlinUtils.logInfo("Part Curve " + Arrays.toString(Arrays.copyOfRange(mid, off, off + type)));
                 }
                 emitCurrent(type, mid, off, out);
+
+                if (i == 0) {
+                    // disable start flag:
+                    out.setStartFlag(false);
+                }
             }
+            // reset start flag:
+            out.setStartFlag(true);
             return true;
         }
 
         static void emitCurrent(final int type, final double[] pts,
-                                final int off, final DPathConsumer2D out)
+                                final int off, final StartFlagPathConsumer2D out)
         {
             // if instead of switch (perf + most probable cases first)
             if (type == 8) {
@@ -1199,10 +1218,10 @@ final class DTransformingPathConsumer2D {
                             pts[off + 4], pts[off + 5],
                             pts[off + 6], pts[off + 7]);
             } else if (type == 4) {
-                out.lineTo(pts[off + 2], pts[off + 3]);
+                out.lineTo( pts[off + 2], pts[off + 3]);
             } else {
-                out.quadTo(pts[off + 2], pts[off + 3],
-                           pts[off + 4], pts[off + 5]);
+                out.quadTo( pts[off + 2], pts[off + 3],
+                            pts[off + 4], pts[off + 5]);
             }
         }
     }
@@ -1223,6 +1242,8 @@ final class DTransformingPathConsumer2D {
         final double[] middle = new double[MAX_N_CURVES * 6 + 2];
         // t values at subdivision points
         private final double[] subdivTs = new double[MAX_N_CURVES];
+        // type of special t values at subdivision points
+        private final byte[] subdivTypes = new byte[MAX_N_CURVES];
 
         // dirty curve
         private final DCurve curve;
@@ -1249,15 +1270,24 @@ final class DTransformingPathConsumer2D {
             mid[6] = x3;  mid[7] = y3;
 
             final double[] subTs = subdivTs;
-            final int nSplits = DHelpers.findSubdivPoints(curve, rotCurve, mid, subTs, 8, lw2);
+            final byte[] subTTypes = subdivTypes;
+            
+            final int nSplits = DHelpers.findSubdivPoints(curve, rotCurve, mid, subTs, subTTypes, 8, lw2);
 
+            byte sumType = 0;
             double prevT = 0.0d;
+            
             for (int i = 0, off = 0; i < nSplits; i++, off += 6) {
                 final double t = subTs[i];
+                final double type = subTTypes[i];
 
-                DHelpers.subdivideCubicAt((t - prevT) / (1.0d - prevT),
+                DHelpers.subdivideCubicAt((t - prevT) / (1.0d - prevT), sumType,
                                           mid, off, mid, off, off + 6);
+
+                // System.out.println("subdivideCubicAt t: " + t + " P(t) = ("+mid[off] + ", "+mid[off + 1] + ")");
+                
                 prevT = t;
+                sumType += type;
             }
 
             this.nbSplits = nSplits;
@@ -1274,12 +1304,14 @@ final class DTransformingPathConsumer2D {
             mid[4] = x2;  mid[5] = y2;
 
             final double[] subTs = subdivTs;
-            final int nSplits = DHelpers.findSubdivPoints(curve, rotCurve, mid, subTs, 6, lw2);
+            final byte[] subTTypes = subdivTypes;
+            
+            final int nSplits = DHelpers.findSubdivPoints(curve, rotCurve, mid, subTs, subTTypes, 6, lw2);
 
             double prevt = 0.0d;
             for (int i = 0, off = 0; i < nSplits; i++, off += 4) {
                 final double t = subTs[i];
-                DHelpers.subdivideQuadAt((t - prevt) / (1.0d - prevt),
+                DHelpers.subdivideQuadAt((t - prevt) / (1.0d - prevt), subTTypes[i],
                                          mid, off, mid, off, off + 4);
                 prevt = t;
             }
