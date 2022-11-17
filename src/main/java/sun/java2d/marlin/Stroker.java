@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -181,14 +181,14 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
             // chord:  s = 2 r * sin( phi / 2)
             // height: h = 2 r * sin( phi / 4)^2
             // small angles (phi < 90):
-            // h = s² / (8 r)
-            // so s² = (8 h * r)
+            // h = s^2 / (8 r)
+            // so s^2 = (8 h * r)
 
             // height max (note ROUND_JOIN_ERROR = 8 * JOIN_ERROR)
             final double limitMin = ((this.rdrCtx.clipInvScale == 0.0d) ? ROUND_JOIN_ERROR
                     : (ROUND_JOIN_ERROR * this.rdrCtx.clipInvScale));
 
-            // chord limit (s²):
+            // chord limit (s^2):
             this.joinLimitMinSq = limitMin * this.lineWidth2;
         }
         this.prev = CLOSE;
@@ -858,6 +858,8 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         return 4;
     }
 
+    private final static boolean DEBUG_CUBIC_INFO = false;
+
     private int computeOffsetCubic(final double[] pts, final int off,
                                    final double[] leftOff,
                                    final double[] rightOff)
@@ -1206,8 +1208,6 @@ if (false) {
         }
         _curveTo(x1, y1, x2, y2, x3, y3, outcode0);
     }
-
-    private final static boolean DEBUG_CUBIC_INFO = false;
 
     private void _curveTo(final double x1, final double y1,
                           final double x2, final double y2,

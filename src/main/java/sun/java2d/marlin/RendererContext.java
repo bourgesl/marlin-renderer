@@ -64,7 +64,7 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
     // MarlinRenderingEngine NearestPixelQuarter NormalizingPathIterator:
     final NormalizingPathIterator nPQPathIterator;
     // MarlinRenderingEngine.TransformingPathConsumer2D
-    final TransformingPathConsumer2D transformerPC2D; // TODO: clear if dirty ?
+    final TransformingPathConsumer2D transformerPC2D;
     // recycled Path2D instance (weak)
     private WeakReference<Path2D.Double> refPath2D = null;
     final Renderer renderer;
@@ -174,7 +174,7 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
         clipInvScale = 0.0d;
         firstFlags = 0;
 
-        // if context is maked as DIRTY:
+        // if context is marked as DIRTY:
         if (dirty) {
             // may happen if an exception if thrown in the pipeline processing:
             // force cleanup of all possible pipelined blocks (except Renderer):
