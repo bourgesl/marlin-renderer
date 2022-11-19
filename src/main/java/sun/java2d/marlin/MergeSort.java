@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,7 +26,7 @@
 package sun.java2d.marlin;
 
 import java.util.Arrays;
-import static sun.java2d.marlin.DualPivotQuicksort20191112Ext.sort;
+import static sun.java2d.marlin.DualPivotQuicksort20220112Ext.sort;
 
 /**
  * MergeSort adapted from (OpenJDK 8) java.util.Array.legacyMergeSort(Object[])
@@ -39,14 +39,18 @@ final class MergeSort {
 
     static final String SORT_TYPE = USE_DPQS ? "DPQS_20191112" : "MERGE";
 
-    static final int DPQS_THRESHOLD = 256;
-    static final int DISABLE_ISORT_THRESHOLD = 1000;
+    static final int DPQS_THRESHOLD = MarlinProperties.getDPQSThreshold();
+    static final int DISABLE_ISORT_THRESHOLD = MarlinProperties.getDPQSIsortThreshold();
 
     private static final boolean CHECK_SORTED = false;
 
     static {
-        MarlinUtils.logInfo("MergeSort: DPQS_THRESHOLD: " + DPQS_THRESHOLD);
-        MarlinUtils.logInfo("MergeSort: DISABLE_ISORT_THRESHOLD: " + DISABLE_ISORT_THRESHOLD);
+        if (USE_DPQS) {
+            MarlinUtils.logInfo("MergeSort: sun.java2d.renderer.DPQS.threshold:         " + DPQS_THRESHOLD);
+            MarlinUtils.logInfo("MergeSort: sun.java2d.renderer.DPQS.isort.threshold:   " + DISABLE_ISORT_THRESHOLD);
+            MarlinUtils.logInfo("MergeSort: sun.java2d.renderer.DPQS.maxMixedIsortSize: " + MarlinProperties.getDPQSMaxMixedIsortSize());
+            MarlinUtils.logInfo("MergeSort: sun.java2d.renderer.DPQS.maxIsortSize:      " + MarlinProperties.getDPQSMaxIsortSize());
+        }
         if (CHECK_SORTED) {
             MarlinUtils.logInfo("MergeSort: CHECK_SORTED: " + CHECK_SORTED);
         }
@@ -64,7 +68,8 @@ final class MergeSort {
                                 final int insertionSortIndex,
                                 final boolean skipISort,
                                 final DPQSSorterContext sorter,
-                                final boolean useDPQS) {
+                                final boolean useDPQS)
+    {
         // Gather array data:
         if (RendererStats.DUMP_ARRAY_DATA && !useDPQS && !skipISort) {
             // Copy presorted data from auxX to x:
@@ -103,10 +108,11 @@ final class MergeSort {
 
         // final pass to merge both
         // Merge sorted parts (auxX/auxY) into x/y arrays
-/*
+        
 // low probability: deoptimization ?
         if ((insertionSortIndex == 0)
                 || (auxX[insertionSortIndex - 1] <= auxX[insertionSortIndex])) {
+
             // 34 occurences
             // no initial left part or both sublists (auxX, auxY) are sorted:
             // copy back data into (x, y):
@@ -118,7 +124,7 @@ final class MergeSort {
             }
             return;
         }
-*/
+
         for (int i = 0, p = 0, q = insertionSortIndex; i < toIndex; i++) {
             if ((q >= toIndex) || ((p < insertionSortIndex)
                     && (auxX[p] <= auxX[q]))) {
@@ -149,7 +155,8 @@ final class MergeSort {
     private static void mergeSort(final int[] refX, final int[] refY,
                                   final int[] srcX, final int[] dstX,
                                   final int[] srcY, final int[] dstY,
-                                  final int low, final int high) {
+                                  final int low, final int high)
+    {
         final int length = high - low;
 
         /*
@@ -180,6 +187,7 @@ final class MergeSort {
         }
 
         // Recursively sort halves of dest into src
+
         // note: use signed shift (not >>>) for performance
         // as indices are small enough to exceed Integer.MAX_VALUE
         final int mid = (low + high) >> 1;
@@ -189,7 +197,7 @@ final class MergeSort {
 
         // If arrays are inverted ie all(A) > all(B) do swap A and B to dst
         if (srcX[high - 1] <= srcX[low]) {
-            // 1561 occurences
+            // 1561 occurrences
             final int left = mid - low;
             final int right = high - mid;
             final int off = (left != right) ? 1 : 0;
@@ -204,7 +212,7 @@ final class MergeSort {
         // If arrays are already sorted, just copy from src to dest.  This is an
         // optimization that results in faster sorts for nearly ordered lists.
         if (srcX[mid - 1] <= srcX[mid]) {
-            // 14 occurences
+            // 14 occurrences
             System.arraycopy(srcX, low, dstX, low, length);
             System.arraycopy(srcY, low, dstY, low, length);
             return;

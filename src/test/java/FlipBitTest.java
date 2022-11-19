@@ -40,7 +40,7 @@ import javax.imageio.ImageIO;
  *
  * @test
  * @summary verify that flipped transformed lines are properly rasterized
- * @bug TODO
+ * @bug 8230728
  */
 public class FlipBitTest {
 

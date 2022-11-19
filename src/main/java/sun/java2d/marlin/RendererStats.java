@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -346,7 +346,7 @@ public final class RendererStats implements MarlinConst {
     static final class RendererStatsHolder {
 
         // singleton
-        private static volatile RendererStatsHolder SINGLETON = null;
+        private static volatile RendererStatsHolder SINGLETON;
 
         static synchronized RendererStatsHolder getInstance() {
             if (SINGLETON == null) {
@@ -371,13 +371,12 @@ public final class RendererStats implements MarlinConst {
         /* RendererStats collection as hard references
            (only used for debugging purposes) */
         private final ConcurrentLinkedQueue<RendererStats> allStats
-            = new ConcurrentLinkedQueue<RendererStats>();
+            = new ConcurrentLinkedQueue<>();
         // array data
         final ArraySortDataCollection adc = new ArraySortDataCollection();
 
         private RendererStatsHolder() {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
                 @Override
                 public Void run() {
                     final Thread hook = new Thread(

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -30,19 +30,23 @@ import java.util.Arrays;
 import sun.java2d.marlin.Helpers.PolyStack;
 import sun.java2d.marlin.TransformingPathConsumer2D.CurveBasicMonotonizer;
 import sun.java2d.marlin.TransformingPathConsumer2D.CurveClipSplitter;
+import sun.java2d.marlin.TransformingPathConsumer2D.StartFlagPathConsumer2D;
 
 // TODO: some of the arithmetic here is too verbose and prone to hard to
 // debug typos. We should consider making a small Point/Vector class that
 // has methods like plus(Point), minus(Point), dot(Point), cross(Point)and such
-final class Stroker implements DPathConsumer2D, MarlinConst {
+final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
 
     private static final int MOVE_TO = 0;
     private static final int DRAWING_OP_TO = 1; // ie. curve, line, or quad
     private static final int CLOSE = 2;
 
-    // round join threshold = 1 subpixel
-    private static final double ERR_JOIN = (1.0f / MIN_SUBPIXELS);
-    private static final double ROUND_JOIN_THRESHOLD = ERR_JOIN * ERR_JOIN;
+    // join threshold = 1 subpixel (1/8th pixel):
+    private static final double JOIN_ERROR = MarlinProperties.getStrokerJoinError();
+
+    private static final double ROUND_JOIN_ERROR = 8.0 * JOIN_ERROR; // (8 h)
+
+    private static final int JOIN_STYLE = MarlinProperties.getStrokerJoinStyle();
 
     // kappa = (4/3) * (SQRT(2) - 1)
     private static final double C = (4.0d * (Math.sqrt(2.0d) - 1.0d) / 3.0d);
@@ -50,6 +54,7 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
     // SQRT(2)
     private static final double SQRT_2 = Math.sqrt(2.0d);
 
+    // members:
     private DPathConsumer2D out;
 
     private int capStyle;
@@ -63,6 +68,7 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
     private final double[] offset2 = new double[2];
     private final double[] miter = new double[2];
     private double miterLimitSq;
+    private double joinLimitMinSq;
 
     private int prev;
 
@@ -150,20 +156,41 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
                   final double miterLimit,
                   final boolean subdivideCurves)
     {
-        if (this.out != pc2d) {
-            this.out = pc2d;
-        }
+        this.out = pc2d;
 
         this.lineWidth2 = lineWidth / 2.0d;
         this.invHalfLineWidth2Sq = 1.0d / (2.0d * lineWidth2 * lineWidth2);
         this.monotonize = subdivideCurves;
 
         this.capStyle = capStyle;
-        this.joinStyle = joinStyle;
+        this.joinStyle = (JOIN_STYLE != -1) ? JOIN_STYLE : joinStyle;
 
-        final double limit = miterLimit * lineWidth2;
-        this.miterLimitSq = limit * limit;
+        double miterScaledLimit = 0.0;
 
+        if (joinStyle == JOIN_MITER) {
+            miterScaledLimit = miterLimit * lineWidth2;
+            this.miterLimitSq = miterScaledLimit * miterScaledLimit;
+
+            final double limitMin = ((this.rdrCtx.clipInvScale == 0.0d) ? JOIN_ERROR
+                    : (JOIN_ERROR * this.rdrCtx.clipInvScale))
+                    + lineWidth2;
+
+            this.joinLimitMinSq = limitMin * limitMin;
+
+        } else if (joinStyle == JOIN_ROUND) {
+            // chord:  s = 2 r * sin( phi / 2)
+            // height: h = 2 r * sin( phi / 4)^2
+            // small angles (phi < 90):
+            // h = s^2 / (8 r)
+            // so s^2 = (8 h * r)
+
+            // height max (note ROUND_JOIN_ERROR = 8 * JOIN_ERROR)
+            final double limitMin = ((this.rdrCtx.clipInvScale == 0.0d) ? ROUND_JOIN_ERROR
+                    : (ROUND_JOIN_ERROR * this.rdrCtx.clipInvScale));
+
+            // chord limit (s^2):
+            this.joinLimitMinSq = limitMin * this.lineWidth2;
+        }
         this.prev = CLOSE;
 
         rdrCtx.stroking = 1;
@@ -175,8 +202,8 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
             if (capStyle == CAP_SQUARE) {
                 margin *= SQRT_2;
             }
-            if ((joinStyle == JOIN_MITER) && (margin < limit)) {
-                margin = limit;
+            if ((joinStyle == JOIN_MITER) && (margin < miterScaledLimit)) {
+                margin = miterScaledLimit;
             }
 
             // bounds as half-open intervals: minX <= x < maxX and minY <= y < maxY
@@ -272,15 +299,13 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
         if ((omx == 0.0d && omy == 0.0d) || (mx == 0.0d && my == 0.0d)) {
             return;
         }
-
         final double domx = omx - mx;
         final double domy = omy - my;
-        final double lenSq = domx*domx + domy*domy;
+        final double lenSq = domx * domx + domy * domy;
 
-        if (lenSq < ROUND_JOIN_THRESHOLD) {
+        if (lenSq < joinLimitMinSq) {
             return;
         }
-
         if (rev) {
             omx = -omx;
             omy = -omy;
@@ -302,7 +327,7 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
         // If it is >=0, we know that abs(ext) is <= 90 degrees, so we only
         // need 1 curve to approximate the circle section that joins omx,omy
         // and mx,my.
-        if (cosext >= 0.0d) {
+        if (cosext >= 0.0) {
             drawBezApproxForArc(cx, cy, omx, omy, mx, my, rev);
         } else {
             // we need to split the arc into 2 arcs spanning the same angle.
@@ -319,9 +344,10 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
             // have numerical problems because we know that lineWidth2 divided by
             // this normal's length is at least 0.5 and at most sqrt(2)/2 (because
             // we know the angle of the arc is > 90 degrees).
-            double nx = my - omy, ny = omx - mx;
-            double nlen = Math.sqrt(nx*nx + ny*ny);
-            double scale = lineWidth2/nlen;
+            final double nx = my - omy;
+            final double ny = omx - mx;
+            final double nlen = Math.sqrt(nx * nx + ny * ny);
+            final double scale = lineWidth2 / nlen;
             double mmx = nx * scale, mmy = ny * scale;
 
             // if (isCW(omx, omy, mx, my) != isCW(mmx, mmy, mx, my)) then we've
@@ -475,14 +501,14 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
 
         final double miterX = miter[0];
         final double miterY = miter[1];
-        double lenSq = (miterX-x0)*(miterX-x0) + (miterY-y0)*(miterY-y0);
+        final double lenSq = (miterX - x0) * (miterX - x0) + (miterY - y0) * (miterY - y0);
 
         // If the lines are parallel, lenSq will be either NaN or +inf
         // (actually, I'm not sure if the latter is possible. The important
         // thing is that -inf is not possible, because lenSq is a square).
         // For both of those values, the comparison below will fail and
         // no miter will be drawn, which is correct.
-        if (lenSq < miterLimitSq) {
+        if ((lenSq < miterLimitSq) && (lenSq >= joinLimitMinSq)) {
             emitLineTo(miterX, miterY, rev);
         }
     }
@@ -523,6 +549,17 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
         }
     }
 
+    /* Callback from CurveClipSplitter */
+    @Override
+    public void setStartFlag(boolean first) {
+        if (first) {
+            // reset flag:
+            rdrCtx.firstFlags &= 0b110;
+        } else {
+            rdrCtx.firstFlags |= 0b001;
+        }
+    }
+
     @Override
     public void lineTo(final double x1, final double y1) {
         final int outcode0 = this.cOutCode;
@@ -558,13 +595,16 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
                     return;
                 }
             }
-
             this.cOutCode = outcode1;
         }
 
         double dx = x1 - cx0;
         double dy = y1 - cy0;
         if (dx == 0.0d && dy == 0.0d) {
+            if (prev == DRAWING_OP_TO) {
+                // skip repeated end-point
+                return;
+            }
             dx = 1.0d;
         }
         computeOffset(dx, dy, lineWidth2, offset0);
@@ -775,6 +815,7 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
                           final int outcode)
     {
         if (prev != DRAWING_OP_TO) {
+            prev = DRAWING_OP_TO;
             emitMoveTo(x0 + mx, y0 + my);
             if (!opened) {
                 this.sdx = dx;
@@ -782,7 +823,7 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
                 this.smx = mx;
                 this.smy = my;
             }
-        } else if (rdrCtx.isFirstSegment) {
+        } else if (rdrCtx.firstFlags == 0) {
             // Precision on isCW is causing instabilities with Dasher !
             final boolean cw = isCW(pdx, pdy, dx, dy);
             if (outcode == 0) {
@@ -794,11 +835,6 @@ final class Stroker implements DPathConsumer2D, MarlinConst {
             }
             emitLineTo(x0, y0, !cw);
         }
-        if (!rdrCtx.isFirstSegment) {
-            // reset trigger to process further joins (normal operations)
-            rdrCtx.isFirstSegment = true;
-        }
-        prev = DRAWING_OP_TO;
     }
 
     private int getLineOffsets(final double x1, final double y1,
@@ -1030,14 +1066,6 @@ if (false) {
                                   final double[] leftOff,
                                   final double[] rightOff)
     {
-        return computeOffsetQuad(pts, off, leftOff, rightOff, true);
-    }
-
-    private int computeOffsetQuad(final double[] pts, final int off,
-                                  final double[] leftOff,
-                                  final double[] rightOff,
-                                  final boolean checkCtrlPoints)
-    {
         final double x1 = pts[off    ]; final double y1 = pts[off + 1];
         final double x2 = pts[off + 2]; final double y2 = pts[off + 3];
         final double x3 = pts[off + 4]; final double y3 = pts[off + 5];
@@ -1045,32 +1073,30 @@ if (false) {
         final double dx12 = x2 - x1; final double dy12 = y2 - y1;
         final double dx23 = x3 - x2; final double dy23 = y3 - y2;
 
-        if (checkCtrlPoints) {
-            // if p1=p2 or p2=p3 it means that the derivative at the endpoint
-            // vanishes, which creates problems with computeOffset. Usually
-            // this happens when this stroker object is trying to widen
-            // a curve with a cusp. What happens is that curveTo splits
-            // the input curve at the cusp, and passes it to this function.
-            // because of inaccuracies in the splitting, we consider points
-            // equal if they're very close to each other.
+        // if p1=p2 or p2=p3 it means that the derivative at the endpoint
+        // vanishes, which creates problems with computeOffset. Usually
+        // this happens when this stroker object is trying to widen
+        // a curve with a cusp. What happens is that curveTo splits
+        // the input curve at the cusp, and passes it to this function.
+        // because of inaccuracies in the splitting, we consider points
+        // equal if they're very close to each other.
 
-            // if p1 == p2 or p2 == p3: draw line from p1->p3
-            final boolean p1eqp2 = Helpers.withinD(dx12, dy12, 6.0d * Math.ulp(y2));
-            final boolean p2eqp3 = Helpers.withinD(dx23, dy23, 6.0d * Math.ulp(y3));
+        // if p1 == p2 or p2 == p3: draw line from p1->p3
+        final boolean p1eqp2 = Helpers.withinD(dx12, dy12, 6.0d * Math.ulp(y2));
+        final boolean p2eqp3 = Helpers.withinD(dx23, dy23, 6.0d * Math.ulp(y3));
 
-            if (p1eqp2 || p2eqp3) {
-                return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
-            }
+        if (p1eqp2 || p2eqp3) {
+            return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
+        }
 
-            // if p2-p1 and p3-p2 are parallel, that must mean this curve is a line
-            double dotsq = (dx12 * dx23 + dy12 * dy23);
-            dotsq *= dotsq;
-            final double l1sq = dx12 * dx12 + dy12 * dy12;
-            final double l3sq = dx23 * dx23 + dy23 * dy23;
+        // if p2-p1 and p3-p2 are parallel, that must mean this curve is a line
+        double dotsq = (dx12 * dx23 + dy12 * dy23);
+        dotsq *= dotsq;
+        final double l1sq = dx12 * dx12 + dy12 * dy12;
+        final double l3sq = dx23 * dx23 + dy23 * dy23;
 
-            if (Helpers.within(dotsq, l1sq * l3sq, 4.0d * Math.ulp(dotsq))) {
-                return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
-            }
+        if (Helpers.within(dotsq, l1sq * l3sq, 4.0d * Math.ulp(dotsq))) {
+            return getLineOffsets(x1, y1, x3, y3, leftOff, rightOff);
         }
 
         // this computes the offsets at t=0, 0.5, 1, using the property that
@@ -1141,7 +1167,6 @@ if (false) {
                     return;
                 }
             }
-
             this.cOutCode = outcode3;
         }
         _curveTo(x1, y1, x2, y2, x3, y3, outcode0);
@@ -1288,7 +1313,6 @@ if (false) {
                     return;
                 }
             }
-
             this.cOutCode = outcode2;
         }
         _quadTo(x1, y1, x2, y2, outcode0);
@@ -1317,6 +1341,7 @@ if (false) {
             lineTo(cx0, cy0);
             return;
         }
+
         // if these vectors are too small, normalize them, to avoid future
         // precision problems.
         if (Math.abs(dxs) < 0.1d && Math.abs(dys) < 0.1d) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -258,9 +258,7 @@ final class TransformingPathConsumer2D {
         DeltaScaleFilter init(DPathConsumer2D out,
                               double mxx, double myy)
         {
-            if (this.out != out) {
-                this.out = out;
-            }
+            this.out = out;
             sx = mxx;
             sy = myy;
             return this; // fluent API
@@ -320,9 +318,7 @@ final class TransformingPathConsumer2D {
                                   double mxx, double mxy,
                                   double myx, double myy)
         {
-            if (this.out != out) {
-                this.out = out;
-            }
+            this.out = out;
             this.mxx = mxx;
             this.mxy = mxy;
             this.myx = myx;
@@ -387,9 +383,7 @@ final class TransformingPathConsumer2D {
         Path2DWrapper() {}
 
         Path2DWrapper init(Path2D.Double p2d) {
-            if (this.p2d != p2d) {
-                this.p2d = p2d;
-            }
+            this.p2d = p2d;
             return this;
         }
 
@@ -450,9 +444,7 @@ final class TransformingPathConsumer2D {
         }
 
         ClosedPathDetector init(DPathConsumer2D out) {
-            if (this.out != out) {
-                this.out = out;
-            }
+            this.out = out;
             return this; // fluent API
         }
 
@@ -518,7 +510,7 @@ final class TransformingPathConsumer2D {
         }
     }
 
-    static final class PathClipFilter implements DPathConsumer2D {
+    static final class PathClipFilter implements StartFlagPathConsumer2D {
 
         private static final boolean TRACE = false;
 
@@ -543,7 +535,7 @@ final class TransformingPathConsumer2D {
 
         // the outcode of the starting point
         private int sOutCode = 0;
-        
+
         // the cumulated (and) outcode of the complete path
         private int gOutCode = MarlinConst.OUTCODE_MASK_T_B_L_R;
 
@@ -571,9 +563,7 @@ final class TransformingPathConsumer2D {
         }
 
         PathClipFilter init(final DPathConsumer2D out) {
-            if (this.out != out) {
-                this.out = out;
-            }
+            this.out = out;
 
             if (MarlinConst.DO_CLIP_SUBDIVIDER) {
                 // adjust padded clip rectangle:
@@ -674,7 +664,7 @@ final class TransformingPathConsumer2D {
             this.cx0 = sx0;
             this.cy0 = sy0;
         }
-        
+
         private void _closePath() {
             // preserve outside flag for the lineTo call below
             final boolean prevOutside = outside;
@@ -717,6 +707,12 @@ final class TransformingPathConsumer2D {
             this.cy0 = y0;
             this.sx0 = x0;
             this.sy0 = y0;
+        }
+
+        /* Callback from CurveClipSplitter */
+        @Override
+        public void setStartFlag(boolean first) {
+            // no-op
         }
 
         @Override
@@ -1025,6 +1021,11 @@ final class TransformingPathConsumer2D {
         }
     }
 
+    interface StartFlagPathConsumer2D extends DPathConsumer2D {
+
+        void setStartFlag(boolean first);
+    }
+
     static final class CurveClipSplitter {
 
         static final double LEN_TH = MarlinProperties.getSubdividerMinLength();
@@ -1093,10 +1094,11 @@ final class TransformingPathConsumer2D {
             }
         }
 
+        // Use a specific interface to make recursion more obvious
         boolean splitLine(final double x0, final double y0,
                           final double x1, final double y1,
                           final int outCodeOR,
-                          final DPathConsumer2D out)
+                          final StartFlagPathConsumer2D out)
         {
             if (TRACE) {
                 MarlinUtils.logInfo("divLine P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ")");
@@ -1117,7 +1119,7 @@ final class TransformingPathConsumer2D {
                           final double x1, final double y1,
                           final double x2, final double y2,
                           final int outCodeOR,
-                          final DPathConsumer2D out)
+                          final StartFlagPathConsumer2D out)
         {
             if (TRACE) {
                 MarlinUtils.logInfo("divQuad P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ")");
@@ -1140,7 +1142,7 @@ final class TransformingPathConsumer2D {
                            final double x2, final double y2,
                            final double x3, final double y3,
                            final int outCodeOR,
-                           final DPathConsumer2D out)
+                           final StartFlagPathConsumer2D out)
         {
             if (TRACE) {
                 MarlinUtils.logInfo("divCurve P0(" + x0 + ", " + y0 + ") P1(" + x1 + ", " + y1 + ") P2(" + x2 + ", " + y2 + ") P3(" + x3 + ", " + y3 + ")");
@@ -1160,7 +1162,7 @@ final class TransformingPathConsumer2D {
         }
 
         private boolean subdivideAtIntersections(final int type, final int outCodeOR,
-                                                 final DPathConsumer2D out)
+                                                 final StartFlagPathConsumer2D out)
         {
             final double[] mid = middle;
             final double[] subTs = subdivTs;
@@ -1196,12 +1198,19 @@ final class TransformingPathConsumer2D {
                     MarlinUtils.logInfo("Part Curve " + Arrays.toString(Arrays.copyOfRange(mid, off, off + type)));
                 }
                 emitCurrent(type, mid, off, out);
+
+                if (i == 0) {
+                    // disable start flag:
+                    out.setStartFlag(false);
+                }
             }
+            // reset start flag:
+            out.setStartFlag(true);
             return true;
         }
 
         static void emitCurrent(final int type, final double[] pts,
-                                final int off, final DPathConsumer2D out)
+                                final int off, final StartFlagPathConsumer2D out)
         {
             // if instead of switch (perf + most probable cases first)
             if (type == 8) {
@@ -1209,10 +1218,10 @@ final class TransformingPathConsumer2D {
                             pts[off + 4], pts[off + 5],
                             pts[off + 6], pts[off + 7]);
             } else if (type == 4) {
-                out.lineTo(pts[off + 2], pts[off + 3]);
+                out.lineTo( pts[off + 2], pts[off + 3]);
             } else {
-                out.quadTo(pts[off + 2], pts[off + 3],
-                           pts[off + 4], pts[off + 5]);
+                out.quadTo( pts[off + 2], pts[off + 3],
+                            pts[off + 4], pts[off + 5]);
             }
         }
     }
@@ -1305,9 +1314,7 @@ final class TransformingPathConsumer2D {
         }
 
         PathTracer init(DPathConsumer2D out) {
-            if (this.out != out) {
-                this.out = out;
-            }
+            this.out = out;
             return this; // fluent API
         }
 

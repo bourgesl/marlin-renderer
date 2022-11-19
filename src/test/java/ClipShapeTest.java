@@ -135,7 +135,6 @@ public final class ClipShapeTest {
         Locale.setDefault(Locale.US);
 
         // FIRST: Get Marlin runtime state from its log:
-
         // initialize j.u.l Looger:
         final Logger log = Logger.getLogger("sun.java2d.marlin");
         log.addHandler(new Handler() {

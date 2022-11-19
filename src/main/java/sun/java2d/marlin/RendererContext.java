@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -64,7 +64,7 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
     // MarlinRenderingEngine NearestPixelQuarter NormalizingPathIterator:
     final NormalizingPathIterator nPQPathIterator;
     // MarlinRenderingEngine.TransformingPathConsumer2D
-    final TransformingPathConsumer2D transformerPC2D; // TODO: clear if dirty ?
+    final TransformingPathConsumer2D transformerPC2D;
     // recycled Path2D instance (weak)
     private WeakReference<Path2D.Double> refPath2D = null;
     final Renderer renderer;
@@ -88,8 +88,11 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
     double clipInvScale = 0.0d;
     // CurveBasicMonotonizer instance
     final CurveBasicMonotonizer monotonizer;
-    // flag indicating to force the stroker to process joins
-    boolean isFirstSegment = true;
+    // bit flags indicating to skip the stroker to process joins
+    // bits: 2 : Dasher CurveClipSplitter
+    // bits: 1 : Dasher CurveBasicMonotonizer
+    // bits: 0 : Stroker CurveClipSplitter
+    int firstFlags = 0;
     // CurveClipSplitter instance
     final CurveClipSplitter curveClipSplitter;
     // DPQS Sorter context
@@ -169,9 +172,9 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
         doClip     = false;
         closedPath = false;
         clipInvScale = 0.0d;
-        isFirstSegment = true;
+        firstFlags = 0;
 
-        // if context is maked as DIRTY:
+        // if context is marked as DIRTY:
         if (dirty) {
             // may happen if an exception if thrown in the pipeline processing:
             // force cleanup of all possible pipelined blocks (except Renderer):
@@ -198,7 +201,7 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
             p2d = new Path2D.Double(WIND_NON_ZERO, INITIAL_EDGES_COUNT); // 32K
 
             // update weak reference:
-            refPath2D = new WeakReference<Path2D.Double>(p2d);
+            refPath2D = new WeakReference<>(p2d);
         }
         // reset the path anyway:
         p2d.reset();
@@ -238,9 +241,7 @@ final class RendererContext extends ReentrantContext implements MarlinConst {
         PathConsumer2DAdapter() {}
 
         PathConsumer2DAdapter init(sun.awt.geom.PathConsumer2D out) {
-            if (this.out != out) {
-                this.out = out;
-            }
+            this.out = out;
             return this;
         }
 

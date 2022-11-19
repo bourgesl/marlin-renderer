@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,6 +28,7 @@ package sun.java2d.marlin;
 import java.util.Arrays;
 import sun.java2d.marlin.TransformingPathConsumer2D.CurveBasicMonotonizer;
 import sun.java2d.marlin.TransformingPathConsumer2D.CurveClipSplitter;
+import sun.java2d.marlin.TransformingPathConsumer2D.StartFlagPathConsumer2D;
 
 /**
  * The <code>Dasher</code> class takes a series of linear commands
@@ -40,7 +41,7 @@ import sun.java2d.marlin.TransformingPathConsumer2D.CurveClipSplitter;
  * semantics are unclear.
  *
  */
-final class Dasher implements DPathConsumer2D, MarlinConst {
+final class Dasher implements StartFlagPathConsumer2D, MarlinConst {
 
     /* huge circle with radius ~ 2E9 only needs 12 subdivision levels */
     static final int REC_LIMIT = 16;
@@ -142,9 +143,7 @@ final class Dasher implements DPathConsumer2D, MarlinConst {
     Dasher init(final DPathConsumer2D out, final double[] dash, final int dashLen,
                 double phase, final boolean recycleDashes)
     {
-        if (this.out != out) {
-            this.out = out;
-        }
+        this.out = out;
 
         // Normalize so 0 <= phase < dash[0]
         int sidx = 0;
@@ -349,9 +348,36 @@ final class Dasher implements DPathConsumer2D, MarlinConst {
         }
         buf[segIdx++] = type;
         len--;
-        // small arraycopy (2, 4 or 6) but with offset:
-        System.arraycopy(pts, off, buf, segIdx, len);
+
+        if (true && (len == 2)) {
+            // most probable case:
+            buf[segIdx    ] = pts[off    ];
+            buf[segIdx + 1] = pts[off + 1];
+        } else {
+            // small arraycopy (4 or 6) but with offset:
+            System.arraycopy(pts, off, buf, segIdx, len);
+        }
         firstSegidx = segIdx + len;
+    }
+
+    /* Callback from CurveClipSplitter */
+    @Override
+    public void setStartFlag(boolean first) {
+        if (first) {
+            // reset flag:
+            rdrCtx.firstFlags &= 0b011;
+        } else {
+            rdrCtx.firstFlags |= 0b100;
+        }
+    }
+
+    public void setMonotonizerStartFlag(boolean first) {
+        if (first) {
+            // reset flag:
+            rdrCtx.firstFlags &= 0b101;
+        } else {
+            rdrCtx.firstFlags |= 0b010;
+        }
     }
 
     @Override
@@ -809,7 +835,7 @@ final class Dasher implements DPathConsumer2D, MarlinConst {
                 // and our quadratic root finder doesn't filter, so it's just a
                 // matter of convenience.
                 final int n = Helpers.cubicRootsInAB(a, b, c, d, nextRoots, 0, 0.0d, 1.0d);
-                if (n == 1 && !Double.isNaN(nextRoots[0])) {
+                if (n == 1) {
                     t = nextRoots[0];
                 }
             }
@@ -956,7 +982,6 @@ final class Dasher implements DPathConsumer2D, MarlinConst {
                     return;
                 }
             }
-
             this.cOutCode = outcode3;
 
             if (this.outside) {
@@ -981,19 +1006,19 @@ final class Dasher implements DPathConsumer2D, MarlinConst {
         final int nSplits = monotonizer.nbSplits;
         final double[] mid = monotonizer.middle;
 
-        // Implicitely rdrCtx.isFirstSegment = true
-
         for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
 
             somethingTo(8);
 
-            // set flag rdrCtx.isFirstSegment = false for other parts:
-            rdrCtx.isFirstSegment = false; // TODO: handle conflict with clipper
+            if (i == 0) {
+                // disable start flag:
+                setMonotonizerStartFlag(false);
+            }
         }
-        // reset trigger to process further joins (normal operations)
-        rdrCtx.isFirstSegment = true;
+        // reset start flag:
+        setMonotonizerStartFlag(true);
     }
 
     private void skipCurveTo(final double x1, final double y1,
@@ -1049,7 +1074,6 @@ final class Dasher implements DPathConsumer2D, MarlinConst {
                     return;
                 }
             }
-
             this.cOutCode = outcode2;
 
             if (this.outside) {
@@ -1073,19 +1097,19 @@ final class Dasher implements DPathConsumer2D, MarlinConst {
         final int nSplits = monotonizer.nbSplits;
         final double[] mid = monotonizer.middle;
 
-        // Implicitely rdrCtx.isFirstSegment = true
-
         for (int i = 0, off = 0; i <= nSplits; i++, off += 4) {
             // optimize arraycopy (8 values faster than 6 = type):
             System.arraycopy(mid, off, _curCurvepts, 0, 8);
 
             somethingTo(6);
 
-            // set flag rdrCtx.isFirstSegment = false for other parts:
-            rdrCtx.isFirstSegment = false; // TODO: handle conflict with clipper
+            if (i == 0) {
+                // disable start flag:
+                setMonotonizerStartFlag(false);
+            }
         }
-        // reset trigger to process further joins (normal operations)
-        rdrCtx.isFirstSegment = true;
+        // reset start flag:
+        setMonotonizerStartFlag(true);
     }
 
     private void skipQuadTo(final double x1, final double y1,

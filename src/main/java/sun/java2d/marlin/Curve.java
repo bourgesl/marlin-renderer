@@ -177,6 +177,9 @@ final class Curve {
 
         int ret = off;
         final int end = off + perpendiculardfddf(roots, off);
+
+        Helpers.isort(roots, off, end);
+        
         roots[end] = 1.0d; // always check interval end points
 
         double t0 = 0.0d, ft0 = ROCsq(t0) - w2;

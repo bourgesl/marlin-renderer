@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,7 +25,7 @@
 
 package sun.java2d.marlin;
 
-import java.util.Arrays;
+import java.util.Arrays; // TODO
 
 /**
  * This class implements powerful and fully optimized versions, both
@@ -35,49 +35,44 @@ import java.util.Arrays;
  * faster than traditional (one-pivot) Quicksort implementations.
  *
  * There are also additional algorithms, invoked from the Dual-Pivot
- * Quicksort, such as mixed insertion sort, merging of runs and heap
- * sort, counting sort and parallel merge sort.
+ * Quicksort such as merging sort, sorting network, heap
+ * sort, mixed (simple, pin, pair) insertion sort, counting sort and
+ * parallel merge sort.
  *
  * @author Vladimir Yaroslavskiy
  * @author Jon Bentley
  * @author Josh Bloch
  * @author Doug Lea
  *
- * @version 2018.08.18
+ * @version 2020.06.14
  *
  * @since 1.7 * 14
  */
-public final class DualPivotQuicksort20191112Ext {
+/* Vladimir's version: final DualPivotQuicksort.java (2022.01.12) */
+public final class DualPivotQuicksort20220112Ext {
 
-    private static final boolean FAST_ISORT = true;
+    private static final boolean FAST_ISORT = false; // TODO CHECK
 
-    /*
-    From OpenJDK14 source code:
-    8226297: Dual-pivot quicksort improvements
-        Reviewed-by: dl, lbourges
-        Contributed-by: Vladimir Yaroslavskiy <vlv.spb.ru@mail.ru>
-        Tue, 12 Nov 2019 13:49:40 -0800
-     */
     /**
      * Prevents instantiation.
      */
-    private DualPivotQuicksort20191112Ext() {
+    private DualPivotQuicksort20220112Ext() {
     }
 
     /**
      * Max array size to use mixed insertion sort.
      */
-    private static final int MAX_MIXED_INSERTION_SORT_SIZE = MarlinProperties.getDPQSMaxMixedIsortSize(); // 114 was 65
+    private static final int MAX_MIXED_INSERTION_SORT_SIZE = MarlinProperties.getDPQSMaxMixedIsortSize(); // 113
 
     /**
      * Max array size to use insertion sort.
      */
-    private static final int MAX_INSERTION_SORT_SIZE = MarlinProperties.getDPQSMaxIsortSize(); // 33 was 44
+    private static final int MAX_INSERTION_SORT_SIZE = MarlinProperties.getDPQSMaxIsortSize(); // 26
 
     /**
-     * Min array size to try merging of runs.
+     * Min array size to use merging sort.
      */
-    private static final int MIN_TRY_MERGE_SIZE = 4 << 10;
+    private static final int MIN_MERGING_SORT_SIZE = 4 << 10;
 
     /**
      * Min size of the first run to continue with scanning.
@@ -95,24 +90,21 @@ public final class DualPivotQuicksort20191112Ext {
     /* private */ static final int MAX_RUN_CAPACITY = 5 << 10;
 
     /**
-     * Threshold of mixed insertion sort is incremented by this value.
+     * Threshold of mixed insertion sort is increased by this value.
      */
-    private static final int DELTA = 3 << 1;
+    private static final int DEPTH = 3 << 1;
 
     /**
      * Max recursive partitioning depth before using heap sort.
      */
-    private static final int MAX_RECURSION_DEPTH = 64 * DELTA;
+    private static final int MAX_RECURSION_DEPTH = 64 * DEPTH;
 
 
     /**
      * Sorts the specified range of the array.
      *
-     * @param sorter sorter context
      * @param a the array to be sorted
-     * @param auxA auxiliary storage for the array to be sorted
-     * @param b the secondary array to be ordered
-     * @param auxB auxiliary storage for the permutation array to be handled
+     * @param b the permutation array to be handled
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
@@ -120,7 +112,7 @@ public final class DualPivotQuicksort20191112Ext {
         /*
          * LBO Shortcut: Invoke insertion sort on the leftmost part.
          */
-        if (FAST_ISORT && ((high - low) <= MAX_INSERTION_SORT_SIZE)) {
+        if (FAST_ISORT && ((high - low) <= 24)) {
             insertionSort(a, b, low, high);
             return;
         }
@@ -130,14 +122,12 @@ public final class DualPivotQuicksort20191112Ext {
     }
 
     /**
-     * Sorts the specified array using the Dual-Pivot Quicksort and/or
-     * other sorts in special-cases, possibly with parallel partitions.
+     * Sorts the specified range of the array using Dual-Pivot Quicksort.
      *
-     * @param sorter sorter context
+     * @param sorter parallel context
      * @param a the array to be sorted
-     * @param b the secondary array to be ordered
      * @param bits the combination of recursion depth and bit flag, where
-     *        the right bit "0" indicates that array is the leftmost part
+     *        the right bit "0" indicates that range is the leftmost part
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
@@ -149,7 +139,7 @@ public final class DualPivotQuicksort20191112Ext {
              * Run mixed insertion sort on small non-leftmost parts.
              */
             if (size < MAX_MIXED_INSERTION_SORT_SIZE + bits && (bits & 1) > 0) {
-                mixedInsertionSort(a, b, low, high - 3 * ((size >> 5) << 3), high);
+                mixedInsertionSort(a, b, low, high - ((size >> 2) << 1), high);
                 return;
             }
 
@@ -165,16 +155,15 @@ public final class DualPivotQuicksort20191112Ext {
              * Check if the whole array or large non-leftmost
              * parts are nearly sorted and then merge runs.
              */
-            if ((bits == 0 || size > MIN_TRY_MERGE_SIZE && (bits & 1) > 0)
+            if ((bits == 0 || size > MIN_MERGING_SORT_SIZE && (bits & 1) > 0)
                     && tryMergeRuns(sorter, a, b, low, size)) {
                 return;
             }
 
             /*
-             * Switch to heap sort if execution
-             * time is becoming quadratic.
+             * Switch to heap sort, if execution time is quadratic.
              */
-            if ((bits += DELTA) > MAX_RECURSION_DEPTH) {
+            if ((bits += DEPTH) > MAX_RECURSION_DEPTH) {
                 heapSort(a, b, low, high);
                 return;
             }
@@ -183,7 +172,7 @@ public final class DualPivotQuicksort20191112Ext {
              * Use an inexpensive approximation of the golden ratio
              * to select five sample elements and determine pivots.
              */
-            int step = (size >> 3) * 3 + 3;
+            int step = (size >> 2) + (size >> 3) + (size >> 8) + 1;
 
             /*
              * Five elements around (and including) the central element
@@ -202,20 +191,23 @@ public final class DualPivotQuicksort20191112Ext {
              * Sort these elements in place by the combination
              * of 4-element sorting network and insertion sort.
              *
-             *    5 ------o-----------o------------
-             *            |           |
-             *    4 ------|-----o-----o-----o------
-             *            |     |           |
-             *    2 ------o-----|-----o-----o------
-             *                  |     |
-             *    1 ------------o-----o------------
+             *    1  ------------o-----o------------
+             *                   |     |
+             *    2  ------o-----|-----o-----o------
+             *             |     |           |
+             *    4  ------|-----o-----o-----o------
+             *             |           |
+             *    5  ------o-----------o------------
              */
-            if (a[e5] < a[e2]) { int t = a[e5]; a[e5] = a[e2]; a[e2] = t; }
-            if (a[e4] < a[e1]) { int t = a[e4]; a[e4] = a[e1]; a[e1] = t; }
-            if (a[e5] < a[e4]) { int t = a[e5]; a[e5] = a[e4]; a[e4] = t; }
-            if (a[e2] < a[e1]) { int t = a[e2]; a[e2] = a[e1]; a[e1] = t; }
-            if (a[e4] < a[e2]) { int t = a[e4]; a[e4] = a[e2]; a[e2] = t; }
+            if (a[e2] > a[e5]) { int t = a[e2]; a[e2] = a[e5]; a[e5] = t; }
+            if (a[e1] > a[e4]) { int t = a[e1]; a[e1] = a[e4]; a[e4] = t; }
+            if (a[e1] > a[e2]) { int t = a[e1]; a[e1] = a[e2]; a[e2] = t; }
+            if (a[e4] > a[e5]) { int t = a[e4]; a[e4] = a[e5]; a[e5] = t; }
+            if (a[e2] > a[e4]) { int t = a[e2]; a[e2] = a[e4]; a[e4] = t; }
 
+            /*
+             * Insert the third element.
+             */
             if (a3 < a[e2]) {
                 if (a3 < a[e1]) {
                     a[e3] = a[e2]; a[e2] = a[e1]; a[e1] = a3;
@@ -235,7 +227,7 @@ public final class DualPivotQuicksort20191112Ext {
             int upper = end; // The index of the first element of the right part
 
             /*
-             * Partitioning with 2 pivots in case of different elements.
+             * Partitioning with two pivots on array of random elements.
              */
             if (a[e1] < a[e2] && a[e2] < a[e3] && a[e3] < a[e4] && a[e4] < a[e5]) {
 
@@ -270,21 +262,23 @@ public final class DualPivotQuicksort20191112Ext {
                 /*
                  * Backward 3-interval partitioning
                  *
-                 *   left part                 central part          right part
-                 * +------------------------------------------------------------+
-                 * |  < pivot1  |   ?   |  pivot1 <= && <= pivot2  |  > pivot2  |
-                 * +------------------------------------------------------------+
-                 *             ^       ^                            ^
-                 *             |       |                            |
-                 *           lower     k                          upper
+                 *     left part                    central part          right part
+                 * +------------------------------------------------------------------+
+                 * |   < pivot1   |    ?    |  pivot1 <= && <= pivot2  |   > pivot2   |
+                 * +------------------------------------------------------------------+
+                 *               ^         ^                            ^
+                 *               |         |                            |
+                 *             lower       k                          upper
+                 *
+                 * Pointer k is the last index of ?-part
+                 * Pointer lower is the last index of left part
+                 * Pointer upper is the first index of right part
                  *
                  * Invariants:
                  *
-                 *              all in (low, lower] < pivot1
-                 *    pivot1 <= all in (k, upper)  <= pivot2
-                 *              all in [upper, end) > pivot2
-                 *
-                 * Pointer k is the last index of ?-part
+                 *     all in (low, lower]  <  pivot1
+                 *     all in (k, upper)   in [pivot1, pivot2]
+                 *     all in [upper, end)  >  pivot2
                  */
                 for (int unused = --lower, k = ++upper; --k > lower; ) {
                     int ak = a[k];
@@ -331,7 +325,7 @@ public final class DualPivotQuicksort20191112Ext {
                 sort(sorter, a, b, bits | 1, lower + 1, upper);
                 sort(sorter, a, b, bits | 1, upper + 1, high);
 
-            } else { // Use single pivot in case of many equal elements
+            } else { // Partitioning with one pivot
 
                 /*
                  * Use the third of the five sorted elements as the pivot.
@@ -351,9 +345,9 @@ public final class DualPivotQuicksort20191112Ext {
                 b[e3] = b[lower];
 
                 /*
-                 * Traditional 3-way (Dutch National Flag) partitioning
+                 * Dutch National Flag partitioning
                  *
-                 *   left part                 central part    right part
+                 *    left part                central part    right part
                  * +------------------------------------------------------+
                  * |   < pivot   |     ?     |   == pivot   |   > pivot   |
                  * +------------------------------------------------------+
@@ -361,13 +355,15 @@ public final class DualPivotQuicksort20191112Ext {
                  *              |           |                |
                  *            lower         k              upper
                  *
+                 * Pointer k is the last index of ?-part
+                 * Pointer lower is the last index of left part
+                 * Pointer upper is the first index of right part
+                 *
                  * Invariants:
                  *
-                 *   all in (low, lower] < pivot
-                 *   all in (k, upper)  == pivot
-                 *   all in [upper, end] > pivot
-                 *
-                 * Pointer k is the last index of ?-part
+                 *     all in (low, lower]  <  pivot
+                 *     all in (k, upper)   ==  pivot
+                 *     all in [upper, end]  >  pivot
                  */
                 for (int k = ++upper; --k > lower; ) {
                     int ak = a[k];
@@ -419,8 +415,8 @@ public final class DualPivotQuicksort20191112Ext {
     /**
      * Sorts the specified range of the array using mixed insertion sort.
      *
-     * Mixed insertion sort is combination of simple insertion sort,
-     * pin insertion sort and pair insertion sort.
+     * Mixed insertion sort is combination of pin insertion sort,
+     * simple insertion sort and pair insertion sort.
      *
      * In the context of Dual-Pivot Quicksort, the pivot element
      * from the left part plays the role of sentinel, because it
@@ -429,7 +425,6 @@ public final class DualPivotQuicksort20191112Ext {
      * iteration unless it is the leftmost call.
      *
      * @param a the array to be sorted
-     * @param b the secondary array to be ordered
      * @param low the index of the first element, inclusive, to be sorted
      * @param end the index of the last element for simple insertion sort
      * @param high the index of the last element, exclusive, to be sorted
@@ -442,7 +437,7 @@ public final class DualPivotQuicksort20191112Ext {
              */
             for (int i; ++low < end; ) {
                 int ai = a[i = low];
-
+                
                 if (ai < a[i - 1]) {
                     int bi = b[i];
 
@@ -567,7 +562,6 @@ public final class DualPivotQuicksort20191112Ext {
      * Sorts the specified range of the array using insertion sort.
      *
      * @param a the array to be sorted
-     * @param b the secondary array to be ordered
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
@@ -592,7 +586,6 @@ public final class DualPivotQuicksort20191112Ext {
      * Sorts the specified range of the array using heap sort.
      *
      * @param a the array to be sorted
-     * @param b the secondary array to be ordered
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
@@ -612,11 +605,9 @@ public final class DualPivotQuicksort20191112Ext {
     /**
      * Pushes specified element down during heap sort.
      *
-     * @param a the array to be sorted
-     * @param b the secondary array to be ordered
+     * @param a the given array
      * @param p the start index
-     * @param valueA the given element in a
-     * @param valueB the given element in b
+     * @param valueA the given element
      * @param low the index of the first element, inclusive, to be sorted
      * @param high the index of the last element, exclusive, to be sorted
      */
@@ -639,14 +630,13 @@ public final class DualPivotQuicksort20191112Ext {
     }
 
     /**
-     * Tries to sort the specified range of the array.
+     * Tries to sort the specified range of the array using merging sort.
      *
-     * @param sorter sorter context
+     * @param sorter parallel context
      * @param a the array to be sorted
-     * @param b the secondary array to be ordered
      * @param low the index of the first element to be sorted
      * @param size the array size
-     * @return true if finally sorted, false otherwise
+     * @return {@code true} if the array is finally sorted, otherwise {@code false}
      */
     private static boolean tryMergeRuns(DPQSSorterContext sorter, int[] a, int[] b, int low, int size) {
 
@@ -693,11 +683,10 @@ public final class DualPivotQuicksort20191112Ext {
             /*
              * Check special cases.
              */
-            if (sorter.runInit || run == null) {
+            if (sorter.runInit || (run == null)) {
                 sorter.runInit = false; // LBO
 
                 if (k == high) {
-
                     /*
                      * The array is monotonous sequence,
                      * and therefore already sorted.
@@ -706,7 +695,6 @@ public final class DualPivotQuicksort20191112Ext {
                 }
 
                 if (k - low < MIN_FIRST_RUN_SIZE) {
-
                     /*
                      * The first run is too small
                      * to proceed with scanning.
@@ -714,15 +702,18 @@ public final class DualPivotQuicksort20191112Ext {
                     return false;
                 }
 
-//                System.out.println("alloc run");
-//                run = new int[((size >> 10) | 0x7F) & 0x3FF];
-                run = sorter.run; // LBO: prealloc
+                if (false) {
+                    System.out.println("tryMergeRuns: alloc runs: " + (((size >> 10) | 0x7F) & 0x3FF));
+                    // Initial min 127, max 1023, extended to 5120
+                    run = new int[((size >> 10) | 0x7F) & 0x3FF];
+                } else {
+                    run = sorter.run; // LBO: prealloc
+                }
                 run[0] = low;
 
-            } else if (a[last - 1] > a[last]) {
+            } else if (a[last - 1] > a[last]) { // Start new run
 
                 if (count > (k - low) >> MIN_FIRST_RUNS_FACTOR) {
-
                     /*
                      * The first runs are not long
                      * enough to continue scanning.
@@ -731,15 +722,13 @@ public final class DualPivotQuicksort20191112Ext {
                 }
 
                 if (++count == MAX_RUN_CAPACITY) {
-
                     /*
                      * Array is not highly structured.
                      */
                     return false;
                 }
 
-                if (false && count == run.length) {
-
+                if (false && count == run.length) { // LBO: prealloc
                     /*
                      * Increase capacity of index array.
                      */
@@ -751,9 +740,11 @@ public final class DualPivotQuicksort20191112Ext {
             }
             run[count] = (last = k);
 
-            // fix ALMOST_CONTIGUOUS ie consecutive (ascending / descending runs)
-            if (k < high - 1) {
-                k++; // LBO
+            if (++k == high) {
+                /*
+                 * This is single-element run at the end.
+                 */
+                --k;
             }
         }
 
@@ -781,11 +772,9 @@ public final class DualPivotQuicksort20191112Ext {
     /**
      * Merges the specified runs.
      *
-     * @param srcA the source array for the array to be sorted (a)
-     * @param dstA the temporary buffer used in merging (a)
-     * @param srcB the source array for the secondary array to be ordered (b)
+     * @param srcA the source array
+     * @param dstA the temporary buffer used in merging
      * @param offset the start index in the source, inclusive
-     * @param dstB the temporary buffer used in merging (b)
      * @param aim specifies merging: to source ( > 0), buffer ( < 0) or any ( == 0)
      * @param run the start indexes of the runs, inclusive
      * @param lo the start index of the first run, inclusive
@@ -839,15 +828,12 @@ public final class DualPivotQuicksort20191112Ext {
     /**
      * Merges the sorted parts.
      *
-     * @param dstA the destination where parts are merged (a)
-     * @param dstB the destination where parts are merged (b)
+     * @param dstA the destination where parts are merged
      * @param k the start index of the destination, inclusive
-     * @param a1 the first part (a)
-     * @param b1 the first part (b)
+     * @param a1 the first part
      * @param lo1 the start index of the first part, inclusive
      * @param hi1 the end index of the first part, exclusive
-     * @param a2 the second part (a)
-     * @param b2 the second part (b)
+     * @param a2 the second part
      * @param lo2 the start index of the second part, inclusive
      * @param hi2 the end index of the second part, exclusive
      */

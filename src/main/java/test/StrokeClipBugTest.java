@@ -45,7 +45,7 @@ public class StrokeClipBugTest {
 
     private final static int N = 1;
 
-    private final static boolean DO_FILL = false;
+    private final static boolean DO_FILL = true;
     private final static boolean DO_DRAW = true;
 
     public static void main(String[] args) {

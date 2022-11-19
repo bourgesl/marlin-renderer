@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -279,7 +279,7 @@ final class Helpers implements MarlinConst {
         final double y12 = pts[3] - pts[1];
         // if the curve is already parallel to either axis we gain nothing
         // from rotating it.
-        if ((y12 != 0.0d) && (x12 != 0.0d)) {
+        if (false && (y12 != 0.0d) && (x12 != 0.0d)) {
             // we rotate it so that the first vector in the control polygon is
             // parallel to the x-axis. This will ensure that rotated quarter
             // circles won't be subdivided.
@@ -375,10 +375,14 @@ final class Helpers implements MarlinConst {
     }
 
     static void isort(final double[] a, final int len) {
-        for (int i = 1, j; i < len; i++) {
+        isort(a, 0, len);
+    }
+
+    static void isort(final double[] a, final int off, final int len) {
+        for (int i = off + 1, j; i < len; i++) {
             final double ai = a[i];
             j = i - 1;
-            for (; j >= 0 && a[j] > ai; j--) {
+            for (; j >= off && a[j] > ai; j--) {
                 a[j + 1] = a[j];
             }
             a[j + 1] = ai;
@@ -866,7 +870,7 @@ final class Helpers implements MarlinConst {
 
         @Override
         public String toString() {
-            String ret = "";
+            StringBuilder ret = new StringBuilder();
             int nc = numCurves;
             int last = end;
             int len;
@@ -874,24 +878,23 @@ final class Helpers implements MarlinConst {
                 switch(curveTypes[--nc]) {
                 case TYPE_LINETO:
                     len = 2;
-                    ret += "line: ";
+                    ret.append("line: ");
                     break;
                 case TYPE_QUADTO:
                     len = 4;
-                    ret += "quad: ";
+                    ret.append("quad: ");
                     break;
                 case TYPE_CUBICTO:
                     len = 6;
-                    ret += "cubic: ";
+                    ret.append("cubic: ");
                     break;
                 default:
                     len = 0;
                 }
                 last -= len;
-                ret += Arrays.toString(Arrays.copyOfRange(curves, last, last+len))
-                                       + "\n";
+                ret.append(Arrays.toString(Arrays.copyOfRange(curves, last, last + len))).append("\n");
             }
-            return ret;
+            return ret.toString();
         }
     }
 
@@ -992,7 +995,7 @@ final class Helpers implements MarlinConst {
             }
         }
 
-        void pullAll(final double[] points, final DPathConsumer2D io, 
+        void pullAll(final double[] points, final DPathConsumer2D io,
                      final boolean moveFirst)
         {
             final int nc = end;
@@ -1000,9 +1003,9 @@ final class Helpers implements MarlinConst {
                 return;
             }
             final int[] _values = indices;
-            
+
             int i = 0;
-            
+
             if (moveFirst) {
                 int j = _values[i] << 1;
                 io.moveTo(points[j], points[j + 1]);

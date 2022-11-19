@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -42,7 +42,7 @@ public final class MarlinProperties {
 
     private static boolean supportsLargeTiles() {
         if (SUPPORT_LARGE_TILES != null) {
-            return SUPPORT_LARGE_TILES.booleanValue();
+            return SUPPORT_LARGE_TILES;
         }
         boolean useLargeTiles = false;
         try {
@@ -64,7 +64,7 @@ public final class MarlinProperties {
                 }
             }
         } finally {
-            SUPPORT_LARGE_TILES = Boolean.valueOf(useLargeTiles);
+            SUPPORT_LARGE_TILES = useLargeTiles;
         }
         return useLargeTiles;
     }
@@ -72,33 +72,31 @@ public final class MarlinProperties {
     private static boolean isHeadless() {
         // Mimics java.awt.GraphicsEnvironment.getHeadlessProperty():
         return AccessController.doPrivileged(
-            new PrivilegedAction<Boolean>() {
-                @Override
-                public Boolean run() {
-                    String nm = System.getProperty("java.awt.headless");
+                new PrivilegedAction<Boolean>() {
+                    @Override
+                    public Boolean run() {
+                        String nm = System.getProperty("java.awt.headless");
 
-                    if (nm == null) {
-                        String osName = System.getProperty("os.name");
-                        if (osName.contains("OS X") && "sun.awt.HToolkit".equals(
-                                System.getProperty("awt.toolkit")))
-                        {
-                            return Boolean.TRUE;
+                        if (nm == null) {
+                            String osName = System.getProperty("os.name");
+                            if (osName.contains("OS X") && "sun.awt.HToolkit".equals(
+                                    System.getProperty("awt.toolkit"))) {
+                                return Boolean.TRUE;
+                            } else {
+                                final String display = System.getenv("DISPLAY");
+                                return ("Linux".equals(osName) ||
+                                        "SunOS".equals(osName) ||
+                                        "FreeBSD".equals(osName) ||
+                                        "NetBSD".equals(osName) ||
+                                        "OpenBSD".equals(osName) ||
+                                        "AIX".equals(osName)) &&
+                                        (display == null || display.trim().isEmpty());
+                            }
                         } else {
-                            final String display = System.getenv("DISPLAY");
-                            return Boolean.valueOf(
-                                ("Linux".equals(osName) ||
-                                 "SunOS".equals(osName) ||
-                                 "FreeBSD".equals(osName) ||
-                                 "NetBSD".equals(osName) ||
-                                 "OpenBSD".equals(osName) ||
-                                 "AIX".equals(osName)) &&
-                                 (display == null || display.trim().isEmpty()));
+                            return Boolean.parseBoolean(nm);
                         }
-                    } else {
-                        return Boolean.valueOf(nm);
                     }
                 }
-            }
         );
     }
 
@@ -260,6 +258,19 @@ public final class MarlinProperties {
                 10.0f);
     }
 
+    public static float getStrokerJoinError() {
+        final float def = (1.0f / MarlinConst.MIN_SUBPIXELS);
+        float err = getFloat("sun.java2d.renderer.stroker.joinError",
+                def,
+                -1.0f,
+                10.0f);
+        return (err < 0.0f) ? def : err;
+    }
+
+    public static int getStrokerJoinStyle() {
+        return getInteger("sun.java2d.renderer.stroker.joinStyle", -1, -1, 2);
+    }
+
     public static boolean isDoClip() {
         return getBoolean("sun.java2d.renderer.clip", "true");
     }
@@ -284,6 +295,22 @@ public final class MarlinProperties {
         return getBoolean("sun.java2d.renderer.useDPQS", "true");
     }
 
+    public static int getDPQSThreshold() {
+        return getInteger("sun.java2d.renderer.DPQS.threshold", 256, 0, Integer.MAX_VALUE);
+    }
+
+    public static int getDPQSIsortThreshold() {
+        return getInteger("sun.java2d.renderer.DPQS.isort.threshold", 1000, 0, 100000);
+    }
+
+    public static int getDPQSMaxMixedIsortSize() {
+        return getInteger("sun.java2d.renderer.DPQS.maxMixedIsortSize", 114, 1, 1024);
+    }
+
+    public static int getDPQSMaxIsortSize() {
+        return getInteger("sun.java2d.renderer.DPQS.maxIsortSize", 33, 1, 1024);
+    }
+    
     // debugging parameters
 
     public static boolean isDoStats() {
@@ -296,6 +323,14 @@ public final class MarlinProperties {
 
     public static boolean isDoChecks() {
         return getBoolean("sun.java2d.renderer.doChecks", "false");
+    }
+
+    public static boolean isSkipRenderer() {
+        return getBoolean("sun.java2d.renderer.skip_rdr", "false");
+    }
+
+    public static boolean isSkipRenderTiles() {
+        return getBoolean("sun.java2d.renderer.skip_pipe", "false");
     }
 
     // logging parameters
@@ -373,7 +408,7 @@ public final class MarlinProperties {
     }
 
     static int align(final int val, final int norm) {
-        final int ceil = FloatMath.ceil_int( ((float) val) / norm);
+        final int ceil = FloatMath.ceil_int( ((double) val) / norm);
         return ceil * norm;
     }
 

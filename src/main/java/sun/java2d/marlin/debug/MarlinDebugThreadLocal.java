@@ -36,7 +36,7 @@ import sun.java2d.ReentrantContext;
 public final class MarlinDebugThreadLocal extends ReentrantContext {
 
     // Thread-local storage:
-    private static final ThreadLocal<MarlinDebugThreadLocal> ctxTL = new ThreadLocal<MarlinDebugThreadLocal>();
+    private static final ThreadLocal<MarlinDebugThreadLocal> ctxTL = new ThreadLocal<>();
 
     public static MarlinDebugThreadLocal get() {
         MarlinDebugThreadLocal ctx = ctxTL.get();
@@ -64,7 +64,7 @@ public final class MarlinDebugThreadLocal extends ReentrantContext {
     }
 
     /* members */
-    private final ArrayList<Point2D> points = new ArrayList<Point2D>(10);
+    private final ArrayList<Point2D> points = new ArrayList<>(10);
 
     private MarlinDebugThreadLocal() {
         super();
