@@ -595,7 +595,6 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
                     return;
                 }
             }
-
             this.cOutCode = outcode1;
         }
 
@@ -1203,7 +1202,6 @@ if (false) {
                     return;
                 }
             }
-
             this.cOutCode = outcode3;
         }
         _curveTo(x1, y1, x2, y2, x3, y3, outcode0);
@@ -1357,7 +1355,6 @@ if (false) {
                     return;
                 }
             }
-
             this.cOutCode = outcode2;
         }
         _quadTo(x1, y1, x2, y2, outcode0);
@@ -1386,6 +1383,7 @@ if (false) {
             lineTo(cx0, cy0);
             return;
         }
+
         // if these vectors are too small, normalize them, to avoid future
         // precision problems.
         if (Math.abs(dxs) < 0.1d && Math.abs(dys) < 0.1d) {
