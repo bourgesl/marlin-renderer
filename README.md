@@ -19,20 +19,17 @@ Latest release: https://github.com/bourgesl/marlin-renderer/releases/latest
 | Jetbrains JDK 8   | Marlin 0.7.4 / 0.9.3 | Marlin 0.9.3 integrated in 2018.09, [Marlin-renderer 0.9.4.5 for JDK8](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5) |
 | Open JDK 9        | Marlin 0.7.4 | [Marlin-renderer 0.9.4.2 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_2_jdk9) |
 | Open JDK 10       | Marlin 0.8.2 | [Marlin-renderer 0.9.4.2 for JDK9+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_2_jdk9) |
-| Open JDK 11       | Marlin 0.9.1 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
-| Open JDK 11.0.2   | Marlin 0.9.1.1 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
-| Open JDK 12       | Marlin 0.9.1.1 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
-| Open JDK 13       | Marlin 0.9.1.1 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
-| Open JDK 14       | Marlin 0.9.1.3 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
-| Open JDK 15       | Marlin 0.9.1.3 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
-| Open JDK 16       | Marlin 0.9.1.3 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
-| Open JDK 17       | Marlin 0.9.1.4 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
-| Open JDK 18       | Marlin 0.9.1.4 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_5_jdk11) |
+| Open JDK 11       | Marlin 0.9.1 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_7_jdk11) |
+| Open JDK 11.0.2   | Marlin 0.9.1.1 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_7_jdk11) |
+| Open JDK 14       | Marlin 0.9.1.3 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_7_jdk11) |
+| Open JDK 17       | Marlin 0.9.1.4 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_7_jdk11) |
+| Open JDK 21       | Marlin 0.9.4.5 | [Marlin-renderer 0.9.4.5 for JDK11+](https://github.com/bourgesl/marlin-renderer/releases/tag/v0_9_4_7_jdk11) |
 
 For JavaFX, see the [Marlin-FX](https://github.com/bourgesl/marlin-fx) project
 
 News
 ====
+* dec 2022: Marlin 0.9.4.5 integrated in OpenJDK 21
 * jan 2021: Marlin 0.9.1.4 integrated in OpenJDK 17
 * sep 2019: Marlin 0.9.1.3 integrated in OpenJDK 14
 * aug 2019: Marlin 0.9.1.2 integrated in OpenJDK 14
