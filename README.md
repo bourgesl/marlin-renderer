@@ -54,9 +54,7 @@ News
 Build status
 ============
 Continuous Integration base on Github Actions (build + unit & integration tests):
-   * Branch unsafe-dev (jdk 8): 
-[![CI](https://github.com/bourgesl/marlin-renderer/actions/workflows/build.yml/badge.svg?branch=unsafe-dev)](https://github.com/bourgesl/marlin-renderer/actions/workflows/build.yml)
-   * Branch use_Unsafe (jdk 6 - 8): 
+   * Branch use_Unsafe (jdk8): 
 [![CI](https://github.com/bourgesl/marlin-renderer/actions/workflows/build.yml/badge.svg?branch=use_Unsafe)](https://github.com/bourgesl/marlin-renderer/actions/workflows/build.yml)
    * Branch jdk (jdk11+): [![CI](https://github.com/bourgesl/marlin-renderer/actions/workflows/build.yml/badge.svg?branch=jdk)](https://github.com/bourgesl/marlin-renderer/actions/workflows/build.yml)
 
