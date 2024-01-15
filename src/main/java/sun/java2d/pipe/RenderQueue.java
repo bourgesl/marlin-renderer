@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -79,7 +79,8 @@ public abstract class RenderQueue {
 
     static {
         // 1M instead of 32K (D3D / OGL) for high-end GPU
-        BUFFER_SIZE = align(getInteger("sun.java2d.render.bufferSize", 1024 * 1024, 32 * 1024, 16 * 1024 * 1024), 1024);
+        BUFFER_SIZE = align(getInteger("sun.java2d.render.bufferSize", 1024 * 1024, 
+                                       32 * 1024, 16 * 1024 * 1024), 1024);
 
         System.out.println("RenderQueue: sun.java2d.render.bufferSize = " + BUFFER_SIZE);
     }
@@ -94,7 +95,7 @@ public abstract class RenderQueue {
     protected final Set<Object> refSet;
 
     protected RenderQueue() {
-        refSet = new HashSet<>(64); // large enough (LBO) ?
+        refSet = new HashSet<>(64);
         buf = RenderBuffer.allocate(BUFFER_SIZE);
     }
 

@@ -270,6 +270,7 @@ public class LoopPipe
             boolean normalize =
                 (sg2d.strokeHint != SunHints.INTVAL_STROKE_PURE);
 
+            // Needed for OpenJDK 11 compatibility:
             if (RenderEngine instanceof sun.java2d.marlin.DMarlinRenderingEngine) {
                 ((sun.java2d.marlin.DMarlinRenderingEngine)RenderEngine).strokeTo(s,
                                       sg2d.transform, clip, bs,

@@ -25,7 +25,6 @@
 
 package sun.java2d.marlin;
 
-import sun.java2d.marlin.debug.MarlinDebugThreadLocal;
 import java.util.Arrays;
 import sun.java2d.marlin.Helpers.PolyStack;
 import sun.java2d.marlin.TransformingPathConsumer2D.CurveBasicMonotonizer;
@@ -866,8 +865,6 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         return 4;
     }
 
-    private final static boolean DEBUG_CUBIC_INFO = false;
-
     private int computeOffsetCubic(final double[] pts, final int off,
                                    final double[] leftOff,
                                    final double[] rightOff)
@@ -884,29 +881,9 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         final double x3 = pts[off + 4]; final double y3 = pts[off + 5];
         final double x4 = pts[off + 6]; final double y4 = pts[off + 7];
 
-       if (DEBUG_CUBIC_INFO) {
-            if ((437.4173312717014 == pts[off])
-                    && (45.489651150173614 == pts[off + 1]))
-            {
-                System.out.println("Bad case ?");
-            }
-            MarlinUtils.logInfo("Stroker.computeOffsetCubic("
-                    + pts[off] + ", " + pts[off + 1] + ", "
-                    + pts[off + 2] + ", " + pts[off + 3] + ", "
-                    + pts[off + 4] + ", " + pts[off + 5] + ", "
-                    + pts[off + 6] + ", " + pts[off + 7] + ");");
-       }
         double dx1 = x2 - x1; double dy1 = y2 - y1;
         double dx4 = x4 - x3; double dy4 = y4 - y3;
 
-       if (DEBUG_CUBIC_INFO) {
-            System.out.println("dx1: "+dx1);
-            System.out.println("dy1: "+dy1);
-            System.out.println("th: "+(6.0d * Math.ulp(y2)));
-            System.out.println("dx4: "+dx4);
-            System.out.println("dy4: "+dy4);
-            System.out.println("th: "+(6.0d * Math.ulp(y4)));
-       }
         // if p1 == p2 && p3 == p4: draw line from p1->p4, unless p1 == p4,
         // in which case ignore if p1 == p2
         final boolean p1eqp2 = Helpers.withinD(dx1, dy1, 6.0d * Math.ulp(y2));
@@ -928,19 +905,6 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         final double l1sq = dx1 * dx1 + dy1 * dy1;
         final double l4sq = dx4 * dx4 + dy4 * dy4;
 
-        if (DEBUG_CUBIC_INFO) {
-            System.out.println("dotsq: "+dotsq);
-            System.out.println("l1sq: "+l1sq);
-            System.out.println("l4sq: "+l4sq);
-
-            System.out.println("l1sq * l4sq: "+(l1sq * l4sq));
-            System.out.println("th: "+(4.0d * Math.ulp(dotsq)));
-
-            final double th = Math.max(1e-15, 4.0d * Math.ulp(dotsq));
-            System.out.println("th fixed: "+th);
-        }
-
-//        if (Helpers.within(dotsq, l1sq * l4sq, th)) {
         if (Helpers.within(dotsq, l1sq * l4sq, 4.0d * Math.ulp(dotsq))) {
             return getLineOffsets(x1, y1, x4, y4, leftOff, rightOff);
         }
@@ -1014,12 +978,6 @@ final class Stroker implements StartFlagPathConsumer2D, MarlinConst {
         double x4p = x4 + offset2[0]; // end
         double y4p = y4 + offset2[1]; // point
 
-if (false) {
-        final MarlinDebugThreadLocal dbgCtx = MarlinDebugThreadLocal.get();
-        // never release (reset):
-        dbgCtx.addPoint(xi, yi);
-}
-
         final double invdet43 = 4.0d / (3.0d * (dx1 * dy4 - dy1 * dx4));
 
         double two_pi_m_p1_m_p4x = 2.0d * xi - (x1p + x4p);
@@ -1062,12 +1020,6 @@ if (false) {
         yi =  ym  - offset1[1]; // point
         x4p = x4 - offset2[0]; // end
         y4p = y4 - offset2[1]; // point
-
-if (false) {
-        final MarlinDebugThreadLocal dbgCtx = MarlinDebugThreadLocal.get();
-        // never release (reset):
-        dbgCtx.addPoint(xi, yi);
-}
 
         two_pi_m_p1_m_p4x = 2.0d * xi - (x1p + x4p);
         two_pi_m_p1_m_p4y = 2.0d * yi - (y1p + y4p);
@@ -1292,13 +1244,6 @@ if (false) {
 
         int kind = 0;
         for (int i = 0, off = 0; i <= nSplits; i++, off += 6) {
-            if (DEBUG_CUBIC_INFO) {
-                MarlinUtils.logInfo("Stroker._curveTo(): p.curveTo("
-                        + mid[off] + ", " + mid[off + 1] + ", "
-                        + mid[off + 2] + ", " + mid[off + 3]  + ", "
-                        + mid[off + 4] + ", " + mid[off + 5]  + ", "
-                        + mid[off + 6] + ", " + mid[off + 7] + ");");
-            }
             kind = computeOffsetCubic(mid, off, l, r);
 
             emitLineTo(l[0], l[1]);
@@ -1392,7 +1337,6 @@ if (false) {
             lineTo(cx0, cy0);
             return;
         }
-
         // if these vectors are too small, normalize them, to avoid future
         // precision problems.
         if (Math.abs(dxs) < 0.1d && Math.abs(dys) < 0.1d) {

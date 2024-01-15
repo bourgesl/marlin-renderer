@@ -348,6 +348,7 @@ Float DASH: Diff Pixels [Worst(All Test setups)][n: 22] sum: 427 avg: 19.409 [1 
 Differences [Diff Pixels [All Test setups]]:
 NbPixels [All Test setups][n: 30] sum: 232 avg: 7.733 [1 | 27]
 */
+                // float variant have higher uncertainty
                 THRESHOLD_DELTA = 2;
                 THRESHOLD_NBPIX = (USE_DASHES) ? 6 : 0;
         }
