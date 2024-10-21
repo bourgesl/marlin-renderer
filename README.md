@@ -4,8 +4,8 @@ Marlin-renderer
 Marlin is an open source (GPL2 + CP) Java2D ``RenderingEngine`` optimized for performance (improved memory usage (~ no GC) and footprint, better multi-threading) and better visual quality based on OpenJDK's Pisces implementation.
 It handles shape rendering like ``Graphics2D draw(Shape) / fill(Shape)`` with stroke & dash attributes only but it does it very well !
 
-<div style="width:30%; margin: auto;">
-  <img src="https://bourgesl.github.io/marlin-badge-xmas-2021/WorksWithOpenJDK-Marlin-powered-fullres-v3.png" alt="Powered by OpenJDK's Marlin renderer logo"></div>
+<div style="display: block; margin: auto;">
+  <img width=256 src="https://bourgesl.github.io/marlin-badge-xmas-2021/WorksWithOpenJDK-Marlin-powered-fullres-v3.png" alt="Powered by OpenJDK's Marlin renderer logo"></div>
 
 
 Release history
