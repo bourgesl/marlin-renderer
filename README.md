@@ -114,7 +114,7 @@ Please help if you appreciate the Marlin project:
    * improve test cases, quality & unit tests, submit bug reports
    * documentation should be improved & updated
 
-To support my efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, you can use either patreon (https://www.patreon.com/user?u=9339017) or github sponsor (https://github.com/sponsors/bourgesl).
+To support my efforts on improving either Java2D or JavaFX rendering thanks to the Marlin & MarlinFX projects, you can use github sponsor (https://github.com/sponsors/bourgesl).
 
 
 Related projects
