@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,10 +25,7 @@
 
 package sun.java2d.marlin;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import static sun.java2d.marlin.MarlinUtils.logInfo;
-import sun.security.action.GetPropertyAction;
 
 public final class MarlinProperties {
 
@@ -69,36 +66,28 @@ public final class MarlinProperties {
         return useLargeTiles;
     }
 
-    @SuppressWarnings("removal")
     private static boolean isHeadless() {
         // Mimics java.awt.GraphicsEnvironment.getHeadlessProperty():
-        return AccessController.doPrivileged(
-                new PrivilegedAction<>() {
-                    @Override
-                    public Boolean run() {
-                        String nm = System.getProperty("java.awt.headless");
+        String nm = System.getProperty("java.awt.headless");
 
-                        if (nm == null) {
-                            String osName = System.getProperty("os.name");
-                            if (osName.contains("OS X") && "sun.awt.HToolkit".equals(
-                                    System.getProperty("awt.toolkit"))) {
-                                return Boolean.TRUE;
-                            } else {
-                                final String display = System.getenv("DISPLAY");
-                                return ("Linux".equals(osName) ||
-                                        "SunOS".equals(osName) ||
-                                        "FreeBSD".equals(osName) ||
-                                        "NetBSD".equals(osName) ||
-                                        "OpenBSD".equals(osName) ||
-                                        "AIX".equals(osName)) &&
-                                        (display == null || display.trim().isEmpty());
-                            }
-                        } else {
-                            return Boolean.parseBoolean(nm);
-                        }
-                    }
-                }
-        );
+        if (nm == null) {
+            String osName = System.getProperty("os.name");
+            if (osName.contains("OS X") && "sun.awt.HToolkit".equals(
+                    System.getProperty("awt.toolkit"))) {
+                return Boolean.TRUE;
+            } else {
+                final String display = System.getenv("DISPLAY");
+                return ("Linux".equals(osName) ||
+                        "SunOS".equals(osName) ||
+                        "FreeBSD".equals(osName) ||
+                        "NetBSD".equals(osName) ||
+                        "OpenBSD".equals(osName) ||
+                        "AIX".equals(osName)) &&
+                        (display == null || display.trim().isEmpty());
+            }
+        } else {
+            return Boolean.parseBoolean(nm);
+        }
     }
 
     // marlin system properties
@@ -358,24 +347,18 @@ public final class MarlinProperties {
     }
 
     // system property utilities
-    @SuppressWarnings("removal")
     static String getString(final String key, final String def) {
-        return AccessController.doPrivileged(
-                  new GetPropertyAction(key, def));
+        return System.getProperty(key, def);
     }
 
-    @SuppressWarnings("removal")
     static boolean getBoolean(final String key, final String def) {
-        return Boolean.parseBoolean(AccessController.doPrivileged(
-                  new GetPropertyAction(key, def)));
+        return Boolean.parseBoolean(System.getProperty(key, def));
     }
 
     static int getInteger(final String key, final int def,
                                  final int min, final int max)
     {
-        @SuppressWarnings("removal")
-        final String property = AccessController.doPrivileged(
-                                    new GetPropertyAction(key));
+        final String property = System.getProperty(key);
 
         int value = def;
         if (property != null) {
@@ -404,9 +387,7 @@ public final class MarlinProperties {
                                    final double min, final double max)
     {
         double value = def;
-        @SuppressWarnings("removal")
-        final String property = AccessController.doPrivileged(
-                                    new GetPropertyAction(key));
+        final String property = System.getProperty(key);
 
         if (property != null) {
             try {

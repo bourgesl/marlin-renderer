@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,8 +25,6 @@
 
 package sun.java2d.marlin;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -400,39 +398,35 @@ public final class RendererStats implements MarlinConst {
         // array data
         final ArraySortDataCollection adc = new ArraySortDataCollection();
 
-        @SuppressWarnings("removal")
         private RendererStatsHolder() {
-            AccessController.doPrivileged(
-                (PrivilegedAction<Void>) () -> {
-                    final Thread hook = new Thread(
-                        MarlinUtils.getRootThreadGroup(),
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                dump();
+            final Thread hook = new Thread(
+                MarlinUtils.getRootThreadGroup(),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        dump();
 
-                                // dump array data:
-                                ArraySortDataCollection.save("/tmp/ArraySortDataCollection.ser", adc);
-                            }
-                        },
-                        "MarlinStatsHook"
-                    );
-                    hook.setContextClassLoader(null);
-                    Runtime.getRuntime().addShutdownHook(hook);
-
-                    if (USE_DUMP_THREAD) {
-                        final Timer statTimer = new Timer("RendererStats");
-                        statTimer.scheduleAtFixedRate(new TimerTask() {
-                            @Override
-                            public void run() {
-                                logInfo("--- RendererStats dump at: " + new java.util.Date() + " ---");
-                                dump();
-                            }
-                        }, DUMP_INTERVAL, DUMP_INTERVAL);
+                        if (DUMP_ARRAY_DATA) {
+                            // dump array data:
+                            ArraySortDataCollection.save("/tmp/ArraySortDataCollection.ser", adc);
+                        }
                     }
-                    return null;
-                }
+                },
+                "MarlinStatsHook"
             );
+            hook.setContextClassLoader(null);
+            Runtime.getRuntime().addShutdownHook(hook);
+
+            if (USE_DUMP_THREAD) {
+                final Timer statTimer = new Timer("RendererStats");
+                statTimer.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        logInfo("--- RendererStats dump at: " + new java.util.Date() + " ---");
+                        dump();
+                    }
+                }, DUMP_INTERVAL, DUMP_INTERVAL);
+            }
         }
 
         void add(final Object parent, final RendererStats stats) {

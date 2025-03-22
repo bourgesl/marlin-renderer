@@ -25,12 +25,9 @@
 
 package sun.java2d.pipe;
 
-import java.security.AccessController;
 import java.util.HashSet;
 import java.util.Set;
-
 import sun.awt.SunToolkit;
-import sun.security.action.GetPropertyAction;
 
 /**
  * The RenderQueue class encapsulates a RenderBuffer on which rendering
@@ -78,8 +75,8 @@ public abstract class RenderQueue {
     private static final int BUFFER_SIZE;
 
     static {
-        // 1M instead of 32K (D3D / OGL) for high-end GPU
-        BUFFER_SIZE = align(getInteger("sun.java2d.render.bufferSize", 1024 * 1024, 
+        // 6M instead of 32K (D3D / OGL) for high-end GPU
+        BUFFER_SIZE = align(getInteger("sun.java2d.render.bufferSize", 6400000,
                                        32 * 1024, 16 * 1024 * 1024), 1024);
 
         System.out.println("RenderQueue: sun.java2d.render.bufferSize = " + BUFFER_SIZE);
@@ -237,8 +234,7 @@ public abstract class RenderQueue {
     public static int getInteger(final String key, final int def,
                                  final int min, final int max)
     {
-        final String property = AccessController.doPrivileged(
-                                    new GetPropertyAction(key));
+        final String property = System.getProperty(key);
 
         int value = def;
         if (property != null) {

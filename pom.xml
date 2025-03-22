@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.4.8-Unsafe-OpenJDK11</version>
+    <version>0.9.4.8-Unsafe-OpenJDK17</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -35,7 +35,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -45,7 +45,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.7.1</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies-libs</id>
@@ -69,8 +69,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>17</source>
+                    <target>17</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
                     <showDeprecation>true</showDeprecation>
@@ -107,7 +107,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.4.2</version>
                 <configuration>
                     <includes>
                         <include>sun/java2d/**</include>
@@ -126,7 +126,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.3.1</version>
                 <configuration>
                     <skipSource>false</skipSource>
                 </configuration>
@@ -143,7 +143,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.10.1</version>
                 <configuration>
                     <failOnError>false</failOnError>
                     <skip>${javadoc.skip}</skip>
@@ -161,7 +161,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.5.1</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -170,7 +170,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.5.1</version>
                 <configuration>
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>
