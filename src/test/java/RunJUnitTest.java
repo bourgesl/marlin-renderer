@@ -21,14 +21,22 @@
  * questions.
  */
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Simple wrapper on Marlin tests
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RunJUnitTest {
 
     private final static String[] NO_ARGS = new String[0];
+
+    @Test
+    public void _testBug8341381() throws Exception {
+        Bug8341381.main(NO_ARGS);
+    }
 
     @Test
     public void fillBugTest() {

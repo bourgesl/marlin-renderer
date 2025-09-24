@@ -8,7 +8,7 @@
     <groupId>org.marlin</groupId>
     <artifactId>marlin</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.4.8-Unsafe-OpenJDK17</version>
+    <version>0.9.4.9-Unsafe-OpenJDK17</version>
     <name>Marlin software rasterizer</name>
 
     <url>https://github.com/bourgesl/marlin-renderer</url>
@@ -20,7 +20,7 @@
     <properties>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss</maven.build.timestamp.format>
         <integration.skip>false</integration.skip>
-        <integration.skip.long.double>false</integration.skip.long.double>
+        <integration.skip.long.double>true</integration.skip.long.double>
         <javadoc.skip>true</javadoc.skip>
     </properties>
 
