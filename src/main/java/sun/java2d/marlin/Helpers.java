@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -31,7 +31,7 @@ import sun.java2d.marlin.stats.StatLong;
 
 final class Helpers implements MarlinConst {
 
-    private final static double T_ERR = 1e-5;
+    private final static double T_ERR = 1e-4;
     private final static double T_A = T_ERR;
     private final static double T_B = 1.0 - T_ERR;
 
